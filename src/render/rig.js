@@ -189,6 +189,7 @@ export class Rig {
     this.applyRecoil(f, dt);
     this.applyGuard(f, plan, dt);
     this.applyHitPose(f, plan, dt);
+    this.applyLocomotionPolish(f, plan, dt);
     this.applyStance(f, plan);
     this.applyLookAt(f, opponent);
     this.fixGround();
@@ -336,6 +337,33 @@ export class Rig {
       this.body.localToWorld(_pole);
       this.aimChain(shoulder, elbow, hand, _v1, _pole, gw);
       this.body.updateMatrixWorld(true);
+    }
+  }
+
+  /* --- pulido de locomoción (lean + sway pélvico) --------------------- */
+
+  /**
+   * Capas procedurales de secundaria sobre el mocap retargetado:
+   *  - inclinación del torso en el sentido de la marcha (se entra en la
+   *    zancada "cayendo" adelante), suavizada ~0.25 s;
+   *  - rotación y balanceo de la pelvis a media frecuencia de paso, el
+   *    cadence izquierda-derecha de la marcha humana.
+   */
+  applyLocomotionPolish(f, plan, dt) {
+    const pose = f.anim ? f.anim.pose : 'idle';
+    const localVel = (f.vx || 0) * (f.facing || 1);   // + = avanza
+    const moving = ['walkF', 'walkB', 'run'].includes(pose) || Math.abs(localVel) > 0.015;
+    const leanTarget = moving ? Math.max(-0.16, Math.min(0.22, localVel * 2.2)) : 0;
+    this.leanCur = (this.leanCur || 0) + (leanTarget - (this.leanCur || 0)) * Math.min(1, dt * 8);
+    if (Math.abs(this.leanCur) > 0.002) {
+      this.bones.Spine.rotateX(this.leanCur * 0.55);
+      this.bones.Spine1.rotateX(this.leanCur * 0.35);
+    }
+    if (moving) {
+      const cadence = this.clock * (4 + Math.abs(localVel) * 60);
+      this.bones.Hips.rotateY(Math.sin(cadence) * 0.05);
+      this.bones.Hips.rotateZ(Math.sin(cadence * 0.5) * 0.028);
+      this.bones.Spine1.rotateY(-Math.sin(cadence) * 0.03);  // contra-rotación del torso
     }
   }
 

@@ -3,9 +3,9 @@
  * navegador) los rasgos de cada luchador sobre un RGBA transparente que luego
  * se pega como calco curvado delante de la cara geométrica.
  *
- * El calco solo pinta lo que el relieve no da bien: cejas, boca, barba
- * incipiente, cicatrices, pintura de guerra, pañoleta o visor. Los ojos y la
- * nariz siguen siendo geometría, para que la cara tenga profundidad real.
+ * El calco pinta todo lo que define la expresión: cejas, OJOS (blanco, iris,
+ * párpado), boca, barba incipiente, cicatrices, pintura de guerra, pañoleta o
+ * visor. La geometría 3D solo pone cráneo y nariz, para el relieve.
  */
 import * as THREE from '../../vendor/three.module.min.js';
 
@@ -86,6 +86,17 @@ export function faceArt(def) {
       const yIn = R.browY + R.browAng * 16;
       const yOut = R.browY - R.browAng * 8 + Math.abs(R.browAng) * 4;
       line(buf, xIn, yIn, xOut, yOut, R.browW, bc[0], bc[1], bc[2], 0.95);
+    }
+  }
+
+  // Ojos: blanco, iris del tono de las cejas, pupila y párpado superior.
+  if (!R.mask && !R.visor) {
+    for (const s of [-1, 1]) {
+      const ex = 48 + s * 14;
+      ellipse(buf, ex, 50, 6.2, 3.4, 242, 238, 230, 0.95);
+      ellipse(buf, ex + s * 0.7, 50.4, 2.7, 3.0, bc[0], bc[1], bc[2], 0.95);
+      ellipse(buf, ex + s * 0.7, 50.6, 1.2, 1.5, 12, 9, 8, 0.95);
+      line(buf, ex - 6, 47.2, ex + 6, 46.8, 1.1, 30, 20, 18, 0.8);
     }
   }
 

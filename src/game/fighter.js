@@ -180,7 +180,9 @@ export class Fighter {
     if (this.stunDecayLock > 0) this.stunDecayLock--;
     else if (this.stun > 0) this.stun = Math.max(0, this.stun - STUN_DECAY);
     if (this.state !== STATE.BLOCKSTUN && this.guard > 0) {
-      this.guard = Math.max(0, this.guard - GUARD_DECAY);
+      // Con la guardia mantenida bajo presión el desgaste apenas se recupera:
+      // el turtle eterno acaba en guard crush, como en KOF98.
+      this.guard = Math.max(0, this.guard - GUARD_DECAY * (this.blocking ? 0.3 : 1));
     }
     if (this.dot) this.tickDot();
     for (let i = this.buffs.length - 1; i >= 0; i--) {
@@ -290,7 +292,7 @@ export class Fighter {
     if (!this.dash && intent.freshDir && intent.dir === 4 && this.buffer.doubleTap(4, intent.frame)) {
       this.startDash(-1); return;
     }
-    if (this.dash) { this.setAnim(this.dash.speed > 0 ? 'dashF' : 'dashB'); this.vx = 0; return; }
+    if (this.dash) { this.setAnim(this.dash.rel > 0 ? 'dashF' : 'dashB'); this.vx = 0; return; }
 
     this.crouching = intent.down;
     this.blocking = intent.back;
@@ -298,8 +300,10 @@ export class Fighter {
 
     const s = this.stats;
     const sm = this.speedMul;
-    if (intent.forward) { this.vx = s.walk * sm; this.setAnim('walkF'); }
-    else if (intent.back) { this.vx = -s.back * sm; this.setAnim('walkB'); }
+    // vx es ABSOLUTO en mundo (applyPhysics no conoce el facing): los golpes
+    // ya lo multiplican por facing; el movimiento básico también debe.
+    if (intent.forward) { this.vx = s.walk * sm * this.facing; this.setAnim('walkF'); }
+    else if (intent.back) { this.vx = -s.back * sm * this.facing; this.setAnim('walkB'); }
     else { this.vx = 0; this.setAnim(intent.down ? 'crouch' : 'idle'); }
   }
 
@@ -335,7 +339,7 @@ export class Fighter {
     this.airborne = true;
     this.gravityOn = true;
     this.vy = force * (this.stats.jump || 1);
-    this.vx = intent.dir === 9 ? JUMP_FORWARD_SPEED : intent.dir === 7 ? -JUMP_FORWARD_SPEED : 0;
+    this.vx = (intent.dir === 9 ? JUMP_FORWARD_SPEED : intent.dir === 7 ? -JUMP_FORWARD_SPEED : 0) * this.facing;
     this.crouching = false;
     this.blocking = false;
     this.setAnim(type);
@@ -345,7 +349,7 @@ export class Fighter {
   startDash(dir) {
     const f = dir > 0 ? DASH_FRAMES : BACKDASH_FRAMES;
     const sp = dir > 0 ? DASH_SPEED : BACKDASH_SPEED;
-    this.dash = { frames: f, total: f, speed: sp * dir };
+    this.dash = { frames: f, total: f, speed: sp * dir * this.facing, rel: dir };
     if (dir < 0) this.invuln = Math.max(this.invuln, 9);
     this.setAnim(dir > 0 ? 'dashF' : 'dashB');
     this.emit('dash', { dir });
@@ -685,6 +689,10 @@ export class Fighter {
   updateBlockstun(intent) {
     this.blockstun--;
     this.vx *= 0.88;
+    // La defensa se MANTIENE mientras se aguanta atrás: sin huecos entre el
+    // blockstun y el idle, los golpes rápidos no entran limpios si cubres.
+    this.blocking = intent.back;
+    this.blockType = intent.down ? 'low' : 'high';
     // Guard Cancel Roll (KOF98): cuesta 1 stock mientras bloqueas.
     const gcBtn = intent.pressed('GC') ||
       (intent.pressed('LP') && intent.buttons.LK) ||

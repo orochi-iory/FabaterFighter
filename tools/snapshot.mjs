@@ -123,6 +123,9 @@ if (POSE === 'punch' || POSE === 'kick') {
   fighter.stateFrame = +POSE.split(':')[1];
   fighter.updateAnim();
   step(1);
+} else if (POSE === 'walk') {
+  fighter.vx = 0.06 * (def.stats.walk / 0.06);
+  for (let i = 0; i < 40; i++) { fighter.stateFrame = i; fighter.updateAnim(); step(); }
 } else if (POSE === 'face') {
   fighter.state = 'intro';          // brazos colgando: la cara queda despejada
   fighter.stateFrame = 8;

@@ -132,13 +132,29 @@ export class AI {
 
     if (this.decideIn > 0) {
       this.decideIn--;
-      if (this.rng() < 0.5) return this.blockInput(false, facingRight);
+      // Mantener atrás SIN soltar: los toques sueltos de atrás activarían el
+      // double-tap de backdash y la IA se comería el kiteo infinito.
+      if (this.wantBlock) return this.blockInput(false, facingRight);
       return {};
     }
+    this.wantBlock = false;
 
     if (!me.actionable) return {};
 
+    // Anti-estancamiento: sin intercambios durante ~5 s, perseguir y atacar.
+    // Evita el kiteo eterno (sobre todo tras corregir el signo del salto).
+    const engaged = [STATE.ATTACK, STATE.HITSTUN, STATE.BLOCKSTUN, STATE.AIRHIT].includes(me.state) ||
+                    [STATE.ATTACK, STATE.HITSTUN, STATE.BLOCKSTUN, STATE.AIRHIT].includes(foe.state);
+    this.drought = engaged ? 0 : (this.drought || 0) + 1;
+    if (this.drought > 300) {
+      this.drought = -240;
+      if (dist > 1.6) { this.plan = this.walkSteps(6, 30); return this.consumePlan(); }
+      this.queueNormal('5HK');
+      return this.consumePlan();
+    }
+
     this.decideIn = Math.round(this.reaction * (0.6 + this.rng() * 0.8));
+    this.wantBlock = this.rng() < 0.5;
     this.chooseAction(dist, facingRight, foeAttacking);
     return this.consumePlan();
   }

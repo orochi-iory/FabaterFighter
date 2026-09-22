@@ -3,6 +3,8 @@
  * Se usan en la pantalla de selección y en el HUD.
  */
 
+import { faceArt } from '../render/facepaint.js';
+
 export function drawPortrait(canvas, def, opts = {}) {
   let ctx = opts.ctx || null;
   if (!ctx) { try { ctx = canvas.getContext('2d'); } catch (e) { ctx = null; } }
@@ -157,18 +159,12 @@ export function drawPortrait(canvas, def, opts = {}) {
     ctx.fill();
   }
 
-  // Ojos
-  const eyeY = hy - headR * 0.05;
-  ctx.fillStyle = '#0c0a12';
-  ctx.fillRect(cx - headR * 0.62, eyeY, headR * 0.42, headR * 0.22);
-  ctx.fillRect(cx + headR * 0.2, eyeY, headR * 0.42, headR * 0.22);
-  if (b.visor) {
-    ctx.fillStyle = c.accent;
-    ctx.fillRect(cx - headR * 0.95, eyeY - headR * 0.08, headR * 1.9, headR * 0.34);
-  } else {
-    ctx.fillStyle = hexA(def.fx, 0.95);
-    ctx.fillRect(cx - headR * 0.56, eyeY + headR * 0.04, headR * 0.3, headR * 0.14);
-    ctx.fillRect(cx + headR * 0.26, eyeY + headR * 0.04, headR * 0.3, headR * 0.14);
+  // Cara: los mismos rasgos texturizados que lleva el modelo 3D.
+  const face = faceCanvasFor(def);
+  if (face) {
+    const fw = headR * 2 * 0.94;
+    const fh = fw * (128 / 96);
+    ctx.drawImage(face, cx - fw / 2, hy - headR * 1.04, fw, fh);
   }
 
   // Sombra inferior + borde
@@ -181,6 +177,25 @@ export function drawPortrait(canvas, def, opts = {}) {
   ctx.strokeStyle = hexA(c.accent, 0.9);
   ctx.lineWidth = 3 * scale;
   ctx.strokeRect(1.5, 1.5, W - 3, H - 3);
+}
+
+/* Canvas cacheado con los rasgos de la cara (mismo faceArt que el 3D). */
+const faceCache = new Map();
+function faceCanvasFor(def) {
+  if (faceCache.has(def.id)) return faceCache.get(def.id);
+  let out = null;
+  try {
+    const art = faceArt(def);
+    const c = document.createElement('canvas');
+    const x = c && typeof c.getContext === 'function' ? c.getContext('2d') : null;
+    if (x) {
+      c.width = art.w; c.height = art.h;
+      x.putImageData(new ImageData(new Uint8ClampedArray(art.data), art.w, art.h), 0, 0);
+      out = c;
+    }
+  } catch (e) { out = null; }
+  faceCache.set(def.id, out);
+  return out;
 }
 
 function roundRect(ctx, x, y, w, h, r) {
