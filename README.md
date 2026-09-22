@@ -199,6 +199,14 @@ con bíceps y gemelos, puños, cara con mandíbula, nariz, orejas y ojos, más p
 accesorios (cinta, barba, turbante, visera, pañuelo) según el personaje. Al estar
 skinneado, codos, rodillas y cintura se doblan de forma continua.
 
+**UVs y texturas.** La malla lleva UVs cilíndricas/esféricas generadas por el propio
+loft (u = perímetro, v = distancia en metros, con costura duplicada para que el patrón
+no dé la vuelta en un triángulo). Encima va una `CanvasTexture` procedural gris con
+trama de tejido y arrugas que hace de `map` y `bumpMap`: los `vertexColors` de cada
+parte la tiñen, así una misma textura viste el gi, pantalón, guantes y piel de los diez
+luchadores sin ningún asset externo. En Node (tests) no hay contexto 2D y el material
+queda liso sin romper nada.
+
 **Capas procedurales** por encima del mocap (`src/render/rig.js`):
 - **Guardia con IK analítico de dos huesos** (ley de los cosenos): las manos suben a la
   cara y se mezclan con la posición capturada, sin saltos.

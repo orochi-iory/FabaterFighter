@@ -31,12 +31,14 @@ class Geo {
     this.idx = [];
     this.si = [];
     this.sw = [];
+    this.uv = [];
   }
 
-  vert(x, y, z, color, bones, weights) {
+  vert(x, y, z, color, bones, weights, u = 0, v = 0) {
     const i = this.pos.length / 3;
     this.pos.push(x, y, z);
     this.col.push(color.r, color.g, color.b);
+    this.uv.push(u, v);
     const b = [0, 0, 0, 0], w = [0, 0, 0, 0];
     let sum = 0;
     for (let k = 0; k < bones.length && k < 4; k++) {
@@ -56,18 +58,19 @@ class Geo {
    * vértices sean contiguos y no hay riesgo de concatenar strings por error.
    */
   stitch(a, b) {
+    // Anillos "abiertos": el último vértice duplica el primero con la UV de
+    // costura completa, así la textura no da la vuelta entera en un triángulo.
     const n = Math.min(a.length, b.length);
-    for (let i = 0; i < n; i++) {
-      const i2 = (i + 1) % n;
+    for (let i = 0; i < n - 1; i++) {
+      const i2 = i + 1;
       this.idx.push(a[i], b[i2], b[i], a[i], a[i2], b[i2]);
     }
   }
 
   /** Tapa un anillo con un abanico de triángulos hacia el vértice `center`. */
   cap(ring, center, flip = false) {
-    const n = ring.length;
-    for (let i = 0; i < n; i++) {
-      const i2 = (i + 1) % n;
+    for (let i = 0; i < ring.length - 1; i++) {
+      const i2 = i + 1;
       if (flip) this.idx.push(center, ring[i], ring[i2]);
       else this.idx.push(center, ring[i2], ring[i]);
     }
@@ -77,6 +80,7 @@ class Geo {
     const g = new THREE.BufferGeometry();
     g.setAttribute('position', new THREE.Float32BufferAttribute(this.pos, 3));
     g.setAttribute('color', new THREE.Float32BufferAttribute(this.col, 3));
+    g.setAttribute('uv', new THREE.Float32BufferAttribute(this.uv, 2));
     g.setAttribute('skinIndex', new THREE.Uint16BufferAttribute(this.si, 4));
     g.setAttribute('skinWeight', new THREE.Float32BufferAttribute(this.sw, 4));
     g.setIndex(this.idx);
@@ -139,11 +143,15 @@ export class Humanoid {
     // Doble cara: con geometría procedural el sentido de los índices puede variar
     // por tramo; three.js invierte la normal en las caras traseras, así la
     // iluminación sigue siendo correcta y no aparecen piezas invisibles.
+    const cloth = clothTexture();
     const material = new THREE.MeshStandardMaterial({
       vertexColors: true,
-      roughness: 0.68,
-      metalness: 0.08,
-      side: THREE.DoubleSide
+      roughness: 0.72,
+      metalness: 0.06,
+      side: THREE.DoubleSide,
+      map: cloth || null,
+      bumpMap: cloth || null,
+      bumpScale: 0.35
     });
     this.mesh = new THREE.SkinnedMesh(g.toGeometry(), material);
     this.mesh.frustumCulled = false;
@@ -246,18 +254,24 @@ export class Humanoid {
     const V = new THREE.Vector3().crossVectors(A, U).normalize();
     const O = new THREE.Vector3(...origin);
 
+    const K = 3;   // repeticiones de textura por metro
     const rings = [];
+    let vAcc = 0;
+    let prevD = null;
     for (const p of points) {
+      if (prevD !== null) vAcc += Math.abs(p.d - prevD) * K;
+      prevD = p.d;
       const c = O.clone().addScaledVector(A, p.d)
         .addScaledVector(U, p.ou || 0).addScaledVector(V, p.ov || 0);
+      const circ = TAU * (p.rx + p.rz) * 0.5 * K;
       const ring = [];
-      for (let i = 0; i < radial; i++) {
-        const a = (i / radial) * TAU;
+      for (let i = 0; i <= radial; i++) {   // <= : duplica la costura con u completa
+        const a = ((i % radial) / radial) * TAU;
         const ca = Math.cos(a), sa = Math.sin(a);
         const x = c.x + U.x * ca * p.rx + V.x * sa * p.rz;
         const y = c.y + U.y * ca * p.rx + V.y * sa * p.rz;
         const z = c.z + U.z * ca * p.rx + V.z * sa * p.rz;
-        ring.push(g.vert(x, y, z, p.color, p.b, p.w));
+        ring.push(g.vert(x, y, z, p.color, p.b, p.w, (i / radial) * circ, vAcc));
       }
       rings.push(ring);
     }
@@ -280,17 +294,19 @@ export class Humanoid {
   ball(g, center, r, color, bones, weights, squash = [1, 1, 1], seg = 12) {
     const rings = Math.max(4, Math.round(seg * 0.7));
     const ringIdx = [];
+    const K = 3;
     for (let j = 1; j < rings; j++) {
       const phi = (j / rings) * Math.PI;
       const sp = Math.sin(phi), cp = Math.cos(phi);
+      const circ = TAU * r * sp * K;
       const ring = [];
-      for (let i = 0; i < seg; i++) {
-        const th = (i / seg) * TAU;
+      for (let i = 0; i <= seg; i++) {
+        const th = ((i % seg) / seg) * TAU;
         ring.push(g.vert(
           center[0] + r * sp * Math.cos(th) * squash[0],
           center[1] + r * cp * squash[1],
           center[2] + r * sp * Math.sin(th) * squash[2],
-          color, bones, weights
+          color, bones, weights, (i / seg) * circ, phi * r * K
         ));
       }
       ringIdx.push(ring);
@@ -765,4 +781,38 @@ export class Humanoid {
   }
 }
 
-
+/**
+ * Trama de tela procedural (tejido + arrugas) en un canvas pequeño y tileable.
+ * Es gris: el color lo ponen los vertexColors de cada parte del cuerpo, así
+ * una misma textura viste el gi, el pantalón, los guantes y la piel de los
+ * diez luchadores. Sin contexto 2D (tests en Node) devuelve null y el
+ * material queda liso.
+ */
+function clothTexture() {
+  if (typeof document === 'undefined') return null;
+  const c = document.createElement('canvas');
+  c.width = c.height = 128;
+  const x = c.getContext('2d');
+  if (!x) return null;
+  x.fillStyle = '#e8e8e8';
+  x.fillRect(0, 0, 128, 128);
+  for (let i = 0; i < 128; i += 4) {
+    x.fillStyle = 'rgba(0,0,0,0.14)';
+    x.fillRect(0, i, 128, 2);
+    x.fillRect(i, 0, 2, 128);
+    x.fillStyle = 'rgba(255,255,255,0.55)';
+    x.fillRect(0, i + 2, 128, 1);
+    x.fillRect(i + 2, 0, 1, 128);
+  }
+  for (let i = 0; i < 46; i++) {
+    const a = 0.04 + Math.random() * 0.06;
+    x.fillStyle = `rgba(0,0,0,${a})`;
+    x.beginPath();
+    x.ellipse(Math.random() * 128, Math.random() * 128,
+      5 + Math.random() * 16, 2 + Math.random() * 6, Math.random() * 3.1, 0, 7);
+    x.fill();
+  }
+  const t = new THREE.CanvasTexture(c);
+  t.wrapS = t.wrapT = THREE.RepeatWrapping;
+  return t;
+}
