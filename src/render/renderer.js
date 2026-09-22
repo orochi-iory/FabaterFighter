@@ -74,13 +74,15 @@ export class GameView {
   frame(match, dt) {
     if (match) {
       for (let i = 0; i < this.rigs.length && i < match.fighters.length; i++) {
-        this.rigs[i].update(match.fighters[i], dt);
+        this.rigs[i].update(match.fighters[i], dt, match.fighters[1 - i]);
       }
       this.fx.syncProjectiles(match.projectiles);
       this.updateCamera(match, dt);
       this.stage.setSuperMood(this.superMood, this.overlayColor.getStyle());
     } else {
-      for (const r of this.rigs) r.update({ x: r.root.position.x, y: 0, facing: 1, anim: { state: 'idle', pose: 'idle' }, maxMode: 0, hitFlash: 0 }, dt);
+      for (const r of this.rigs) {
+        r.update({ x: r.root.position.x, y: 0, vx: 0, vy: 0, facing: 1, airborne: false, anim: { state: 'idle', pose: 'idle', frame: 0 }, maxMode: 0, hitFlash: 0 }, dt);
+      }
     }
     this.superMood = Math.max(0, this.superMood - dt * 1.6);
     this.stage.update(dt, match);

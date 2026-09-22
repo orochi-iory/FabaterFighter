@@ -24,7 +24,11 @@ const { ROSTER } = await import('../src/data/roster.js');
 const { Fighter } = await import('../src/game/fighter.js');
 const { Match } = await import('../src/game/match.js');
 const { AI } = await import('../src/game/ai.js');
-const { Rig, POSES } = await import('../src/render/rig.js');
+const { Rig } = await import('../src/render/rig.js');
+const { Humanoid } = await import('../src/render/humanoid.js');
+const { ANIM_CLIPS, ANIM_JOINTS } = await import('../src/data/anims.js');
+const { planAnimation, attackFrame, clipForMove } = await import('../src/anim/library.js');
+const { clipImpact } = await import('../src/anim/clip.js');
 const { Stage } = await import('../src/render/stage.js');
 const { FX } = await import('../src/render/fx.js');
 const { GameView } = await import('../src/render/renderer.js');
@@ -91,9 +95,22 @@ test('el rig se construye para los 10 luchadores con su jerarquía', () => {
     assert.ok(rig.armL && rig.armR && rig.legL && rig.legR, `${def.id}: extremidades`);
     assert.ok(rig.head && rig.spine && rig.hips, `${def.id}: torso`);
     assert.ok(rig.height > 1.4 && rig.height < 2.6, `${def.id}: altura ${rig.height}`);
-    let meshes = 0;
-    rig.root.traverse((o) => { if (o.isMesh) meshes++; });
-    assert.ok(meshes >= 12, `${def.id}: solo ${meshes} mallas`);
+    // Una única malla skinneada: los huesos deforman la geometría.
+    assert.ok(rig.mesh && rig.mesh.isSkinnedMesh, `${def.id}: falta el SkinnedMesh`);
+    const geo = rig.mesh.geometry;
+    assert.ok(geo.getAttribute('skinIndex'), `${def.id}: sin skinIndex`);
+    assert.ok(geo.getAttribute('skinWeight'), `${def.id}: sin skinWeight`);
+    assert.equal(rig.skeleton.bones.length, ANIM_JOINTS.length, `${def.id}: nº de huesos`);
+    // Pesos normalizados (si no, la malla se estira o desaparece)
+    const sw = geo.getAttribute('skinWeight');
+    for (let i = 0; i < sw.count; i++) {
+      const sum = sw.getX(i) + sw.getY(i) + sw.getZ(i) + sw.getW(i);
+      assert.ok(Math.abs(sum - 1) < 0.02, `${def.id}: pesos ${sum}`);
+    }
+    // La cabeza queda por encima de la cadera y los pies en el suelo
+    rig.root.updateMatrixWorld(true);
+    assert.ok(rig.bp.Head[1] > rig.bp.Hips[1] + 0.4, `${def.id}: cabeza bajo la cadera`);
+    assert.ok(rig.bp.LeftFoot[1] < 0.15, `${def.id}: pie a ${rig.bp.LeftFoot[1]}`);
   }
 });
 
@@ -111,26 +128,80 @@ test('los luchadores son visualmente distinguibles (mallas distintas)', () => {
   assert.ok(counts.size >= 3, `variedad de accesorios: ${counts.size}`);
 });
 
-test('todas las poses se aplican sin producir NaN', () => {
+test('todos los clips de mocap se reproducen sin producir NaN', () => {
   const def = ROSTER[0];
   const rig = new Rig(def);
   const fighter = new Fighter(def, 0, 1);
-  const names = Object.keys(POSES);
-  assert.ok(names.length >= 35, `solo ${names.length} poses`);
+  const names = Object.keys(ANIM_CLIPS);
+  assert.ok(names.length >= 25, `solo ${names.length} clips`);
   for (const name of names) {
-    const pose = POSES[name];
-    const variants = pose.startup ? ['startup', 'active', 'recovery'] : [null];
-    for (const v of variants) {
-      fighter.anim = { state: v ? 'attack' : 'idle', pose: name, phase: v || 'idle', move: v ? { startup: 5, active: 3 } : null };
-      for (let i = 0; i < 12; i++) rig.update(fighter, 1 / 60);
+    for (const phase of ['startup', 'active', 'recovery']) {
+      fighter.anim = {
+        state: 'attack', pose: 'x', phase,
+        frame: phase === 'startup' ? 1 : phase === 'active' ? 8 : 20,
+        move: { startup: 6, active: 4, recovery: 12, pose: 'jab', level: 'M', kind: 'melee', input: { button: 'P' } }
+      };
+      fighter.move = fighter.anim.move;
+      rig.cur.clip = name;
+      rig.prev = null;
+      for (let i = 0; i < 6; i++) rig.update(fighter, 1 / 60);
       const bad = [];
       rig.root.traverse((o) => {
-        if (!Number.isFinite(o.position.x + o.position.y + o.position.z)) bad.push(o.type + ' pos');
-        if (!Number.isFinite(o.rotation.x + o.rotation.y + o.rotation.z)) bad.push(o.type + ' rot');
+        if (!Number.isFinite(o.position.x + o.position.y + o.position.z)) bad.push(o.name + ' pos');
+        if (!Number.isFinite(o.quaternion.x + o.quaternion.y + o.quaternion.z + o.quaternion.w)) bad.push(o.name + ' quat');
       });
-      assert.equal(bad.length, 0, `pose ${name}/${v}: ${bad.join(',')}`);
+      assert.equal(bad.length, 0, `clip ${name}/${phase}: ${bad.join(',')}`);
     }
   }
+});
+
+test('cada golpe del roster tiene clip y su impacto se alinea con los frames activos', () => {
+  for (const def of ROSTER) {
+    for (const mv of [...def.specials, ...def.supers]) {
+      const name = clipForMove(mv);
+      assert.ok(ANIM_CLIPS[name], `${def.id}/${mv.id}: clip ${name} inexistente`);
+      const imp = clipImpact(name);
+      // En el primer frame activo el clip debe estar justo en su impacto.
+      const at = attackFrame(mv, mv.startup);
+      assert.equal(at.name, name);
+      if (imp >= 0) {
+        assert.ok(Math.abs(at.frame - imp) < 0.5,
+          `${def.id}/${mv.id}: en el frame activo el clip está en ${at.frame} y el impacto es ${imp}`);
+      }
+      // Y durante el arranque no debe haber pasado todavía el impacto.
+      const before = attackFrame(mv, Math.max(0, mv.startup - 1));
+      if (imp > 0) assert.ok(before.frame <= imp + 0.001, `${def.id}/${mv.id}: se adelanta al impacto`);
+    }
+  }
+});
+
+test('la guardia coloca las manos arriba y el golpe extiende el brazo', () => {
+  const def = ROSTER[0];
+  const rig = new Rig(def);
+  const f = new Fighter(def, 0, 1);
+  const opp = { x: 2.2, y: 0 };
+  f.x = -2.2; f.facing = 1;
+  const inv = new THREE.Matrix4();
+  const local = (n) => {
+    const v = new THREE.Vector3();
+    rig.bones[n].getWorldPosition(v);
+    inv.copy(rig.body.matrixWorld).invert();
+    return v.applyMatrix4(inv);
+  };
+
+  for (let i = 0; i < 120; i++) { f.stateFrame = i; f.updateAnim(); rig.update(f, 1 / 60, opp); }
+  const guardL = local('LeftHand'), guardR = local('RightHand');
+  assert.ok(guardL.y > 1.25 && guardR.y > 1.25, `manos bajas: ${guardL.y} / ${guardR.y}`);
+  assert.ok(guardL.z > 0.12 && guardR.z > 0.12, 'las manos no están delante del cuerpo');
+  const guardReach = Math.max(guardL.z, guardR.z);
+
+  // Un golpe debe llevar una mano claramente más adelante que la guardia.
+  const mv = def.specials[0];
+  f.state = 'attack'; f.move = mv; f.moveFrame = mv.startup + 1; f.updateAnim();
+  for (let i = 0; i < 8; i++) rig.update(f, 1 / 60, opp);
+  const punch = Math.max(local('LeftHand').z, local('RightHand').z);
+  assert.ok(punch > guardReach + 0.2, `el golpe no extiende: guardia ${guardReach} golpe ${punch}`);
+  assert.ok(punch > 0.5, `alcance del golpe ${punch}`);
 });
 
 test('el rig sigue la posición y el facing del luchador', () => {
@@ -147,8 +218,8 @@ test('el rig sigue la posición y el facing del luchador', () => {
   const front = rig.body.rotation.y;
   // El cuerpo gira 180° entre un facing y el otro (más el giro propio de la guardia).
   assert.ok(Math.abs(Math.abs(front - back) - Math.PI) < 1e-6, `front=${front} back=${back}`);
-  // La sombra se queda en el suelo aunque el luchador salte.
-  assert.equal(rig.shadow.position.y, 0.012);
+  // La sombra se queda en el suelo aunque el luchador salte (compensa el y del root).
+  assert.ok(Math.abs(rig.shadow.position.y + f.y - 0.012) < 1e-9, `sombra en ${rig.shadow.position.y}`);
 });
 
 /* ------------------------------------------------------------------ */

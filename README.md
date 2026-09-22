@@ -14,7 +14,7 @@ los retratos y el sonido se generan por código. La mecánica replica dos refere
 ```bash
 npm install      # solo instala jsdom (devDep para los tests)
 npm start        # http://localhost:8080
-npm test         # 49 tests (lógica + render/UI + arranque completo)
+npm test         # 51 tests (lógica + render/UI + arranque completo)
 ```
 
 No hace falta compilar nada: `index.html` carga módulos ES nativos y Three.js va
@@ -160,16 +160,54 @@ el blockstun. Los lanzamientos no se pueden parar.
 
 ---
 
+## Animación y modelado
+
+Los personajes **no están animados a mano**: se mueven con captura de movimiento real.
+
+**Datos.** 31 clips del [CMU Motion Capture Database](http://mocap.cs.cmu.edu/) —
+puñetazos, patadas, bloqueos, caídas, caminar, correr, saltar y reverencias — descargados
+en BVH con `tools/fetch-mocap.sh` y horneados a `src/data/anims.js` (422 KB) con
+`tools/build-anim.mjs`, que recorta cada acción por picos de velocidad, remuestrea de
+120 a 60 fps, descarta los dedos y cuantiza rotaciones a Int16.
+
+**Retargeting.** Del mocap solo se aprovechan las **rotaciones**; las longitudes de hueso
+las pone `src/anim/skeleton-def.js` (esqueleto humano de 1.75 m con proporciones reales:
+cadera al 54 % de la altura, envergadura ≈ altura). Como el actor capturado tiene otras
+proporciones, la raíz no se copia tal cual: se guarda solo la variación de altura de
+cadera, reescalada a la longitud de pierna de cada luchador. Por eso Brutus (piernas
+cortas y 1.5 de corpulencia) apoya los pies en el suelo igual que Sera (1.71 m).
+
+**Sincronización.** El fotograma de mayor velocidad de mano/pie de cada captura es el
+impacto, y el juego lo hace coincidir **exactamente** con el primer fotograma activo del
+golpe. Un golpe de 6 frames de arranque acelera el armado; uno de 14 lo alarga. Así la
+animación nunca miente sobre cuándo pega el golpe.
+
+**Modelo.** Un único `SkinnedMesh` por luchador (`src/render/humanoid.js`): torso loftado
+con perfil anatómico (pelvis, cintura, caja torácica, trapecios, pectorales), extremidades
+con bíceps y gemelos, puños, cara con mandíbula, nariz, orejas y ojos, más pelo y
+accesorios (cinta, barba, turbante, visera, pañuelo) según el personaje. Al estar
+skinneado, codos, rodillas y cintura se doblan de forma continua.
+
+**Capas procedurales** por encima del mocap (`src/render/rig.js`):
+- **Guardia con IK analítico de dos huesos** (ley de los cosenos): las manos suben a la
+  cara y se mezclan con la posición capturada, sin saltos.
+- **Mirada al rival**, respiración, balanceo de peso y retroceso al recibir.
+- **Física de pelo y pañuelo** arrastrada por la velocidad.
+- Corrección de suelo para que los pies no atraviesen la tarima.
+
 ## Arquitectura
 
 ```
 index.html / styles.css        shell de la app + estilos arcade
 vendor/three.module.min.js     Three.js r169 (vendored, sin CDN)
 tools/serve.js                 servidor estático de 0 dependencias
+tools/fetch-mocap.sh           descarga los BVH de CMU (solo para regenerar anims)
+tools/build-anim.mjs           BVH -> src/data/anims.js
 src/
   game/      constants · input · fighter · match · ai      (motor puro, sin DOM ni Three)
-  data/      moves · roster                                (frame data y personajes)
-  render/    rig · stage · fx · renderer                   (procedural, low-poly)
+  data/      moves · roster · anims                        (frame data, personajes, anim)
+  anim/      skeleton-def · clip · library                 (esqueleto, muestreo, qué clip toca)
+  render/    humanoid · rig · stage · fx · renderer        (malla skinneada + IK + escenario)
   ui/        hud · screens · portrait                      (DOM + canvas 2D)
   audio/     sfx                                           (síntesis WebAudio)
   main.js    bucle a 60 Hz fijos con acumulador y cámara lenta en el KO
@@ -195,3 +233,8 @@ npm test
 
 Los shaders y el `WebGLRenderer` real no se ejercitan en CI (no hay GPU ni navegador aquí):
 esa parte se valida abriendo la app.
+
+## Créditos de los datos de movimiento
+
+> The data used in this project was obtained from mocap.cs.cmu.edu.
+> The database was created with funding from NSF EIA-0196217.
