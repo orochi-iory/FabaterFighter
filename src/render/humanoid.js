@@ -563,29 +563,19 @@ export class Humanoid {
       { d: 0.085 * hs, rx: 0.048 * hs, rz: 0.056 * hs, color: skin, b: headBone, w: [1] },
       { d: 0.105 * hs, rx: 0.030 * hs, rz: 0.038 * hs, color: skin, b: headBone, w: [1] }
     ], 14);
-    // Nariz
-    this.loft(g, [0, cy - 0.012 * hs, cz + 0.082 * hs], [0, -0.25, 1], [
+    // Nariz recogida: da perfil sin atravesar el calco de la cara
+    this.loft(g, [0, cy - 0.012 * hs, cz + 0.058 * hs], [0, -0.25, 1], [
       { d: 0, rx: 0.016 * hs, rz: 0.016 * hs, color: skin, b: headBone, w: [1] },
-      { d: 0.030 * hs, rx: 0.013 * hs, rz: 0.014 * hs, color: skin, b: headBone, w: [1] },
-      { d: 0.042 * hs, rx: 0.005 * hs, rz: 0.006 * hs, color: skin, b: headBone, w: [1] }
+      { d: 0.026 * hs, rx: 0.013 * hs, rz: 0.014 * hs, color: skin, b: headBone, w: [1] },
+      { d: 0.036 * hs, rx: 0.005 * hs, rz: 0.006 * hs, color: skin, b: headBone, w: [1] }
     ], 8);
     // Orejas
     for (const dx of [-1, 1]) {
       this.ball(g, [dx * 0.084 * hs, cy - 0.012 * hs, cz - 0.006 * hs], 0.024 * hs, skin,
         headBone, [1], [0.42, 1.1, 0.8], 8);
     }
-    // Ojos (ligeramente hundidos) y cejas
-    const dark = this.col('#1a1418');
-    const white = this.col('#e8e2dc');
-    for (const dx of [-1, 1]) {
-      this.ball(g, [dx * 0.034 * hs, cy + 0.008 * hs, cz + 0.078 * hs], 0.0135 * hs, white,
-        headBone, [1], [1, 0.72, 0.5], 8);
-      this.ball(g, [dx * 0.034 * hs, cy + 0.008 * hs, cz + 0.086 * hs], 0.0072 * hs, dark,
-        headBone, [1], [1, 1, 0.6], 8);
-    }
-    // Boca
-    this.ball(g, [0, cy - 0.052 * hs, cz + 0.070 * hs], 0.017 * hs, this.col('#5d2b2b'),
-      headBone, [1], [1.5, 0.28, 0.4], 8);
+    // Ojos y boca los pinta el calco de cara (facepaint.js); la geometría
+    // hundida asomaba por encima de la textura y rompía el dibujo.
   }
 
   /* --- cara con textura ---------------------------------------------- */
@@ -599,8 +589,8 @@ export class Humanoid {
     const headBase = this.bp.Head;
     const cy = headBase[1] + 0.105 * hs;
     const cz = headBase[2];
-    const C = [0, cy - 0.012 * hs, cz - 0.012 * hs];
-    const R = 0.108 * hs;
+    const C = [0, cy - 0.012 * hs, cz - 0.010 * hs];
+    const R = 0.115 * hs;
     const cols = 12, rows = 14;
     const a0 = -0.56, a1 = 0.56;      // horizontal
     const b0 = -0.80, b1 = 0.40;      // vertical (negativo = barbilla)
@@ -657,6 +647,20 @@ export class Humanoid {
     });
     const hairMat = mat(new THREE.Color(C.hair || '#222').convertSRGBToLinear());
 
+    // Casco de pelo: copia el elipsoide del cráneo (0.0843/0.1058/0.0960 · hs)
+    // unos 3 mm por fuera, para que ni se meta dentro (parches negros por
+    // z-fighting) ni tape la cara. La línea del pelo queda alta (theta ≤ 0.5π
+    // inclinado atrás) para no solaparse con el calco de la cara.
+    // Margen generoso: cráneo (0.084/0.106/0.096) → casco +8 mm → pinchos por
+    // fuera del casco. Con márgenes de milímetros el depth buffer (y el
+    // rasterizador de snapshots) no z-fightea.
+    const hairCap = (theta = 0.46) => {
+      const cap = new THREE.Mesh(new THREE.SphereGeometry(hs, 16, 12, 0, TAU, 0, Math.PI * theta), hairMat);
+      cap.scale.set(0.092, 0.114, 0.105);
+      cap.position.set(0, 0, -0.004 * hs);
+      return cap;
+    };
+
     const add = (mesh, bone = head, pos = headLocal) => {
       mesh.position.copy(pos);
       bone.add(mesh);
@@ -670,13 +674,12 @@ export class Humanoid {
         const grp = new THREE.Group();
         for (let i = 0; i < 11; i++) {
           const a = (i / 11) * TAU;
-          const spike = new THREE.Mesh(new THREE.ConeGeometry(0.026 * hs, 0.10 * hs, 5), hairMat);
-          spike.position.set(Math.cos(a) * 0.062 * hs, 0.055 * hs + Math.sin(i * 2.1) * 0.012 * hs, Math.sin(a) * 0.062 * hs);
+          const spike = new THREE.Mesh(new THREE.ConeGeometry(0.026 * hs, 0.12 * hs, 5), hairMat);
+          spike.position.set(Math.cos(a) * 0.070 * hs, 0.062 * hs + Math.sin(i * 2.1) * 0.012 * hs, Math.sin(a) * 0.070 * hs);
           spike.rotation.set(Math.sin(a) * 0.7, 0, -Math.cos(a) * 0.7);
           grp.add(spike);
         }
-        const cap = new THREE.Mesh(new THREE.SphereGeometry(0.094 * hs, 14, 10, 0, TAU, 0, Math.PI * 0.62), hairMat);
-        cap.scale.set(0.9, 1.05, 1.0);
+        const cap = hairCap(0.48);
         grp.add(cap);
         add(grp);
         break;
@@ -694,8 +697,7 @@ export class Humanoid {
       }
       case 'long': {
         const grp = new THREE.Group();
-        const cap = new THREE.Mesh(new THREE.SphereGeometry(0.099 * hs, 14, 10, 0, TAU, 0, Math.PI * 0.66), hairMat);
-        cap.scale.set(0.95, 1.05, 1.02);
+        const cap = hairCap(0.52);
         grp.add(cap);
         // Melena: cae por la espalda (se ancla al cuello para que acompañe)
         const tail = new THREE.Mesh(new THREE.CylinderGeometry(0.062 * hs, 0.030 * hs, 0.30 * hs, 10), hairMat);
@@ -708,7 +710,7 @@ export class Humanoid {
       }
       case 'ponytail': {
         const grp = new THREE.Group();
-        const cap = new THREE.Mesh(new THREE.SphereGeometry(0.096 * hs, 14, 10, 0, TAU, 0, Math.PI * 0.64), hairMat);
+        const cap = hairCap(0.50);
         grp.add(cap);
         const tail = new THREE.Mesh(new THREE.CylinderGeometry(0.026 * hs, 0.014 * hs, 0.26 * hs, 8), hairMat);
         tail.position.set(0, -0.10 * hs, -0.075 * hs);
@@ -719,14 +721,14 @@ export class Humanoid {
         break;
       }
       case 'flat': {
-        const cap = new THREE.Mesh(new THREE.SphereGeometry(0.097 * hs, 14, 8, 0, TAU, 0, Math.PI * 0.55), hairMat);
-        cap.scale.set(0.98, 0.82, 1.0);
+        const cap = hairCap(0.42);
+        cap.scale.set(0.092, 0.098, 0.105);
         add(cap);
         break;
       }
       case 'mask': {
-        const cap = new THREE.Mesh(new THREE.SphereGeometry(0.100 * hs, 16, 12), hairMat);
-        cap.scale.set(0.9, 1.06, 0.98);
+        const cap = hairCap(1.0);
+        cap.scale.set(0.094, 0.115, 0.106);
         add(cap);
         // Abertura de los ojos
         const slit = new THREE.Mesh(new THREE.BoxGeometry(0.14 * hs, 0.026 * hs, 0.02 * hs),

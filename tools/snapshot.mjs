@@ -123,6 +123,11 @@ if (POSE === 'punch' || POSE === 'kick') {
   fighter.stateFrame = +POSE.split(':')[1];
   fighter.updateAnim();
   step(1);
+} else if (POSE === 'face') {
+  fighter.state = 'intro';          // brazos colgando: la cara queda despejada
+  fighter.stateFrame = 8;
+  fighter.updateAnim();
+  step(2);
 } else if (POSE === 'hit') {
   fighter.state = 'hitstun';
   fighter.stateFrame = 6;
@@ -146,6 +151,8 @@ if (POSE === 'punch' || POSE === 'kick') {
 
 } // fin del else de "raw:"
 
+if (process.env.HIDE_DECAL && rig.humanoid && rig.humanoid.faceDecal) rig.humanoid.faceDecal.visible = false;
+if (process.env.HIDE_EXTRAS && rig.humanoid) rig.humanoid.extras.traverse((o) => { o.visible = false; });
 rig.root.updateMatrixWorld(true);
 rig.skeleton.update();
 
@@ -192,8 +199,9 @@ for (let i = 0; i < pos.count; i++) {
 
 const camera = new THREE.PerspectiveCamera(38, W / H, 0.05, 60);
 if (POSE.startsWith('raw:')) camera.position.set(0.35, 1.15, 4.1);
+else if (POSE === 'face') camera.position.set(0.55, rig.bp.Head[1] + 0.12, 0.55);  // primer plano
 else camera.position.set(4.1, 1.15, 0.35);   // el rig mira a +X
-camera.lookAt(0, 1.0, 0);
+camera.lookAt(0, POSE === 'face' ? rig.bp.Head[1] + 0.10 : 1.0, 0);
 camera.updateMatrixWorld();
 camera.updateProjectionMatrix();
 const mvp = new THREE.Matrix4().multiplyMatrices(camera.projectionMatrix, camera.matrixWorldInverse);
@@ -269,7 +277,8 @@ for (let t = 0; t < idx.count; t += 3) {
 rig.root.updateMatrixWorld(true);
 const extras = [];
 rig.root.traverse((o) => {
-  if (o.isMesh && o !== rig.mesh && o !== rig.shadow) extras.push(o);
+  if (o.isMesh && o !== rig.mesh && o !== rig.shadow && o.visible &&
+      (!o.material.transparent || o.material.opacity > 0.05)) extras.push(o);
 });
 const wp = new THREE.Vector3(), wn = new THREE.Vector3();
 for (const ex of extras) {

@@ -14,7 +14,7 @@
 import * as THREE from '../../vendor/three.module.min.js';
 import { Humanoid, WORLD_HEIGHT } from './humanoid.js';
 import { JOINTS } from '../anim/skeleton-def.js';
-import { NJ, sampleClip, blendToQuats, rotationsToQuats, smoothstep } from '../anim/clip.js';
+import { NJ, sampleClip, blendToQuats, rotationsToQuats, smoothstep, ANIM_JOINTS } from '../anim/clip.js';
 import { planAnimation } from '../anim/library.js';
 
 const IDQ = new THREE.Quaternion();
@@ -24,6 +24,26 @@ const clamp = (v, a, b) => (v < a ? a : v > b ? b : v);
 const _v1 = new THREE.Vector3(), _v2 = new THREE.Vector3(), _v3 = new THREE.Vector3();
 const _vA = new THREE.Vector3(), _vB = new THREE.Vector3(), _vC = new THREE.Vector3();
 const _q1 = new THREE.Quaternion(), _q2 = new THREE.Quaternion(), _q3 = new THREE.Quaternion();
+const _qId = new THREE.Quaternion();
+
+/* Atenuación de columna por clip: el retroceso capturado encorva demasiado
+ * el torso con nuestras proporciones y los brazos salen disparados atrás.
+ * Se escala la rotación muestreada antes de convertirla a cuaterniones. */
+const CLIP_SPINE_DAMP = {
+  hitReact: { LowerBack: 0.45, Spine: 0.4, Spine1: 0.4, Neck: 0.6, Head: 0.55 }
+};
+const dampIdx = {};
+function dampRot(rot, clip) {
+  const t = CLIP_SPINE_DAMP[clip];
+  if (!t) return;
+  for (const name in t) {
+    let i = dampIdx[name];
+    if (i === undefined) i = dampIdx[name] = ANIM_JOINTS.indexOf(name);
+    if (i < 0) continue;
+    const k = t[name];
+    rot[i * 3] *= k; rot[i * 3 + 1] *= k; rot[i * 3 + 2] *= k;
+  }
+}
 const _pole = new THREE.Vector3();
 /* Scratch exclusivo del IK: no comparte vectores con el resto del rig. */
 const _t = new THREE.Vector3(), _p = new THREE.Vector3();
@@ -42,10 +62,12 @@ function guardFor(rig) {
   const chin = rig.bp.Head[1] - 0.06 * s;
   const chest = rig.bp.Spine1[1];
   return {
-    handL: [0.16 * s, chin, 0.24 * s],
-    handR: [-0.14 * s, chin - 0.03 * s, 0.27 * s],
-    elbowL: [0.24 * s, chest, 0.05 * s],
-    elbowR: [-0.23 * s, chest - 0.02 * s, 0.06 * s]
+    // Manos por delante de la barbilla pero separadas de la cara, codos
+    // cerrados abajo: guardia de boxeo legible, no "sujetándose la cabeza".
+    handL: [0.19 * s, chin - 0.06 * s, 0.30 * s],
+    handR: [-0.17 * s, chin - 0.09 * s, 0.32 * s],
+    elbowL: [0.24 * s, chest - 0.02 * s, 0.09 * s],
+    elbowR: [-0.23 * s, chest - 0.04 * s, 0.10 * s]
   };
 }
 
@@ -126,8 +148,10 @@ export class Rig {
     }
 
     const okA = sampleClip(this.cur.clip, this.cur.frame, this.rotA, this.rootA);
+    if (okA) dampRot(this.rotA, this.cur.clip);
     if (okA && this.prev) {
       if (sampleClip(this.prev.clip, this.prev.frame, this.rotB, this.rootB)) {
+        dampRot(this.rotB, this.prev.clip);
         blendToQuats(this.rotB, this.rotA, w, this.quats);
         for (let i = 0; i < 3; i++) this.rootB[i] = this.rootB[i] + (this.rootA[i] - this.rootB[i]) * w;
         this.rootA.set(this.rootB);
@@ -162,6 +186,7 @@ export class Rig {
     this.applyIntroBow(f);
     this.applyRecoil(f, dt);
     this.applyGuard(f, plan, dt);
+    this.applyHitPose(f, plan, dt);
     this.applyStance(f, plan);
     this.applyLookAt(f, opponent);
     this.fixGround();
@@ -278,6 +303,40 @@ export class Rig {
     }
   }
 
+  /* --- hitstun: torso erguido y brazos en guardia --------------------- */
+
+  /**
+   * El recoil capturado deja la columna doblada y los brazos volando hacia
+   * atrás (postura "de pollo"). Además del damp de columna aplicado al
+   * muestrear, recolocamos los brazos en guardia con el mismo IK de dos
+   * huesos que usa la defensa, para que el daño se lea humano y marcial.
+   */
+  applyHitPose(f, plan, dt) {
+    if (plan.clip !== 'hitReact') return;
+    this.bones.LowerBack.quaternion.slerp(_qId, 0.25);
+    this.bones.Spine.quaternion.slerp(_qId, 0.30);
+    this.bones.Neck.quaternion.slerp(_qId, 0.25);
+    // Guardia con IK de polo PURO en el pecho: el mocap de dolor abre los
+    // brazos, y si el pole se mezcla con la mano actual el codo se va por
+    // fuera y la guardia no cierra.
+    const gw = Math.max(plan.guard || 0, 0.9);
+    const GUARD = guardFor(this);
+    for (const side of ['L', 'R']) {
+      const shoulder = this.bones[side === 'L' ? 'LeftArm' : 'RightArm'];
+      const elbow = this.bones[side === 'L' ? 'LeftForeArm' : 'RightForeArm'];
+      const hand = this.bones[side === 'L' ? 'LeftHand' : 'RightHand'];
+      if (!hand) continue;
+      const g = GUARD[`hand${side}`];
+      const pe = GUARD[`elbow${side}`];
+      _v1.set(g[0], g[1], g[2]);
+      this.body.localToWorld(_v1);
+      _pole.set(pe[0], pe[1], pe[2]);     // pole puro: codo pegado al costado
+      this.body.localToWorld(_pole);
+      this.aimChain(shoulder, elbow, hand, _v1, _pole, gw);
+      this.body.updateMatrixWorld(true);
+    }
+  }
+
   /* --- anchura de postura -------------------------------------------- */
 
   /**
@@ -294,7 +353,7 @@ export class Rig {
     let w = 0;
     if (up.includes(pose)) {
       w = pose === 'idle' || pose === 'dizzy' || pose.startsWith('block') || pose === 'parry'
-        ? 0.9 : 0.6;
+        ? 0.9 : pose.startsWith('hit') ? 0.85 : 0.6;
     }
     if (w <= 0.01 || f.airborne) return;
 

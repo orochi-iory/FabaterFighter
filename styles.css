@@ -395,3 +395,18 @@ html, body {
   .info-panel { grid-template-columns: 84px 1fr; }
   .info-panel canvas { width: 84px; height: 84px; }
 }
+
+/* Sello de build (esquina inferior derecha) */
+.build-tag {
+  position: fixed;
+  right: 8px;
+  bottom: 6px;
+  font: 11px/1.5 ui-monospace, Menlo, Consolas, monospace;
+  color: rgba(255, 255, 255, 0.5);
+  background: rgba(0, 0, 0, 0.38);
+  padding: 2px 9px;
+  border-radius: 4px;
+  letter-spacing: 0.04em;
+  z-index: 40;
+  pointer-events: none;
+}

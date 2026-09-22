@@ -278,6 +278,21 @@ for (const [name, cfg] of Object.entries(CLIPS)) {
   }
   const yawC = Math.cos(yaw), yawS = Math.sin(yaw);
 
+  // --- Resta del reposo del actor -------------------------------------------
+  // Las rotaciones locales del BVH se copiaban absolutas, y con ellas se
+  // colaba la postura habitual del sujeto (encorvado, agachado, cuello
+  // adelante: el aspecto "de pollo"). Restamos como delta de cuaterniones la
+  // pose del primer fotograma de la ventana (el actor aún está en su base),
+  // para que cada clip aporte solo el MOVIMIENTO sobre nuestro bind.
+  // wakeup empieza tumbado: restarlo lo rompería.
+  const restInv = keepIdx.map((jn, j) => {
+    const q = new THREE.Quaternion();
+    if (jn === 'Hips' || name === 'wakeup') return q;   // identidad
+    const m = rotCh[j];
+    _e.set(data[m.Xrotation] * RAD, data[m.Yrotation] * RAD, data[m.Zrotation] * RAD, 'ZYX');
+    return q.setFromEuler(_e).invert();
+  });
+
   // --- Retargeting de la raíz -------------------------------------------------
   // El actor capturado tiene OTRAS proporciones (en CMU las piernas son mucho
   // más largas que las de nuestro esqueleto), así que no podemos copiar la
@@ -330,9 +345,14 @@ for (const [name, cfg] of Object.entries(CLIPS)) {
     }
     for (let j = 0; j < keepIdx.length; j++) {
       const m = rotCh[j];
-      buf[o + 3 + j * 3 + 0] = Math.round(data[f * bvh.nChannels + m.Zrotation] * ROT_SCALE);
-      buf[o + 3 + j * 3 + 1] = Math.round(data[f * bvh.nChannels + m.Yrotation] * ROT_SCALE);
-      buf[o + 3 + j * 3 + 2] = Math.round(data[f * bvh.nChannels + m.Xrotation] * ROT_SCALE);
+      _e.set(data[f * bvh.nChannels + m.Xrotation] * RAD,
+             data[f * bvh.nChannels + m.Yrotation] * RAD,
+             data[f * bvh.nChannels + m.Zrotation] * RAD, 'ZYX');
+      _q.setFromEuler(_e).premultiply(restInv[j]);       // delta sobre el reposo
+      _e.setFromQuaternion(_q, 'ZYX');
+      buf[o + 3 + j * 3 + 0] = Math.round(_e.z / RAD * ROT_SCALE);
+      buf[o + 3 + j * 3 + 1] = Math.round(_e.y / RAD * ROT_SCALE);
+      buf[o + 3 + j * 3 + 2] = Math.round(_e.x / RAD * ROT_SCALE);
     }
   }
 

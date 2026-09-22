@@ -4,6 +4,7 @@
  */
 
 import { MAX_STUN, MAX_GUARD, METER_PER_STOCK, MAX_STOCKS } from '../game/constants.js';
+import { BUILD } from '../version.js';
 
 const SIDES = ['p1', 'p2'];
 
@@ -60,6 +61,14 @@ export class HUD {
     ann.className = 'announce';
     this.root.appendChild(ann);
     this.el.announce = ann;
+
+    // Sello de build: permite comprobar de un vistazo qué versión corre.
+    const tag = document.createElement('div');
+    tag.className = 'build-tag';
+    tag.textContent = `${BUILD.tag} · build ${BUILD.commit} · ${BUILD.date}`;
+    tag.title = BUILD.notes;
+    this.root.appendChild(tag);
+    this.el.buildTag = tag;
   }
 
   setNames(f1, f2) {
