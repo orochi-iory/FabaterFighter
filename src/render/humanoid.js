@@ -475,8 +475,9 @@ export class Humanoid {
         this.ball(g, [dx * chestX * 0.40, pecY - 0.015 * this.s, chestZ * 0.78], chestX * 0.34, gi,
           [this.boneIndex.Spine1], [1], [1, 0.85, 0.85], 10);
       } else {
-        this.ball(g, [dx * chestX * 0.45, pecY, chestZ * 0.62], chestX * 0.42, gi,
-          [this.boneIndex.Spine1], [1], [1, 0.72, 0.72], 10);
+        // Pectorales planos y pegados al torso: volumen sin parecer pecho.
+        this.ball(g, [dx * chestX * 0.48, pecY, chestZ * 0.40], chestX * 0.30, gi,
+          [this.boneIndex.Spine1], [1], [1.1, 0.5, 0.45], 10);
       }
     }
   }

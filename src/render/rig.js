@@ -136,7 +136,9 @@ export class Rig {
       this.prev = { clip: this.cur.clip, frame: this.cur.frame };
       this.cur.clip = plan.clip;
       this.fade = 0;
-      this.fadeDur = plan.attack ? 0.07 : 0.15;
+      // Fundidos más largos en transiciones de estado (evitan el "pop"
+      // entre poses); los golpes mantienen el corte seco de 0.07 s.
+      this.fadeDur = plan.attack ? 0.07 : 0.22;
     }
     this.cur.frame = plan.frame;
     let w = 1;

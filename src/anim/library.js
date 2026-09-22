@@ -112,13 +112,17 @@ export function attackFrame(move, moveFrame) {
   }
   if (moveFrame < move.startup) {
     const t = move.startup > 0 ? moveFrame / move.startup : 1;
-    return { name, frame: t * imp };
+    // Anticipación con ease-in: el viento arranca lento y acelera hacia el
+    // impacto, como en animación pose-a-pose (el golpe "chasquea").
+    return { name, frame: t * t * (0.6 + 0.4 * t) * imp };
   }
   const rest = moveFrame - move.startup;
   const restTotal = move.active + move.recovery;
   // Se permite rebasar un poco el final: el golpe puede seguir sonando tras el recovery.
   const t = restTotal > 0 ? Math.min(1.15, rest / restTotal) : 1;
-  return { name, frame: Math.min(len - 1, imp + t * (len - 1 - imp)) };
+  // Follow-through con ease-out: sale disparado del impacto y asienta despacio.
+  const te = t < 1 ? 1 - (1 - t) * (1 - t) : t;
+  return { name, frame: Math.min(len - 1, imp + te * (len - 1 - imp)) };
 }
 
 /** Velocidad de avance (unidades/frame) a partir de la cual se considera andando. */

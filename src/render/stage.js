@@ -83,7 +83,7 @@ export class Stage {
     if (floorTex) floorMat.map = floorTex;
     const floor = new THREE.Mesh(new THREE.PlaneGeometry(40, 26), floorMat);
     floor.rotation.x = -Math.PI / 2;
-    floor.position.set(0, 0, 0);
+    floor.position.set(0, -0.18, 0);   // el suelo exterior queda bajo la tarima
     floor.receiveShadow = true;
     g.add(floor);
 
@@ -117,14 +117,14 @@ export class Stage {
     const platformMat = new THREE.MeshStandardMaterial({ color: 0x8a6a4e, roughness: 0.72 });
     if (woodTex) platformMat.map = woodTex;
     const platform = new THREE.Mesh(new THREE.BoxGeometry(18, 0.18, 6), platformMat);
-    platform.position.set(0, 0.09, 0);
+    platform.position.set(0, -0.09, 0);  // superficie de combate en y=0
     platform.receiveShadow = true;
     g.add(platform);
     const edge = new THREE.Mesh(
       new THREE.BoxGeometry(18.3, 0.08, 6.3),
       new THREE.MeshStandardMaterial({ color: 0xc9a227, roughness: 0.35, metalness: 0.6, emissive: 0x332200 })
     );
-    edge.position.set(0, 0.02, 0);
+    edge.position.set(0, -0.05, 0);
     g.add(edge);
     // Emblema pintado en el centro del tatami
     const emblemTex = canvasTexture(256, (ctx, s) => {
@@ -155,7 +155,7 @@ export class Stage {
           depthWrite: false, polygonOffset: true, polygonOffsetFactor: -3
         }));
       emblem.rotation.x = -Math.PI / 2;
-      emblem.position.set(0, 0.185, 0);
+      emblem.position.set(0, 0.006, 0);
       emblem.renderOrder = 1;
       g.add(emblem);
     }
@@ -174,24 +174,24 @@ export class Stage {
     for (let i = -3; i <= 3; i++) {
       const x = i * 5.6;
       const col = new THREE.Mesh(new THREE.CylinderGeometry(0.42, 0.5, 9, 12), colMat);
-      col.position.set(x, 4.5, -7.6);
+      col.position.set(x, 4.32, -7.6);
       g.add(col);
       const cap = new THREE.Mesh(new THREE.BoxGeometry(1.5, 0.4, 1.5), capMat);
-      cap.position.set(x, 9.1, -7.6);
+      cap.position.set(x, 8.92, -7.6);
       g.add(cap);
       const base = new THREE.Mesh(new THREE.BoxGeometry(1.4, 0.5, 1.4), capMat);
-      base.position.set(x, 0.25, -7.6);
+      base.position.set(x, 0.07, -7.6);
       g.add(base);
     }
 
     // Tejado
     const roof = new THREE.Mesh(new THREE.BoxGeometry(46, 0.8, 4),
       new THREE.MeshStandardMaterial({ color: 0x1b1526, roughness: 0.9 }));
-    roof.position.set(0, 9.8, -7.6);
+    roof.position.set(0, 9.62, -7.6);
     g.add(roof);
     const roof2 = new THREE.Mesh(new THREE.BoxGeometry(48, 0.6, 3),
       new THREE.MeshStandardMaterial({ color: 0x2a2038 }));
-    roof2.position.set(0, 10.6, -7.0);
+    roof2.position.set(0, 10.42, -7.0);
     roof2.rotation.x = -0.12;
     g.add(roof2);
 
@@ -301,7 +301,7 @@ export class Stage {
       const col = i % 26;
       const d = {
         x: -12.5 + col * 1.0 + Math.random() * 0.3,
-        y: 0.5 + row * 0.75,
+        y: 0.18 + row * 0.75,
         z: -5.5 - row * 1.1,
         rot: Math.random() * 0.6 - 0.3,
         sc: 0.9 + Math.random() * 0.3
@@ -333,7 +333,7 @@ export class Stage {
     for (const s of [-1, 1]) {
       const fence = new THREE.Mesh(new THREE.BoxGeometry(0.5, 3.4, 12),
         new THREE.MeshStandardMaterial({ color: 0x2d2440, roughness: 0.9 }));
-      fence.position.set(s * 13.5, 1.7, -2);
+      fence.position.set(s * 13.5, 1.52, -2);
       g.add(fence);
     }
 

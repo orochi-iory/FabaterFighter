@@ -1130,8 +1130,12 @@ export function resolveThrow(attacker, defender, move, match) {
   }
 }
 
-/** Empuje entre cuerpos: los luchadores no se atraviesan. */
+/** Empuje entre cuerpos: los luchadores no se atraviesan… salvo en el aire
+ * o con uno derribado: el cross-up (saltar por encima del rival) es
+ * fundamental en los VS y exige que los cuerpos puedan cruzarse. */
 export function separateFighters(a, b) {
+  const down = (f) => f.state === STATE.KNOCKDOWN || f.state === STATE.KO || f.state === STATE.WAKEUP;
+  if (a.airborne || b.airborne || down(a) || down(b)) return;
   const minDist = (a.pushbox.half + b.pushbox.half) * 0.98;
   const d = b.x - a.x;
   const abs = Math.abs(d);

@@ -4,8 +4,8 @@
  * (lo rellena con el commit HEAD y la fecha actuales) antes de cada entrega.
  */
 export const BUILD = {
-  tag: 'v0.10',
-  commit: '7879d1e',
+  tag: 'v0.11',
+  commit: '66865f2',
   date: '2026-09-23',
-  notes: 'Caras limpias, pelo sin z-fighting, mocap sin joroba, guardia en hitstun, sello de build en HUD'
+  notes: 'Cross-up aéreo, suelo corregido, pecho plano, retiming de golpes con anticipacion y follow-through'
 };
