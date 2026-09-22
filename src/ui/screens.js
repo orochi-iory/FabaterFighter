@@ -325,6 +325,7 @@ function controlsHTML() {
     <h4>JUGADOR 1</h4>
     <table>
       <tr><td class="cmd">W A S D</td><td>Moverse / saltar / agacharse</td></tr>
+      <tr><td class="cmd">← (mantener)</td><td>BLOQUEO alto/medio · ↓ + ← = bajo</td></tr>
       <tr><td class="cmd">J K L ;</td><td>LP · LK · HP · HK</td></tr>
       <tr><td class="cmd">U / I</td><td>Especial 1 / Especial 2</td></tr>
       <tr><td class="cmd">O</td><td>SUPER (gasta 1 stock)</td></tr>
@@ -340,6 +341,7 @@ function controlsHTML() {
     <h4>JUGADOR 2</h4>
     <table>
       <tr><td class="cmd">FLECHAS</td><td>Moverse</td></tr>
+      <tr><td class="cmd">← (mantener)</td><td>BLOQUEO alto/medio · ↓ + ← = bajo</td></tr>
       <tr><td class="cmd">7 8 9 0</td><td>LP · LK · HP · HK (o Numpad 1-4)</td></tr>
       <tr><td class="cmd">- / =</td><td>Especial 1 / Especial 2 (o Numpad 7-8)</td></tr>
       <tr><td class="cmd">\\</td><td>SUPER (o Numpad 9)</td></tr>
@@ -349,6 +351,7 @@ function controlsHTML() {
     <h4>MANDO</h4>
     <table>
       <tr><td class="cmd">Stick / cruceta</td><td>Moverse</td></tr>
+      <tr><td class="cmd">Lejos del rival</td><td>BLOQUEO alto/medio · abajo + atrás = bajo</td></tr>
       <tr><td class="cmd">◻ ✕ ◯ △</td><td>LP LK HP HK</td></tr>
       <tr><td class="cmd">L1 / R1</td><td>Especial 1 / 2</td></tr>
       <tr><td class="cmd">R2 / L2 / OPTIONS</td><td>SUPER / MAX / Pausa</td></tr>

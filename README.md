@@ -29,6 +29,8 @@ No hace falta compilar nada: `index.html` carga módulos ES nativos y Three.js v
 | Especial 1 / Especial 2 | `U` / `I` | `-` / `=` | RB / RT |
 | SUPER (gasta 1 stock) | `O` | `\` | START+ |
 | Modo MAX (gasta 1 stock) | `P` | `Backspace` | LT |
+| **Bloqueo alto/medio** (mantener atrás) | mantener `←` | igual | stick lejos del rival |
+| **Bloqueo bajo** (mantener atrás + abajo) | `↓`+`←` | igual | abajo + lejos del rival |
 | Guard Cancel Roll (bloqueando) | `[` | `` ` `` | LB |
 | Parry alto / bajo | tap `→` / tap `↓` | tap `→` / tap `↓` | tap cruceta |
 | Dash / backdash | `→ →` / `← ←` | igual | doble tap |

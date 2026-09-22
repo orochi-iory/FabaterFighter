@@ -32,13 +32,22 @@ const _aDir = new THREE.Vector3(), _aPole = new THREE.Vector3(), _aMid = new THR
 const _sO = new THREE.Vector3(), _sA = new THREE.Vector3(), _sB = new THREE.Vector3();
 const _sQ = new THREE.Quaternion(), _sP = new THREE.Quaternion(), _sP2 = new THREE.Quaternion();
 
-/** Pose de guardia: dónde van las manos y los codos (en espacio local del rig). */
-const GUARD = {
-  handL: [0.155, 1.44, 0.235],
-  handR: [-0.135, 1.40, 0.275],
-  elbowL: [0.235, 1.10, 0.045],
-  elbowR: [-0.225, 1.08, 0.055]
-};
+/**
+ * Pose de guardia adaptada al cuerpo de cada luchador: las manos van a la
+ * barbilla y los codos al pecho, leídos del propio esqueleto en reposo (bp),
+ * para que funcione igual en Sera (1.71 m) que en Magnus (2.05 m).
+ */
+function guardFor(rig) {
+  const s = rig.height / WORLD_HEIGHT;
+  const chin = rig.bp.Head[1] - 0.06 * s;
+  const chest = rig.bp.Spine1[1];
+  return {
+    handL: [0.16 * s, chin, 0.24 * s],
+    handR: [-0.14 * s, chin - 0.03 * s, 0.27 * s],
+    elbowL: [0.24 * s, chest, 0.05 * s],
+    elbowR: [-0.23 * s, chest - 0.02 * s, 0.06 * s]
+  };
+}
 
 export class Rig {
   constructor(def) {
@@ -218,6 +227,7 @@ export class Rig {
     if (gw <= 0.01) return;
 
     const s = this.height / WORLD_HEIGHT;
+    const GUARD = guardFor(this);
     // Objetivo: mezcla entre la mano del mocap y la mano en guardia
     for (const side of ['L', 'R']) {
       const shoulder = this.bones[side === 'L' ? 'LeftArm' : 'RightArm'];
@@ -227,9 +237,9 @@ export class Rig {
 
       const g = GUARD[`hand${side}`];
       const pe = GUARD[`elbow${side}`];
-      _v1.set(g[0] * s, g[1] * s, g[2] * s);
+      _v1.set(g[0], g[1], g[2]);
       this.body.localToWorld(_v1);
-      _v2.set(pe[0] * s, pe[1] * s, pe[2] * s);
+      _v2.set(pe[0], pe[1], pe[2]);
       this.body.localToWorld(_v2);
 
       hand.getWorldPosition(_v3);
@@ -252,13 +262,18 @@ export class Rig {
    */
   applyStance(f, plan) {
     const pose = f.anim ? f.anim.pose : 'idle';
+    // Solo en estados de pie: tumbado o volando el IK de pies estorbaría.
+    const up = ['idle', 'dizzy', 'blockHigh', 'blockLow', 'parry', 'hitHigh', 'hitLow',
+      'walkF', 'walkB', 'walkSide', 'run'];
     let w = 0;
-    if (plan.loop) w = pose === 'idle' || pose === 'dizzy' ? 0.9 : 0.55;
-    else if (pose === 'blockHigh' || pose === 'blockLow' || pose === 'parry') w = 0.9;
+    if (up.includes(pose)) {
+      w = pose === 'idle' || pose === 'dizzy' || pose.startsWith('block') || pose === 'parry'
+        ? 0.9 : 0.6;
+    }
     if (w <= 0.01 || f.airborne) return;
 
     const s = this.height / WORLD_HEIGHT;
-    const widen = 0.11 * s;
+    const widen = 0.12 * s * (0.5 + 0.5 * (this.legLen || 1));
     for (const side of ['L', 'R']) {
       const upleg = this.bones[side === 'L' ? 'LeftUpLeg' : 'RightUpLeg'];
       const leg = this.bones[side === 'L' ? 'LeftLeg' : 'RightLeg'];

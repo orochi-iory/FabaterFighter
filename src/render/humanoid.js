@@ -102,6 +102,8 @@ export class Humanoid {
     const b = this.body;
     this.heightMul = this.body.height || 1;
     this.bulk = b.bulk || 1;
+    this.legLen = b.legLen || 1;
+    this.armLen = b.armLen || 1;
     this.s = UNIT * this.heightMul;
 
     // Posiciones en reposo de cada articulación (espacio común de skinning).
@@ -318,7 +320,9 @@ export class Humanoid {
       const thighLen = Math.hypot(knee[1] - hip[1], knee[0] - hip[0]);
       const shinLen = Math.hypot(ankle[1] - knee[1], ankle[0] - knee[0]);
 
-      const wide = 0.052 + 0.030 * (bulk - 1) + 0.010;
+      // El grosor crece con el tamaño y con la longitud de pierna: una pierna
+      // un 20 % más larga con el mismo radio parecería un fideo.
+      const wide = (0.052 + 0.030 * (bulk - 1) + 0.010) * this.s * Math.sqrt(this.legLen);
       // Muslo: grueso arriba, más fino en la rodilla
       this.loft(g, hip, [knee[0] - hip[0], knee[1] - hip[1], 0], [
         { d: 0.00, rx: wide * 1.25, rz: wide * 1.20, color: pants, ...this.legW(side, 0) },
@@ -456,7 +460,7 @@ export class Humanoid {
       const dir = Math.sign(el[0] - sh[0]) || 1;
       const upLen = Math.abs(el[0] - sh[0]);
       const foreLen = Math.abs(wr[0] - el[0]);
-      const rUp = (0.050 + 0.016 * (bulk - 1)) * this.s;
+      const rUp = (0.050 + 0.016 * (bulk - 1)) * this.s * Math.sqrt(this.armLen);
       const rFore = rUp * 0.82;
 
       // Brazo: bíceps lleno, codo más estrecho

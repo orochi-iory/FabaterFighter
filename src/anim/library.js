@@ -70,6 +70,8 @@ export const GUARD_WEIGHT = {
   idle: 1,
   walkF: 1, walkB: 1, walkSide: 1, run: 0.75,
   blockHigh: 1, blockLow: 1, parry: 1,
+  // Encajar un golpe no tira los brazos al suelo: se cubre la cara.
+  hitHigh: 0.7, hitLow: 0.7, launched: 0.45, guardcrush: 0.3,
   dizzy: 0.35,
   intro: 0.5,
   win: 0, salute: 0,

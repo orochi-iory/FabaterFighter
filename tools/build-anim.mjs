@@ -81,7 +81,7 @@ const CLIPS = {
   spin:        { file: '144_28', win: 1, lead: 26, follow: 32 },
   lunge:       { file: '144_17', win: 15, lead: 24, follow: 30 },
   // --- Reacciones ---
-  hitReact:    { file: '90_16',  win: 0, lead: 8,  follow: 22 },
+  hitReact:    { file: '23_12',  win: 1, lead: 12, follow: 30 },
   knockdown:   { file: '90_16',  win: 0, full: true },
   wakeup:      { file: '140_08', win: 1, full: true },
   // --- Ceremonia ---
