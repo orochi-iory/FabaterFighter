@@ -154,7 +154,7 @@ export function planAnimation(fighter, clock = 0) {
   const len = clipFrames(clip);
   // Los bucles avanzan con `rate`; lo demás se mide en fotogramas de estado.
   const isLoop = clip === 'idle' || clip === 'walkF' || clip === 'walkB' ||
-    clip === 'walkSide' || clip === 'run' || clip === 'breathe';
+    clip === 'walkSide' || clip === 'run';
 
   if (isLoop) {
     frame = clock;

@@ -28,8 +28,9 @@ get 074 74_03;  get 074 74_04;  get 074 74_05;  get 074 74_06
 get 076 76_01;  get 002 02_05;  get 111 111_19; get 141 141_14; get 075 75_16
 echo "Defensa"
 get 144 144_07; get 144 144_26
-echo "Locomoción"
-get 144 144_33; get 111 111_01; get 111 111_26; get 111 111_28
+echo "Reposo y locomoción"
+get 077 77_03
+get 144 144_33; get 111 111_01; get 111 111_26
 get 140 140_06; get 141 141_04; get 111 111_23
 echo "Reacciones y ceremonia"
 get 111 111_12; get 140 140_08; get 090 90_16; get 111 111_02; get 144 144_30

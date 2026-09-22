@@ -152,6 +152,7 @@ export class Rig {
     this.applyBreathing(f);
     this.applyRecoil(f, dt);
     this.applyGuard(f, plan, dt);
+    this.applyStance(f, plan);
     this.applyLookAt(f, opponent);
     this.fixGround();
 
@@ -237,6 +238,40 @@ export class Rig {
       _pole.copy(_v2).lerp(_v3, (1 - gw) * 0.6);
 
       this.aimChain(shoulder, elbow, hand, _v1, _pole, gw);
+      this.body.updateMatrixWorld(true);
+    }
+  }
+
+  /* --- anchura de postura -------------------------------------------- */
+
+  /**
+   * Los actores capturados suelen apoyar los pies en una línea (paso de
+   * modelo). Una postura de combate necesita anchura lateral: desplazamos cada
+   * pie hacia su lado con el mismo IK de dos huesos, partiendo de la posición
+   * que ya trae el mocap para no romper la zancada al andar.
+   */
+  applyStance(f, plan) {
+    const pose = f.anim ? f.anim.pose : 'idle';
+    let w = 0;
+    if (plan.loop) w = pose === 'idle' || pose === 'dizzy' ? 0.9 : 0.55;
+    else if (pose === 'blockHigh' || pose === 'blockLow' || pose === 'parry') w = 0.9;
+    if (w <= 0.01 || f.airborne) return;
+
+    const s = this.height / WORLD_HEIGHT;
+    const widen = 0.11 * s;
+    for (const side of ['L', 'R']) {
+      const upleg = this.bones[side === 'L' ? 'LeftUpLeg' : 'RightUpLeg'];
+      const leg = this.bones[side === 'L' ? 'LeftLeg' : 'RightLeg'];
+      const foot = this.bones[side === 'L' ? 'LeftFoot' : 'RightFoot'];
+      if (!foot) continue;
+      foot.getWorldPosition(_v1);
+      this.body.worldToLocal(_v1);
+      _v1.x += side === 'L' ? widen : -widen;          // ensanche lateral local
+      this.body.localToWorld(_v1);
+      // rodilla mirando al frente
+      _v2.set(side === 'L' ? 0.12 * s : -0.12 * s, 0.55 * s, 0.3 * s);
+      this.body.localToWorld(_v2);
+      this.aimChain(upleg, leg, foot, _v1, _v2, w);
       this.body.updateMatrixWorld(true);
     }
   }

@@ -17,6 +17,7 @@
  */
 import fs from 'node:fs';
 import path from 'node:path';
+import * as THREE from '../vendor/three.module.min.js';
 import { parseBVH, jointWorldPos } from './bvh.js';
 import { JOINTS } from '../src/anim/skeleton-def.js';
 
@@ -51,12 +52,11 @@ const DROP = new Set([
  */
 const CLIPS = {
   // --- Reposo y locomoción (rangos explícitos, en bucle) ---
-  idle:        { file: '111_28', range: [500, 860],  loop: true },
-  breathe:     { file: '140_06', range: [945, 1300], loop: true },
-  walkF:       { file: '144_33', range: [1400, 1740], loop: true },
+  idle:        { file: '77_03',  range: [480, 840],  loop: true },
+  walkF:       { file: '144_33', range: [603, 943],  loop: true },
   walkB:       { file: '111_01', range: [200, 560],  loop: true },
   walkSide:    { file: '111_26', range: [700, 1060], loop: true },
-  run:         { file: '111_23', range: [430, 700],  loop: true },
+  run:         { file: '111_23', range: [123, 393],  loop: true },
   jump:        { file: '141_04', range: [180, 420] },
   // --- Puñetazos ---
   jab:         { file: '144_20', win: 0, lead: 22, follow: 26 },
@@ -239,6 +239,46 @@ for (const [name, cfg] of Object.entries(CLIPS)) {
   // La raíz se guarda relativa al primer fotograma de la ventana.
   const p0 = posCh.map((c) => data[c]);
 
+  // --- Normalización de yaw ---------------------------------------------------
+  // Cada actor capturado mira a un azimut arbitrario (unos a +Z, otros a -X...).
+  // Medimos hacia dónde mira la cadera (Hips es la raíz del BVH: su rotación es
+  // la orientación mundial del cuerpo) y giramos todo el clip para que el
+  // "frente" quede en +Z, que es como el juego lo espera.
+  const RAD = Math.PI / 180;
+  const nCh = bvh.nChannels;
+  const hm = rotCh[0];   // Hips es la primera articulación conservada
+  const _q = new THREE.Quaternion(), _qy = new THREE.Quaternion();
+  const _e = new THREE.Euler(), _v = new THREE.Vector3();
+  const headAt = (f) => {
+    _e.set(data[f * nCh + hm.Xrotation] * RAD, data[f * nCh + hm.Yrotation] * RAD,
+      data[f * nCh + hm.Zrotation] * RAD, 'ZYX');
+    _q.setFromEuler(_e);
+    _v.set(0, 0, 1).applyQuaternion(_q);
+    return Math.atan2(_v.x, _v.z);
+  };
+  let phi;
+  if (cfg.loop) {
+    let sx = 0, sz = 0;
+    for (let f = 0; f < frames; f++) { const h = headAt(f); sx += Math.sin(h); sz += Math.cos(h); }
+    phi = Math.atan2(sx, sz);
+  } else {
+    phi = headAt(0);
+  }
+  const yaw = -phi;
+  if (Math.abs(yaw) > 0.02) {
+    _qy.setFromAxisAngle(_v.set(0, 1, 0), yaw);
+    for (let f = 0; f < frames; f++) {
+      _e.set(data[f * nCh + hm.Xrotation] * RAD, data[f * nCh + hm.Yrotation] * RAD,
+        data[f * nCh + hm.Zrotation] * RAD, 'ZYX');
+      _q.setFromEuler(_e).premultiply(_qy);
+      _e.setFromQuaternion(_q, 'ZYX');
+      data[f * nCh + hm.Zrotation] = _e.z / RAD;
+      data[f * nCh + hm.Yrotation] = _e.y / RAD;
+      data[f * nCh + hm.Xrotation] = _e.x / RAD;
+    }
+  }
+  const yawC = Math.cos(yaw), yawS = Math.sin(yaw);
+
   // --- Retargeting de la raíz -------------------------------------------------
   // El actor capturado tiene OTRAS proporciones (en CMU las piernas son mucho
   // más largas que las de nuestro esqueleto), así que no podemos copiar la
@@ -275,10 +315,18 @@ for (const [name, cfg] of Object.entries(CLIPS)) {
 
   for (let f = 0; f < frames; f++) {
     const o = f * stride;
+    // El desplazamiento horizontal de la raíz gira con el mismo yaw.
+    const rx0 = data[f * nCh + posCh[0]] - p0[0];
+    const rz0 = data[f * nCh + posCh[2]] - p0[2];
     for (let k = 0; k < 3; k++) {
-      const rel = k === 1
-        ? (hipsAbove[f] - rootRef) * UNIT * legRatio   // unidades BVH -> mundo, reescalado a nuestra pierna
-        : (data[f * bvh.nChannels + posCh[k]] - p0[k]) * UNIT;
+      let rel;
+      if (k === 1) {
+        rel = (hipsAbove[f] - rootRef) * UNIT * legRatio;   // unidades BVH -> mundo, reescalado a nuestra pierna
+      } else if (k === 0) {
+        rel = (rx0 * yawC + rz0 * yawS) * UNIT;
+      } else {
+        rel = (-rx0 * yawS + rz0 * yawC) * UNIT;
+      }
       buf[o + k] = Math.round(rel * POS_SCALE);
     }
     for (let j = 0; j < keepIdx.length; j++) {

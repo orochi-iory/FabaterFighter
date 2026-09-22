@@ -50,20 +50,26 @@ class Geo {
     return i;
   }
 
-  /** Une dos anillos consecutivos de `n` vértices. */
-  stitch(a, b, n) {
+  /**
+   * Une dos anillos consecutivos. `a` y `b` son los ARRAYS de índices devueltos
+   * al generar cada anillo (no su índice base): así no dependemos de que los
+   * vértices sean contiguos y no hay riesgo de concatenar strings por error.
+   */
+  stitch(a, b) {
+    const n = Math.min(a.length, b.length);
     for (let i = 0; i < n; i++) {
       const i2 = (i + 1) % n;
-      this.idx.push(a + i, b + i, b + i2, a + i, b + i2, a + i2);
+      this.idx.push(a[i], b[i2], b[i], a[i], a[i2], b[i2]);
     }
   }
 
-  /** Tapa un anillo con un abanico de triángulos hacia `center`. */
-  cap(ring, n, center, flip = false) {
+  /** Tapa un anillo con un abanico de triángulos hacia el vértice `center`. */
+  cap(ring, center, flip = false) {
+    const n = ring.length;
     for (let i = 0; i < n; i++) {
       const i2 = (i + 1) % n;
-      if (flip) this.idx.push(center, ring + i2, ring + i);
-      else this.idx.push(center, ring + i, ring + i2);
+      if (flip) this.idx.push(center, ring[i], ring[i2]);
+      else this.idx.push(center, ring[i2], ring[i]);
     }
   }
 
@@ -253,16 +259,17 @@ export class Humanoid {
       }
       rings.push(ring);
     }
-    for (let k = 0; k < rings.length - 1; k++) g.stitch(rings[k], rings[k + 1], radial);
+    for (let k = 0; k < rings.length - 1; k++) g.stitch(rings[k], rings[k + 1]);
     if (capEnds) {
       const first = points[0], last = points[points.length - 1];
-      const c0 = g.vert(...O.clone().addScaledVector(U, first.ou || 0).addScaledVector(V, first.ov || 0).toArray(),
+      const c0 = g.vert(...O.clone().addScaledVector(A, first.d)
+        .addScaledVector(U, first.ou || 0).addScaledVector(V, first.ov || 0).toArray(),
         first.color, first.b, first.w);
-      g.cap(rings[0], radial, c0, true);
+      g.cap(rings[0], c0, true);
       const Oe = O.clone().addScaledVector(A, last.d);
       const c1 = g.vert(...Oe.addScaledVector(U, last.ou || 0).addScaledVector(V, last.ov || 0).toArray(),
         last.color, last.b, last.w);
-      g.cap(rings[rings.length - 1], radial, c1, false);
+      g.cap(rings[rings.length - 1], c1, false);
     }
     return rings;
   }
@@ -286,11 +293,11 @@ export class Humanoid {
       }
       ringIdx.push(ring);
     }
-    for (let k = 0; k < ringIdx.length - 1; k++) g.stitch(ringIdx[k], ringIdx[k + 1], seg);
+    for (let k = 0; k < ringIdx.length - 1; k++) g.stitch(ringIdx[k], ringIdx[k + 1]);
     const top = g.vert(center[0], center[1] + r * squash[1], center[2], color, bones, weights);
-    g.cap(ringIdx[0], seg, top, true);
+    g.cap(ringIdx[0], top, true);
     const bot = g.vert(center[0], center[1] - r * squash[1], center[2], color, bones, weights);
-    g.cap(ringIdx[ringIdx.length - 1], seg, bot, false);
+    g.cap(ringIdx[ringIdx.length - 1], bot, false);
   }
 
   /* --- piernas ------------------------------------------------------ */

@@ -164,7 +164,7 @@ el blockstun. Los lanzamientos no se pueden parar.
 
 Los personajes **no están animados a mano**: se mueven con captura de movimiento real.
 
-**Datos.** 31 clips del [CMU Motion Capture Database](http://mocap.cs.cmu.edu/) —
+**Datos.** 30 clips del [CMU Motion Capture Database](http://mocap.cs.cmu.edu/) —
 puñetazos, patadas, bloqueos, caídas, caminar, correr, saltar y reverencias — descargados
 en BVH con `tools/fetch-mocap.sh` y horneados a `src/data/anims.js` (422 KB) con
 `tools/build-anim.mjs`, que recorta cada acción por picos de velocidad, remuestrea de
@@ -176,6 +176,15 @@ cadera al 54 % de la altura, envergadura ≈ altura). Como el actor capturado ti
 proporciones, la raíz no se copia tal cual: se guarda solo la variación de altura de
 cadera, reescalada a la longitud de pierna de cada luchador. Por eso Brutus (piernas
 cortas y 1.5 de corpulencia) apoya los pies en el suelo igual que Sera (1.71 m).
+Cada actor fue capturado mirando a un azimut arbitrario, así que el baker mide la
+orientación de su cadera y gira el clip completo (rotaciones de cadera y desplazamiento
+de raíz) para que el frente quede siempre en +Z; en los bucles se usa el azimut medio y
+en los golpes, el de la posición de guardia inicial. Las ventanas de caminar y correr se
+eligen además por rectitud de rumbo para que el bucle no tuerza.
+
+La selección de clips se verifica a ojo con `tools/snapshot.mjs`, un rasterizador por
+software (skinning en CPU + z-buffer + Lambert) que escribe PNG sin necesidad de GPU:
+`node tools/snapshot.mjs out.png kenji raw:walkF:40`.
 
 **Sincronización.** El fotograma de mayor velocidad de mano/pie de cada captura es el
 impacto, y el juego lo hace coincidir **exactamente** con el primer fotograma activo del
@@ -192,6 +201,9 @@ skinneado, codos, rodillas y cintura se doblan de forma continua.
 - **Guardia con IK analítico de dos huesos** (ley de los cosenos): las manos suben a la
   cara y se mezclan con la posición capturada, sin saltos.
 - **Mirada al rival**, respiración, balanceo de peso y retroceso al recibir.
+- **Ensanche de postura**: los actores apoyan los pies en una línea (paso de modelo),
+  así que el IK separa cada pie hacia su lado partiendo de la posición capturada, sin
+  romper la zancada al andar.
 - **Física de pelo y pañuelo** arrastrada por la velocidad.
 - Corrección de suelo para que los pies no atraviesen la tarima.
 
@@ -203,6 +215,7 @@ vendor/three.module.min.js     Three.js r169 (vendored, sin CDN)
 tools/serve.js                 servidor estático de 0 dependencias
 tools/fetch-mocap.sh           descarga los BVH de CMU (solo para regenerar anims)
 tools/build-anim.mjs           BVH -> src/data/anims.js
+tools/snapshot.mjs             rasterizador software: PNG de cualquier pose (sin GPU)
 src/
   game/      constants · input · fighter · match · ai      (motor puro, sin DOM ni Three)
   data/      moves · roster · anims                        (frame data, personajes, anim)

@@ -24,6 +24,9 @@ const { ROSTER } = await import('../src/data/roster.js');
 const { Fighter } = await import('../src/game/fighter.js');
 const { Match } = await import('../src/game/match.js');
 const { AI } = await import('../src/game/ai.js');
+const _rv = new (await import('../vendor/three.module.min.js')).Vector3();
+const _cp = new (await import('../vendor/three.module.min.js')).Vector3();
+const { JOINTS: JOINT_DEFS } = await import('../src/anim/skeleton-def.js');
 const { Rig } = await import('../src/render/rig.js');
 const { Humanoid } = await import('../src/render/humanoid.js');
 const { ANIM_CLIPS, ANIM_JOINTS } = await import('../src/data/anims.js');
@@ -101,6 +104,59 @@ test('el rig se construye para los 10 luchadores con su jerarquía', () => {
     assert.ok(geo.getAttribute('skinIndex'), `${def.id}: sin skinIndex`);
     assert.ok(geo.getAttribute('skinWeight'), `${def.id}: sin skinWeight`);
     assert.equal(rig.skeleton.bones.length, ANIM_JOINTS.length, `${def.id}: nº de huesos`);
+    // Geometría válida: sin esto la malla se dibuja negra e invisible.
+    const geo2 = geo;
+    const idx = geo2.getIndex();
+    const pos2 = geo2.getAttribute('position');
+    const nrm = geo2.getAttribute('normal');
+    assert.ok(idx, `${def.id}: sin índice`);
+    assert.ok(nrm, `${def.id}: sin normales`);
+    let zeroN = 0, badIdx = 0, degen = 0, inward = 0;
+    for (let i = 0; i < nrm.count; i++) {
+      if (nrm.getX(i) === 0 && nrm.getY(i) === 0 && nrm.getZ(i) === 0) zeroN++;
+    }
+    for (let i = 0; i < idx.count; i++) {
+      const v = idx.getX(i);
+      if (!Number.isInteger(v) || v < 0 || v >= pos2.count) badIdx++;
+    }
+    for (let i = 0; i + 2 < idx.count; i += 3) {
+      const a = idx.getX(i), b = idx.getX(i + 1), c = idx.getX(i + 2);
+      if (a === b || b === c || a === c) degen++;
+    }
+    assert.equal(zeroN, 0, `${def.id}: ${zeroN} normales a cero (malla negra)`);
+    assert.equal(badIdx, 0, `${def.id}: ${badIdx} índices fuera de rango`);
+    assert.equal(degen, 0, `${def.id}: ${degen} triángulos degenerados`);
+    // Las normales deben apuntar alejándose del hueso más cercano (no hacia
+    // dentro del cuerpo). Se mide contra los segmentos del esqueleto, no contra
+    // el eje central: en brazos y piernas el eje central no significa nada.
+    const segs = [];
+    for (let b = 0; b < rig.skeleton.bones.length; b++) {
+      const name = rig.skeleton.bones[b].name;
+      const j = JOINT_DEFS[b];
+      if (j.parent >= 0) segs.push([rig.bp[JOINT_DEFS[j.parent].name], rig.bp[name]]);
+    }
+    const v = new THREE.Vector3(), n = new THREE.Vector3();
+    const cp = new THREE.Vector3(), ab = new THREE.Vector3();
+    let checked = 0;
+    for (let i = 0; i < pos2.count; i++) {
+      v.fromBufferAttribute(pos2, i);
+      n.fromBufferAttribute(nrm, i);
+      let best = Infinity;
+      for (const [a, b] of segs) {
+        ab.set(b[0] - a[0], b[1] - a[1], b[2] - a[2]);
+        const len2 = ab.lengthSq();
+        let t = len2 > 1e-9 ? ((v.x - a[0]) * ab.x + (v.y - a[1]) * ab.y + (v.z - a[2]) * ab.z) / len2 : 0;
+        t = Math.max(0, Math.min(1, t));
+        cp.set(a[0] + ab.x * t, a[1] + ab.y * t, a[2] + ab.z * t);
+        const d = cp.distanceToSquared(v);
+        if (d < best) { best = d; cp.best = true; _cp.copy(cp); }
+      }
+      _cp.sub(v);
+      if (_cp.lengthSq() < 1e-8) continue;
+      checked++;
+      if (n.dot(_cp.normalize()) > 0) inward++;   // apunta hacia el hueso
+    }
+    assert.ok(inward < checked * 0.3, `${def.id}: ${inward}/${checked} normales hacia dentro`);
     // Pesos normalizados (si no, la malla se estira o desaparece)
     const sw = geo.getAttribute('skinWeight');
     for (let i = 0; i < sw.count; i++) {
