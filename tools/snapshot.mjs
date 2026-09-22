@@ -265,6 +265,87 @@ for (let t = 0; t < idx.count; t += 3) {
   }
 }
 
+// --- segunda pasada: accesorios y calco de cara (mallas rígidas) -------
+rig.root.updateMatrixWorld(true);
+const extras = [];
+rig.root.traverse((o) => {
+  if (o.isMesh && o !== rig.mesh && o !== rig.shadow) extras.push(o);
+});
+const wp = new THREE.Vector3(), wn = new THREE.Vector3();
+for (const ex of extras) {
+  const geo = ex.geometry;
+  const epos = geo.getAttribute('position');
+  const enrm = geo.getAttribute('normal');
+  const euv = geo.getAttribute('uv');
+  const eidx = geo.getIndex();
+  const mat = ex.material;
+  const baseCol = mat.color ? [mat.color.r, mat.color.g, mat.color.b] : [1, 1, 1];
+  const texData = mat.map && mat.map.image && mat.map.image.data ? mat.map.image : null;
+  const transparent = !!mat.transparent;
+  ex.updateMatrixWorld(true);
+  const scrE = [];
+  for (let i = 0; i < epos.count; i++) {
+    wp.fromBufferAttribute(epos, i).applyMatrix4(ex.matrixWorld);
+    const v4 = new THREE.Vector4(wp.x, wp.y, wp.z, 1).applyMatrix4(mvp);
+    const w = v4.w || 1e-6;
+    scrE.push({ x: (v4.x / w * 0.5 + 0.5) * W, y: (1 - (v4.y / w * 0.5 + 0.5)) * H, z: v4.z / w, w });
+  }
+  for (let t = 0; t < eidx.count; t += 3) {
+    const a = scrE[eidx.getX(t)], b = scrE[eidx.getX(t + 1)], c = scrE[eidx.getX(t + 2)];
+    if (a.w <= 0 || b.w <= 0 || c.w <= 0) continue;
+    const minX = Math.max(0, Math.floor(Math.min(a.x, b.x, c.x)));
+    const maxX = Math.min(W - 1, Math.ceil(Math.max(a.x, b.x, c.x)));
+    const minY = Math.max(0, Math.floor(Math.min(a.y, b.y, c.y)));
+    const maxY = Math.min(H - 1, Math.ceil(Math.max(a.y, b.y, c.y)));
+    if (maxX < minX || maxY < minY) continue;
+    const ia = eidx.getX(t), ib = eidx.getX(t + 1), ic = eidx.getX(t + 2);
+    const area = (b.x - a.x) * (c.y - a.y) - (c.x - a.x) * (b.y - a.y);
+    if (Math.abs(area) < 1e-9) continue;
+    for (let y = minY; y <= maxY; y++) {
+      for (let x = minX; x <= maxX; x++) {
+        const px = x + 0.5, py = y + 0.5;
+        const w0 = ((b.x - a.x) * (py - a.y) - (px - a.x) * (b.y - a.y)) / area;
+        const w1 = ((c.x - b.x) * (py - b.y) - (px - b.x) * (c.y - b.y)) / area;
+        const w2 = 1 - w0 - w1;
+        if (w0 < 0 || w1 < 0 || w2 < 0) continue;
+        const iz = w0 / a.w + w1 / b.w + w2 / c.w;
+        const z = 1 / iz;
+        const o = (y * W + x) * 3;
+        if (transparent) {
+          let col = baseCol, alpha = 1;
+          if (texData && euv) {
+            const u = (euv.getX(ia) * w0 / a.w + euv.getX(ib) * w1 / b.w + euv.getX(ic) * w2 / c.w) * z;
+            const vv = (euv.getY(ia) * w0 / a.w + euv.getY(ib) * w1 / b.w + euv.getY(ic) * w2 / c.w) * z;
+            const tx = Math.min(texData.width - 1, Math.max(0, Math.floor(u * texData.width)));
+            const ty = Math.min(texData.height - 1, Math.max(0, Math.floor(vv * texData.height)));
+            const ti = (ty * texData.width + tx) * 4;
+            alpha = texData.data[ti + 3] / 255;
+            if (alpha < 0.03) continue;   // píxel transparente: no tapa nada
+            col = [texData.data[ti] / 255, texData.data[ti + 1] / 255, texData.data[ti + 2] / 255];
+          }
+          if (z >= fb[y * W + x]) continue;
+          fb[y * W + x] = z;   // el calco tapa lo de detrás
+          const d = 0.85;
+          for (let k = 0; k < 3; k++) {
+            const lit = Math.min(1, col[k] * d * 1.9);
+            const srgb = lit <= 0.0031308 ? lit * 12.92 : 1.055 * Math.pow(lit, 1 / 2.4) - 0.055;
+            rgb[o + k] = Math.round(255 * srgb) * alpha + rgb[o + k] * (1 - alpha);
+          }
+        } else {
+          if (z >= fb[y * W + x]) continue;
+          fb[y * W + x] = z;
+          wn.fromBufferAttribute(enrm, ia);
+          let d = Math.max(0, wn.dot(L)) * 0.95 + 0.25;
+          for (let k = 0; k < 3; k++) {
+            const lit = Math.min(1, baseCol[k] * d * 1.9);
+            rgb[o + k] = Math.round(255 * (lit <= 0.0031308 ? lit * 12.92 : 1.055 * Math.pow(lit, 1 / 2.4) - 0.055));
+          }
+        }
+      }
+    }
+  }
+}
+
 writePNG(OUT, W, H, rgb);
 console.log(`${def.name} / ${POSE}: ${drawn} píxeles cubiertos de ${W * H} ` +
   `(${(100 * drawn / (W * H)).toFixed(1)}% de la imagen) -> ${OUT}`);

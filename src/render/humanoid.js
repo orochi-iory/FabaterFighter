@@ -13,6 +13,7 @@
  * luchador con body.{height,bulk,armLen,legLen,head}.
  */
 import * as THREE from '../../vendor/three.module.min.js';
+import { faceTexture } from './facepaint.js';
 import { JOINTS, RIG_HEIGHT } from '../anim/skeleton-def.js';
 
 /** Altura en unidades de mundo de un luchador de proporciones estándar. */
@@ -105,6 +106,7 @@ export class Humanoid {
   build() {
     const b = this.body;
     this.heightMul = this.body.height || 1;
+    this.palette = [];
     this.bulk = b.bulk || 1;
     this.legLen = b.legLen || 1;
     this.armLen = b.armLen || 1;
@@ -144,18 +146,27 @@ export class Humanoid {
     // por tramo; three.js invierte la normal en las caras traseras, así la
     // iluminación sigue siendo correcta y no aparecen piezas invisibles.
     const cloth = clothTexture();
-    const material = new THREE.MeshStandardMaterial({
+    const clothMat = new THREE.MeshStandardMaterial({
       vertexColors: true,
-      roughness: 0.72,
-      metalness: 0.06,
+      roughness: 0.78,
+      metalness: 0.04,
       side: THREE.DoubleSide,
       map: cloth || null,
       bumpMap: cloth || null,
-      bumpScale: 0.35
+      bumpScale: 0.4
     });
-    this.mesh = new THREE.SkinnedMesh(g.toGeometry(), material);
+    const skinMat = new THREE.MeshStandardMaterial({
+      vertexColors: true,
+      roughness: 0.5,
+      metalness: 0.02,
+      side: THREE.DoubleSide
+    });
+    const geo = g.toGeometry();
+    assignMaterialGroups(geo, this.palette);
+    this.mesh = new THREE.SkinnedMesh(geo, [clothMat, skinMat]);
     this.mesh.frustumCulled = false;
     this.mesh.castShadow = true;
+    this.buildFaceDecal();
     this.mesh.add(this.bones.Hips);
     this.skeleton = new THREE.Skeleton(this.boneList);
     this.mesh.bind(this.skeleton);
@@ -208,9 +219,10 @@ export class Humanoid {
 
   /* --- utilidades de modelado -------------------------------------- */
 
-  col(hex) {
+  col(hex, mat = 0) {
     const c = new THREE.Color(hex || '#888888');
     c.convertSRGBToLinear();
+    this.palette.push({ r: c.r, g: c.g, b: c.b, mat });
     return c;
   }
 
@@ -323,7 +335,7 @@ export class Humanoid {
   buildLegs(g) {
     const C = this.colors;
     const bulk = this.bulk;
-    const skin = this.col(C.skin);
+    const skin = this.col(C.skin, 1);
     const pants = this.col(C.gi);
     const trim = this.col(C.trim);
     const boot = this.col(C.boot);
@@ -392,7 +404,7 @@ export class Humanoid {
     const gi = this.col(C.gi);
     const trim = this.col(C.trim);
     const belt = this.col(C.belt || C.trim);
-    const skin = this.col(C.skin);
+    const skin = this.col(C.skin, 1);
 
     const hips = this.bp.Hips;
     const spine = this.bp.Spine;
@@ -407,11 +419,14 @@ export class Humanoid {
     ];
     const W = (y) => this.byHeight(y, stops);
 
-    // Ancho de hombros y caja torácica según constitución
+    // Ancho de hombros y caja torácica según constitución. La silueta
+    // femenina: cadera más ancha que el pecho, cintura marcada y hombros
+    // algo más estrechos; la masculina mantiene el torso en V.
+    const female = !!this.body.female;
     const chestX = (0.155 + 0.030 * (bulk - 1)) * this.s * 1.06;
     const chestZ = (0.105 + 0.018 * (bulk - 1)) * this.s * 1.06;
-    const waistX = chestX * 0.78, waistZ = chestZ * 0.86;
-    const pelvisX = chestX * 0.92, pelvisZ = chestZ * 0.95;
+    const waistX = chestX * (female ? 0.70 : 0.78), waistZ = chestZ * (female ? 0.82 : 0.86);
+    const pelvisX = chestX * (female ? 1.06 : 0.92), pelvisZ = chestZ * (female ? 1.02 : 0.95);
 
     const yHips = hips[1];
     const profile = [
@@ -419,8 +434,8 @@ export class Humanoid {
       { y: yHips + 0.010 * this.s, rx: pelvisX, rz: pelvisZ, color: gi },
       { y: yHips + 0.055 * this.s, rx: waistX * 1.02, rz: waistZ * 1.0, color: gi },
       { y: this.bp.LowerBack[1] + 0.03 * this.s, rx: waistX, rz: waistZ, color: gi },
-      { y: spine[1] + 0.02 * this.s, rx: chestX * 0.92, rz: chestZ * 0.95, color: gi },
-      { y: spine1[1] - 0.03 * this.s, rx: chestX, rz: chestZ, color: gi },
+      { y: spine[1] + 0.02 * this.s, rx: chestX * (female ? 0.97 : 0.92), rz: chestZ * (female ? 1.02 : 0.95), color: gi },
+      { y: spine1[1] - 0.03 * this.s, rx: chestX * (female ? 0.88 : 1), rz: chestZ * (female ? 0.94 : 1), color: gi },
       { y: spine1[1] + 0.05 * this.s, rx: chestX * 0.94, rz: chestZ * 0.9, color: gi },
       { y: neck[1] - 0.02 * this.s, rx: chestX * 0.62, rz: chestZ * 0.66, color: gi }
     ].map((p) => ({ d: p.y, rx: p.rx, rz: p.rz, color: p.color, ...W(p.y) }));
@@ -441,21 +456,28 @@ export class Humanoid {
       { d: 0.11 * this.s, rx: 0.047 * this.s, rz: 0.049 * this.s, color: skin, ...W(neck[1] + 0.07 * this.s) }
     ], 12, false);
 
-    // Trapecios / deltoides: volumen sobre los hombros
+    // Trapecios / deltoides: volumen sobre los hombros (más sutiles en ellas)
     for (const side of ['Left', 'Right']) {
       const sh = this.bp[`${side}Arm`];
       const dir = Math.sign(sh[0]) || 1;
-      this.ball(g, [sh[0] * 0.55, sh[1] + 0.015 * this.s, 0], 0.062 * this.s * (0.9 + 0.15 * bulk), gi,
+      const dScale = female ? 0.82 : 1;
+      this.ball(g, [sh[0] * 0.55, sh[1] + 0.015 * this.s, 0], 0.062 * this.s * (0.9 + 0.15 * bulk) * dScale, gi,
         [this.boneIndex.Spine1, this.boneIndex[`${side}Shoulder`]], [0.55, 0.45], [1.1, 0.8, 1.0], 10);
-      this.ball(g, sh, 0.062 * this.s * (0.95 + 0.18 * bulk), gi,
+      this.ball(g, sh, 0.062 * this.s * (0.95 + 0.18 * bulk) * dScale, gi,
         [this.boneIndex[`${side}Arm`]], [1], [1, 1, 1], 10);
     }
 
-    // Pectorales (apenas insinuados: dan volumen sin romper la silueta)
+    // Pecho: pectorales insinuados en ellos; busto con dos volúmenes
+    // delanteros en ellas (se lee la silueta sin ser explícito).
     const pecY = spine1[1] - 0.01 * this.s;
     for (const dx of [-1, 1]) {
-      this.ball(g, [dx * chestX * 0.45, pecY, chestZ * 0.62], chestX * 0.42, gi,
-        [this.boneIndex.Spine1], [1], [1, 0.72, 0.72], 10);
+      if (female) {
+        this.ball(g, [dx * chestX * 0.40, pecY - 0.015 * this.s, chestZ * 0.78], chestX * 0.34, gi,
+          [this.boneIndex.Spine1], [1], [1, 0.85, 0.85], 10);
+      } else {
+        this.ball(g, [dx * chestX * 0.45, pecY, chestZ * 0.62], chestX * 0.42, gi,
+          [this.boneIndex.Spine1], [1], [1, 0.72, 0.72], 10);
+      }
     }
   }
 
@@ -465,7 +487,7 @@ export class Humanoid {
     const C = this.colors;
     const bulk = this.bulk;
     const gi = this.col(C.gi);
-    const skin = this.col(C.skin);
+    const skin = this.col(C.skin, 1);
     const glove = this.col(C.glove || C.trim);
     const trim = this.col(C.trim);
 
@@ -524,7 +546,7 @@ export class Humanoid {
   buildHead(g) {
     const C = this.colors;
     const b = this.body;
-    const skin = this.col(C.skin);
+    const skin = this.col(C.skin, 1);
     const hairC = this.col(C.hair);
     const hs = (b.head || 1) * this.s;
     const headBase = this.bp.Head;
@@ -560,12 +582,64 @@ export class Humanoid {
         headBone, [1], [1, 0.72, 0.5], 8);
       this.ball(g, [dx * 0.034 * hs, cy + 0.008 * hs, cz + 0.086 * hs], 0.0072 * hs, dark,
         headBone, [1], [1, 1, 0.6], 8);
-      this.ball(g, [dx * 0.036 * hs, cy + 0.032 * hs, cz + 0.074 * hs], 0.014 * hs,
-        this.col(C.hair), headBone, [1], [1.3, 0.35, 0.5], 8);
     }
     // Boca
     this.ball(g, [0, cy - 0.052 * hs, cz + 0.070 * hs], 0.017 * hs, this.col('#5d2b2b'),
       headBone, [1], [1.5, 0.28, 0.4], 8);
+  }
+
+  /* --- cara con textura ---------------------------------------------- */
+
+  /**
+   * Calco curvado con la cara pintada (cejas, boca, barba, pintura...) delante
+   * de la cara geométrica. Sigue al hueso Head, así gesticula con el mocap.
+   */
+  buildFaceDecal() {
+    const hs = (this.body.head || 1) * this.s;
+    const headBase = this.bp.Head;
+    const cy = headBase[1] + 0.105 * hs;
+    const cz = headBase[2];
+    const C = [0, cy - 0.012 * hs, cz - 0.012 * hs];
+    const R = 0.108 * hs;
+    const cols = 12, rows = 14;
+    const a0 = -0.56, a1 = 0.56;      // horizontal
+    const b0 = -0.80, b1 = 0.40;      // vertical (negativo = barbilla)
+    const pos = [], uv = [], idx = [];
+    for (let r = 0; r <= rows; r++) {
+      const beta = b1 + (b0 - b1) * (r / rows);   // r=0 arriba (frente)
+      for (let c = 0; c <= cols; c++) {
+        const alpha = a0 + (a1 - a0) * (c / cols);
+        const cb = Math.cos(beta);
+        pos.push(
+          C[0] + R * Math.sin(alpha) * cb,
+          C[1] + R * Math.sin(beta),
+          C[2] + R * Math.cos(alpha) * cb
+        );
+        uv.push(c / cols, r / rows);
+      }
+    }
+    for (let r = 0; r < rows; r++) {
+      for (let c = 0; c < cols; c++) {
+        const i0 = r * (cols + 1) + c, i1 = i0 + 1, i2 = i0 + cols + 1, i3 = i2 + 1;
+        idx.push(i0, i2, i1, i1, i2, i3);
+      }
+    }
+    const g = new THREE.BufferGeometry();
+    g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
+    g.setAttribute('uv', new THREE.Float32BufferAttribute(uv, 2));
+    g.setIndex(idx);
+    g.computeVertexNormals();
+    const tex = faceTexture(this.def);
+    const mat = new THREE.MeshStandardMaterial({
+      map: tex, transparent: true, roughness: 0.55, metalness: 0,
+      side: THREE.FrontSide, depthWrite: false,
+      polygonOffset: true, polygonOffsetFactor: -2, polygonOffsetUnits: -2
+    });
+    const mesh = new THREE.Mesh(g, mat);
+    mesh.renderOrder = 2;
+    mesh.position.set(-headBase[0], -headBase[1], -headBase[2]);  // local al hueso Head
+    this.bones.Head.add(mesh);
+    this.faceDecal = mesh;
   }
 
   /* --- pelo y accesorios (mallas sueltas ancladas a huesos) --------- */
@@ -770,7 +844,13 @@ export class Humanoid {
 
   dispose() {
     this.mesh.geometry.dispose();
-    this.mesh.material.dispose();
+    if (Array.isArray(this.mesh.material)) this.mesh.material.forEach((m) => m.dispose());
+    else this.mesh.material.dispose();
+    if (this.faceDecal) {
+      this.faceDecal.geometry.dispose();
+      this.faceDecal.material.map && this.faceDecal.material.map.dispose();
+      this.faceDecal.material.dispose();
+    }
     this.root.traverse((o) => {
       if (o.isMesh && o !== this.mesh) {
         o.geometry.dispose();
@@ -779,6 +859,44 @@ export class Humanoid {
       }
     });
   }
+}
+
+/**
+ * Asigna a la geometría tres grupos (tela=0, piel=1, equipo=2) según el color
+ * de cada vértice, para que piel, tela y cuero usen materiales distintos.
+ */
+function assignMaterialGroups(geo, palette) {
+  const col = geo.getAttribute('color');
+  const idx = geo.getIndex();
+  const vertMat = new Uint8Array(col.count);
+  for (let i = 0; i < col.count; i++) {
+    const r = col.getX(i), g = col.getY(i), b = col.getZ(i);
+    let best = 0, bd = 1e9;
+    for (const p of palette) {
+      const d = (p.r - r) * (p.r - r) + (p.g - g) * (p.g - g) + (p.b - b) * (p.b - b);
+      if (d < bd) { bd = d; best = p.mat; }
+    }
+    vertMat[i] = bd < 1e-6 ? best : 0;
+  }
+  // Con depth buffer el orden de dibujado no importa: reordenamos los
+  // triángulos por material para dejar solo dos grupos (dos draw calls).
+  const order = [];
+  for (let t = 0; t < idx.count; t += 3) {
+    const a = idx.getX(t), b = idx.getX(t + 1), c = idx.getX(t + 2);
+    const m = vertMat[a] === vertMat[b] || vertMat[a] === vertMat[c] ? vertMat[a] : vertMat[b];
+    order.push([m, idx.getX(t), idx.getX(t + 1), idx.getX(t + 2)]);
+  }
+  order.sort((x, y) => x[0] - y[0]);
+  const ni = [];
+  let split = 0;
+  for (const [m, a, b, c] of order) {
+    ni.push(a, b, c);
+    if (m === 0) split += 3;
+  }
+  geo.setIndex(ni);
+  geo.clearGroups();
+  if (split > 0) geo.addGroup(0, split, 0);
+  if (split < ni.length) geo.addGroup(split, ni.length - split, 1);
 }
 
 /**

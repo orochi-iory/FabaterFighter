@@ -101,7 +101,7 @@ const VALERIA = {
     gi: '#ffd54f', trim: '#00897b', skin: '#c68642', hair: '#3e2723',
     belt: '#00695c', accent: '#00e5ff', aura: '#ffd54f', glove: '#ff7043', boot: '#ffffff'
   },
-  body: { height: 0.96, bulk: 0.82, armLen: 0.98, legLen: 1.12, head: 0.95, hair: 'ponytail' },
+  body: { height: 0.96, bulk: 0.82, armLen: 0.98, legLen: 1.12, head: 0.95, hair: 'ponytail', female: true },
   stats: { health: 900, walk: 0.078, back: 0.064, power: 0.9, speed: 1.16, reach: 1.02, defense: 0.9, jump: 1.05, weight: 0.9 },
   fx: '#ffe082',
   specials: [
@@ -551,7 +551,7 @@ const SERA = {
     gi: '#e1f5fe', trim: '#0288d1', skin: '#f2cdb0', hair: '#7e57c2',
     belt: '#4fc3f7', accent: '#00e5ff', aura: '#80deea', glove: '#ffffff', boot: '#b39ddb'
   },
-  body: { height: 0.92, bulk: 0.76, armLen: 0.94, legLen: 1.06, head: 0.94, hair: 'long' },
+  body: { height: 0.92, bulk: 0.76, armLen: 0.94, legLen: 1.06, head: 0.94, hair: 'long', female: true },
   stats: { health: 880, walk: 0.058, back: 0.052, power: 0.92, speed: 1.04, reach: 0.96, defense: 0.92, jump: 1.08, weight: 0.88 },
   fx: '#80deea',
   specials: [
@@ -690,7 +690,7 @@ const VESPER = {
     gi: '#1a237e', trim: '#ffee58', skin: '#f0c9a8', hair: '#ffee58',
     belt: '#fdd835', accent: '#ffff00', aura: '#40c4ff', glove: '#283593', boot: '#fdd835'
   },
-  body: { height: 0.98, bulk: 0.88, armLen: 1.0, legLen: 1.1, head: 0.96, hair: 'spiky', visor: true },
+  body: { height: 0.98, bulk: 0.88, armLen: 1.0, legLen: 1.1, head: 0.96, hair: 'spiky', visor: true, female: true },
   stats: { health: 940, walk: 0.08, back: 0.066, power: 0.98, speed: 1.14, reach: 1.0, defense: 0.94, jump: 1.14, weight: 0.92 },
   fx: '#40c4ff',
   specials: [
