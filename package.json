@@ -1,0 +1,16 @@
+{
+  "name": "fabater-fighter",
+  "version": "1.0.0",
+  "private": true,
+  "description": "FabaterFighter - juego de lucha VS 2.5D en Three.js inspirado en Street Fighter III: 3rd Strike y The King of Fighters '98",
+  "type": "module",
+  "scripts": {
+    "start": "node tools/serve.js 8080",
+    "dev": "node tools/serve.js 8080",
+    "test": "node --test test/*.test.js"
+  },
+  "license": "MIT",
+  "devDependencies": {
+    "jsdom": "^30.1.1"
+  }
+}

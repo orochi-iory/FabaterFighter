@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+<meta name="theme-color" content="#0b0716" />
+<title>FABATER FIGHTER — VS Arcade</title>
+<link rel="stylesheet" href="./styles.css" />
+</head>
+<body>
+  <div id="app">
+    <canvas id="gl"></canvas>
+
+    <div id="fx-layer"></div>
+    <div id="hud-layer"></div>
+    <div id="screen-layer"></div>
+
+    <div id="touch" class="touch hidden">
+      <div class="pad-left">
+        <button data-k="up" class="tbtn up">▲</button>
+        <button data-k="left" class="tbtn left">◀</button>
+        <button data-k="right" class="tbtn right">▶</button>
+        <button data-k="down" class="tbtn down">▼</button>
+      </div>
+      <div class="pad-right">
+        <button data-k="LP" class="tbtn b lp">LP</button>
+        <button data-k="LK" class="tbtn b lk">LK</button>
+        <button data-k="HP" class="tbtn b hp">HP</button>
+        <button data-k="HK" class="tbtn b hk">HK</button>
+        <button data-k="SP1" class="tbtn s">SP1</button>
+        <button data-k="SP2" class="tbtn s">SP2</button>
+        <button data-k="SUPER" class="tbtn sup">SUPER</button>
+        <button data-k="MAX" class="tbtn mx">MAX</button>
+      </div>
+    </div>
+
+    <div id="boot" class="boot">
+      <div class="boot-inner">
+        <div class="boot-logo">FABATER<br /><span>FIGHTER</span></div>
+        <div class="boot-bar"><i></i></div>
+        <div class="boot-text">Cargando motor de lucha…</div>
+      </div>
+    </div>
+  </div>
+
+  <script type="module" src="./src/main.js"></script>
+</body>
+</html>
