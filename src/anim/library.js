@@ -61,7 +61,7 @@ export const STATE_CLIP = {
   thrown: 'hitReact',
   maxactivate: 'salute',
   win: 'salute',
-  intro: 'bow',
+  intro: 'idle',
   parry: 'blockHigh'
 };
 
@@ -73,7 +73,7 @@ export const GUARD_WEIGHT = {
   // Encajar un golpe no tira los brazos al suelo: se cubre la cara.
   hitHigh: 0.7, hitLow: 0.7, launched: 0.45, guardcrush: 0.3,
   dizzy: 0.35,
-  intro: 0.5,
+  intro: 0,   // en la reverencia los brazos cuelgan a los costados
   win: 0, salute: 0,
   jump: 0.25, fall: 0.25
 };

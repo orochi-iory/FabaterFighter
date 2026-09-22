@@ -118,6 +118,11 @@ if (POSE === 'punch' || POSE === 'kick') {
   fighter.updateAnim();
   step(10);
   console.log(`pose: ${mv.name} (${mv.id}) en frame activo ${fighter.moveFrame}`);
+} else if (POSE.startsWith('intro:')) {
+  fighter.state = 'intro';
+  fighter.stateFrame = +POSE.split(':')[1];
+  fighter.updateAnim();
+  step(1);
 } else if (POSE === 'hit') {
   fighter.state = 'hitstun';
   fighter.stateFrame = 6;

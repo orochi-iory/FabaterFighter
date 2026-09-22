@@ -33,7 +33,7 @@ get 077 77_03
 get 144 144_33; get 111 111_01; get 111 111_26
 get 140 140_06; get 141 141_04; get 111 111_23
 echo "Reacciones y ceremonia"
-get 111 111_12; get 140 140_08; get 090 90_16; get 023 23_12; get 111 111_02; get 144 144_30
+get 111 111_12; get 140 140_08; get 090 90_16; get 023 23_12; get 144 144_30
 
 echo
 echo "Listo en $OUT — ahora: node tools/build-anim.mjs"

@@ -85,7 +85,6 @@ const CLIPS = {
   knockdown:   { file: '90_16',  win: 0, full: true },
   wakeup:      { file: '140_08', win: 1, full: true },
   // --- Ceremonia ---
-  bow:         { file: '111_02', range: [3, 420] },
   salute:      { file: '144_30', win: 10, full: true }
 };
 

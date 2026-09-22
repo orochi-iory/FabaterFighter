@@ -159,6 +159,7 @@ export class Rig {
     // --- capas procedurales ---
     this.body.updateMatrixWorld(true);
     this.applyBreathing(f);
+    this.applyIntroBow(f);
     this.applyRecoil(f, dt);
     this.applyGuard(f, plan, dt);
     this.applyStance(f, plan);
@@ -202,6 +203,31 @@ export class Rig {
     this.hips.position.y += Math.sin(t * 2.1) * 0.006 * k;
     // Ligero balanceo lateral: nadie está perfectamente quieto
     this.bones.LowerBack.rotateZ(Math.sin(t * 1.3) * 0.012 * k);
+  }
+
+  /* --- reverencia de inicio (rei) ------------------------------------- */
+
+  /**
+   * El "bow" capturado en CMU es teatral (pierna atrás, torsión), así que la
+   * reverencia de inicio es procedural: sobre el idle, el torso baja y vuelve
+   * a subir con una curva suave, brazos colgando como en un rei de karate.
+   */
+  applyIntroBow(f) {
+    const a = f.anim;
+    if (!a || a.pose !== 'intro') return;
+    const t = a.frame || 0;
+    let k = 0;
+    if (t < 25) k = smoothstep(t / 25);
+    else if (t < 60) k = 1;
+    else if (t < 100) k = 1 - smoothstep((t - 60) / 40);
+    if (k <= 0.001) return;
+    const b = 0.42 * k;
+    this.bones.Spine.rotateX(b * 0.45);
+    this.bones.Spine1.rotateX(b * 0.30);
+    this.bones.Neck.rotateX(b * 0.15);
+    this.bones.Head.rotateX(b * 0.10);
+    this.bones.LeftUpLeg.rotateX(-b * 0.12);
+    this.bones.RightUpLeg.rotateX(-b * 0.12);
   }
 
   /* --- retroceso al recibir ------------------------------------------ */
