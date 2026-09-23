@@ -4,8 +4,8 @@
  * (lo rellena con el commit HEAD y la fecha actuales) antes de cada entrega.
  */
 export const BUILD = {
-  tag: 'v0.15',
-  commit: '7b4e01c',
+  tag: 'v0.16',
+  commit: '2262da3',
   date: '2026-09-23',
-  notes: 'Patadas y golpes reconstruidos segun tilesheets 2D: pierna plena, apoyo pivotado, tronco atras, brazos en tijera'
+  notes: 'Fuertes mucho mas lentos y largos que debiles; ataques aereos con pose de lamina (diagonal de pierna, puno hundido); encaje con arco atras'
 };

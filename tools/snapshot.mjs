@@ -130,10 +130,11 @@ if (POSE === 'punch' || POSE === 'kick') {
   for (let i = 0; i < 40; i++) { fighter.updateAnim(); fighter.anim.pose = 'crouch'; step(); }
 } else if (POSE === 'down') {
   for (let i = 0; i < 50; i++) { fighter.updateAnim(); fighter.anim.pose = 'knockdown'; fighter.anim.frame = i; step(); }
-} else if (POSE === 'normH' || POSE === 'kickH' || POSE.startsWith('atk:')) {
+} else if (POSE === 'normH' || POSE === 'kickH' || POSE.startsWith('atk:') || POSE.startsWith('air:')) {
   const mv = def.moveById[POSE === 'normH' ? '5HP' : POSE === 'kickH' ? '5HK' : POSE.slice(4)];
   fighter.state = 'attack'; fighter.move = mv;
   fighter.moveFrame = mv.startup + 1;
+  if (POSE.startsWith('air:')) { fighter.airborne = true; fighter.y = 0.6; }
   fighter.updateAnim();
   step(3);
 } else if (POSE === 'face') {
@@ -144,6 +145,7 @@ if (POSE === 'punch' || POSE === 'kick') {
 } else if (POSE === 'hit') {
   fighter.state = 'hitstun';
   fighter.stateFrame = 6;
+  fighter.hitstun = 12;   // para el arco atrás de applyHitPose
   fighter.updateAnim();
   step(6);
 } else if (POSE === 'block') {

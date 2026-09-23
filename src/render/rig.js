@@ -338,10 +338,16 @@ export class Rig {
     this.bones.LowerBack.quaternion.slerp(_qId, 0.25);
     this.bones.Spine.quaternion.slerp(_qId, 0.30);
     this.bones.Neck.quaternion.slerp(_qId, 0.25);
+    // Como en las láminas: el impacto arquea torso y cabeza atrás; el arco
+    // decae con el hitstun restante.
+    const h = Math.min(1, (f.hitstun || 0) / 14);
+    this.bones.LowerBack.rotateX(-0.32 * h);
+    this.bones.Neck.rotateX(-0.35 * h);
     // Guardia con IK de polo PURO en el pecho: el mocap de dolor abre los
     // brazos, y si el pole se mezcla con la mano actual el codo se va por
-    // fuera y la guardia no cierra.
-    const gw = Math.max(plan.guard || 0, 0.9);
+    // fuera y la guardia no cierra. En el primer impacto los brazos no están
+    // cerrados aún (gw moderado), se cierran al recuperar.
+    const gw = Math.max(plan.guard || 0, 0.6 + 0.3 * (1 - h));
     const GUARD = guardFor(this);
     for (const side of ['L', 'R']) {
       const shoulder = this.bones[side === 'L' ? 'LeftArm' : 'RightArm'];
@@ -478,6 +484,7 @@ export class Rig {
     const btn = (mv.input && mv.input.button) || mv.id || '';
     const isKick = /K/.test(btn) && !/P/.test(btn);
     const w = e > 0 ? Math.min(0.95, e * 1.4) : 0;
+    if (f.airborne) { this.applyAirAttack(f, isKick, e, s, w); return; }
     if (isKick) {
       const up = this.bones.RightUpLeg, leg = this.bones.RightLeg, foot = this.bones.RightFoot;
       // Apaga el clip capturado: la patada la manda esta capa, al estilo de las
@@ -532,6 +539,66 @@ export class Rig {
       const other = side === 'Left' ? 'Right' : 'Left';
       this.bones[`${other}Arm`].rotateX(0.35 * e);     // mano contraria en guardia
     }
+  }
+
+  /* --- ataques aéreos al estilo lámina 2D ---------------------------- */
+
+  /**
+   * En las láminas, la patada de salto es una diagonal: pierna de pateo
+   * extendida abajo-adelante, la otra plegada con rodilla arriba, tronco
+   * levemente atrás y brazos abiertos para equilibrar. El puño de salto
+   * hunde el brazo abajo-adelante con las rodillas recogidas.
+   */
+  applyAirAttack(f, isKick, e, s, w) {
+    for (const n of ['LowerBack', 'Spine', 'Spine1',
+      'LeftUpLeg', 'RightUpLeg', 'LeftLeg', 'RightLeg',
+      'LeftArm', 'RightArm', 'LeftForeArm', 'RightForeArm']) {
+      this.bones[n].quaternion.slerp(_qId, 0.6);
+    }
+    if (e < 0) { this.bones.RightUpLeg.rotateX(-e * 0.8); return; }
+    const up = this.bones.RightUpLeg, leg = this.bones.RightLeg, foot = this.bones.RightFoot;
+    if (isKick) {
+      const legLen = up.getWorldPosition(_aA).distanceTo(leg.getWorldPosition(_aB))
+        + leg.getWorldPosition(_aB).distanceTo(foot.getWorldPosition(_aC));
+      _v1.set(0, 0.50 * s, legLen * 0.97 * (0.4 + 0.6 * e));   // diagonal abajo-adelante
+      this.body.localToWorld(_v1);
+      _v2.set(0, 0.8 * s, 0.5 * s);                            // rodilla sobre la línea
+      this.body.localToWorld(_v2);
+      this.aimChain(up, leg, foot, _v1, _v2, w);
+      this.body.updateMatrixWorld(true);
+      // Pierna libre plegada: rodilla arriba, talón atrás
+      this.bones.LeftUpLeg.rotateX(-1.0 * e);
+      this.bones.LeftLeg.rotateX(1.5 * e);
+      // Brazos equilibrando: contrario arriba-adelante, homólogo atrás
+      _v1.set(0.15 * s, 1.50 * s, 0.30 * s); this.body.localToWorld(_v1);
+      _v2.set(0.25 * s, 1.30 * s, 0.10 * s); this.body.localToWorld(_v2);
+      this.aimChain(this.bones.LeftArm, this.bones.LeftForeArm, this.bones.LeftHand, _v1, _v2, 0.8);
+      this.body.updateMatrixWorld(true);
+      _v1.set(-0.20 * s, 1.20 * s, -0.30 * s); this.body.localToWorld(_v1);
+      _v2.set(-0.30 * s, 1.30 * s, -0.10 * s); this.body.localToWorld(_v2);
+      this.aimChain(this.bones.RightArm, this.bones.RightForeArm, this.bones.RightHand, _v1, _v2, 0.8);
+    } else {
+      const leftish = /LP/.test(f.move.id || '');
+      const side = leftish ? 'Left' : 'Right';
+      const sh = this.bones[`${side}Arm`], el = this.bones[`${side}ForeArm`], ha = this.bones[`${side}Hand`];
+      const armLen = sh.getWorldPosition(_aA).distanceTo(el.getWorldPosition(_aB))
+        + el.getWorldPosition(_aB).distanceTo(ha.getWorldPosition(_aC));
+      const lat = side === 'Left' ? 0.08 * s : -0.08 * s;
+      _v1.set(lat, 1.00 * s, armLen * 0.95 * (0.35 + 0.65 * e));  // hunde el puño
+      this.body.localToWorld(_v1);
+      _v2.set(lat * 1.5, 1.25 * s, 0.10 * s); this.body.localToWorld(_v2);
+      this.aimChain(sh, el, ha, _v1, _v2, w);
+      this.body.updateMatrixWorld(true);
+      // Rodillas recogidas en el salto
+      this.bones.LeftUpLeg.rotateX(-0.85 * e);
+      this.bones.LeftLeg.rotateX(1.20 * e);
+      this.bones.RightUpLeg.rotateX(-0.55 * e);
+      this.bones.RightLeg.rotateX(0.90 * e);
+      const other = side === 'Left' ? 'Right' : 'Left';
+      this.bones[`${other}Arm`].rotateX(0.4 * e);   // contraria en guardia alta
+    }
+    this.body.updateMatrixWorld(true);
+    this.bones.LowerBack.rotateX(this.kickSign * 0.12 * e);  // tronco levemente atrás
   }
 
   /* --- pulido de locomoción (lean + sway pélvico) --------------------- */
