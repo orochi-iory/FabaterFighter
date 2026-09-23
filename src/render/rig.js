@@ -480,17 +480,38 @@ export class Rig {
     const w = e > 0 ? Math.min(0.95, e * 1.4) : 0;
     if (isKick) {
       const up = this.bones.RightUpLeg, leg = this.bones.RightLeg, foot = this.bones.RightFoot;
+      // Apaga el clip capturado: la patada la manda esta capa, al estilo de las
+      // láminas 2D (pierna extendida, apoyo pivotado, tronco atrás, brazos en tijera).
+      for (const n of ['Hips', 'LowerBack', 'Spine', 'Spine1',
+        'LeftUpLeg', 'RightUpLeg', 'LeftLeg', 'RightLeg', 'LeftFoot', 'RightFoot',
+        'LeftArm', 'RightArm', 'LeftForeArm', 'RightForeArm']) {
+        this.bones[n].quaternion.slerp(_qId, 0.85);
+      }
       if (e < 0) { this.bones.RightUpLeg.rotateX(this.kickSign * e * 1.4); return; }
-      // alcance = longitud real de la pierna: extensión plena a la altura del golpe
       const legLen = up.getWorldPosition(_aA).distanceTo(leg.getWorldPosition(_aB))
         + leg.getWorldPosition(_aB).distanceTo(foot.getWorldPosition(_aC));
-      _v1.set(0, hT, legLen * 0.95 * (0.4 + 0.6 * e));
+      // Pierna de pateo PLENA hacia la altura del golpe
+      _v1.set(0, hT, legLen * 0.99 * (0.35 + 0.65 * e));
       this.body.localToWorld(_v1);
-      _v2.set(0, hT * 0.75 + 0.15 * s, 0.65 * s);      // rodilla alta, extensión plena
+      _v2.set(0, hT * 1.0 + 0.15 * s, 0.6 * s);         // rodilla arriba-adelante
       this.body.localToWorld(_v2);
       this.aimChain(up, leg, foot, _v1, _v2, w);
       this.body.updateMatrixWorld(true);
-      this.bones.Spine.rotateX(this.kickSign * 0.25 * e);   // contra-inclinación atrás
+      // Apoyo: casi recto y pie pivotado (talón hacia el rival), como en 2D
+      this.bones.LeftUpLeg.rotateX(0.10 * e);
+      this.bones.LeftFoot.rotateY(-1.0 * e);
+      // Tronco atrás, nunca volcado adelante
+      this.bones.LowerBack.rotateX(this.kickSign * 0.18 * e);
+      this.bones.Spine.rotateX(this.kickSign * 0.22 * e);
+      // Brazos en tijera: contrario adelanta a la cara, homólogo atrás-abajo
+      _v1.set(0.12 * s, 1.30 * s, 0.55 * s); this.body.localToWorld(_v1);
+      _v2.set(0.20 * s, 1.10 * s, 0.10 * s); this.body.localToWorld(_v2);
+      this.aimChain(this.bones.LeftArm, this.bones.LeftForeArm, this.bones.LeftHand, _v1, _v2, 0.9);
+      this.body.updateMatrixWorld(true);
+      _v1.set(-0.18 * s, 1.05 * s, -0.35 * s); this.body.localToWorld(_v1);
+      _v2.set(-0.25 * s, 1.10 * s, -0.10 * s); this.body.localToWorld(_v2);
+      this.aimChain(this.bones.RightArm, this.bones.RightForeArm, this.bones.RightHand, _v1, _v2, 0.9);
+      this.body.updateMatrixWorld(true);
     } else {
       // El clip "strong" extiende el brazo derecho: el IK debe mandar ese
       // mismo brazo (y el jab, el izquierdo).

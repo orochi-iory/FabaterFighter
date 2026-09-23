@@ -130,8 +130,8 @@ if (POSE === 'punch' || POSE === 'kick') {
   for (let i = 0; i < 40; i++) { fighter.updateAnim(); fighter.anim.pose = 'crouch'; step(); }
 } else if (POSE === 'down') {
   for (let i = 0; i < 50; i++) { fighter.updateAnim(); fighter.anim.pose = 'knockdown'; fighter.anim.frame = i; step(); }
-} else if (POSE === 'normH' || POSE === 'kickH') {
-  const mv = def.moveById[POSE === 'normH' ? '5HP' : '5HK'];
+} else if (POSE === 'normH' || POSE === 'kickH' || POSE.startsWith('atk:')) {
+  const mv = def.moveById[POSE === 'normH' ? '5HP' : POSE === 'kickH' ? '5HK' : POSE.slice(4)];
   fighter.state = 'attack'; fighter.move = mv;
   fighter.moveFrame = mv.startup + 1;
   fighter.updateAnim();
@@ -213,6 +213,7 @@ for (let i = 0; i < pos.count; i++) {
 const camera = new THREE.PerspectiveCamera(38, W / H, 0.05, 60);
 if (POSE.startsWith('raw:')) camera.position.set(0.35, 1.15, 4.1);
 else if (POSE === 'face') camera.position.set(0.55, rig.bp.Head[1] + 0.12, 0.55);  // primer plano
+else if (process.env.SIDE_CAM) camera.position.set(0.35, 1.15, 4.1); // perfil, como en partida
 else camera.position.set(4.1, 1.15, 0.35);   // el rig mira a +X
 camera.lookAt(0, POSE === 'face' ? rig.bp.Head[1] + 0.10 : 1.0, 0);
 camera.updateMatrixWorld();

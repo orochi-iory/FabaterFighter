@@ -4,8 +4,8 @@
  * (lo rellena con el commit HEAD y la fecha actuales) antes de cada entrega.
  */
 export const BUILD = {
-  tag: 'v0.14',
-  commit: '2b27c01',
+  tag: 'v0.15',
+  commit: '7b4e01c',
   date: '2026-09-23',
-  notes: 'Silueta suavizada (mas anillos), articulaciones sin bolas de muneca, relieve de valor en tela, iluminacion con hemisferio y rim'
+  notes: 'Patadas y golpes reconstruidos segun tilesheets 2D: pierna plena, apoyo pivotado, tronco atras, brazos en tijera'
 };
