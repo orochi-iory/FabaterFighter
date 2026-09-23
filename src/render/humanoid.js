@@ -240,7 +240,7 @@ export class Humanoid {
       side: THREE.DoubleSide,
       map: cloth || null,
       bumpMap: cloth || null,
-      bumpScale: 0.18
+      bumpScale: 0.04
     });
     const skinMat = new THREE.MeshStandardMaterial({
       vertexColors: true,
@@ -1141,15 +1141,15 @@ function clothTexture() {
   x.fillStyle = '#e8e8e8';
   x.fillRect(0, 0, 128, 128);
   for (let i = 0; i < 128; i += 4) {
-    x.fillStyle = 'rgba(0,0,0,0.14)';
-    x.fillRect(0, i, 128, 2);
-    x.fillRect(i, 0, 2, 128);
-    x.fillStyle = 'rgba(255,255,255,0.55)';
-    x.fillRect(0, i + 2, 128, 1);
-    x.fillRect(i + 2, 0, 1, 128);
+    x.fillStyle = 'rgba(0,0,0,0.05)';
+    x.fillRect(0, i, 128, 1);
+    x.fillRect(i, 0, 1, 128);
+    x.fillStyle = 'rgba(255,255,255,0.20)';
+    x.fillRect(0, i + 1, 128, 1);
+    x.fillRect(i + 1, 0, 1, 128);
   }
   for (let i = 0; i < 46; i++) {
-    const a = 0.04 + Math.random() * 0.06;
+    const a = 0.02 + Math.random() * 0.03;
     x.fillStyle = `rgba(0,0,0,${a})`;
     x.beginPath();
     x.ellipse(Math.random() * 128, Math.random() * 128,
@@ -1158,5 +1158,6 @@ function clothTexture() {
   }
   const t = new THREE.CanvasTexture(c);
   t.wrapS = t.wrapT = THREE.RepeatWrapping;
+  t.repeat.set(2, 2);   // tejido fino, no cuadricula
   return t;
 }

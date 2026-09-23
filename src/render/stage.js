@@ -280,6 +280,7 @@ export class Stage {
 
     // --- Público humano instanciado ---
     this.buildCrowd(g);
+    this.buildProps(g, theme);
 
     // Vallas laterales
     for (const s of [-1, 1]) {
@@ -516,11 +517,49 @@ export class Stage {
 
   /* --- público ------------------------------------------------------- */
 
+  /** Elementos de escenario que enmarcan el tatami sin tapar la pelea. */
+  buildProps(g, theme) {
+    const poleMat = new THREE.MeshStandardMaterial({ color: 0x3b2a1a, roughness: 0.8 });
+    const flameMat = new THREE.MeshBasicMaterial({ color: 0xffa040 });
+    const crateMat = new THREE.MeshStandardMaterial({ color: theme === 'city' ? 0x4a5560 : 0x7a5a36, roughness: 0.85 });
+    const barrelMat = new THREE.MeshStandardMaterial({ color: theme === 'city' ? 0x8a3030 : 0x5d4426, roughness: 0.8 });
+    this.flames = [];
+    // Antorchas en las cuatro esquinas del entarimado
+    for (const [sx, sz] of [[-1, -1], [1, -1], [-1, 1], [1, 1]]) {
+      const x = sx * 8.6, z = -2.2 + sz * 2.6;
+      const pole = new THREE.Mesh(new THREE.CylinderGeometry(0.06, 0.9 * 0.1, 2.6, 8), poleMat);
+      pole.position.set(x, 1.3, z);
+      g.add(pole);
+      const flame = new THREE.Mesh(new THREE.ConeGeometry(0.16, 0.5, 8), flameMat);
+      flame.position.set(x, 2.75, z);
+      g.add(flame);
+      this.flames.push(flame);
+    }
+    // Pilas de barriles y cajas a los lados, fuera de la zona de lucha
+    for (const sx of [-1, 1]) {
+      const bx = sx * 10.4;
+      const spots = [[0, -3.4], [0.5, -2.6], [0.25, -3.0]];
+      for (let i = 0; i < spots.length; i++) {
+        const b = new THREE.Mesh(new THREE.CylinderGeometry(0.42, 0.42, 1.0, 10), barrelMat);
+        b.position.set(bx + spots[i][0], i === 2 ? 1.5 : 0.5, spots[i][1]);
+        g.add(b);
+      }
+      const c1 = new THREE.Mesh(new THREE.BoxGeometry(0.9, 0.9, 0.9), crateMat);
+      c1.position.set(bx - 0.6, 0.45, -1.6);
+      c1.rotation.y = 0.4;
+      g.add(c1);
+      const c2 = new THREE.Mesh(new THREE.BoxGeometry(0.7, 0.7, 0.7), crateMat);
+      c2.position.set(bx - 0.6, 1.25, -1.6);
+      c2.rotation.y = 0.9;
+      g.add(c2);
+    }
+  }
+
   buildCrowd(g) {
     const bodyGeo = crowdBodyGeo();
     const bodyMat = new THREE.MeshStandardMaterial({ roughness: 1, vertexColors: true });
     const headMat = new THREE.MeshStandardMaterial({ roughness: 0.9 });
-    const N = 260;
+    const N = 156;   // 6 filas: menos multitud, mas escenario
     const crowd = new THREE.InstancedMesh(bodyGeo, bodyMat, N);
     const heads = new THREE.InstancedMesh(new THREE.SphereGeometry(0.15, 8, 6), headMat, N);
     const dummy = new THREE.Object3D();
@@ -589,6 +628,13 @@ export class Stage {
       }
     }
     if (this.neon) this.neon.material.opacity = 0.85 + Math.sin(this.time * 17) * 0.1 + Math.sin(this.time * 3.1) * 0.05;
+    if (this.flames) {
+      for (let i = 0; i < this.flames.length; i++) {
+        const f = this.flames[i];
+        const k = 1 + Math.sin(this.time * 11 + i * 1.7) * 0.18 + Math.sin(this.time * 23 + i) * 0.08;
+        f.scale.set(k, 1 + (k - 1) * 1.6, k);
+      }
+    }
     // Público humano: balanceo_idle y salto colectivo cuando pasa algo importante.
     const hype = match ? Math.min(1, match.shake * 0.8 + (match.slowmo > 0 ? 0.7 : 0)) : 0;
     if (this.crowd) {

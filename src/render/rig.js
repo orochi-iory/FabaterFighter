@@ -400,7 +400,7 @@ export class Rig {
   applyArmSafety(f, plan) {
     if (plan.attack || f.airborne) return;
     const pose = f.anim ? f.anim.pose : 'idle';
-    if (['knockdown', 'ko', 'intro', 'win', 'maxactivate', 'crouch'].includes(pose)) return;
+    if (['knockdown', 'ko', 'win', 'maxactivate', 'crouch'].includes(pose)) return;
     this.bones.LeftArm.getWorldPosition(_v1);
     this.bones.LeftForeArm.getWorldPosition(_v2);
     const down = _v2.sub(_v1).normalize().y;
