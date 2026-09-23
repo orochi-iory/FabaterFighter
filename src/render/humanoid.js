@@ -1153,7 +1153,7 @@ function clothTexture() {
     x.fillStyle = `rgba(0,0,0,${a})`;
     x.beginPath();
     x.ellipse(Math.random() * 128, Math.random() * 128,
-      5 + Math.random() * 16, 2 + Math.random() * 6, Math.random() * 3.1, 0);
+      5 + Math.random() * 16, 2 + Math.random() * 6, Math.random() * 3.1, 0, Math.PI * 2);
     x.fill();
   }
   const t = new THREE.CanvasTexture(c);
