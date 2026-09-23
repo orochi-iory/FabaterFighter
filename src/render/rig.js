@@ -85,6 +85,10 @@ export class Rig {
     // sobre la base comun derivada de las laminas = personalidad visual.
     const id = (this.def && this.def.id) || 'zz';
     this.styleSeed = ((id.charCodeAt(0) * 7 + id.charCodeAt(1) * 13) % 100) / 100;
+    // Sesgos de estilo: postura base y guardia propias de cada luchador,
+    // aplican a todo (normales, especiales, supers) sobre la base comun.
+    this.leanBias = (this.styleSeed - 0.5) * 0.14;      // tronco +/- adelantado
+    this.guardBias = (this.styleSeed - 0.5) * 0.10;     // guardia mas alta/metros
 
     // root = posición mundial; body = orientación (yaw) del luchador
     this.body = this.humanoid.root;
@@ -242,6 +246,8 @@ export class Rig {
   /* --- respiración y peso ------------------------------------------- */
 
   applyBreathing(f) {
+    // Postura base propia del personaje (tronco mas o menos adelantado).
+    if (this.leanBias) this.bones.Spine.rotateX(this.leanBias * 0.5);
     const t = this.time;
     const breathe = Math.sin(t * 2.1) * 0.016 + Math.sin(t * 0.9) * 0.008;
     const idle = f.anim && (f.anim.pose === 'idle' || f.anim.state === 'idle');
@@ -314,7 +320,8 @@ export class Rig {
       const pe = GUARD[`elbow${side}`];
       // Agachado: la guardia baja con la cadera, no se queda a altura de pie.
       const drop = (f.anim && f.anim.pose === 'crouch') ? 0.42 * s : 0;
-      _v1.set(g[0], g[1] - drop, g[2] + drop * 0.3);
+      // guardBias: cada luchador lleva las manos mas largas/cortas o altas.
+      _v1.set(g[0], g[1] - drop + (this.guardBias || 0) * 0.3 * s, g[2] + drop * 0.3 + (this.guardBias || 0) * 0.5 * s);
       this.body.localToWorld(_v1);
       _v2.set(pe[0], pe[1] - drop * 0.6, pe[2]);
       this.body.localToWorld(_v2);
@@ -382,12 +389,15 @@ export class Rig {
     const k = this.crouchCur;
     if (k < 0.01) return;
     const s = this.height / WORLD_HEIGHT;
-    // La cadera baja a fondo y el IK de postura (applyStance) dobla las
-    // rodillas con los pies plantados bajo el cuerpo: guardia agachada real.
-    this.hips.position.y -= 0.50 * s * k;
-    this.bones.LowerBack.rotateX(-this.crouchSign * 0.22 * k); // tronco adelante
-    this.bones.Spine.rotateX(-this.crouchSign * 0.22 * k);
-    this.bones.Neck.rotateX(this.crouchSign * 0.34 * k);      // compensa: mira al frente
+    // Guardia agachada a fondo; los normales agachados usan un crouch mas
+    // alto (muslo ~45 grados, como en las laminas) para no quedar clavados
+    // ni convertir el muslo en una tabla horizontal.
+    const deep = pose === 'crouch' ? 1 : 0.62;
+    this.hips.position.y -= 0.50 * s * k * deep;
+    // ~30 grados de inclinacion, como en las laminas (no volcado)
+    this.bones.LowerBack.rotateX(-this.crouchSign * 0.15 * k * deep); // tronco adelante
+    this.bones.Spine.rotateX(-this.crouchSign * 0.15 * k * deep);
+    this.bones.Neck.rotateX(this.crouchSign * 0.24 * k * deep);      // compensa: mira al frente
   }
 
   /* --- caída al suelo procedural -------------------------------------- */
@@ -674,24 +684,28 @@ export class Rig {
    */
   applyStance(f, plan) {
     const pose = f.anim ? f.anim.pose : 'idle';
+    // Incluye los normales agachados: sin IK de pies, bajar la cadera los
+    // hundiría en el suelo.
+    const crouchPose = pose === 'crouch' ||
+      !!(f.move && f.move.input && f.move.input.dir === '2' && !f.airborne);
     // Solo en estados de pie: tumbado o volando el IK de pies estorbaría.
     const up = ['idle', 'dizzy', 'blockHigh', 'blockLow', 'parry', 'hitHigh', 'hitLow',
-      'walkF', 'walkB', 'walkSide', 'run', 'crouch'];
+      'walkF', 'walkB', 'walkSide', 'run'];
     let w = 0;
-    if (up.includes(pose)) {
-      w = pose === 'idle' || pose === 'dizzy' || pose.startsWith('block') || pose === 'parry' || pose === 'crouch'
+    if (crouchPose || up.includes(pose)) {
+      w = pose === 'idle' || pose === 'dizzy' || pose.startsWith('block') || pose === 'parry' || crouchPose
         ? 0.9 : pose.startsWith('hit') ? 0.85 : 0.6;
     }
     if (w <= 0.01 || f.airborne) return;
 
     const s = this.height / WORLD_HEIGHT;
-    const widen = (pose === 'crouch' ? 0.055 : 0.12) * s * (0.5 + 0.5 * (this.legLen || 1));
+    const widen = (crouchPose ? 0.055 : 0.12) * s * (0.5 + 0.5 * (this.legLen || 1));
     for (const side of ['L', 'R']) {
       const upleg = this.bones[side === 'L' ? 'LeftUpLeg' : 'RightUpLeg'];
       const leg = this.bones[side === 'L' ? 'LeftLeg' : 'RightLeg'];
       const foot = this.bones[side === 'L' ? 'LeftFoot' : 'RightFoot'];
       if (!foot) continue;
-      if (pose === 'crouch') {
+      if (crouchPose) {
         // Objetivo absoluto: pies plantados bajo el cuerpo, un poco adelante;
         // la cadera ya bajó, así que las rodillas se doblan solas.
         _v1.set(side === 'L' ? widen : -widen, 0.02 * s, 0.10 * s);
@@ -707,7 +721,8 @@ export class Rig {
       }
       // rodilla mirando al frente (en crouch el eje cadera-pie es casi
       // vertical y el polo debe empujar la rodilla bien adelante)
-      if (pose === 'crouch') _v2.set(side === 'L' ? 0.05 * s : -0.05 * s, 0.40 * s, 0.55 * s);
+      // espinilla vertical: rodilla sobre el pie, como en las laminas
+      if (crouchPose) _v2.set(side === 'L' ? 0.05 * s : -0.05 * s, 0.45 * s, 0.22 * s);
       else _v2.set(side === 'L' ? 0.12 * s : -0.12 * s, 0.55 * s, 0.3 * s);
       this.body.localToWorld(_v2);
       this.aimChain(upleg, leg, foot, _v1, _v2, w);

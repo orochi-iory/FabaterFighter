@@ -469,7 +469,9 @@ export class Fighter {
     this.hitDone = new Set();
     this.moveHitConnected = false;
     this.blocking = false;
-    this.vx = 0;
+    // En el aire se conserva el momento del salto: matar vx haria que el
+    // golpe aereo "se quedara colgado" y, con pushback, pareceria que recula.
+    if (!this.airborne) this.vx = 0;
     this.addMeter(m.meterGain || 0);
 
     if (m.super && m.super.flash) {

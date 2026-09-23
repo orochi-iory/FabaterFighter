@@ -327,7 +327,16 @@ export class Humanoid {
       const a = points[i], b = points[i + 1];
       for (let k = 1; k <= sub; k++) {
         const t = k / (sub + 1);
-        const lerpArr = (x, y) => x.map((v, j) => v + ((y[j] ?? v) - v) * t);
+        // Los indices de hueso NUNCA se interpolan como numeros: se hace
+        // union de huesos y se interpola el peso de cada uno (si no, salen
+        // indices basura y vertices que vuelan con otro hueso).
+        const ub = [], uw = [];
+        for (const bi of new Set([...a.b, ...b.b])) {
+          const wa = a.w[a.b.indexOf(bi)] || 0;
+          const wb = b.w[b.b.indexOf(bi)] || 0;
+          const w = wa + (wb - wa) * t;
+          if (w > 0.001) { ub.push(bi); uw.push(w); }
+        }
         out.push({
           d: a.d + (b.d - a.d) * t,
           rx: a.rx + (b.rx - a.rx) * t,
@@ -335,8 +344,8 @@ export class Humanoid {
           ou: (a.ou || 0) + ((b.ou || 0) - (a.ou || 0)) * t,
           ov: (a.ov || 0) + ((b.ov || 0) - (a.ov || 0)) * t,
           color: a.color.clone().lerp(b.color, t),
-          b: lerpArr(a.b, b.b),
-          w: lerpArr(a.w, b.w),
+          b: ub,
+          w: uw,
         });
       }
       out.push(b);
@@ -626,6 +635,14 @@ export class Humanoid {
     for (const dx of [-1, 1]) {
       this.ball(g, [dx * 0.084 * hs, cy - 0.012 * hs, cz - 0.006 * hs], 0.024 * hs, skin,
         headBone, [1], [0.42, 1.1, 0.8], 8);
+    }
+    // Ceja: listón sobre los ojos para que el perfil tenga arco brow/face
+    this.ball(g, [0, cy + 0.028 * hs, cz + 0.062 * hs], 0.020 * hs, skin,
+      headBone, [1], [3.4, 0.9, 1.1], 8);
+    // Pómulos: dan plano lateral a la cara (silueta humana de perfil)
+    for (const dx of [-1, 1]) {
+      this.ball(g, [dx * 0.058 * hs, cy - 0.008 * hs, cz + 0.052 * hs], 0.020 * hs, skin,
+        headBone, [1], [0.9, 1.0, 0.9], 8);
     }
     // Ojos y boca los pinta el calco de cara (facepaint.js); la geometría
     // hundida asomaba por encima de la textura y rompía el dibujo.
