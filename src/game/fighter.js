@@ -409,6 +409,14 @@ export class Fighter {
     // e) Atajos SP1 / SP2 (controles modernos y táctil).
     if (intent.pressed('SP1') && this.def.specials[0] && this.canUse(this.def.specials[0], intent, true)) return this.def.specials[0];
     if (intent.pressed('SP2') && this.def.specials[1] && this.canUse(this.def.specials[1], intent, true)) return this.def.specials[1];
+    // e0) Embestida: dash adelante (66) + botón fuerte durante el dash.
+    if (this.dash && this.dash.rel > 0 && !this.airborne) {
+      const hb = ['HP', 'HK'].find((b) => intent.pressed(b));
+      if (hb) {
+        const mv = this.moves.find((m) => m.id === '66' + hb);
+        if (mv && this.canUse(mv, intent)) return mv;
+      }
+    }
     // e) Normales.
     const btn = ['LP', 'LK', 'HP', 'HK'].find((b) => intent.pressed(b));
     if (btn) {
@@ -930,6 +938,34 @@ export function applyHit(attacker, defender, h, move, match, opts = {}) {
     defender.emit('armor');
     return { result: 'armor' };
   }
+  // Embestida (66+fuerte): absorbe UN golpe débil de pie sin interrumpirse,
+  // pero cualquier golpe agachado (low) la desestabiliza y manda al suelo.
+  const charging = defender.state === STATE.ATTACK && defender.move &&
+    (defender.move.tags || []).includes('charge');
+  if (charging && !h.unblockable) {
+    if (h.low) {
+      const res = doDamage(attacker, defender, h, move, match, opts);
+      defender.airborne = true;
+      defender.gravityOn = true;
+      defender.vy = 0.16;
+      defender.vx = attacker.facing * 0.09;
+      defender.juggle = JUGGLE_POINTS - 1;
+      defender.state = STATE.AIRHIT;
+      defender.stateFrame = 0;
+      defender.crouching = false;
+      defender.emit('destabilized');
+      return res;
+    }
+    if (h.level === 'L') {
+      defender.hitFlash = 8;
+      defender.addMeter(20);
+      match.hitstop = Math.max(match.hitstop, 5);
+      attacker.hitDone.add(opts.hitKey);
+      defender.emit('armor');
+      return { result: 'armor' };
+    }
+  }
+
   if (canBlock(defender, h)) return doBlock(attacker, defender, h, move, match, opts);
 
   const counterHit = defender.state === STATE.ATTACK && defender.move &&

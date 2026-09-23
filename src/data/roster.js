@@ -27,7 +27,7 @@ const KENJI = {
     gi: '#e9e6da', trim: '#b71c1c', skin: '#e7b189', hair: '#241d1a',
     belt: '#141414', accent: '#ff5252', aura: '#7fd4ff', glove: '#c62828', boot: '#2b2b2b'
   },
-  body: { height: 1.02, bulk: 1.0, armLen: 1.0, legLen: 1.0, head: 1.0, hair: 'spiky', band: 'headband' },
+  body: { height: 1.02, bulk: 1.0, armLen: 1.0, legLen: 1.0, head: 1.0, hair: 'spiky', band: 'headband', chargeStyle: { pName: 'Arashi Rush', kName: 'Arashi Drive', pSpeed: 0.24, kSpeed: 0.26 } },
   stats: { health: 1000, walk: 0.062, back: 0.052, power: 1.0, speed: 1.0, reach: 1.0, defense: 1.0, jump: 1.0, weight: 1.0 },
   fx: '#8fd8ff',
   specials: [
@@ -101,7 +101,7 @@ const VALERIA = {
     gi: '#ffd54f', trim: '#00897b', skin: '#c68642', hair: '#3e2723',
     belt: '#00695c', accent: '#00e5ff', aura: '#ffd54f', glove: '#ff7043', boot: '#ffffff'
   },
-  body: { height: 0.96, bulk: 0.82, armLen: 0.98, legLen: 1.12, head: 0.95, hair: 'ponytail', female: true },
+  body: { height: 0.96, bulk: 0.82, armLen: 0.98, legLen: 1.12, head: 0.95, hair: 'ponytail', female: true, top: 'tank', bottom: 'shorts', chargeStyle: { pName: 'Vendaval', kName: 'Tijera Voladora', pStartup: 9, kStartup: 11, pSpeed: 0.28, kSpeed: 0.3, pDmg: 64, kDmg: 74 } },
   stats: { health: 900, walk: 0.078, back: 0.064, power: 0.9, speed: 1.16, reach: 1.02, defense: 0.9, jump: 1.05, weight: 0.9 },
   fx: '#ffe082',
   specials: [
@@ -177,7 +177,7 @@ const BRUTUS = {
     gi: '#5d4037', trim: '#ff8f00', skin: '#e0a075', hair: '#c62828',
     belt: '#3e2723', accent: '#ffb300', aura: '#ff7043', glove: '#4e342e', boot: '#263238'
   },
-  body: { height: 1.16, bulk: 1.42, armLen: 1.05, legLen: 0.9, head: 1.05, hair: 'mohawk', beard: true },
+  body: { height: 1.16, bulk: 1.42, armLen: 1.05, legLen: 0.9, head: 1.05, hair: 'mohawk', beard: true, top: 'bare', chargeStyle: { pName: 'Bulldozer', kName: 'Tronco', pStartup: 14, kStartup: 16, pSpeed: 0.18, kSpeed: 0.2, pDmg: 92, kDmg: 102 } },
   stats: { health: 1180, walk: 0.046, back: 0.038, power: 1.24, speed: 0.82, reach: 1.02, defense: 1.22, jump: 0.82, weight: 1.3 },
   fx: '#ff8a65',
   throwRange: 1.55, throwDamage: 130,
@@ -239,7 +239,7 @@ const KAGEROU = {
     gi: '#263238', trim: '#7b1fa2', skin: '#d8a173', hair: '#121212',
     belt: '#4a148c', accent: '#e040fb', aura: '#b388ff', glove: '#1a1a1a', boot: '#37474f'
   },
-  body: { height: 0.94, bulk: 0.8, armLen: 0.95, legLen: 1.05, head: 0.92, hair: 'mask', scarf: true },
+  body: { height: 0.94, bulk: 0.8, armLen: 0.95, legLen: 1.05, head: 0.92, hair: 'mask', scarf: true, chargeStyle: { pName: 'Paso Fantasma', kName: 'Guadaña', pStartup: 8, kStartup: 10, pSpeed: 0.3, kSpeed: 0.3, pDmg: 58, kDmg: 68 } },
   stats: { health: 880, walk: 0.086, back: 0.072, power: 0.86, speed: 1.22, reach: 0.94, defense: 0.88, jump: 1.12, weight: 0.85 },
   fx: '#ce93d8',
   specials: [
@@ -310,7 +310,7 @@ const MAGNUS = {
     gi: '#ff7043', trim: '#4527a0', skin: '#f0c8a0', hair: '#eceff1',
     belt: '#311b92', accent: '#ffab40', aura: '#ff6e40', glove: '#ede7f6', boot: '#ffab40'
   },
-  body: { height: 1.1, bulk: 0.74, armLen: 1.5, legLen: 1.2, head: 0.9, hair: 'bald', turban: true },
+  body: { height: 1.1, bulk: 0.74, armLen: 1.5, legLen: 1.2, head: 0.9, hair: 'bald', turban: true, chargeStyle: { pName: 'Lanza del Dawn', kName: 'Media Luna', pSpeed: 0.2, kSpeed: 0.22 } },
   stats: { health: 920, walk: 0.048, back: 0.042, power: 1.05, speed: 0.9, reach: 1.55, defense: 1.0, jump: 0.95, weight: 1.0 },
   fx: '#ff8a65',
   specials: [
@@ -376,7 +376,7 @@ const REX = {
     gi: '#37474f', trim: '#fdd835', skin: '#e8b98f', hair: '#8d6e63',
     belt: '#263238', accent: '#40c4ff', aura: '#80d8ff', glove: '#1b5e20', boot: '#212121'
   },
-  body: { height: 1.08, bulk: 1.14, armLen: 1.06, legLen: 1.0, head: 1.0, hair: 'flat', cap: true },
+  body: { height: 1.08, bulk: 1.14, armLen: 1.06, legLen: 1.0, head: 1.0, hair: 'flat', cap: true, chargeStyle: { pName: 'Shoulder Ram', kName: 'Boot Hill', pStartup: 12, kStartup: 13, pSpeed: 0.22, pDmg: 80 } },
   stats: { health: 1020, walk: 0.056, back: 0.052, power: 1.06, speed: 0.94, reach: 1.06, defense: 1.1, jump: 0.96, weight: 1.1 },
   fx: '#80d8ff',
   specials: [
@@ -447,7 +447,7 @@ const ORION = {
     gi: '#212121', trim: '#d50000', skin: '#d9a066', hair: '#ff5722',
     belt: '#b71c1c', accent: '#ff6d00', aura: '#ff3d00', glove: '#d50000', boot: '#1b1b1b'
   },
-  body: { height: 1.0, bulk: 0.96, armLen: 1.02, legLen: 1.0, head: 0.98, hair: 'flame', scarf: true },
+  body: { height: 1.0, bulk: 0.96, armLen: 1.02, legLen: 1.0, head: 0.98, hair: 'flame', scarf: true, top: 'tank', chargeStyle: { pName: 'Llamarada', kName: 'Cometa', pSpeed: 0.26, kSpeed: 0.28, pDmg: 76 } },
   stats: { health: 980, walk: 0.07, back: 0.056, power: 1.08, speed: 1.06, reach: 1.0, defense: 0.98, jump: 1.0, weight: 1.0 },
   fx: '#ff5722',
   specials: [
@@ -551,7 +551,7 @@ const SERA = {
     gi: '#e1f5fe', trim: '#0288d1', skin: '#f2cdb0', hair: '#7e57c2',
     belt: '#4fc3f7', accent: '#00e5ff', aura: '#80deea', glove: '#ffffff', boot: '#b39ddb'
   },
-  body: { height: 0.92, bulk: 0.76, armLen: 0.94, legLen: 1.06, head: 0.94, hair: 'long', female: true },
+  body: { height: 0.92, bulk: 0.76, armLen: 0.94, legLen: 1.06, head: 0.94, hair: 'long', female: true, top: 'tank', chargeStyle: { pName: 'Vals de Hielo', kName: 'Aurora', pSpeed: 0.22, kSpeed: 0.24, pDmg: 66 } },
   stats: { health: 880, walk: 0.058, back: 0.052, power: 0.92, speed: 1.04, reach: 0.96, defense: 0.92, jump: 1.08, weight: 0.88 },
   fx: '#80deea',
   specials: [
@@ -624,7 +624,7 @@ const GORAN = {
     gi: '#795548', trim: '#558b2f', skin: '#dba87e', hair: '#4e342e',
     belt: '#33691e', accent: '#aed581', aura: '#a1887f', glove: '#6d4c41', boot: '#3e2723'
   },
-  body: { height: 1.2, bulk: 1.5, armLen: 1.1, legLen: 0.88, head: 1.06, hair: 'bald', beard: true },
+  body: { height: 1.2, bulk: 1.5, armLen: 1.1, legLen: 0.88, head: 1.06, hair: 'bald', beard: true, top: 'bare', chargeStyle: { pName: 'Seismo', kName: 'Avalancha', pStartup: 15, kStartup: 17, pSpeed: 0.16, kSpeed: 0.18, pDmg: 96, kDmg: 106 } },
   stats: { health: 1240, walk: 0.042, back: 0.036, power: 1.32, speed: 0.76, reach: 1.05, defense: 1.3, jump: 0.76, weight: 1.4 },
   fx: '#a1887f',
   throwRange: 1.6, throwDamage: 135,
@@ -690,7 +690,7 @@ const VESPER = {
     gi: '#1a237e', trim: '#ffee58', skin: '#f0c9a8', hair: '#ffee58',
     belt: '#fdd835', accent: '#ffff00', aura: '#40c4ff', glove: '#283593', boot: '#fdd835'
   },
-  body: { height: 0.98, bulk: 0.88, armLen: 1.0, legLen: 1.1, head: 0.96, hair: 'spiky', visor: true, female: true },
+  body: { height: 0.98, bulk: 0.88, armLen: 1.0, legLen: 1.1, head: 0.96, hair: 'spiky', visor: true, female: true, top: 'tank', bottom: 'shorts', chargeStyle: { pName: 'Sprint Volt', kName: 'Patada Tesla', pStartup: 8, kStartup: 10, pSpeed: 0.3, pDmg: 60, kDmg: 70 } },
   stats: { health: 940, walk: 0.08, back: 0.066, power: 0.98, speed: 1.14, reach: 1.0, defense: 0.94, jump: 1.14, weight: 0.92 },
   fx: '#40c4ff',
   specials: [

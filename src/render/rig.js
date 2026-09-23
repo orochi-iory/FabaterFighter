@@ -81,6 +81,10 @@ export class Rig {
     this.skeleton = this.humanoid.skeleton;
     this.aura = this.humanoid.aura;
     this.height = this.humanoid.height;
+    // Semilla de estilo por personaje: pequenas variaciones de angulo/altura
+    // sobre la base comun derivada de las laminas = personalidad visual.
+    const id = (this.def && this.def.id) || 'zz';
+    this.styleSeed = ((id.charCodeAt(0) * 7 + id.charCodeAt(1) * 13) % 100) / 100;
 
     // root = posición mundial; body = orientación (yaw) del luchador
     this.body = this.humanoid.root;
@@ -370,7 +374,10 @@ export class Rig {
   /** Agacharse de verdad: cadera abajo, muslos adelante, rodillas dobladas. */
   applyCrouch(f) {
     const pose = f.anim ? f.anim.pose : '';
-    const target = pose === 'crouch' ? 1 : 0;
+    // Los normales agachados (2X) se lanzan DESDE la postura de crouch,
+    // como en los juegos de referencia: no se golpea de pie con hitbox baja.
+    const crouchAtk = !!(f.move && f.move.input && f.move.input.dir === '2' && !f.airborne);
+    const target = (pose === 'crouch' || crouchAtk) ? 1 : 0;
     this.crouchCur = (this.crouchCur || 0) + (target - (this.crouchCur || 0)) * 0.30;
     const k = this.crouchCur;
     if (k < 0.01) return;
@@ -495,21 +502,37 @@ export class Rig {
         this.bones[n].quaternion.slerp(_qId, 0.85);
       }
       if (e < 0) { this.bones.RightUpLeg.rotateX(this.kickSign * e * 1.4); return; }
+      const sweep = mv.input && mv.input.dir === '2';
+      const charge = (mv.tags || []).includes('charge');
+      const seed = this.styleSeed;
+      // Barrido: ras de suelo. Embestida: media y contundente. El resto, a la
+      // altura del hitbox con matiz por personaje.
+      const yKick = sweep ? 0.13 * s : (charge ? hT * 0.8 : hT * (0.96 + 0.08 * seed));
       const legLen = up.getWorldPosition(_aA).distanceTo(leg.getWorldPosition(_aB))
         + leg.getWorldPosition(_aB).distanceTo(foot.getWorldPosition(_aC));
       // Pierna de pateo PLENA hacia la altura del golpe
-      _v1.set(0, hT, legLen * 0.99 * (0.35 + 0.65 * e));
+      _v1.set(0, yKick, legLen * 0.99 * (0.35 + 0.65 * e));
       this.body.localToWorld(_v1);
-      _v2.set(0, hT * 1.0 + 0.15 * s, 0.6 * s);         // rodilla arriba-adelante
+      _v2.set(0, Math.max(yKick, hT * 0.5) + 0.15 * s, 0.6 * s);  // rodilla arriba-adelante
       this.body.localToWorld(_v2);
       this.aimChain(up, leg, foot, _v1, _v2, w);
       this.body.updateMatrixWorld(true);
       // Apoyo: casi recto y pie pivotado (talón hacia el rival), como en 2D
       this.bones.LeftUpLeg.rotateX(0.10 * e);
       this.bones.LeftFoot.rotateY(-1.0 * e);
-      // Tronco atrás, nunca volcado adelante
-      this.bones.LowerBack.rotateX(this.kickSign * 0.18 * e);
-      this.bones.Spine.rotateX(this.kickSign * 0.22 * e);
+      if (sweep) {
+        // Barrido: sentado atrás sobre el apoyo, pierna rasa
+        this.bones.LowerBack.rotateX(-0.30 * e);
+        this.bones.Spine.rotateX(-0.12 * e);
+      } else if (charge) {
+        // Embestida: el cuerpo entra detrás de la patada
+        this.bones.LowerBack.rotateX(0.22 * e);
+        this.bones.Spine.rotateX(0.18 * e);
+      } else {
+        // Tronco atrás, nunca volcado adelante
+        this.bones.LowerBack.rotateX(this.kickSign * 0.18 * e);
+        this.bones.Spine.rotateX(this.kickSign * 0.22 * e);
+      }
       // Brazos en tijera: contrario adelanta a la cara, homólogo atrás-abajo
       _v1.set(0.12 * s, 1.30 * s, 0.55 * s); this.body.localToWorld(_v1);
       _v2.set(0.20 * s, 1.10 * s, 0.10 * s); this.body.localToWorld(_v2);
@@ -524,20 +547,33 @@ export class Rig {
       // mismo brazo (y el jab, el izquierdo).
       const leftish = /LP/.test(mv.id || '');
       const side = leftish ? 'Left' : 'Right';
+      const charge = (mv.tags || []).includes('charge');
+      const seed = this.styleSeed;
       const sh = this.bones[`${side}Arm`], el = this.bones[`${side}ForeArm`], ha = this.bones[`${side}Hand`];
       if (e < 0) { sh.rotateX(-e * 1.2); return; }     // recoge el puño
       // alcance = longitud real del brazo: puño extendido a la altura del golpe
       const armLen = sh.getWorldPosition(_aA).distanceTo(el.getWorldPosition(_aB))
         + el.getWorldPosition(_aB).distanceTo(ha.getWorldPosition(_aC));
       const lat = side === 'Left' ? 0.10 * s : -0.10 * s;
-      _v1.set(lat, hT, armLen * 0.95 * (0.35 + 0.65 * e));
+      const yPunch = charge ? hT * 0.95 : hT * (0.97 + 0.06 * seed);
+      _v1.set(lat, yPunch, armLen * 0.95 * (0.35 + 0.65 * e));
       this.body.localToWorld(_v1);
-      _v2.set(lat * 1.6, hT - 0.18 * s, 0.12 * s);     // codo bajo y atrás
+      _v2.set(lat * 1.6, yPunch - 0.18 * s, 0.12 * s);  // codo bajo y atrás
       this.body.localToWorld(_v2);
       this.aimChain(sh, el, ha, _v1, _v2, w);
       this.body.updateMatrixWorld(true);
       const other = side === 'Left' ? 'Right' : 'Left';
-      this.bones[`${other}Arm`].rotateX(0.35 * e);     // mano contraria en guardia
+      if (charge) {
+        // El cuerpo entra detrás del puño y el brazo contrario rema atrás
+        this.bones.LowerBack.rotateX(0.20 * e);
+        this.bones.Spine.rotateX(0.26 * e);
+        _v1.set(-lat * 1.5, 1.05 * s, -0.38 * s); this.body.localToWorld(_v1);
+        _v2.set(-lat * 2.0, 1.15 * s, -0.10 * s); this.body.localToWorld(_v2);
+        this.aimChain(this.bones[`${other}Arm`], this.bones[`${other}ForeArm`],
+          this.bones[`${other}Hand`], _v1, _v2, 0.85);
+      } else {
+        this.bones[`${other}Arm`].rotateX(0.35 * e);   // mano contraria en guardia
+      }
     }
   }
 
@@ -649,7 +685,7 @@ export class Rig {
     if (w <= 0.01 || f.airborne) return;
 
     const s = this.height / WORLD_HEIGHT;
-    const widen = (pose === 'crouch' ? 0.07 : 0.12) * s * (0.5 + 0.5 * (this.legLen || 1));
+    const widen = (pose === 'crouch' ? 0.055 : 0.12) * s * (0.5 + 0.5 * (this.legLen || 1));
     for (const side of ['L', 'R']) {
       const upleg = this.bones[side === 'L' ? 'LeftUpLeg' : 'RightUpLeg'];
       const leg = this.bones[side === 'L' ? 'LeftLeg' : 'RightLeg'];

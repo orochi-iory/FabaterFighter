@@ -4,8 +4,8 @@
  * (lo rellena con el commit HEAD y la fecha actuales) antes de cada entrega.
  */
 export const BUILD = {
-  tag: 'v0.16',
-  commit: '2262da3',
+  tag: 'v0.17',
+  commit: '7138268',
   date: '2026-09-23',
-  notes: 'Fuertes mucho mas lentos y largos que debiles; ataques aereos con pose de lamina (diagonal de pierna, puno hundido); encaje con arco atras'
+  notes: 'Bajos desde postura agachada; embestida 66+fuerte que absorbe debiles de pie y cae ante agachados; barrido derribador; ropa y pelo por personaje; cintura sin cuchilla'
 };

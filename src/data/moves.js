@@ -198,6 +198,32 @@ export function buildNormals(def) {
     fxColor: def.fx, sound: 'hitH'
   });
 
+  // --- Embestidas (66+fuerte): derriban, absorben débil de pie, --------
+  // --- pero un golpe agachado las desestabiliza. Con estilo por luchador.
+  const chg = def.chargeStyle || {};
+  add({
+    id: '66HP', name: chg.pName || 'Charging Blow', level: 'H', pose: 'chargeP',
+    input: { button: 'HP', dir: '66' },
+    startup: S(chg.pStartup ?? 11), active: 4, recovery: S(chg.pRecovery ?? 22),
+    motion: { type: 'lunge', start: 2, frames: S(chg.pStartup ?? 11) + 4, speed: chg.pSpeed ?? 0.22 },
+    hits: [hit({
+      box: box(0.9 * reach, 1.3, 1.1 * reach, 0.5), damage: dmg(chg.pDmg ?? 72), level: 'H',
+      launch: { x: 0.08, y: 0.17 }, juggle: 1
+    })],
+    tags: ['charge'], cancel: false, fxColor: def.fx, sound: 'hitH'
+  });
+  add({
+    id: '66HK', name: chg.kName || 'Charging Kick', level: 'H', pose: 'chargeK',
+    input: { button: 'HK', dir: '66' },
+    startup: S(chg.kStartup ?? 13), active: 4, recovery: S(chg.kRecovery ?? 26),
+    motion: { type: 'lunge', start: 2, frames: S(chg.kStartup ?? 13) + 4, speed: chg.kSpeed ?? 0.24 },
+    hits: [hit({
+      box: box(1.0 * reach, 0.8, 1.3 * reach, 0.6), damage: dmg(chg.kDmg ?? 84), level: 'H',
+      launch: { x: 0.1, y: 0.14 }, juggle: 1
+    })],
+    tags: ['charge'], cancel: false, fxColor: def.fx, sound: 'hitH'
+  });
+
   // --- Aéreos -------------------------------------------------------
   const airHits = [
     ['jLP', 'LP', box(0.62 * reach, 1.15, 0.8 * reach, 0.4), dmg(38), 'L', null],

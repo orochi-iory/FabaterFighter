@@ -271,7 +271,7 @@ export class Humanoid {
    * Superficie de revolución: anillos elípticos a lo largo de un eje.
    * points: [{d, rx, rz, color, b:[], w:[], oy?, oz?}]
    */
-  loft(g, origin, axis, points, radial = 14, capEnds = true) {
+  loft(g, origin, axis, points, radial = 14, capEnds = true, capDrop = 0) {
     const A = new THREE.Vector3(...axis).normalize();
     // Dos vectores perpendiculares estables
     const ref = Math.abs(A.y) > 0.9 ? new THREE.Vector3(1, 0, 0) : new THREE.Vector3(0, 1, 0);
@@ -303,8 +303,10 @@ export class Humanoid {
     for (let k = 0; k < rings.length - 1; k++) g.stitch(rings[k], rings[k + 1]);
     if (capEnds) {
       const first = points[0], last = points[points.length - 1];
-      const c0 = g.vert(...O.clone().addScaledVector(A, first.d)
-        .addScaledVector(U, first.ou || 0).addScaledVector(V, first.ov || 0).toArray(),
+      // capDrop: el centro de la tapa inferior baja, formando un cono en vez
+      // de un disco horizontal que asoma como una "cuchilla" en la cadera.
+      const c0 = g.vert(...O.clone().addScaledVector(A, first.d - capDrop)
+        .addScaledVector(U, (first.ou || 0) * 0.4).addScaledVector(V, (first.ov || 0) * 0.4).toArray(),
         first.color, first.b, first.w);
       g.cap(rings[0], c0, true);
       const Oe = O.clone().addScaledVector(A, last.d);
@@ -400,10 +402,11 @@ export class Humanoid {
       ], 1), 12, false);
 
       // Rodilla + gemelo: la pantorrilla tiene su volumen máximo arriba
+      const shinC = (this.body.bottom || 'pants') === 'shorts' ? skin : pants;
       this.loft(g, knee, [ankle[0] - knee[0], ankle[1] - knee[1], 0], this.densify([
-        { d: 0.00, rx: wide * 0.72, rz: wide * 0.74, color: pants, ...this.legW(side, 0.72) },
-        { d: shinLen * 0.22, rx: wide * 0.70, rz: wide * 0.86, color: pants, ...this.legW(side, 0.85) },
-        { d: shinLen * 0.60, rx: wide * 0.52, rz: wide * 0.62, color: pants, ...this.legW(side, 0.96) },
+        { d: 0.00, rx: wide * 0.72, rz: wide * 0.74, color: shinC, ...this.legW(side, 0.72) },
+        { d: shinLen * 0.22, rx: wide * 0.70, rz: wide * 0.86, color: shinC, ...this.legW(side, 0.85) },
+        { d: shinLen * 0.60, rx: wide * 0.52, rz: wide * 0.62, color: shinC, ...this.legW(side, 0.96) },
         { d: shinLen * 0.86, rx: wide * 0.40, rz: wide * 0.44, color: boot, ...this.legW(side, 1) },
         { d: shinLen, rx: wide * 0.40, rz: wide * 0.46, color: boot, ...this.footW(side, 0) }
       ], 1), 12, false);
@@ -481,7 +484,16 @@ export class Humanoid {
       { y: neck[1] - 0.02 * this.s, rx: chestX * 0.62, rz: chestZ * 0.66, color: gi }
     ].map((p) => ({ d: p.y, rx: p.rx, rz: p.rz, color: p.color, ...W(p.y) }));
 
-    this.loft(g, [0, 0, 0], [0, 1, 0], this.densify(profile, 1), 16, true);
+    // Ropa por personaje: sin kimono uniforme. tank = hombros/pecho al
+    // descubierto; bare = torso entero de piel.
+    const top = this.body.top || 'gi';
+    if (top === 'tank') profile.forEach((p, i) => { if (i >= 4) p.color = skin; });
+    // bare: torso de piel pero la cadera/cono inferior del color del pantalon
+    if (top === 'bare') profile.forEach((p, i) => { p.color = i < 2 ? gi : skin; });
+    const topC = top === 'gi' ? gi : (top === 'tank' ? gi : skin);
+    const shoulderC = top === 'gi' ? gi : skin;
+
+    this.loft(g, [0, 0, 0], [0, 1, 0], this.densify(profile, 1), 16, true, 0.10 * this.s);
 
     // Cinturón
     const beltY = yHips + 0.045 * this.s;
@@ -502,9 +514,9 @@ export class Humanoid {
       const sh = this.bp[`${side}Arm`];
       const dir = Math.sign(sh[0]) || 1;
       const dScale = female ? 0.82 : 1;
-      this.ball(g, [sh[0] * 0.55, sh[1] + 0.015 * this.s, 0], 0.062 * this.s * (0.9 + 0.15 * bulk) * dScale, gi,
+      this.ball(g, [sh[0] * 0.55, sh[1] + 0.015 * this.s, 0], 0.062 * this.s * (0.9 + 0.15 * bulk) * dScale, shoulderC,
         [this.boneIndex.Spine1, this.boneIndex[`${side}Shoulder`]], [0.55, 0.45], [1.1, 0.8, 1.0], 10);
-      this.ball(g, sh, 0.062 * this.s * (0.95 + 0.18 * bulk) * dScale, gi,
+      this.ball(g, sh, 0.062 * this.s * (0.95 + 0.18 * bulk) * dScale, shoulderC,
         [this.boneIndex[`${side}Arm`]], [1], [1, 1, 1], 10);
     }
 
@@ -513,7 +525,7 @@ export class Humanoid {
     const pecY = spine1[1] - 0.01 * this.s;
     for (const dx of [-1, 1]) {
       if (female) {
-        this.ball(g, [dx * chestX * 0.40, pecY - 0.015 * this.s, chestZ * 0.78], chestX * 0.34, gi,
+        this.ball(g, [dx * chestX * 0.40, pecY - 0.015 * this.s, chestZ * 0.78], chestX * 0.34, topC,
           [this.boneIndex.Spine1], [1], [1, 0.85, 0.85], 10);
       }
       // En ellos el loft del torso ya da el volumen de pecho: sin esferas
@@ -542,10 +554,11 @@ export class Humanoid {
       const rFore = rUp * 0.82;
 
       // Brazo: bíceps lleno, codo más estrecho
+      const sleeve = (this.body.top || 'gi') === 'gi' ? gi : skin;
       this.loft(g, sh, [dir, 0, 0], this.densify([
-        { d: 0, rx: rUp * 1.12, rz: rUp * 1.08, color: gi, ...this.armW(side, 0) },
-        { d: upLen * 0.4, rx: rUp * 1.02, rz: rUp * 0.98, color: gi, ...this.armW(side, 0.2) },
-        { d: upLen, rx: rUp * 0.80, rz: rUp * 0.80, color: gi, ...this.armW(side, 0.75) }
+        { d: 0, rx: rUp * 1.12, rz: rUp * 1.08, color: sleeve, ...this.armW(side, 0) },
+        { d: upLen * 0.4, rx: rUp * 1.02, rz: rUp * 0.98, color: sleeve, ...this.armW(side, 0.2) },
+        { d: upLen, rx: rUp * 0.80, rz: rUp * 0.80, color: sleeve, ...this.armW(side, 0.75) }
       ], 1), 12, false);
 
       // Antebrazo: musculoso arriba, muñeca fina
@@ -632,7 +645,7 @@ export class Humanoid {
     const C = [0, cy - 0.012 * hs, cz - 0.010 * hs];
     const R = 0.115 * hs;
     const cols = 12, rows = 14;
-    const a0 = -0.56, a1 = 0.56;      // horizontal
+    const a0 = -0.85, a1 = 0.85;      // horizontal (visible tambien de tres cuartos)
     const b0 = -0.80, b1 = 0.40;      // vertical (negativo = barbilla)
     const pos = [], uv = [], idx = [];
     for (let r = 0; r <= rows; r++) {
@@ -719,7 +732,7 @@ export class Humanoid {
           spike.rotation.set(Math.sin(a) * 0.7, 0, -Math.cos(a) * 0.7);
           grp.add(spike);
         }
-        const cap = hairCap(0.48);
+        const cap = hairCap(0.78);
         grp.add(cap);
         add(grp);
         break;
@@ -737,7 +750,7 @@ export class Humanoid {
       }
       case 'long': {
         const grp = new THREE.Group();
-        const cap = hairCap(0.52);
+        const cap = hairCap(1.0);
         grp.add(cap);
         // Melena: cae por la espalda (se ancla al cuello para que acompañe)
         const tail = new THREE.Mesh(new THREE.CylinderGeometry(0.062 * hs, 0.030 * hs, 0.30 * hs, 10), hairMat);
@@ -750,7 +763,7 @@ export class Humanoid {
       }
       case 'ponytail': {
         const grp = new THREE.Group();
-        const cap = hairCap(0.50);
+        const cap = hairCap(0.95);
         grp.add(cap);
         const tail = new THREE.Mesh(new THREE.CylinderGeometry(0.026 * hs, 0.014 * hs, 0.26 * hs, 8), hairMat);
         tail.position.set(0, -0.10 * hs, -0.075 * hs);
@@ -761,7 +774,7 @@ export class Humanoid {
         break;
       }
       case 'flat': {
-        const cap = hairCap(0.42);
+        const cap = hairCap(0.62);
         cap.scale.set(0.092, 0.098, 0.105);
         add(cap);
         break;
