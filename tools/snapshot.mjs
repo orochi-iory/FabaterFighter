@@ -176,6 +176,7 @@ rig.skeleton.update();
 /* ------------------------------------------------------------------ */
 
 const geo = rig.mesh.geometry;
+const SKIP_BODY = !!process.env.HIDE_BODY;
 const pos = geo.getAttribute('position');
 const nrm = geo.getAttribute('normal');
 const col = geo.getAttribute('color');
@@ -214,10 +215,12 @@ for (let i = 0; i < pos.count; i++) {
 
 const camera = new THREE.PerspectiveCamera(38, W / H, 0.05, 60);
 if (POSE.startsWith('raw:')) camera.position.set(0.35, 1.15, 4.1);
+else if (POSE === 'facefront') camera.position.set(0.9, rig.bp.Head[1] + 0.10, 0.0); // cara de frente
+else if (POSE === 'faceside') camera.position.set(0.0, rig.bp.Head[1] + 0.10, 0.9); // desde +Z
 else if (POSE === 'face') camera.position.set(0.55, rig.bp.Head[1] + 0.12, 0.55);  // primer plano
 else if (process.env.SIDE_CAM) camera.position.set(0.35, 1.15, 4.1); // perfil, como en partida
 else camera.position.set(4.1, 1.15, 0.35);   // el rig mira a +X
-camera.lookAt(0, POSE === 'face' ? rig.bp.Head[1] + 0.10 : 1.0, 0);
+camera.lookAt(0, (POSE === 'face' || POSE === 'facefront' || POSE === 'faceside') ? rig.bp.Head[1] + 0.10 : 1.0, 0);
 camera.updateMatrixWorld();
 camera.updateProjectionMatrix();
 const mvp = new THREE.Matrix4().multiplyMatrices(camera.projectionMatrix, camera.matrixWorldInverse);
@@ -245,7 +248,7 @@ for (let i = 0; i < pos.count; i++) {
 }
 
 let drawn = 0;
-for (let t = 0; t < idx.count; t += 3) {
+for (let t = 0; t < (SKIP_BODY ? 0 : idx.count); t += 3) {
   const a = scr[idx.getX(t)], b = scr[idx.getX(t + 1)], c = scr[idx.getX(t + 2)];
   if (a.w <= 0 || b.w <= 0 || c.w <= 0) continue;
   const minX = Math.max(0, Math.floor(Math.min(a.x, b.x, c.x)));
@@ -295,6 +298,8 @@ for (let t = 0; t < idx.count; t += 3) {
 }
 
 // --- segunda pasada: accesorios y calco de cara (mallas rígidas) -------
+if (process.env.HIDE_BODY) rig.mesh.visible = false;
+if (process.env.ONLY_DECAL) rig.root.traverse((o) => { if (o.isMesh && o !== rig.mesh && o !== rig.humanoid.faceDecal) o.visible = false; });
 rig.root.updateMatrixWorld(true);
 const extras = [];
 rig.root.traverse((o) => {

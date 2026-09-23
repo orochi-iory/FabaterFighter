@@ -10,6 +10,7 @@ import { Match } from './game/match.js';
 import { AI } from './game/ai.js';
 import { KeyboardInput, GamepadInput, CompositeInput } from './game/input.js';
 import { GameView } from './render/renderer.js';
+import { STAGE_THEMES } from './render/stage.js';
 import { HUD } from './ui/hud.js';
 import { Screens } from './ui/screens.js';
 import { sfx } from './audio/sfx.js';
@@ -181,6 +182,8 @@ class Game {
       mode === 'cpu' || mode === 'training' ? new AI(f2, f1, mode === 'training' ? 2 : 3) : null
     ];
     if (this.ais[1]) this.ais[1].match = this.match;
+    // Escenario aleatorio por combate (el templo, la ciudad o la playa)
+    this.view.setStage(STAGE_THEMES[Math.floor(Math.random() * STAGE_THEMES.length)]);
     this.view.setFighters([def1, def2]);
     this.view.fx.clear();
     this.hud.setNames(f1, f2);

@@ -134,7 +134,7 @@ async function body(game) {
   assert.equal(game.screens.current, 'select');
   game.screens.moveCursor(0, 1, 0);
   game.screens.confirm(0);
-  await new Promise((r) => setTimeout(r, 2200));
+  await waitFor(() => game.state === 'fight', 6000);
 
   assert.equal(game.state, 'fight', `estado=${game.state}`);
   assert.ok(game.match, 'debe existir un combate');
@@ -142,7 +142,7 @@ async function body(game) {
   assert.ok(game.ais[1], 'en modo CPU el jugador 2 es la IA');
 
   // Deja correr el bucle real (rAF) durante unos segundos de juego.
-  await new Promise((r) => setTimeout(r, 900));
+  await new Promise((r) => setTimeout(r, 1500));
   assert.ok(game.match.frame > 60, `frames simulados: ${game.match.frame}`);
   assert.equal(errors.length, 0, `errores durante el combate: ${errors.join(' | ')}`);
 

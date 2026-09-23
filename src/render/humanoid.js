@@ -1,13 +1,17 @@
 /**
  * Humanoide procedural con malla skinneada.
  *
- * A diferencia de un muñeco de cajas, aquí hay UN solo SkinnedMesh: cada vértice
- * lleva índices y pesos de hueso, así que codos, rodillas, cintura y cuello se
- * doblan de forma continua en lugar de abrir huecos entre piezas.
+ * v0.20: el cuerpo ya no se compone de "cáscaras" que se intersecan (tubos +
+ * esferas sueltas cuyo cruce se ve como sopa de polígonos). Ahora el cuerpo se
+ * define como un campo implícito (SDF): una lista de primitivas (elipsoides y
+ * cápsulas cónicas elípticas) que se funden con un mínimo suave, y de ahí se
+ * extrae UNA sola superficie continua y estanca con marching tetrahedra.
+ * El resultado es un modelo "esculpido": hombros, caderas, pecho y gemelos
+ * fluyen de una pieza, sin aristas de intersección ni tapas que asoman.
  *
- * Todas las posiciones de vértice se generan en el espacio de la pose de reposo
- * (T-pose), que es el espacio que espera el skinning; los pesos reparten cada
- * vértice entre los dos huesos que se encuentran en esa articulación.
+ * El skinning no cambia: cada vértice recibe índices/pesos de hueso herencia-
+ * dos de las primitivas que lo dominan (mezclados en los bordes), así el mismo
+ * esqueleto y el mismo rig posan esta malla sin tocar nada más.
  *
  * Las proporciones salen de skeleton-def.js (humano de 1.75 m) escaladas por
  * luchador con body.{height,bulk,armLen,legLen,head}.
@@ -21,74 +25,115 @@ export const WORLD_HEIGHT = 1.86;
 const UNIT = WORLD_HEIGHT / RIG_HEIGHT;
 const TAU = Math.PI * 2;
 
+/** Superficie extraída por personaje (la extracción SDF es lo caro). */
+const SURF_CACHE = new Map();
+
 /* ------------------------------------------------------------------ */
-/* Acumulador de geometría                                             */
+/* Campo implícito: primitivas que se funden                           */
 /* ------------------------------------------------------------------ */
 
-class Geo {
+/**
+ * Primitiva del campo: cápsula cónica de sección elíptica entre `a` y `b`
+ * (radios rx/rz en cada extremo). Con a==b y rx==rz queda un elipsoide.
+ * `col` es el color lineal, `mat` 0=tela/equipo 1=piel, `b`/`w` los huesos.
+ */
+class Field {
   constructor() {
-    this.pos = [];
-    this.col = [];
-    this.idx = [];
-    this.si = [];
-    this.sw = [];
-    this.uv = [];
+    this.prims = [];
+    this.min = [Infinity, Infinity, Infinity];
+    this.max = [-Infinity, -Infinity, -Infinity];
   }
 
-  vert(x, y, z, color, bones, weights, u = 0, v = 0) {
-    const i = this.pos.length / 3;
-    this.pos.push(x, y, z);
-    this.col.push(color.r, color.g, color.b);
-    this.uv.push(u, v);
-    const b = [0, 0, 0, 0], w = [0, 0, 0, 0];
-    let sum = 0;
-    for (let k = 0; k < bones.length && k < 4; k++) {
-      b[k] = bones[k];
-      w[k] = weights[k];
-      sum += weights[k];
-    }
-    if (sum <= 0) { b[0] = bones[0] || 0; w[0] = 1; sum = 1; }
-    for (let k = 0; k < 4; k++) this.sw.push(w[k] / sum);
-    this.si.push(b[0], b[1], b[2], b[3]);
-    return i;
-  }
-
-  /**
-   * Une dos anillos consecutivos. `a` y `b` son los ARRAYS de índices devueltos
-   * al generar cada anillo (no su índice base): así no dependemos de que los
-   * vértices sean contiguos y no hay riesgo de concatenar strings por error.
-   */
-  stitch(a, b) {
-    // Anillos "abiertos": el último vértice duplica el primero con la UV de
-    // costura completa, así la textura no da la vuelta entera en un triángulo.
-    const n = Math.min(a.length, b.length);
-    for (let i = 0; i < n - 1; i++) {
-      const i2 = i + 1;
-      this.idx.push(a[i], b[i2], b[i], a[i], a[i2], b[i2]);
+  add(a, b, r0x, r0z, r1x, r1z, col, mat, bones, weights) {
+    const ax = b[0] - a[0], ay = b[1] - a[1], az = b[2] - a[2];
+    const L = Math.hypot(ax, ay, az);
+    const A = L > 1e-9 ? [ax / L, ay / L, az / L] : [0, 1, 0];
+    const ref = Math.abs(A[1]) > 0.9 ? [1, 0, 0] : [0, 1, 0];
+    // U = A x ref, V = A x U (marco perpendicular estable)
+    let U = [
+      A[1] * ref[2] - A[2] * ref[1],
+      A[2] * ref[0] - A[0] * ref[2],
+      A[0] * ref[1] - A[1] * ref[0]
+    ];
+    const ul = Math.hypot(...U) || 1; U = U.map((v) => v / ul);
+    const V = [
+      A[1] * U[2] - A[2] * U[1],
+      A[2] * U[0] - A[0] * U[2],
+      A[0] * U[1] - A[1] * U[0]
+    ];
+    const bc = [(a[0] + b[0]) / 2, (a[1] + b[1]) / 2, (a[2] + b[2]) / 2];
+    const bd = L / 2 + Math.max(r0x, r0z, r1x, r1z);
+    const mr = Math.max(r0x, r0z, r1x, r1z);
+    // AABB ceñida (rechazo barato por eje antes del SDF completo)
+    const ex = Math.abs(A[0]) * L / 2 + (Math.abs(U[0]) + Math.abs(V[0])) * mr;
+    const ey = Math.abs(A[1]) * L / 2 + (Math.abs(U[1]) + Math.abs(V[1])) * mr;
+    const ez = Math.abs(A[2]) * L / 2 + (Math.abs(U[2]) + Math.abs(V[2])) * mr;
+    this.prims.push({ a, b, L, A, U, V, r0x, r0z, r1x, r1z, col, mat, bones, weights, bc, bd, ex, ey, ez });
+    const m = bd;
+    for (const p of [a, b]) {
+      for (let k = 0; k < 3; k++) {
+        this.min[k] = Math.min(this.min[k], p[k] - m);
+        this.max[k] = Math.max(this.max[k], p[k] + m);
+      }
     }
   }
 
-  /** Tapa un anillo con un abanico de triángulos hacia el vértice `center`. */
-  cap(ring, center, flip = false) {
-    for (let i = 0; i < ring.length - 1; i++) {
-      const i2 = i + 1;
-      if (flip) this.idx.push(center, ring[i], ring[i2]);
-      else this.idx.push(center, ring[i2], ring[i]);
+  /** Elipsoide de radios (sx,sy,sz) en `c`. */
+  ball(c, sx, sy, sz, col, mat, bones, weights) {
+    this.add(c, c, sx, sz, sx, sz, col, mat, bones, weights);
+    const pr = this.prims[this.prims.length - 1];
+    pr.ry = sy;
+    pr.bd = Math.max(pr.bd, sy);
+    pr.ex = sx; pr.ey = sy; pr.ez = sz;
+    for (let k = 0; k < 3; k++) {
+      this.min[k] = Math.min(this.min[k], c[k] - pr.bd);
+      this.max[k] = Math.max(this.max[k], c[k] + pr.bd);
     }
   }
 
-  toGeometry() {
-    const g = new THREE.BufferGeometry();
-    g.setAttribute('position', new THREE.Float32BufferAttribute(this.pos, 3));
-    g.setAttribute('color', new THREE.Float32BufferAttribute(this.col, 3));
-    g.setAttribute('uv', new THREE.Float32BufferAttribute(this.uv, 2));
-    g.setAttribute('skinIndex', new THREE.Uint16BufferAttribute(this.si, 4));
-    g.setAttribute('skinWeight', new THREE.Float32BufferAttribute(this.sw, 4));
-    g.setIndex(this.idx);
-    g.computeVertexNormals();
-    g.computeBoundingSphere();
-    return g;
+  /** Distancia con signo al primitiva (fuera > 0). Aproximación estable. */
+  sdPrim(p, pr) {
+    const dx = p[0] - pr.a[0], dy = p[1] - pr.a[1], dz = p[2] - pr.a[2];
+    if (pr.L < 1e-9) {                       // elipsoide
+      const ry = pr.ry || pr.r0x;
+      const q = Math.hypot(dx / pr.r0x, dy / ry, dz / pr.r0z);
+      return (q - 1) * Math.min(pr.r0x, ry, pr.r0z);
+    }
+    const u = dx * pr.A[0] + dy * pr.A[1] + dz * pr.A[2];
+    const e1 = dx * pr.U[0] + dy * pr.U[1] + dz * pr.U[2];
+    const e2 = dx * pr.V[0] + dy * pr.V[1] + dz * pr.V[2];
+    const t = Math.max(0, Math.min(1, u / pr.L));
+    const rx = pr.r0x + (pr.r1x - pr.r0x) * t;
+    const rz = pr.r0z + (pr.r1z - pr.r0z) * t;
+    const m = Math.min(rx, rz);
+    const w = Math.sqrt((e1 / rx) * (e1 / rx) + (e2 / rz) * (e2 / rz));
+    let d = (w - 1) * m;
+    const c0 = Math.hypot(e1, e2, u) - pr.r0z;      // tapa esférica en a
+    const c1 = Math.hypot(e1, e2, u - pr.L) - pr.r1z; // y en b
+    if (u < 0) d = c0; else if (u > pr.L) d = c1; else d = Math.min(d, c0, c1);
+    return d;
   }
+
+  /** Los dos primitivas más cercanos en p: [d0,i0,d1,i1]. */
+  nearest2(p) {
+    let d0 = Infinity, i0 = 0, d1 = Infinity, i1 = 0;
+    const P = this.prims;
+    for (let i = 0; i < P.length; i++) {
+      const pr = P[i];
+      // rechazo barato por AABB antes del SDF completo
+      const qx = p[0] - pr.bc[0], qy = p[1] - pr.bc[1], qz = p[2] - pr.bc[2];
+      if (qx > pr.ex || qx < -pr.ex || qy > pr.ey || qy < -pr.ey || qz > pr.ez || qz < -pr.ez) {
+        // fuera de la caja: distancia mínima estimada por si aun compite
+        const ox = Math.max(Math.abs(qx) - pr.ex, 0), oy = Math.max(Math.abs(qy) - pr.ey, 0), oz = Math.max(Math.abs(qz) - pr.ez, 0);
+        if (ox * ox + oy * oy + oz * oz > d1 * d1 && d1 !== Infinity) continue;
+      }
+      const d = this.sdPrim(p, pr);
+      if (d < d0) { d1 = d0; i1 = i0; d0 = d; i0 = i; }
+      else if (d < d1) { d1 = d; i1 = i; }
+    }
+    return [d0, i0, d1, i1];
+  }
+
 }
 
 /* ------------------------------------------------------------------ */
@@ -136,15 +181,57 @@ export class Humanoid {
     }
     this.boneIndex = Object.fromEntries(JOINTS.map((j, i) => [j.name, i]));
 
-    const g = new Geo();
-    this.buildLegs(g);
-    this.buildTorso(g);
-    this.buildArms(g);
-    this.buildHead(g);
+    const F = new Field();
+    this.buildLegs(F);
+    this.buildTorso(F);
+    this.buildArms(F);
+    this.buildHead(F);
+    this.field = F;
 
-    // Doble cara: con geometría procedural el sentido de los índices puede variar
-    // por tramo; three.js invierte la normal en las caras traseras, así la
-    // iluminación sigue siendo correcta y no aparecen piezas invisibles.
+    // La extracción SDF domina el coste de construcción; el selector y el
+    // combate reconstruyen los mismos luchadores, así se cachea por personaje.
+    let surf = SURF_CACHE.get(this.def.id);
+    if (!surf) {
+      const raw = extractSurface(F, this.s);
+      // Relieve de valor: oscurece suavemente la parte baja para quebrar el
+      // tono plano (sin ruido por vértice: eso delataba cada triángulo).
+      let hRef = 0;
+      for (let i = 1; i < raw.positions.length; i += 3) hRef = Math.max(hRef, raw.positions[i]);
+      for (let i = 0; i < raw.colors.length; i += 3) {
+        const f = 0.86 + 0.20 * Math.min(1, Math.max(0, raw.positions[i + 1] / (hRef * 0.95)));
+        raw.colors[i] *= f; raw.colors[i + 1] *= f; raw.colors[i + 2] *= f;
+      }
+      // Normales analíticas del campo: gradiente por diferencias finitas,
+      // siempre hacia fuera (el campo crece al alejarse del cuerpo).
+      const pos = raw.positions;
+      const nrm = new Float32Array((pos.length / 3) * 3);
+      const e = 0.012 * this.s;
+      const pA = [0, 0, 0];
+      for (let i = 0; i < pos.length / 3; i++) {
+        pA[0] = pos[i * 3]; pA[1] = pos[i * 3 + 1]; pA[2] = pos[i * 3 + 2];
+        const f0 = fieldVal(F, pA);
+        pA[0] += e; const gx = fieldVal(F, pA) - f0; pA[0] -= e;
+        pA[1] += e; const gy = fieldVal(F, pA) - f0; pA[1] -= e;
+        pA[2] += e; const gz = fieldVal(F, pA) - f0; pA[2] -= e;
+        const l = Math.hypot(gx, gy, gz) || 1;
+        nrm[i * 3] = gx / l; nrm[i * 3 + 1] = gy / l; nrm[i * 3 + 2] = gz / l;
+      }
+      surf = { ...raw, nrm };
+      SURF_CACHE.set(this.def.id, surf);
+    }
+    const { positions, colors, mats, uvs, sis, sws, indices, nrm } = surf;
+
+    const geo = new THREE.BufferGeometry();
+    geo.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
+    geo.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3));
+    geo.setAttribute('uv', new THREE.Float32BufferAttribute(uvs, 2));
+    geo.setAttribute('skinIndex', new THREE.Uint16BufferAttribute(sis, 4));
+    geo.setAttribute('skinWeight', new THREE.Float32BufferAttribute(sws, 4));
+    geo.setIndex(indices);
+    geo.setAttribute('normal', new THREE.Float32BufferAttribute(nrm, 3));
+    geo.computeBoundingSphere();
+
+    // Dos grupos de material (tela / piel) según el atributo `mat`.
     const cloth = clothTexture();
     const clothMat = new THREE.MeshStandardMaterial({
       vertexColors: true,
@@ -153,7 +240,7 @@ export class Humanoid {
       side: THREE.DoubleSide,
       map: cloth || null,
       bumpMap: cloth || null,
-      bumpScale: 0.4
+      bumpScale: 0.18
     });
     const skinMat = new THREE.MeshStandardMaterial({
       vertexColors: true,
@@ -161,21 +248,7 @@ export class Humanoid {
       metalness: 0.02,
       side: THREE.DoubleSide
     });
-    // Relieve de valor: los tonos planos por vértice son gran parte del aspecto
-    // "arcilla". Oscurecemos suavemente la parte baja (la luz cenital real hace
-    // eso) y añadimos micro-variación determinista para quebrar el plano uniforme.
-    {
-      let hRef = 0;
-      for (let i = 1; i < g.pos.length; i += 3) hRef = Math.max(hRef, g.pos[i]);
-      for (let i = 0; i < g.col.length; i += 3) {
-        const y = g.pos[i + 1];
-        let f = 0.86 + 0.20 * Math.min(1, Math.max(0, y / (hRef * 0.95)));
-        f += Math.sin(i * 12.9898) * 0.025;
-        g.col[i] *= f; g.col[i + 1] *= f; g.col[i + 2] *= f;
-      }
-    }
-    const geo = g.toGeometry();
-    assignMaterialGroups(geo, this.palette);
+    splitGroupsByMat(geo, mats);
     this.mesh = new THREE.SkinnedMesh(geo, [clothMat, skinMat]);
     this.mesh.frustumCulled = false;
     this.mesh.castShadow = true;
@@ -236,16 +309,9 @@ export class Humanoid {
     const c = new THREE.Color(hex || '#888888');
     c.convertSRGBToLinear();
     this.palette.push({ r: c.r, g: c.g, b: c.b, mat });
-    return c;
+    return { c: [c.r, c.g, c.b], mat };
   }
 
-  mix(a, b, t) {
-    const c = this.col(a);
-    c.lerp(this.col(b), t);
-    return c;
-  }
-
-  /** Peso lineal entre dos huesos según `t` (0 = todo A, 1 = todo B). */
   blend2(A, B, t) {
     const ia = this.boneIndex[A], ib = this.boneIndex[B];
     if (t <= 0.001) return { b: [ia], w: [1] };
@@ -255,7 +321,6 @@ export class Humanoid {
 
   /** Reparte el peso entre varios huesos según la altura (para el torso). */
   byHeight(y, stops) {
-    // stops: [{name, y}] ordenados por y
     for (let i = 0; i < stops.length - 1; i++) {
       const a = stops[i], b = stops[i + 1];
       if (y <= b.y) {
@@ -267,128 +332,18 @@ export class Humanoid {
     return { b: [this.boneIndex[last.name]], w: [1] };
   }
 
-  /**
-   * Superficie de revolución: anillos elípticos a lo largo de un eje.
-   * points: [{d, rx, rz, color, b:[], w:[], oy?, oz?}]
-   */
-  loft(g, origin, axis, points, radial = 14, capEnds = true, capDrop = 0) {
-    const A = new THREE.Vector3(...axis).normalize();
-    // Dos vectores perpendiculares estables
-    const ref = Math.abs(A.y) > 0.9 ? new THREE.Vector3(1, 0, 0) : new THREE.Vector3(0, 1, 0);
-    const U = new THREE.Vector3().crossVectors(A, ref).normalize();
-    const V = new THREE.Vector3().crossVectors(A, U).normalize();
-    const O = new THREE.Vector3(...origin);
-
-    const K = 3;   // repeticiones de textura por metro
-    const rings = [];
-    let vAcc = 0;
-    let prevD = null;
-    for (const p of points) {
-      if (prevD !== null) vAcc += Math.abs(p.d - prevD) * K;
-      prevD = p.d;
-      const c = O.clone().addScaledVector(A, p.d)
-        .addScaledVector(U, p.ou || 0).addScaledVector(V, p.ov || 0);
-      const circ = TAU * (p.rx + p.rz) * 0.5 * K;
-      const ring = [];
-      for (let i = 0; i <= radial; i++) {   // <= : duplica la costura con u completa
-        const a = ((i % radial) / radial) * TAU;
-        const ca = Math.cos(a), sa = Math.sin(a);
-        const x = c.x + U.x * ca * p.rx + V.x * sa * p.rz;
-        const y = c.y + U.y * ca * p.rx + V.y * sa * p.rz;
-        const z = c.z + U.z * ca * p.rx + V.z * sa * p.rz;
-        ring.push(g.vert(x, y, z, p.color, p.b, p.w, (i / radial) * circ, vAcc));
-      }
-      rings.push(ring);
-    }
-    for (let k = 0; k < rings.length - 1; k++) g.stitch(rings[k], rings[k + 1]);
-    if (capEnds) {
-      const first = points[0], last = points[points.length - 1];
-      // capDrop: el centro de la tapa inferior baja, formando un cono en vez
-      // de un disco horizontal que asoma como una "cuchilla" en la cadera.
-      const c0 = g.vert(...O.clone().addScaledVector(A, first.d - capDrop)
-        .addScaledVector(U, (first.ou || 0) * 0.4).addScaledVector(V, (first.ov || 0) * 0.4).toArray(),
-        first.color, first.b, first.w);
-      g.cap(rings[0], c0, true);
-      const Oe = O.clone().addScaledVector(A, last.d);
-      const c1 = g.vert(...Oe.addScaledVector(U, last.ou || 0).addScaledVector(V, last.ov || 0).toArray(),
-        last.color, last.b, last.w);
-      g.cap(rings[rings.length - 1], c1, false);
-    }
-    return rings;
-  }
-
-  /**
-   * Subdivide el perfil de un loft interpolando radios/offsets/pesos:
-   * más anillos = silueta más suave sin tocar cada perfil a mano.
-   */
-  densify(points, sub = 1) {
-    const out = [points[0]];
-    for (let i = 0; i < points.length - 1; i++) {
-      const a = points[i], b = points[i + 1];
-      for (let k = 1; k <= sub; k++) {
-        const t = k / (sub + 1);
-        // Los indices de hueso NUNCA se interpolan como numeros: se hace
-        // union de huesos y se interpola el peso de cada uno (si no, salen
-        // indices basura y vertices que vuelan con otro hueso).
-        const ub = [], uw = [];
-        for (const bi of new Set([...a.b, ...b.b])) {
-          const wa = a.w[a.b.indexOf(bi)] || 0;
-          const wb = b.w[b.b.indexOf(bi)] || 0;
-          const w = wa + (wb - wa) * t;
-          if (w > 0.001) { ub.push(bi); uw.push(w); }
-        }
-        out.push({
-          d: a.d + (b.d - a.d) * t,
-          rx: a.rx + (b.rx - a.rx) * t,
-          rz: a.rz + (b.rz - a.rz) * t,
-          ou: (a.ou || 0) + ((b.ou || 0) - (a.ou || 0)) * t,
-          ov: (a.ov || 0) + ((b.ov || 0) - (a.ov || 0)) * t,
-          color: a.color.clone().lerp(b.color, t),
-          b: ub,
-          w: uw,
-        });
-      }
-      out.push(b);
-    }
-    return out;
-  }
-
-  /** Esfera/elipsoide con pesos constantes. */
-  ball(g, center, r, color, bones, weights, squash = [1, 1, 1], seg = 12) {
-    const rings = Math.max(4, Math.round(seg * 0.7));
-    const ringIdx = [];
-    const K = 3;
-    for (let j = 1; j < rings; j++) {
-      const phi = (j / rings) * Math.PI;
-      const sp = Math.sin(phi), cp = Math.cos(phi);
-      const circ = TAU * r * sp * K;
-      const ring = [];
-      for (let i = 0; i <= seg; i++) {
-        const th = ((i % seg) / seg) * TAU;
-        ring.push(g.vert(
-          center[0] + r * sp * Math.cos(th) * squash[0],
-          center[1] + r * cp * squash[1],
-          center[2] + r * sp * Math.sin(th) * squash[2],
-          color, bones, weights, (i / seg) * circ, phi * r * K
-        ));
-      }
-      ringIdx.push(ring);
-    }
-    for (let k = 0; k < ringIdx.length - 1; k++) g.stitch(ringIdx[k], ringIdx[k + 1]);
-    const top = g.vert(center[0], center[1] + r * squash[1], center[2], color, bones, weights);
-    g.cap(ringIdx[0], top, true);
-    const bot = g.vert(center[0], center[1] - r * squash[1], center[2], color, bones, weights);
-    g.cap(ringIdx[ringIdx.length - 1], bot, false);
+  /** Cápsula cónica elíptica entre dos anillos (sustituye al loft antiguo). */
+  tube(F, a, b, r0x, r0z, r1x, r1z, paint, bw) {
+    F.add(a, b, r0x, r0z, r1x, r1z, paint.c, paint.mat, bw.b, bw.w);
   }
 
   /* --- piernas ------------------------------------------------------ */
 
-  buildLegs(g) {
+  buildLegs(F) {
     const C = this.colors;
     const bulk = this.bulk;
     const skin = this.col(C.skin, 1);
     const pants = this.col(C.gi);
-    const trim = this.col(C.trim);
     const boot = this.col(C.boot);
 
     for (const side of ['Left', 'Right']) {
@@ -399,42 +354,52 @@ export class Humanoid {
       const thighLen = Math.hypot(knee[1] - hip[1], knee[0] - hip[0]);
       const shinLen = Math.hypot(ankle[1] - knee[1], ankle[0] - knee[0]);
 
-      // El grosor crece con el tamaño y con la longitud de pierna: una pierna
-      // un 20 % más larga con el mismo radio parecería un fideo.
       const wide = (0.052 + 0.030 * (bulk - 1) + 0.010) * this.s * Math.sqrt(this.legLen);
-      // Muslo: grueso arriba, más fino en la rodilla (densificado: más anillos)
-      this.loft(g, hip, [knee[0] - hip[0], knee[1] - hip[1], 0], this.densify([
-        { d: 0.00, rx: wide * 1.25, rz: wide * 1.20, color: pants, ...this.legW(side, 0) },
-        { d: thighLen * 0.35, rx: wide * 1.10, rz: wide * 1.05, color: pants, ...this.legW(side, 0.1) },
-        { d: thighLen * 0.75, rx: wide * 0.86, rz: wide * 0.84, color: pants, ...this.legW(side, 0.35) },
-        { d: thighLen, rx: wide * 0.72, rz: wide * 0.72, color: pants, ...this.legW(side, 0.72) }
-      ], 1), 12, false);
+      const dirK = [(knee[0] - hip[0]) / thighLen, (knee[1] - hip[1]) / thighLen, 0];
+      // Muslo: grueso arriba, más fino en la rodilla (tres tramos)
+      const thigh = [
+        { d: 0.0, rx: wide * 1.25, rz: wide * 1.20, paint: pants, bw: this.legW(side, 0) },
+        { d: thighLen * 0.35, rx: wide * 1.10, rz: wide * 1.05, paint: pants, bw: this.legW(side, 0.1) },
+        { d: thighLen * 0.75, rx: wide * 0.86, rz: wide * 0.84, paint: pants, bw: this.legW(side, 0.35) },
+        { d: thighLen, rx: wide * 0.72, rz: wide * 0.72, paint: pants, bw: this.legW(side, 0.72) }
+      ];
+      for (let i = 0; i < thigh.length - 1; i++) {
+        const a = [hip[0] + dirK[0] * thigh[i].d, hip[1] + dirK[1] * thigh[i].d, hip[2]];
+        const b = [hip[0] + dirK[0] * thigh[i + 1].d, hip[1] + dirK[1] * thigh[i + 1].d, hip[2]];
+        this.tube(F, a, b, thigh[i].rx, thigh[i].rz, thigh[i + 1].rx, thigh[i + 1].rz, thigh[i].paint, thigh[i].bw);
+      }
 
       // Rodilla + gemelo: la pantorrilla tiene su volumen máximo arriba
       const shinC = (this.body.bottom || 'pants') === 'shorts' ? skin : pants;
-      this.loft(g, knee, [ankle[0] - knee[0], ankle[1] - knee[1], 0], this.densify([
-        { d: 0.00, rx: wide * 0.72, rz: wide * 0.74, color: shinC, ...this.legW(side, 0.72) },
-        { d: shinLen * 0.22, rx: wide * 0.70, rz: wide * 0.86, color: shinC, ...this.legW(side, 0.85) },
-        { d: shinLen * 0.60, rx: wide * 0.52, rz: wide * 0.62, color: shinC, ...this.legW(side, 0.96) },
-        { d: shinLen * 0.86, rx: wide * 0.40, rz: wide * 0.44, color: boot, ...this.legW(side, 1) },
-        { d: shinLen, rx: wide * 0.40, rz: wide * 0.46, color: boot, ...this.footW(side, 0) }
-      ], 1), 12, false);
+      const dirA = [(ankle[0] - knee[0]) / shinLen, (ankle[1] - knee[1]) / shinLen, 0];
+      const shin = [
+        { d: 0.0, rx: wide * 0.74, rz: wide * 0.76, paint: shinC, bw: this.legW(side, 0.72) },
+        { d: shinLen * 0.22, rx: wide * 0.70, rz: wide * 0.86, paint: shinC, bw: this.legW(side, 0.85) },
+        { d: shinLen * 0.60, rx: wide * 0.52, rz: wide * 0.62, paint: shinC, bw: this.legW(side, 0.96) },
+        { d: shinLen * 0.86, rx: wide * 0.40, rz: wide * 0.44, paint: boot, bw: this.legW(side, 1) },
+        { d: shinLen, rx: wide * 0.40, rz: wide * 0.46, paint: boot, bw: this.footW(side, 0) }
+      ];
+      for (let i = 0; i < shin.length - 1; i++) {
+        const a = [knee[0] + dirA[0] * shin[i].d, knee[1] + dirA[1] * shin[i].d, knee[2]];
+        const b = [knee[0] + dirA[0] * shin[i + 1].d, knee[1] + dirA[1] * shin[i + 1].d, knee[2]];
+        this.tube(F, a, b, shin[i].rx, shin[i].rz, shin[i + 1].rx, shin[i + 1].rz, shin[i].paint, shin[i].bw);
+      }
 
       // Pie: cuña hacia los dedos
       const fwd = [toe[0] - ankle[0], 0, toe[2] - ankle[2]];
-      this.loft(g, [ankle[0], ankle[1] - 0.012 * this.s, ankle[2]], fwd, [
-        { d: -0.02 * this.s, rx: wide * 0.44, rz: wide * 0.40, color: boot, ...this.footW(side, 0) },
-        { d: 0.03 * this.s, rx: wide * 0.52, rz: wide * 0.46, color: boot, ...this.footW(side, 0.2) },
-        { d: 0.11 * this.s, rx: wide * 0.48, rz: wide * 0.34, color: boot, ...this.footW(side, 0.7) },
-        { d: 0.17 * this.s, rx: wide * 0.36, rz: wide * 0.20, color: boot, ...this.footW(side, 1) }
-      ], 10);
-
-      // Rótula y tobillo: esferas que tapan las uniones, hundidas dentro del
-      // tubo para que la pierna no parezca un muñeco articulado.
-      this.ball(g, knee, wide * 0.62, pants,
-        [this.boneIndex[`${side}Leg`]], [1], [1, 1, 1], 10);
-      this.ball(g, ankle, wide * 0.38, boot,
-        [this.boneIndex[`${side}Foot`]], [1], [1, 0.8, 1], 10);
+      const fl = Math.hypot(fwd[0], fwd[2]) || 1; fwd[0] /= fl; fwd[2] /= fl;
+      const fa = [ankle[0] - fwd[0] * 0.02 * this.s, ankle[1] - 0.012 * this.s, ankle[2] - fwd[2] * 0.02 * this.s];
+      const foot = [
+        { d: 0.0, rx: wide * 0.44, rz: wide * 0.40, paint: boot, bw: this.footW(side, 0) },
+        { d: 0.05 * this.s, rx: wide * 0.52, rz: wide * 0.46, paint: boot, bw: this.footW(side, 0.2) },
+        { d: 0.13 * this.s, rx: wide * 0.48, rz: wide * 0.34, paint: boot, bw: this.footW(side, 0.7) },
+        { d: 0.19 * this.s, rx: wide * 0.36, rz: wide * 0.20, paint: boot, bw: this.footW(side, 1) }
+      ];
+      for (let i = 0; i < foot.length - 1; i++) {
+        const a = [fa[0] + fwd[0] * foot[i].d, fa[1], fa[2] + fwd[2] * foot[i].d];
+        const b = [fa[0] + fwd[0] * foot[i + 1].d, fa[1], fa[2] + fwd[2] * foot[i + 1].d];
+        this.tube(F, a, b, foot[i].rz, foot[i].rx, foot[i + 1].rz, foot[i + 1].rx, foot[i].paint, foot[i].bw);
+      }
     }
   }
 
@@ -451,11 +416,10 @@ export class Humanoid {
 
   /* --- torso -------------------------------------------------------- */
 
-  buildTorso(g) {
+  buildTorso(F) {
     const C = this.colors;
     const bulk = this.bulk;
     const gi = this.col(C.gi);
-    const trim = this.col(C.trim);
     const belt = this.col(C.belt || C.trim);
     const skin = this.col(C.skin, 1);
 
@@ -472,9 +436,6 @@ export class Humanoid {
     ];
     const W = (y) => this.byHeight(y, stops);
 
-    // Ancho de hombros y caja torácica según constitución. La silueta
-    // femenina: cadera más ancha que el pecho, cintura marcada y hombros
-    // algo más estrechos; la masculina mantiene el torso en V.
     const female = !!this.body.female;
     const chestX = (0.155 + 0.030 * (bulk - 1)) * this.s * 1.06;
     const chestZ = (0.105 + 0.018 * (bulk - 1)) * this.s * 1.06;
@@ -483,68 +444,70 @@ export class Humanoid {
 
     const yHips = hips[1];
     const profile = [
-      { y: yHips - 0.055 * this.s, rx: pelvisX * 0.94, rz: pelvisZ * 0.94, color: gi },
-      { y: yHips + 0.010 * this.s, rx: pelvisX, rz: pelvisZ, color: gi },
-      { y: yHips + 0.055 * this.s, rx: waistX * 1.02, rz: waistZ * 1.0, color: gi },
-      { y: this.bp.LowerBack[1] + 0.03 * this.s, rx: waistX, rz: waistZ, color: gi },
-      { y: spine[1] + 0.02 * this.s, rx: chestX * (female ? 0.97 : 0.92), rz: chestZ * (female ? 1.02 : 0.95), color: gi },
-      { y: spine1[1] - 0.03 * this.s, rx: chestX * (female ? 0.88 : 1), rz: chestZ * (female ? 0.94 : 1), color: gi },
-      { y: spine1[1] + 0.05 * this.s, rx: chestX * 0.94, rz: chestZ * 0.9, color: gi },
-      { y: neck[1] - 0.02 * this.s, rx: chestX * 0.62, rz: chestZ * 0.66, color: gi }
-    ].map((p) => ({ d: p.y, rx: p.rx, rz: p.rz, color: p.color, ...W(p.y) }));
+      { y: yHips - 0.055 * this.s, rx: pelvisX * 0.94, rz: pelvisZ * 0.94, paint: gi },
+      { y: yHips + 0.010 * this.s, rx: pelvisX, rz: pelvisZ, paint: gi },
+      { y: yHips + 0.055 * this.s, rx: waistX * 1.02, rz: waistZ * 1.0, paint: gi },
+      { y: this.bp.LowerBack[1] + 0.03 * this.s, rx: waistX, rz: waistZ, paint: gi },
+      { y: spine[1] + 0.02 * this.s, rx: chestX * (female ? 0.97 : 0.92), rz: chestZ * (female ? 1.02 : 0.95), paint: gi },
+      { y: spine1[1] - 0.03 * this.s, rx: chestX * (female ? 0.88 : 1), rz: chestZ * (female ? 0.94 : 1), paint: gi },
+      { y: spine1[1] + 0.05 * this.s, rx: chestX * 0.94, rz: chestZ * 0.9, paint: gi },
+      { y: neck[1] - 0.02 * this.s, rx: chestX * 0.62, rz: chestZ * 0.66, paint: gi }
+    ];
 
     // Ropa por personaje: sin kimono uniforme. tank = hombros/pecho al
     // descubierto; bare = torso entero de piel.
     const top = this.body.top || 'gi';
-    if (top === 'tank') profile.forEach((p, i) => { if (i >= 4) p.color = skin; });
-    // bare: torso de piel pero la cadera/cono inferior del color del pantalon
-    if (top === 'bare') profile.forEach((p, i) => { p.color = i < 2 ? gi : skin; });
-    const topC = top === 'gi' ? gi : (top === 'tank' ? gi : skin);
-    const shoulderC = top === 'gi' ? gi : skin;
+    if (top === 'tank') profile.forEach((p, i) => { if (i >= 4) p.paint = skin; });
+    if (top === 'bare') profile.forEach((p, i) => { p.paint = i < 2 ? gi : skin; });
+    const topC = top === 'gi' ? gi : skin;
 
-    this.loft(g, [0, 0, 0], [0, 1, 0], this.densify(profile, 1), 16, true, 0.10 * this.s);
+    for (let i = 0; i < profile.length - 1; i++) {
+      const a = profile[i], b = profile[i + 1];
+      const ym = (a.y + b.y) / 2;
+      this.tube(F, [0, a.y, 0], [0, b.y, 0], a.rx, a.rz, b.rx, b.rz, a.paint, W(ym));
+    }
 
-    // Cinturón
+    // Cinturón: anillo ligeramente mayor que funde con la cadera
     const beltY = yHips + 0.045 * this.s;
-    this.loft(g, [0, beltY - 0.028 * this.s, 0], [0, 1, 0], [
-      { d: 0, rx: waistX * 1.07, rz: waistZ * 1.07, color: belt, ...W(beltY) },
-      { d: 0.05 * this.s, rx: waistX * 1.07, rz: waistZ * 1.07, color: belt, ...W(beltY + 0.04) }
-    ], 16, false);
+    this.tube(F, [0, beltY - 0.028 * this.s, 0], [0, beltY + 0.022 * this.s, 0],
+      waistX * 1.07, waistZ * 1.07, waistX * 1.07, waistZ * 1.07, belt, W(beltY));
 
     // Cuello
-    this.loft(g, [0, neck[1] - 0.03 * this.s, 0], [0, 1, 0], [
-      { d: 0, rx: 0.052 * this.s, rz: 0.055 * this.s, color: gi, ...W(neck[1] - 0.03 * this.s) },
-      { d: 0.07 * this.s, rx: 0.048 * this.s, rz: 0.050 * this.s, color: skin, ...W(neck[1] + 0.03 * this.s) },
-      { d: 0.11 * this.s, rx: 0.047 * this.s, rz: 0.049 * this.s, color: skin, ...W(neck[1] + 0.07 * this.s) }
-    ], 12, false);
+    this.tube(F, [0, neck[1] - 0.03 * this.s, 0], [0, neck[1] + 0.08 * this.s, 0],
+      0.052 * this.s, 0.055 * this.s, 0.047 * this.s, 0.049 * this.s, skin, W(neck[1]));
 
     // Trapecios / deltoides: volumen sobre los hombros (más sutiles en ellas)
     for (const side of ['Left', 'Right']) {
       const sh = this.bp[`${side}Arm`];
-      const dir = Math.sign(sh[0]) || 1;
       const dScale = female ? 0.82 : 1;
-      this.ball(g, [sh[0] * 0.55, sh[1] + 0.015 * this.s, 0], 0.062 * this.s * (0.9 + 0.15 * bulk) * dScale, shoulderC,
-        [this.boneIndex.Spine1, this.boneIndex[`${side}Shoulder`]], [0.55, 0.45], [1.1, 0.8, 1.0], 10);
-      this.ball(g, sh, 0.062 * this.s * (0.95 + 0.18 * bulk) * dScale, shoulderC,
-        [this.boneIndex[`${side}Arm`]], [1], [1, 1, 1], 10);
+      F.ball([sh[0] * 0.55, sh[1] + 0.015 * this.s, 0],
+        0.068 * this.s * (0.9 + 0.15 * bulk) * dScale * 1.1,
+        0.068 * this.s * (0.9 + 0.15 * bulk) * dScale * 0.8,
+        0.068 * this.s * (0.9 + 0.15 * bulk) * dScale,
+        (top === 'gi' ? gi : skin).c, (top === 'gi' ? gi : skin).mat,
+        [this.boneIndex.Spine1, this.boneIndex[`${side}Shoulder`]], [0.55, 0.45]);
+      F.ball(sh, 0.062 * this.s * (0.95 + 0.18 * bulk) * dScale,
+        0.062 * this.s * (0.95 + 0.18 * bulk) * dScale,
+        0.062 * this.s * (0.95 + 0.18 * bulk) * dScale,
+        (top === 'gi' ? gi : skin).c, (top === 'gi' ? gi : skin).mat,
+        [this.boneIndex[`${side}Arm`]], [1]);
     }
 
-    // Pecho: pectorales insinuados en ellos; busto con dos volúmenes
-    // delanteros en ellas (se lee la silueta sin ser explícito).
-    const pecY = spine1[1] - 0.01 * this.s;
-    for (const dx of [-1, 1]) {
-      if (female) {
-        this.ball(g, [dx * chestX * 0.40, pecY - 0.015 * this.s, chestZ * 0.78], chestX * 0.34, topC,
-          [this.boneIndex.Spine1], [1], [1, 0.85, 0.85], 10);
+    // Busto femenino: dos volúmenes que el mínimo suave funde con el pecho
+    // (silueta legible, transición continua, sin esferas que asoman).
+    if (female) {
+      const pecY = spine1[1] - 0.01 * this.s;
+      for (const dx of [-1, 1]) {
+        F.ball([dx * chestX * 0.40, pecY - 0.015 * this.s, chestZ * 0.78],
+          chestX * 0.34, chestX * 0.30, chestX * 0.30,
+          topC.c, topC.mat, [this.boneIndex.Spine1], [1]);
       }
-      // En ellos el loft del torso ya da el volumen de pecho: sin esferas
-      // sueltas, que se ven como bultos ("tetillas").
     }
   }
 
   /* --- brazos ------------------------------------------------------- */
 
-  buildArms(g) {
+  buildArms(F) {
     const C = this.colors;
     const bulk = this.bulk;
     const gi = this.col(C.gi);
@@ -562,34 +525,19 @@ export class Humanoid {
       const rUp = (0.050 + 0.016 * (bulk - 1)) * this.s * Math.sqrt(this.armLen);
       const rFore = rUp * 0.82;
 
-      // Brazo: bíceps lleno, codo más estrecho
       const sleeve = (this.body.top || 'gi') === 'gi' ? gi : skin;
-      this.loft(g, sh, [dir, 0, 0], this.densify([
-        { d: 0, rx: rUp * 1.12, rz: rUp * 1.08, color: sleeve, ...this.armW(side, 0) },
-        { d: upLen * 0.4, rx: rUp * 1.02, rz: rUp * 0.98, color: sleeve, ...this.armW(side, 0.2) },
-        { d: upLen, rx: rUp * 0.80, rz: rUp * 0.80, color: sleeve, ...this.armW(side, 0.75) }
-      ], 1), 12, false);
-
+      // Bíceps lleno, codo más estrecho
+      this.tube(F, sh, el, rUp * 1.12, rUp * 1.08, rUp * 0.80, rUp * 0.80, sleeve, this.armW(side, 0.2));
       // Antebrazo: musculoso arriba, muñeca fina
-      this.loft(g, el, [dir, 0, 0], this.densify([
-        { d: 0, rx: rFore * 1.05, rz: rFore * 1.0, color: skin, ...this.armW(side, 0.75) },
-        { d: foreLen * 0.35, rx: rFore * 0.94, rz: rFore * 0.88, color: skin, ...this.armW(side, 0.9) },
-        { d: foreLen * 0.86, rx: rFore * 0.68, rz: rFore * 0.66, color: skin, ...this.armW(side, 1) },
-        { d: foreLen, rx: rFore * 0.66, rz: rFore * 0.62, color: trim, ...this.handW(side, 0) }
-      ], 1), 12, false);
-
-      // Puño cerrado: caja redondeada alineada con el antebrazo
+      this.tube(F, el, [wr[0], wr[1], wr[2]], rFore * 1.05, rFore * 1.0, rFore * 0.66, rFore * 0.62, skin, this.armW(side, 0.9));
+      // Puño cerrado alineado con el antebrazo
       const handLen = 0.10 * this.s;
-      this.loft(g, [wr[0] + dir * 0.012 * this.s, wr[1], wr[2]], [dir, 0, 0], [
-        { d: 0, rx: rFore * 0.80, rz: rFore * 0.92, color: glove, ...this.handW(side, 0.2) },
-        { d: handLen * 0.55, rx: rFore * 0.92, rz: rFore * 1.00, color: glove, ...this.handW(side, 0.8) },
-        { d: handLen, rx: rFore * 0.78, rz: rFore * 0.86, color: glove, ...this.handW(side, 1) }
-      ], 10);
+      this.tube(F, [wr[0] + dir * 0.012 * this.s, wr[1], wr[2]],
+        [wr[0] + dir * (0.012 * this.s + handLen), wr[1], wr[2]],
+        rFore * 0.80, rFore * 0.92, rFore * 0.78, rFore * 0.86, glove, this.handW(side));
       // Pulgar
-      this.ball(g, [wr[0] + dir * handLen * 0.35, wr[1] - rFore * 0.55, wr[2] + 0.028 * this.s],
-        rFore * 0.42, glove, [this.boneIndex[`${side}Hand`]], [1], [1.4, 0.8, 0.9], 8);
-
-      this.ball(g, el, rFore * 0.70, skin, [this.boneIndex[`${side}ForeArm`]], [1], [1, 1, 1], 10);
+      F.ball([wr[0] + dir * handLen * 0.35, wr[1] - rFore * 0.55, wr[2] + 0.028 * this.s],
+        rFore * 0.55, rFore * 0.34, rFore * 0.4, glove.c, glove.mat, [this.boneIndex[`${side}Hand`]], [1]);
     }
   }
 
@@ -599,17 +547,16 @@ export class Humanoid {
     return this.blend2(a, b, k * k * (3 - 2 * k) * 0.9);
   }
 
-  handW(side, t) {
+  handW(side) {
     return { b: [this.boneIndex[`${side}Hand`]], w: [1] };
   }
 
   /* --- cabeza ------------------------------------------------------- */
 
-  buildHead(g) {
+  buildHead(F) {
     const C = this.colors;
     const b = this.body;
     const skin = this.col(C.skin, 1);
-    const hairC = this.col(C.hair);
     const hs = (b.head || 1) * this.s;
     const headBase = this.bp.Head;
     const cy = headBase[1] + 0.105 * hs;   // centro del cráneo
@@ -617,35 +564,37 @@ export class Humanoid {
     const headBone = [this.boneIndex.Head];
 
     // Cráneo: más alto que ancho, con la nuca prominente
-    this.ball(g, [0, cy, cz - 0.004 * hs], 0.098 * hs, skin, headBone, [1], [0.86, 1.08, 0.98], 16);
-    // Cara / maxilar: se estrecha hacia la barbilla
-    this.loft(g, [0, cy - 0.012 * hs, cz + 0.012 * hs], [0, -1, 0], [
-      { d: 0, rx: 0.072 * hs, rz: 0.078 * hs, color: skin, b: headBone, w: [1] },
-      { d: 0.045 * hs, rx: 0.064 * hs, rz: 0.070 * hs, color: skin, b: headBone, w: [1] },
-      { d: 0.085 * hs, rx: 0.048 * hs, rz: 0.056 * hs, color: skin, b: headBone, w: [1] },
-      { d: 0.105 * hs, rx: 0.030 * hs, rz: 0.038 * hs, color: skin, b: headBone, w: [1] }
-    ], 14);
+    F.ball([0, cy, cz - 0.004 * hs], 0.098 * hs * 0.86, 0.098 * hs * 1.08, 0.098 * hs * 0.98,
+      skin.c, skin.mat, headBone, [1]);
+    // Cara / maxilar: se estrecha hacia la barbilla (tubo hacia abajo)
+    const jaw = [
+      { d: 0.0, rx: 0.072 * hs, rz: 0.078 * hs },
+      { d: 0.045 * hs, rx: 0.064 * hs, rz: 0.070 * hs },
+      { d: 0.085 * hs, rx: 0.048 * hs, rz: 0.056 * hs },
+      { d: 0.105 * hs, rx: 0.030 * hs, rz: 0.038 * hs }
+    ];
+    for (let i = 0; i < jaw.length - 1; i++) {
+      this.tube(F, [0, cy - 0.012 * hs - jaw[i].d, cz + 0.012 * hs],
+        [0, cy - 0.012 * hs - jaw[i + 1].d, cz + 0.012 * hs],
+        jaw[i].rx, jaw[i].rz, jaw[i + 1].rx, jaw[i + 1].rz, skin, { b: headBone, w: [1] });
+    }
     // Nariz recogida: da perfil sin atravesar el calco de la cara
-    this.loft(g, [0, cy - 0.012 * hs, cz + 0.058 * hs], [0, -0.25, 1], [
-      { d: 0, rx: 0.016 * hs, rz: 0.016 * hs, color: skin, b: headBone, w: [1] },
-      { d: 0.026 * hs, rx: 0.013 * hs, rz: 0.014 * hs, color: skin, b: headBone, w: [1] },
-      { d: 0.036 * hs, rx: 0.005 * hs, rz: 0.006 * hs, color: skin, b: headBone, w: [1] }
-    ], 8);
+    this.tube(F, [0, cy - 0.012 * hs, cz + 0.058 * hs], [0, cy - 0.021 * hs, cz + 0.094 * hs],
+      0.016 * hs, 0.016 * hs, 0.006 * hs, 0.006 * hs, skin, { b: headBone, w: [1] });
     // Orejas
     for (const dx of [-1, 1]) {
-      this.ball(g, [dx * 0.084 * hs, cy - 0.012 * hs, cz - 0.006 * hs], 0.024 * hs, skin,
-        headBone, [1], [0.42, 1.1, 0.8], 8);
+      F.ball([dx * 0.084 * hs, cy - 0.012 * hs, cz - 0.006 * hs],
+        0.024 * hs * 0.42, 0.024 * hs * 1.1, 0.024 * hs * 0.8,
+        skin.c, skin.mat, headBone, [1]);
     }
-    // Ceja: listón sobre los ojos para que el perfil tenga arco brow/face
-    this.ball(g, [0, cy + 0.028 * hs, cz + 0.062 * hs], 0.020 * hs, skin,
-      headBone, [1], [3.4, 0.9, 1.1], 8);
-    // Pómulos: dan plano lateral a la cara (silueta humana de perfil)
+    // Ceja: arco sobre los ojos (el mínimo suave la funde con la frente)
+    F.ball([0, cy + 0.028 * hs, cz + 0.060 * hs], 0.062 * hs, 0.017 * hs, 0.018 * hs,
+      skin.c, skin.mat, headBone, [1]);
+    // Pómulos: plano lateral de la cara
     for (const dx of [-1, 1]) {
-      this.ball(g, [dx * 0.058 * hs, cy - 0.008 * hs, cz + 0.052 * hs], 0.020 * hs, skin,
-        headBone, [1], [0.9, 1.0, 0.9], 8);
+      F.ball([dx * 0.058 * hs, cy - 0.008 * hs, cz + 0.052 * hs],
+        0.018 * hs, 0.020 * hs, 0.018 * hs, skin.c, skin.mat, headBone, [1]);
     }
-    // Ojos y boca los pinta el calco de cara (facepaint.js); la geometría
-    // hundida asomaba por encima de la textura y rompía el dibujo.
   }
 
   /* --- cara con textura ---------------------------------------------- */
@@ -659,22 +608,30 @@ export class Humanoid {
     const headBase = this.bp.Head;
     const cy = headBase[1] + 0.105 * hs;
     const cz = headBase[2];
-    const C = [0, cy - 0.012 * hs, cz - 0.010 * hs];
-    const R = 0.115 * hs;
+    const C = [0, cy - 0.012 * hs, cz - 0.006 * hs];
     const cols = 12, rows = 14;
     const a0 = -0.85, a1 = 0.85;      // horizontal (visible tambien de tres cuartos)
     const b0 = -0.80, b1 = 0.40;      // vertical (negativo = barbilla)
+    // Shrinkwrap: cada vértice del calco se apoya a 4 mm de la superficie real
+    // del campo (bisección sobre el SDF), así ni flota ni se entierra aunque
+    // la fusión de cejas/pómulos engorde la cara.
+    const F = this.field;
     const pos = [], uv = [], idx = [];
+    const q = [0, 0, 0];
     for (let r = 0; r <= rows; r++) {
       const beta = b1 + (b0 - b1) * (r / rows);   // r=0 arriba (frente)
       for (let c = 0; c <= cols; c++) {
         const alpha = a0 + (a1 - a0) * (c / cols);
         const cb = Math.cos(beta);
-        pos.push(
-          C[0] + R * Math.sin(alpha) * cb,
-          C[1] + R * Math.sin(beta),
-          C[2] + R * Math.cos(alpha) * cb
-        );
+        const dx = Math.sin(alpha) * cb, dy = Math.sin(beta), dz = Math.cos(alpha) * cb;
+        let lo = 0.02 * hs, hi = 0.22 * hs;      // dentro / fuera de la cabeza
+        for (let k = 0; k < 14; k++) {
+          const mid = (lo + hi) / 2;
+          q[0] = C[0] + dx * mid; q[1] = C[1] + dy * mid; q[2] = C[2] + dz * mid;
+          if (fieldVal(F, q) < 0) lo = mid; else hi = mid;
+        }
+        const rr = (lo + hi) / 2 + 0.004 * hs;
+        pos.push(C[0] + dx * rr, C[1] + dy * rr, C[2] + dz * rr);
         uv.push(c / cols, r / rows);
       }
     }
@@ -707,7 +664,6 @@ export class Humanoid {
   buildExtras() {
     const b = this.body;
     const C = this.colors;
-    const hairC = this.col(C.hair);
     const hs = (b.head || 1) * this.s;
     const head = this.bones.Head;
     const headLocal = new THREE.Vector3(0, 0.105 * hs, 0);
@@ -717,17 +673,16 @@ export class Humanoid {
     });
     const hairMat = mat(new THREE.Color(C.hair || '#222').convertSRGBToLinear());
 
-    // Casco de pelo: copia el elipsoide del cráneo (0.0843/0.1058/0.0960 · hs)
-    // unos 3 mm por fuera, para que ni se meta dentro (parches negros por
-    // z-fighting) ni tape la cara. La línea del pelo queda alta (theta ≤ 0.5π
-    // inclinado atrás) para no solaparse con el calco de la cara.
-    // Margen generoso: cráneo (0.084/0.106/0.096) → casco +8 mm → pinchos por
-    // fuera del casco. Con márgenes de milímetros el depth buffer (y el
-    // rasterizador de snapshots) no z-fightea.
-    const hairCap = (theta = 0.46) => {
+    // Casco de pelo: copia el elipsoide del cráneo unos mm por fuera, para
+    // que ni se meta dentro (parches por z-fighting) ni tape la cara.
+    // El cráneo SDF fundido asoma hasta ~1 cm más que el elipsoide base, así
+    // el casco va holgado (sin z-fighting) y se inclina hacia atrás: la
+    // abertura mira a la cara y la nuca queda cubierta.
+    const hairCap = (theta = 0.5, tilt = 0.35) => {
       const cap = new THREE.Mesh(new THREE.SphereGeometry(hs, 16, 12, 0, TAU, 0, Math.PI * theta), hairMat);
-      cap.scale.set(0.092, 0.114, 0.105);
-      cap.position.set(0, 0, -0.004 * hs);
+      cap.scale.set(0.110, 0.130, 0.120);
+      cap.rotation.x = -tilt;
+      cap.position.set(0, 0.008 * hs, -0.010 * hs);
       return cap;
     };
 
@@ -749,7 +704,7 @@ export class Humanoid {
           spike.rotation.set(Math.sin(a) * 0.7, 0, -Math.cos(a) * 0.7);
           grp.add(spike);
         }
-        const cap = hairCap(0.78);
+        const cap = hairCap(0.52, 0.45);
         grp.add(cap);
         add(grp);
         break;
@@ -767,7 +722,7 @@ export class Humanoid {
       }
       case 'long': {
         const grp = new THREE.Group();
-        const cap = hairCap(1.0);
+        const cap = hairCap(0.58, 0.4);
         grp.add(cap);
         // Melena: cae por la espalda (se ancla al cuello para que acompañe)
         const tail = new THREE.Mesh(new THREE.CylinderGeometry(0.062 * hs, 0.030 * hs, 0.30 * hs, 10), hairMat);
@@ -780,7 +735,7 @@ export class Humanoid {
       }
       case 'ponytail': {
         const grp = new THREE.Group();
-        const cap = hairCap(0.95);
+        const cap = hairCap(0.55, 0.45);
         grp.add(cap);
         const tail = new THREE.Mesh(new THREE.CylinderGeometry(0.026 * hs, 0.014 * hs, 0.26 * hs, 8), hairMat);
         tail.position.set(0, -0.10 * hs, -0.075 * hs);
@@ -791,19 +746,17 @@ export class Humanoid {
         break;
       }
       case 'flat': {
-        const cap = hairCap(0.62);
-        cap.scale.set(0.092, 0.098, 0.105);
+        const cap = hairCap(0.48, 0.4);
         add(cap);
         break;
       }
       case 'mask': {
-        const cap = hairCap(1.0);
-        cap.scale.set(0.094, 0.115, 0.106);
+        const cap = hairCap(1.05, 0.05);
         add(cap);
         // Abertura de los ojos
         const slit = new THREE.Mesh(new THREE.BoxGeometry(0.14 * hs, 0.026 * hs, 0.02 * hs),
-          mat(this.col(C.skin)));
-        slit.position.set(0, 0.010 * hs, 0.076 * hs);
+          mat(new THREE.Color(C.skin || '#c68642').convertSRGBToLinear()));
+        slit.position.set(0, 0.012 * hs, 0.104 * hs);
         add(slit);
         break;
       }
@@ -824,40 +777,40 @@ export class Humanoid {
         break;
       }
       default: {
-        const cap = new THREE.Mesh(new THREE.SphereGeometry(0.097 * hs, 14, 10, 0, TAU, 0, Math.PI * 0.6), hairMat);
+        const cap = hairCap(0.52, 0.45);
         add(cap);
       }
     }
 
     // Cinta en la frente
     if (b.band) {
-      const band = new THREE.Mesh(new THREE.TorusGeometry(0.088 * hs, 0.013 * hs, 6, 18),
+      const band = new THREE.Mesh(new THREE.TorusGeometry(0.098 * hs, 0.013 * hs, 6, 18),
         mat(new THREE.Color(C.trim || '#c62828').convertSRGBToLinear()));
       band.rotation.x = Math.PI / 2;
-      band.position.set(0, 0.028 * hs, 0);
+      band.position.set(0, 0.125 * hs, -0.004 * hs);
       head.add(band);
       const tailL = new THREE.Mesh(new THREE.BoxGeometry(0.022 * hs, 0.13 * hs, 0.006 * hs),
         mat(new THREE.Color(C.trim || '#c62828').convertSRGBToLinear()));
-      tailL.position.set(0.02 * hs, 0.02 * hs, -0.085 * hs);
+      tailL.position.set(0.03 * hs, 0.115 * hs, -0.095 * hs);
       head.add(tailL);
       this.bandTail = tailL;
     }
     if (b.cap) {
-      const cap = new THREE.Mesh(new THREE.SphereGeometry(0.100 * hs, 14, 8, 0, TAU, 0, Math.PI * 0.55),
+      const cap = new THREE.Mesh(new THREE.SphereGeometry(0.112 * hs, 14, 8, 0, TAU, 0, Math.PI * 0.55),
         mat(new THREE.Color(C.trim).convertSRGBToLinear()));
-      cap.position.set(0, 0.105 * hs, 0);
+      cap.position.set(0, 0.108 * hs, -0.004 * hs);
       head.add(cap);
       const brim = new THREE.Mesh(new THREE.CylinderGeometry(0.085 * hs, 0.095 * hs, 0.012 * hs, 14, 1, false, -0.9, 1.8),
         mat(new THREE.Color(C.trim).convertSRGBToLinear()));
-      brim.position.set(0, 0.108 * hs, 0.055 * hs);
+      brim.position.set(0, 0.110 * hs, 0.070 * hs);
       head.add(brim);
     }
     if (b.turban) {
       for (let i = 0; i < 3; i++) {
-        const ring = new THREE.Mesh(new THREE.TorusGeometry((0.088 - i * 0.008) * hs, 0.022 * hs, 6, 18),
+        const ring = new THREE.Mesh(new THREE.TorusGeometry((0.098 - i * 0.008) * hs, 0.022 * hs, 6, 18),
           mat(new THREE.Color(C.gi).convertSRGBToLinear()));
         ring.rotation.set(Math.PI / 2 + i * 0.22, i * 0.4, 0);
-        ring.position.set(0, (0.115 + i * 0.028) * hs, 0);
+        ring.position.set(0, (0.118 + i * 0.028) * hs, -0.004 * hs);
         head.add(ring);
       }
     }
@@ -871,9 +824,9 @@ export class Humanoid {
       head.add(visor);
     }
     if (b.beard) {
-      const beard = new THREE.Mesh(new THREE.SphereGeometry(0.062 * hs, 12, 8, 0, TAU, Math.PI * 0.45, Math.PI * 0.5),
+      const beard = new THREE.Mesh(new THREE.SphereGeometry(0.070 * hs, 12, 8, 0, TAU, Math.PI * 0.45, Math.PI * 0.5),
         mat(new THREE.Color(C.hair).convertSRGBToLinear()));
-      beard.position.set(0, 0.055 * hs, 0.028 * hs);
+      beard.position.set(0, 0.050 * hs, 0.052 * hs);
       beard.scale.set(1.0, 1.15, 1.0);
       head.add(beard);
     }
@@ -933,30 +886,212 @@ export class Humanoid {
   }
 }
 
+/* ------------------------------------------------------------------ */
+/* Extracción de superficie: marching tetrahedra sobre el campo        */
+/* ------------------------------------------------------------------ */
+
+function fieldVal(F, p) {
+  const [d0, , d1] = F.nearest2(p);
+  return smoothMin(d0, d1, 0.018);
+}
+
+function smoothMin(d0, d1, h) {
+  if (d1 - d0 >= h) return d0;
+  const t = (d1 - d0) / h;
+  return d0 - 0.25 * h * (1 - t) * (1 - t);
+}
+
 /**
- * Asigna a la geometría tres grupos (tela=0, piel=1, equipo=2) según el color
- * de cada vértice, para que piel, tela y cuero usen materiales distintos.
+ * Extrae la superficie (valor 0 del campo) con marching tetrahedra: cada celda
+ * de la rejilla se parte en 6 tetraedros y cada tetraedro se triangula según
+ * los signos de sus esquinas. Los vértices se comparten por arista (cache),
+ * así la malla sale estanca y las normales por gradiente, siempre hacia fuera.
  */
-function assignMaterialGroups(geo, palette) {
-  const col = geo.getAttribute('color');
-  const idx = geo.getIndex();
-  const vertMat = new Uint8Array(col.count);
-  for (let i = 0; i < col.count; i++) {
-    const r = col.getX(i), g = col.getY(i), b = col.getZ(i);
-    let best = 0, bd = 1e9;
-    for (const p of palette) {
-      const d = (p.r - r) * (p.r - r) + (p.g - g) * (p.g - g) + (p.b - b) * (p.b - b);
-      if (d < bd) { bd = d; best = p.mat; }
-    }
-    vertMat[i] = bd < 1e-6 ? best : 0;
+function extractSurface(F, s) {
+  const H_G = 0.018;             // suavidad geométrica (funde sin aristas ni anillos)
+  const H_A = 0.02;              // suavidad de atributos (ropa casi nítida)
+  const cell = 0.024 * s;
+  const pad = cell * 1.5;
+  const min = F.min.map((v) => v - pad), max = F.max.map((v) => v + pad);
+  const nx = Math.min(110, Math.ceil((max[0] - min[0]) / cell));
+  const ny = Math.min(130, Math.ceil((max[1] - min[1]) / cell));
+  const nz = Math.min(60, Math.ceil((max[2] - min[2]) / cell));
+
+  // Binning espacial: cada primitiva se registra en las celdas que cubre su
+  // AABB (margen de 1 celda). Cada esquina evalúa solo su cubo: un punto
+  // dentro de una primitiva siempre cae en su AABB, así el signo del campo
+  // (lo único que importa al extraer la superficie) sigue siendo exacto.
+  const P = F.prims;
+  const bw0 = (max[0] - min[0]) / nx, bw1 = (max[1] - min[1]) / ny, bw2 = (max[2] - min[2]) / nz;
+  const buckets = new Array(nx * ny * nz);
+  for (let i = 0; i < P.length; i++) {
+    const pr = P[i];
+    const x0 = Math.max(0, Math.floor((pr.bc[0] - pr.ex - bw0 - min[0]) / bw0));
+    const x1 = Math.min(nx - 1, Math.floor((pr.bc[0] + pr.ex + bw0 - min[0]) / bw0));
+    const y0 = Math.max(0, Math.floor((pr.bc[1] - pr.ey - bw1 - min[1]) / bw1));
+    const y1 = Math.min(ny - 1, Math.floor((pr.bc[1] + pr.ey + bw1 - min[1]) / bw1));
+    const z0 = Math.max(0, Math.floor((pr.bc[2] - pr.ez - bw2 - min[2]) / bw2));
+    const z1 = Math.min(nz - 1, Math.floor((pr.bc[2] + pr.ez + bw2 - min[2]) / bw2));
+    for (let zz = z0; zz <= z1; zz++)
+      for (let yy = y0; yy <= y1; yy++)
+        for (let xx = x0; xx <= x1; xx++) {
+          const bi = (zz * ny + yy) * nx + xx;
+          (buckets[bi] || (buckets[bi] = [])).push(i);
+        }
   }
-  // Con depth buffer el orden de dibujado no importa: reordenamos los
-  // triángulos por material para dejar solo dos grupos (dos draw calls).
+
+  // Esquinas: valor + atributos mezclados (color, mat, huesos)
+  const NC = (nx + 1) * (ny + 1) * (nz + 1);
+  const val = new Float32Array(NC);
+  const colA = new Float32Array(NC * 3);
+  const matA = new Float32Array(NC);
+  const siA = new Uint16Array(NC * 4);
+  const swA = new Float32Array(NC * 4);
+  const p = [0, 0, 0];
+  const EMPTY = [];
+  let ci = 0;
+  for (let z = 0; z <= nz; z++) {
+    p[2] = min[2] + (z * (max[2] - min[2])) / nz;
+    const bz = Math.min(nz - 1, z);
+    for (let y = 0; y <= ny; y++) {
+      p[1] = min[1] + (y * (max[1] - min[1])) / ny;
+      const byy = Math.min(ny - 1, y);
+      for (let x = 0; x <= nx; x++, ci++) {
+        p[0] = min[0] + (x * (max[0] - min[0])) / nx;
+        const list = buckets[(bz * ny + byy) * nx + Math.min(nx - 1, x)] || EMPTY;
+        let d0 = Infinity, i0 = 0, d1 = Infinity, i1 = 0;
+        for (let li = 0; li < list.length; li++) {
+          const i = list[li];
+          const d = F.sdPrim(p, P[i]);
+          if (d < d0) { d1 = d0; i1 = i0; d0 = d; i0 = i; }
+          else if (d < d1) { d1 = d; i1 = i; }
+        }
+        if (d0 === Infinity) { val[ci] = 1; continue; }   // celda vacía: fuera
+        val[ci] = smoothMin(d0, d1, H_G);
+        // atributos: mezcla de los dos primitivas dominantes
+        const t = Math.max(0, Math.min(1, 0.5 + 0.5 * (d0 - d1) / H_A)); // peso de i1
+        const pa = P[i0], pb = P[i1];
+        colA[ci * 3] = pa.col[0] + (pb.col[0] - pa.col[0]) * t;
+        colA[ci * 3 + 1] = pa.col[1] + (pb.col[1] - pa.col[1]) * t;
+        colA[ci * 3 + 2] = pa.col[2] + (pb.col[2] - pa.col[2]) * t;
+        matA[ci] = pa.mat + (pb.mat - pa.mat) * t;
+        // huesos: unión de los dos conjuntos, pesos mezclado-normalizados
+        const bw = {};
+        for (let k = 0; k < pa.bones.length; k++) bw[pa.bones[k]] = (bw[pa.bones[k]] || 0) + pa.weights[k] * (1 - t);
+        for (let k = 0; k < pb.bones.length; k++) bw[pb.bones[k]] = (bw[pb.bones[k]] || 0) + pb.weights[k] * t;
+        const entries = Object.entries(bw).sort((a, b2) => b2[1] - a[1]).slice(0, 4);
+        let sum = 0;
+        for (const [, w] of entries) sum += w;
+        for (let k = 0; k < 4; k++) {
+          siA[ci * 4 + k] = entries[k] ? +entries[k][0] : 0;
+          swA[ci * 4 + k] = entries[k] ? entries[k][1] / (sum || 1) : 0;
+        }
+      }
+    }
+  }
+
+  const cidx = (x, y, z) => (z * (ny + 1) + y) * (nx + 1) + x;
+
+  // Vértices compartidos por arista de rejilla
+  const vMap = new Map();
+  const positions = [], colors = [], mats = [], uvs = [], sis = [], sws = [];
+  const indices = [];
+  const K = 3;
+
+  function vertOnEdge(a, b) {
+    const key = a < b ? a * NC + b : b * NC + a;
+    let v = vMap.get(key);
+    if (v !== undefined) return v;
+    const fa = val[a], fb = val[b];
+    const t = fa / (fa - fb);
+    const ax = a % (nx + 1), ay = Math.floor(a / (nx + 1)) % (ny + 1), az = Math.floor(a / ((nx + 1) * (ny + 1)));
+    const bx = b % (nx + 1), by = Math.floor(b / (nx + 1)) % (ny + 1), bz = Math.floor(b / ((nx + 1) * (ny + 1)));
+    const px = min[0] + ((ax + (bx - ax) * t) * (max[0] - min[0])) / nx;
+    const py = min[1] + ((ay + (by - ay) * t) * (max[1] - min[1])) / ny;
+    const pz = min[2] + ((az + (bz - az) * t) * (max[2] - min[2])) / nz;
+    v = positions.length / 3;
+    positions.push(px, py, pz);
+    colors.push(
+      colA[a * 3] + (colA[b * 3] - colA[a * 3]) * t,
+      colA[a * 3 + 1] + (colA[b * 3 + 1] - colA[a * 3 + 1]) * t,
+      colA[a * 3 + 2] + (colA[b * 3 + 2] - colA[a * 3 + 2]) * t
+    );
+    mats.push(matA[a] + (matA[b] - matA[a]) * t);
+    uvs.push((px + pz) * K, py * K);
+    // huesos del vértice: unión con lerp (nunca interpolar índices sueltos)
+    const bw = {};
+    for (let k = 0; k < 4; k++) {
+      if (swA[a * 4 + k] > 0) bw[siA[a * 4 + k]] = (bw[siA[a * 4 + k]] || 0) + swA[a * 4 + k] * (1 - t);
+      if (swA[b * 4 + k] > 0) bw[siA[b * 4 + k]] = (bw[siA[b * 4 + k]] || 0) + swA[b * 4 + k] * t;
+    }
+    const entries = Object.entries(bw).sort((q, w) => w[1] - q[1]).slice(0, 4);
+    let sum = 0;
+    for (const [, w] of entries) sum += w;
+    for (let k = 0; k < 4; k++) {
+      sis.push(entries[k] ? +entries[k][0] : 0);
+      sws.push(entries[k] ? entries[k][1] / (sum || 1) : 0);
+    }
+    vMap.set(key, v);
+    return v;
+  }
+
+  // 6 tetraedros por celda (esquinas en orden binario estándar)
+  const TETS = [
+    [0, 5, 1, 6], [0, 1, 2, 6], [0, 2, 3, 6],
+    [0, 3, 7, 6], [0, 7, 4, 6], [0, 4, 5, 6]
+  ];
+  const OFF = [
+    [0, 0, 0], [1, 0, 0], [1, 1, 0], [0, 1, 0],
+    [0, 0, 1], [1, 0, 1], [1, 1, 1], [0, 1, 1]
+  ];
+  for (let z = 0; z < nz; z++) {
+    for (let y = 0; y < ny; y++) {
+      for (let x = 0; x < nx; x++) {
+        const c = new Array(8);
+        const f = new Array(8);
+        for (let k = 0; k < 8; k++) {
+          c[k] = cidx(x + OFF[k][0], y + OFF[k][1], z + OFF[k][2]);
+          f[k] = val[c[k]];
+        }
+        for (const tet of TETS) {
+          const inside = [];
+          const outside = [];
+          for (const k of tet) (f[k] < 0 ? inside : outside).push(k);
+          if (inside.length === 0 || outside.length === 0) continue;
+          if (inside.length === 1 || inside.length === 3) {
+            const odd = inside.length === 1 ? inside : outside;
+            const o = odd[0];
+            const others = tet.filter((k) => k !== o);
+            const v0 = vertOnEdge(c[o], c[others[0]]);
+            const v1 = vertOnEdge(c[o], c[others[1]]);
+            const v2 = vertOnEdge(c[o], c[others[2]]);
+            if (v0 !== v1 && v1 !== v2 && v0 !== v2) indices.push(v0, v1, v2);
+          } else {
+            const [a, b] = inside;
+            const [cc2, d] = outside;
+            const vac = vertOnEdge(c[a], c[cc2]);
+            const vbc = vertOnEdge(c[b], c[cc2]);
+            const vbd = vertOnEdge(c[b], c[d]);
+            const vad = vertOnEdge(c[a], c[d]);
+            if (vac !== vbc && vbc !== vbd && vac !== vbd) indices.push(vac, vbc, vbd);
+            if (vac !== vbd && vbd !== vad && vac !== vad) indices.push(vac, vbd, vad);
+          }
+        }
+      }
+    }
+  }
+
+  return { positions, colors, mats, uvs, sis, sws, indices };
+}
+
+/** Dos grupos de material (0 tela, 1 piel) según el atributo mat por triángulo. */
+function splitGroupsByMat(geo, mats) {
+  const idx = geo.getIndex();
   const order = [];
   for (let t = 0; t < idx.count; t += 3) {
     const a = idx.getX(t), b = idx.getX(t + 1), c = idx.getX(t + 2);
-    const m = vertMat[a] === vertMat[b] || vertMat[a] === vertMat[c] ? vertMat[a] : vertMat[b];
-    order.push([m, idx.getX(t), idx.getX(t + 1), idx.getX(t + 2)]);
+    const m = (mats[a] + mats[b] + mats[c]) >= 1.5 ? 1 : 0;
+    order.push([m, a, b, c]);
   }
   order.sort((x, y) => x[0] - y[0]);
   const ni = [];
@@ -999,7 +1134,7 @@ function clothTexture() {
     x.fillStyle = `rgba(0,0,0,${a})`;
     x.beginPath();
     x.ellipse(Math.random() * 128, Math.random() * 128,
-      5 + Math.random() * 16, 2 + Math.random() * 6, Math.random() * 3.1, 0, 7);
+      5 + Math.random() * 16, 2 + Math.random() * 6, Math.random() * 3.1, 0);
     x.fill();
   }
   const t = new THREE.CanvasTexture(c);

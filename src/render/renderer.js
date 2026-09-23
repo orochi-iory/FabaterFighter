@@ -53,6 +53,22 @@ export class GameView {
     };
   }
 
+  /** Cambia de escenario (un tema aleatorio por combate). */
+  setStage(theme) {
+    if (this.stage) {
+      this.scene.remove(this.stage.group);
+      this.stage.group.traverse((o) => {
+        if (o.isMesh || o.isPoints || o.isSprite) {
+          if (o.geometry) o.geometry.dispose();
+          const m = o.material;
+          if (Array.isArray(m)) m.forEach((x) => x.dispose());
+          else if (m) { if (m.map) m.map.dispose(); m.dispose(); }
+        }
+      });
+    }
+    this.stage = new Stage(this.scene, { theme });
+  }
+
   setFighters(defs) {
     for (const r of this.rigs) this.scene.remove(r.root);
     this.rigs = defs.map((d) => {
