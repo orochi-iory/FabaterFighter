@@ -273,7 +273,12 @@ for (let t = 0; t < idx.count; t += 3) {
         (skinNrm[ia * 3 + 1] * w0 / a.w + skinNrm[ib * 3 + 1] * w1 / b.w + skinNrm[ic * 3 + 1] * w2 / c.w) * z,
         (skinNrm[ia * 3 + 2] * w0 / a.w + skinNrm[ib * 3 + 2] * w1 / b.w + skinNrm[ic * 3 + 2] * w2 / c.w) * z
       ).normalize();
-      let d = Math.max(0, n.dot(L)) * 0.95 + Math.max(0, n.dot(L2)) * 0.22 + 0.22;
+      // clave + relleno + hemisferio (cielo/suelo) + rim: relieve de personaje
+      // 3D real, no arcilla plana
+      const RIM = new THREE.Vector3(-0.35, 0.3, -0.9).normalize();
+      let d = Math.max(0, n.dot(L)) * 0.80 + Math.max(0, n.dot(L2)) * 0.20
+        + 0.24 + 0.10 * (n.y * 0.5 + 0.5)
+        + Math.pow(Math.max(0, n.dot(RIM)), 3) * 0.30;
       const o = (y * W + x) * 3;
       for (let k = 0; k < 3; k++) {
         const vc = col.getComponent(ia, k) * w0 + col.getComponent(ib, k) * w1 + col.getComponent(ic, k) * w2;

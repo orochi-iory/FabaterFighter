@@ -161,6 +161,19 @@ export class Humanoid {
       metalness: 0.02,
       side: THREE.DoubleSide
     });
+    // Relieve de valor: los tonos planos por vértice son gran parte del aspecto
+    // "arcilla". Oscurecemos suavemente la parte baja (la luz cenital real hace
+    // eso) y añadimos micro-variación determinista para quebrar el plano uniforme.
+    {
+      let hRef = 0;
+      for (let i = 1; i < g.pos.length; i += 3) hRef = Math.max(hRef, g.pos[i]);
+      for (let i = 0; i < g.col.length; i += 3) {
+        const y = g.pos[i + 1];
+        let f = 0.86 + 0.20 * Math.min(1, Math.max(0, y / (hRef * 0.95)));
+        f += Math.sin(i * 12.9898) * 0.025;
+        g.col[i] *= f; g.col[i + 1] *= f; g.col[i + 2] *= f;
+      }
+    }
     const geo = g.toGeometry();
     assignMaterialGroups(geo, this.palette);
     this.mesh = new THREE.SkinnedMesh(geo, [clothMat, skinMat]);
@@ -302,6 +315,33 @@ export class Humanoid {
     return rings;
   }
 
+  /**
+   * Subdivide el perfil de un loft interpolando radios/offsets/pesos:
+   * más anillos = silueta más suave sin tocar cada perfil a mano.
+   */
+  densify(points, sub = 1) {
+    const out = [points[0]];
+    for (let i = 0; i < points.length - 1; i++) {
+      const a = points[i], b = points[i + 1];
+      for (let k = 1; k <= sub; k++) {
+        const t = k / (sub + 1);
+        const lerpArr = (x, y) => x.map((v, j) => v + ((y[j] ?? v) - v) * t);
+        out.push({
+          d: a.d + (b.d - a.d) * t,
+          rx: a.rx + (b.rx - a.rx) * t,
+          rz: a.rz + (b.rz - a.rz) * t,
+          ou: (a.ou || 0) + ((b.ou || 0) - (a.ou || 0)) * t,
+          ov: (a.ov || 0) + ((b.ov || 0) - (a.ov || 0)) * t,
+          color: a.color.clone().lerp(b.color, t),
+          b: lerpArr(a.b, b.b),
+          w: lerpArr(a.w, b.w),
+        });
+      }
+      out.push(b);
+    }
+    return out;
+  }
+
   /** Esfera/elipsoide con pesos constantes. */
   ball(g, center, r, color, bones, weights, squash = [1, 1, 1], seg = 12) {
     const rings = Math.max(4, Math.round(seg * 0.7));
@@ -351,22 +391,22 @@ export class Humanoid {
       // El grosor crece con el tamaño y con la longitud de pierna: una pierna
       // un 20 % más larga con el mismo radio parecería un fideo.
       const wide = (0.052 + 0.030 * (bulk - 1) + 0.010) * this.s * Math.sqrt(this.legLen);
-      // Muslo: grueso arriba, más fino en la rodilla
-      this.loft(g, hip, [knee[0] - hip[0], knee[1] - hip[1], 0], [
+      // Muslo: grueso arriba, más fino en la rodilla (densificado: más anillos)
+      this.loft(g, hip, [knee[0] - hip[0], knee[1] - hip[1], 0], this.densify([
         { d: 0.00, rx: wide * 1.25, rz: wide * 1.20, color: pants, ...this.legW(side, 0) },
         { d: thighLen * 0.35, rx: wide * 1.10, rz: wide * 1.05, color: pants, ...this.legW(side, 0.1) },
         { d: thighLen * 0.75, rx: wide * 0.86, rz: wide * 0.84, color: pants, ...this.legW(side, 0.35) },
         { d: thighLen, rx: wide * 0.72, rz: wide * 0.72, color: pants, ...this.legW(side, 0.72) }
-      ], 12, false);
+      ], 1), 12, false);
 
       // Rodilla + gemelo: la pantorrilla tiene su volumen máximo arriba
-      this.loft(g, knee, [ankle[0] - knee[0], ankle[1] - knee[1], 0], [
+      this.loft(g, knee, [ankle[0] - knee[0], ankle[1] - knee[1], 0], this.densify([
         { d: 0.00, rx: wide * 0.72, rz: wide * 0.74, color: pants, ...this.legW(side, 0.72) },
         { d: shinLen * 0.22, rx: wide * 0.70, rz: wide * 0.86, color: pants, ...this.legW(side, 0.85) },
         { d: shinLen * 0.60, rx: wide * 0.52, rz: wide * 0.62, color: pants, ...this.legW(side, 0.96) },
         { d: shinLen * 0.86, rx: wide * 0.40, rz: wide * 0.44, color: boot, ...this.legW(side, 1) },
         { d: shinLen, rx: wide * 0.40, rz: wide * 0.46, color: boot, ...this.footW(side, 0) }
-      ], 12, false);
+      ], 1), 12, false);
 
       // Pie: cuña hacia los dedos
       const fwd = [toe[0] - ankle[0], 0, toe[2] - ankle[2]];
@@ -377,10 +417,11 @@ export class Humanoid {
         { d: 0.17 * this.s, rx: wide * 0.36, rz: wide * 0.20, color: boot, ...this.footW(side, 1) }
       ], 10);
 
-      // Rótula y tobillo: esferas que tapan las uniones
-      this.ball(g, knee, wide * 0.74, pants,
+      // Rótula y tobillo: esferas que tapan las uniones, hundidas dentro del
+      // tubo para que la pierna no parezca un muñeco articulado.
+      this.ball(g, knee, wide * 0.62, pants,
         [this.boneIndex[`${side}Leg`]], [1], [1, 1, 1], 10);
-      this.ball(g, ankle, wide * 0.44, boot,
+      this.ball(g, ankle, wide * 0.38, boot,
         [this.boneIndex[`${side}Foot`]], [1], [1, 0.8, 1], 10);
     }
   }
@@ -440,7 +481,7 @@ export class Humanoid {
       { y: neck[1] - 0.02 * this.s, rx: chestX * 0.62, rz: chestZ * 0.66, color: gi }
     ].map((p) => ({ d: p.y, rx: p.rx, rz: p.rz, color: p.color, ...W(p.y) }));
 
-    this.loft(g, [0, 0, 0], [0, 1, 0], profile, 16, true);
+    this.loft(g, [0, 0, 0], [0, 1, 0], this.densify(profile, 1), 16, true);
 
     // Cinturón
     const beltY = yHips + 0.045 * this.s;
@@ -501,19 +542,19 @@ export class Humanoid {
       const rFore = rUp * 0.82;
 
       // Brazo: bíceps lleno, codo más estrecho
-      this.loft(g, sh, [dir, 0, 0], [
+      this.loft(g, sh, [dir, 0, 0], this.densify([
         { d: 0, rx: rUp * 1.12, rz: rUp * 1.08, color: gi, ...this.armW(side, 0) },
         { d: upLen * 0.4, rx: rUp * 1.02, rz: rUp * 0.98, color: gi, ...this.armW(side, 0.2) },
         { d: upLen, rx: rUp * 0.80, rz: rUp * 0.80, color: gi, ...this.armW(side, 0.75) }
-      ], 12, false);
+      ], 1), 12, false);
 
       // Antebrazo: musculoso arriba, muñeca fina
-      this.loft(g, el, [dir, 0, 0], [
+      this.loft(g, el, [dir, 0, 0], this.densify([
         { d: 0, rx: rFore * 1.05, rz: rFore * 1.0, color: skin, ...this.armW(side, 0.75) },
         { d: foreLen * 0.35, rx: rFore * 0.94, rz: rFore * 0.88, color: skin, ...this.armW(side, 0.9) },
         { d: foreLen * 0.86, rx: rFore * 0.68, rz: rFore * 0.66, color: skin, ...this.armW(side, 1) },
         { d: foreLen, rx: rFore * 0.66, rz: rFore * 0.62, color: trim, ...this.handW(side, 0) }
-      ], 12, false);
+      ], 1), 12, false);
 
       // Puño cerrado: caja redondeada alineada con el antebrazo
       const handLen = 0.10 * this.s;
@@ -526,7 +567,7 @@ export class Humanoid {
       this.ball(g, [wr[0] + dir * handLen * 0.35, wr[1] - rFore * 0.55, wr[2] + 0.028 * this.s],
         rFore * 0.42, glove, [this.boneIndex[`${side}Hand`]], [1], [1.4, 0.8, 0.9], 8);
 
-      this.ball(g, el, rFore * 0.82, skin, [this.boneIndex[`${side}ForeArm`]], [1], [1, 1, 1], 10);
+      this.ball(g, el, rFore * 0.70, skin, [this.boneIndex[`${side}ForeArm`]], [1], [1, 1, 1], 10);
     }
   }
 
