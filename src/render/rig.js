@@ -198,6 +198,12 @@ export class Rig {
     const drift = plan.loop ? 0 : 0.45;
     this.hips.position.x = this.rootA[0] * drift;
     this.hips.position.z = this.rootA[2] * drift;
+    // En ataques aereos el root del clip (y su fundido desde el salto) tira
+    // del cuerpo atras: el "amago" de recular. Se anula por completo.
+    if (plan.attack && f.airborne) {
+      this.hips.position.x = 0;
+      this.hips.position.z = 0;
+    }
 
     // --- posición y orientación ---
     this.root.position.set(f.x || 0, f.y || 0, 0);
@@ -319,11 +325,14 @@ export class Rig {
       const g = GUARD[`hand${side}`];
       const pe = GUARD[`elbow${side}`];
       // Agachado: la guardia baja con la cadera, no se queda a altura de pie.
-      const drop = (f.anim && f.anim.pose === 'crouch') ? 0.42 * s : 0;
+      // Manos pegadas delante de la cara y codos BELOW (nada de brazos en jarra).
+      const crouchG = f.anim && f.anim.pose === 'crouch';
+      const drop = crouchG ? 0.42 * s : 0;
       // guardBias: cada luchador lleva las manos mas largas/cortas o altas.
-      _v1.set(g[0], g[1] - drop + (this.guardBias || 0) * 0.3 * s, g[2] + drop * 0.3 + (this.guardBias || 0) * 0.5 * s);
+      _v1.set(g[0] * (crouchG ? 0.7 : 1), g[1] - drop + (this.guardBias || 0) * 0.3 * s,
+        (g[2] + drop * 0.3) * (crouchG ? 0.85 : 1) + (this.guardBias || 0) * 0.5 * s);
       this.body.localToWorld(_v1);
-      _v2.set(pe[0], pe[1] - drop * 0.6, pe[2]);
+      _v2.set(pe[0] * (crouchG ? 0.6 : 1), pe[1] - drop * (crouchG ? 1.1 : 0.6), pe[2]);
       this.body.localToWorld(_v2);
 
       hand.getWorldPosition(_v3);
@@ -513,11 +522,13 @@ export class Rig {
       }
       if (e < 0) { this.bones.RightUpLeg.rotateX(this.kickSign * e * 1.4); return; }
       const sweep = mv.input && mv.input.dir === '2';
+      const sweepStyle = sweep ? (this.def.sweepStyle || (this.def.body || {}).sweepStyle || 'sweep') : 'sweep';
       const charge = (mv.tags || []).includes('charge');
       const seed = this.styleSeed;
-      // Barrido: ras de suelo. Embestida: media y contundente. El resto, a la
-      // altura del hitbox con matiz por personaje.
-      const yKick = sweep ? 0.13 * s : (charge ? hT * 0.8 : hT * (0.96 + 0.08 * seed));
+      // Barrido/segada: ras de suelo. Embestida: media y contundente. El resto,
+      // a la altura del hitbox con matiz por personaje.
+      const yKick = sweep ? (sweepStyle === 'both' ? 0.16 * s : 0.12 * s)
+        : (charge ? hT * 0.8 : hT * (0.96 + 0.08 * seed));
       const legLen = up.getWorldPosition(_aA).distanceTo(leg.getWorldPosition(_aB))
         + leg.getWorldPosition(_aB).distanceTo(foot.getWorldPosition(_aC));
       // Pierna de pateo PLENA hacia la altura del golpe
@@ -527,11 +538,31 @@ export class Rig {
       this.body.localToWorld(_v2);
       this.aimChain(up, leg, foot, _v1, _v2, w);
       this.body.updateMatrixWorld(true);
-      // Apoyo: casi recto y pie pivotado (talón hacia el rival), como en 2D
-      this.bones.LeftUpLeg.rotateX(0.10 * e);
-      this.bones.LeftFoot.rotateY(-1.0 * e);
-      if (sweep) {
-        // Barrido: sentado atrás sobre el apoyo, pierna rasa
+      if (sweep && sweepStyle === 'slide') {
+        // Segada de futbol: apoyo plegado bajo el cuerpo, ras de suelo y
+        // deslizamiento (el lunge del move), tronco atrás.
+        this.bones.LeftUpLeg.rotateX(0.90 * e);
+        this.bones.LeftLeg.rotateX(1.30 * e);
+        this.bones.LeftFoot.rotateY(-0.4 * e);
+        this.hips.position.y -= 0.10 * s * e;
+        this.bones.LowerBack.rotateX(-0.34 * e);
+        this.bones.Spine.rotateX(-0.14 * e);
+      } else if (sweep && sweepStyle === 'both') {
+        // Mole de poder: entra con las dos piernas extendidas delante.
+        // aimChain (no rotaciones sueltas): el IK de postura ya doblo la
+        // pierna de apoyo y solo un objetivo absoluto la estira.
+        _v1.set(0.07 * s, 0.20 * s, legLen * 0.88 * (0.35 + 0.65 * e));
+        this.body.localToWorld(_v1);
+        _v2.set(0.10 * s, 0.45 * s, 0.30 * s);
+        this.body.localToWorld(_v2);
+        this.aimChain(this.bones.LeftUpLeg, this.bones.LeftLeg, this.bones.LeftFoot, _v1, _v2, w);
+        this.body.updateMatrixWorld(true);
+        this.bones.LowerBack.rotateX(-0.30 * e);
+        this.bones.Spine.rotateX(-0.12 * e);
+      } else if (sweep) {
+        // Barrido clasico: apoyo casi recto y pie pivotado (talon al rival)
+        this.bones.LeftUpLeg.rotateX(0.10 * e);
+        this.bones.LeftFoot.rotateY(-1.0 * e);
         this.bones.LowerBack.rotateX(-0.30 * e);
         this.bones.Spine.rotateX(-0.12 * e);
       } else if (charge) {
@@ -747,7 +778,9 @@ export class Rig {
 
   fixGround() {
     let lowest = Infinity;
-    for (const n of ['LeftFoot', 'RightFoot']) {
+    // dedos incluidos: si el pie rota (barrido, crouch) el tobillo puede
+    // quedar arriba mientras el dedo atraviesa el suelo.
+    for (const n of ['LeftFoot', 'RightFoot', 'LeftToeBase', 'RightToeBase']) {
       const b = this.bones[n];
       if (!b) continue;
       b.getWorldPosition(_v1);
@@ -755,7 +788,7 @@ export class Rig {
     }
     if (!Number.isFinite(lowest)) return;
     const sink = -lowest;              // cuánto hay que subir para apoyar
-    if (sink > 0.0005 && sink < 0.22) {
+    if (sink > 0.0005 && sink < 0.3) {
       this.hips.position.y += sink;
       this.body.updateMatrixWorld(true);
     }

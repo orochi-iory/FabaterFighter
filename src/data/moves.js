@@ -170,6 +170,8 @@ export function buildNormals(def) {
     id: '2HK', name: 'Sweep', level: 'H', pose: 'sweep',
     input: { button: 'HK', dir: '2' },
     startup: S(11), active: 3, recovery: S(28),
+    motion: { type: 'lunge', start: 2, frames: S(11) + 3,
+      speed: (def.body || {}).sweepStyle === 'slide' ? 0.22 : (def.body || {}).sweepStyle === 'both' ? 0.14 : 0.06 },
     hits: [hit({
       box: box(1.0 * reach, 0.3, 1.5 * reach, 0.42), damage: dmg(74), level: 'H',
       low: true, knockdown: true, juggle: 0

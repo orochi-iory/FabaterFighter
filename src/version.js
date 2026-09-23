@@ -4,8 +4,8 @@
  * (lo rellena con el commit HEAD y la fecha actuales) antes de cada entrega.
  */
 export const BUILD = {
-  tag: 'v0.18',
-  commit: '0b7f873',
+  tag: 'v0.19',
+  commit: '7134e50',
   date: '2026-09-23',
-  notes: 'Crouch-attacks sin hundido ni tabla horizontal (pesos de hueso corregidos en densify); golpe aereo conserva momento del salto; cejas/pomulos de perfil; sesgos de estilo en guardia y tronco'
+  notes: 'Barrido con personalidad (roundhouse raso / segada deslizante / entrada a dos piernas), toes sin atravesar suelo, sin amago atras en salto aereo, guardia de crouch compacta sin brazos en jarra'
 };
