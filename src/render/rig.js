@@ -115,6 +115,11 @@ export class Rig {
     this.prev = null;
     this.fade = 0;
     this.clock = Math.random() * 200;   // desincroniza los dos luchadores
+    // Signos de flexión calibrados midiendo el rig: en este bind, rotateX +
+    // en el muslo lleva el pie ATRÁS; rotateX - en LowerBack tumba el torso ATRÁS.
+    this.crouchSign = -1;   // muslo adelante
+    this.fallSign = 1;      // torso atrás; las piernas usan el signo opuesto
+    this.kickSign = -1;     // chamber = muslo atrás
     this.time = 0;
     this.recoil = 0;
     this.scarfVel = this.humanoid.scarf ? this.humanoid.scarf.map(() => 0) : null;
@@ -149,7 +154,15 @@ export class Rig {
       if (w >= 1) this.prev = null;
     }
 
-    const okA = sampleClip(this.cur.clip, this.cur.frame, this.rotA, this.rootA);
+    let okA = sampleClip(this.cur.clip, this.cur.frame, this.rotA, this.rootA);
+    if (!okA) {
+      // Pose sin clip (crouch, knockdown...): partimos del pose de reposo,
+      // si no los huesos conservarían la rotación del frame anterior y las
+      // capas procedurales se acumularían frame a frame.
+      this.rotA.fill(0);
+      this.rootA.fill(0);
+      okA = true;
+    }
     if (okA) dampRot(this.rotA, this.cur.clip);
     if (okA && this.prev) {
       if (sampleClip(this.prev.clip, this.prev.frame, this.rotB, this.rootB)) {
@@ -187,11 +200,15 @@ export class Rig {
     this.applyBreathing(f);
     this.applyIntroBow(f);
     this.applyRecoil(f, dt);
-    this.applyGuard(f, plan, dt);
+    this.applyCrouch(f);          // baja la cadera ANTES del IK de pies y de la guardia
+    this.applyGuard(f, plan, dt); // tras el crouch: los brazos son hijos del torso
     this.applyHitPose(f, plan, dt);
     this.applyLocomotionPolish(f, plan, dt);
     this.applyStance(f, plan);
+    this.applyProceduralWalk(f, plan, dt);
+    this.applyAttackPose(f, plan);
     this.applyLookAt(f, opponent);
+    this.applyKnockdown(f);
     this.fixGround();
 
     this.body.updateMatrixWorld(true);
@@ -291,9 +308,11 @@ export class Rig {
 
       const g = GUARD[`hand${side}`];
       const pe = GUARD[`elbow${side}`];
-      _v1.set(g[0], g[1], g[2]);
+      // Agachado: la guardia baja con la cadera, no se queda a altura de pie.
+      const drop = (f.anim && f.anim.pose === 'crouch') ? 0.42 * s : 0;
+      _v1.set(g[0], g[1] - drop, g[2] + drop * 0.3);
       this.body.localToWorld(_v1);
-      _v2.set(pe[0], pe[1], pe[2]);
+      _v2.set(pe[0], pe[1] - drop * 0.6, pe[2]);
       this.body.localToWorld(_v2);
 
       hand.getWorldPosition(_v3);
@@ -340,6 +359,160 @@ export class Rig {
     }
   }
 
+  /* --- agachado procedural -------------------------------------------- */
+
+  /** Agacharse de verdad: cadera abajo, muslos adelante, rodillas dobladas. */
+  applyCrouch(f) {
+    const pose = f.anim ? f.anim.pose : '';
+    const target = pose === 'crouch' ? 1 : 0;
+    this.crouchCur = (this.crouchCur || 0) + (target - (this.crouchCur || 0)) * 0.30;
+    const k = this.crouchCur;
+    if (k < 0.01) return;
+    const s = this.height / WORLD_HEIGHT;
+    // La cadera baja a fondo y el IK de postura (applyStance) dobla las
+    // rodillas con los pies plantados bajo el cuerpo: guardia agachada real.
+    this.hips.position.y -= 0.50 * s * k;
+    this.bones.LowerBack.rotateX(-this.crouchSign * 0.22 * k); // tronco adelante
+    this.bones.Spine.rotateX(-this.crouchSign * 0.22 * k);
+    this.bones.Neck.rotateX(this.crouchSign * 0.34 * k);      // compensa: mira al frente
+  }
+
+  /* --- caída al suelo procedural -------------------------------------- */
+
+  /** Knockdown/KO: vuelca atrás sobre el suelo en ~0.45 s, piernas al aire. */
+  applyKnockdown(f) {
+    const pose = f.anim ? f.anim.pose : '';
+    const on = pose === 'knockdown' || pose === 'ko';
+    if (!on) { this.kdCur = 0; return; }
+    const t = Math.min(1, (f.anim.frame || 0) / 26);
+    const k = smoothstep(t);
+    this.kdCur = k;
+    if (k < 0.01) return;
+    const s = this.height / WORLD_HEIGHT;
+    // Apaga el clip: la caída la manda esta capa (el dive capturado flotaba).
+    // Hips incluido: el dive capturado rueda sobre la espalda y su rotación
+    // de raíz levantaría el torso otra vez.
+    for (const n of ['Hips', 'LowerBack', 'Spine', 'Spine1', 'Neck', 'Head',
+      'LeftArm', 'RightArm', 'LeftForeArm', 'RightForeArm',
+      'LeftUpLeg', 'RightUpLeg', 'LeftLeg', 'RightLeg', 'LeftFoot', 'RightFoot']) {
+      this.bones[n].quaternion.slerp(_qId, Math.min(1, k * 1.6));
+    }
+    const g = this.fallSign;
+    this.bones.LowerBack.rotateX(-g * 1.45 * k);
+    this.bones.Spine.rotateX(-g * 0.30 * k);
+    this.bones.Head.rotateX(g * 0.55 * k);          // barbilla al pecho
+    this.bones.LeftUpLeg.rotateX(-g * (0.95 + Math.sin(f.anim.frame * 0.4) * 0.08) * k);
+    this.bones.RightUpLeg.rotateX(-g * 0.80 * k);
+    this.bones.LeftLeg.rotateX(g * 0.30 * k);
+    this.bones.RightLeg.rotateX(g * 0.30 * k);
+    this.bones.LeftArm.rotateX(g * 0.5 * k);
+    this.bones.RightArm.rotateX(g * 0.5 * k);
+    // Cadera al suelo interpolada (no de golpe).
+    const groundY = 0.17 * s;
+    this.hips.position.y = this.hips.position.y * (1 - k) + groundY * k;
+  }
+
+  /* --- caminar procedural con IK de pies ------------------------------- */
+
+  /**
+   * Zancada generada: cada pie recorre su ciclo (apoyo + swing con lift),
+   * resuelto con el IK de dos huesos; brazos en contrafase y bob de cadera.
+   * Sustituye las piernas del clip de mocap (paso de modelo, pies en línea).
+   */
+  applyProceduralWalk(f, plan, dt) {
+    const pose = f.anim ? f.anim.pose : '';
+    let mode = 0;
+    if (pose === 'walkF') mode = 1;
+    else if (pose === 'walkB') mode = -0.55;
+    else if (pose === 'run') mode = 1.7;
+    this.walkW = (this.walkW || 0) + ((mode !== 0 ? 1 : 0) - (this.walkW || 0)) * Math.min(1, dt * 10);
+    if (this.walkW < 0.02) return;
+    const s = this.height / WORLD_HEIGHT;
+    const speed = Math.max(0.03, Math.abs(f.vx || 0));
+    const dir = mode < 0 ? -1 : 1;
+    this.walkPhase = (this.walkPhase || 0) + dt * (3.0 + speed * 60) * dir;
+    const ph = this.walkPhase;
+    const stride = 0.15 * s * (mode === 1.7 ? 1.45 : 1) * Math.min(1.5, speed / 0.065);
+    const lift = (mode === 1.7 ? 0.075 : 0.045) * s;
+    for (const [side, off] of [['Left', 0], ['Right', Math.PI]]) {
+      const a = ph + off;
+      const foot = this.bones[`${side}Foot`];
+      const leg = this.bones[`${side}Leg`];
+      const up = this.bones[`${side}UpLeg`];
+      const swing = Math.cos(a);                       // >0 = pie en el aire
+      _v1.set(0, 0.02 * s + Math.max(0, swing) * lift, Math.sin(a) * stride);
+      this.body.localToWorld(_v1);
+      _v2.set(0, 0.55 * s, 0.35 * s);                  // rodilla al frente
+      this.body.localToWorld(_v2);
+      this.aimChain(up, leg, foot, _v1, _v2, this.walkW * 0.95);
+      this.body.updateMatrixWorld(true);
+    }
+    // Brazos en contrafase y cadera viva.
+    const sw = Math.sin(ph) * (mode === 1.7 ? 0.55 : 0.35) * this.walkW;
+    this.bones.LeftArm.rotateX(sw);
+    this.bones.RightArm.rotateX(-sw);
+    this.bones.LeftForeArm.rotateX(0.4 * this.walkW);
+    this.bones.RightForeArm.rotateX(0.4 * this.walkW);
+    this.hips.position.y += Math.abs(Math.cos(ph)) * 0.016 * s * this.walkW;
+  }
+
+  /* --- pose de ataque alineada con el golpe ---------------------------- */
+
+  /**
+   * El miembro que golpea apunta a la altura real del hitbox (box.y del
+   * golpe): un alto sube a la cara, un bajo a las piernas. Extensión con
+   * windup -> snap -> retorno para que el golpe se LEA.
+   */
+  applyAttackPose(f, plan) {
+    if (!plan.attack || !f.move) return;
+    const mv = f.move;
+    const hb = mv.hits && mv.hits[0] && mv.hits[0].box;
+    if (!hb) return;
+    const t = f.moveFrame || 0;
+    let e;
+    if (t < mv.startup) e = -(t / Math.max(1, mv.startup)) * 0.3;      // chamber
+    else if (t < mv.startup + mv.active) e = 1;                         // snap
+    else e = Math.max(0, 1 - (t - mv.startup - mv.active) / Math.max(1, mv.recovery));
+    const s = this.height / WORLD_HEIGHT;
+    const hT = hb.y * s;
+    const btn = (mv.input && mv.input.button) || mv.id || '';
+    const isKick = /K/.test(btn) && !/P/.test(btn);
+    const w = e > 0 ? Math.min(0.95, e * 1.4) : 0;
+    if (isKick) {
+      const up = this.bones.RightUpLeg, leg = this.bones.RightLeg, foot = this.bones.RightFoot;
+      if (e < 0) { this.bones.RightUpLeg.rotateX(this.kickSign * e * 1.4); return; }
+      // alcance = longitud real de la pierna: extensión plena a la altura del golpe
+      const legLen = up.getWorldPosition(_aA).distanceTo(leg.getWorldPosition(_aB))
+        + leg.getWorldPosition(_aB).distanceTo(foot.getWorldPosition(_aC));
+      _v1.set(0, hT, legLen * 0.95 * (0.4 + 0.6 * e));
+      this.body.localToWorld(_v1);
+      _v2.set(0, hT * 0.75 + 0.15 * s, 0.65 * s);      // rodilla alta, extensión plena
+      this.body.localToWorld(_v2);
+      this.aimChain(up, leg, foot, _v1, _v2, w);
+      this.body.updateMatrixWorld(true);
+      this.bones.Spine.rotateX(this.kickSign * 0.25 * e);   // contra-inclinación atrás
+    } else {
+      // El clip "strong" extiende el brazo derecho: el IK debe mandar ese
+      // mismo brazo (y el jab, el izquierdo).
+      const leftish = /LP/.test(mv.id || '');
+      const side = leftish ? 'Left' : 'Right';
+      const sh = this.bones[`${side}Arm`], el = this.bones[`${side}ForeArm`], ha = this.bones[`${side}Hand`];
+      if (e < 0) { sh.rotateX(-e * 1.2); return; }     // recoge el puño
+      // alcance = longitud real del brazo: puño extendido a la altura del golpe
+      const armLen = sh.getWorldPosition(_aA).distanceTo(el.getWorldPosition(_aB))
+        + el.getWorldPosition(_aB).distanceTo(ha.getWorldPosition(_aC));
+      const lat = side === 'Left' ? 0.10 * s : -0.10 * s;
+      _v1.set(lat, hT, armLen * 0.95 * (0.35 + 0.65 * e));
+      this.body.localToWorld(_v1);
+      _v2.set(lat * 1.6, hT - 0.18 * s, 0.12 * s);     // codo bajo y atrás
+      this.body.localToWorld(_v2);
+      this.aimChain(sh, el, ha, _v1, _v2, w);
+      this.body.updateMatrixWorld(true);
+      const other = side === 'Left' ? 'Right' : 'Left';
+      this.bones[`${other}Arm`].rotateX(0.35 * e);     // mano contraria en guardia
+    }
+  }
+
   /* --- pulido de locomoción (lean + sway pélvico) --------------------- */
 
   /**
@@ -379,27 +552,39 @@ export class Rig {
     const pose = f.anim ? f.anim.pose : 'idle';
     // Solo en estados de pie: tumbado o volando el IK de pies estorbaría.
     const up = ['idle', 'dizzy', 'blockHigh', 'blockLow', 'parry', 'hitHigh', 'hitLow',
-      'walkF', 'walkB', 'walkSide', 'run'];
+      'walkF', 'walkB', 'walkSide', 'run', 'crouch'];
     let w = 0;
     if (up.includes(pose)) {
-      w = pose === 'idle' || pose === 'dizzy' || pose.startsWith('block') || pose === 'parry'
+      w = pose === 'idle' || pose === 'dizzy' || pose.startsWith('block') || pose === 'parry' || pose === 'crouch'
         ? 0.9 : pose.startsWith('hit') ? 0.85 : 0.6;
     }
     if (w <= 0.01 || f.airborne) return;
 
     const s = this.height / WORLD_HEIGHT;
-    const widen = 0.12 * s * (0.5 + 0.5 * (this.legLen || 1));
+    const widen = (pose === 'crouch' ? 0.07 : 0.12) * s * (0.5 + 0.5 * (this.legLen || 1));
     for (const side of ['L', 'R']) {
       const upleg = this.bones[side === 'L' ? 'LeftUpLeg' : 'RightUpLeg'];
       const leg = this.bones[side === 'L' ? 'LeftLeg' : 'RightLeg'];
       const foot = this.bones[side === 'L' ? 'LeftFoot' : 'RightFoot'];
       if (!foot) continue;
-      foot.getWorldPosition(_v1);
-      this.body.worldToLocal(_v1);
-      _v1.x += side === 'L' ? widen : -widen;          // ensanche lateral local
-      this.body.localToWorld(_v1);
-      // rodilla mirando al frente
-      _v2.set(side === 'L' ? 0.12 * s : -0.12 * s, 0.55 * s, 0.3 * s);
+      if (pose === 'crouch') {
+        // Objetivo absoluto: pies plantados bajo el cuerpo, un poco adelante;
+        // la cadera ya bajó, así que las rodillas se doblan solas.
+        _v1.set(side === 'L' ? widen : -widen, 0.02 * s, 0.10 * s);
+        this.body.localToWorld(_v1);
+      } else {
+        foot.getWorldPosition(_v1);
+        this.body.worldToLocal(_v1);
+        _v1.x += side === 'L' ? widen : -widen;        // ensanche lateral local
+        this.body.localToWorld(_v1);
+        // Si la cadera bajó, el pie no puede hundirse: el objetivo del IK es
+        // el suelo y las rodillas absorben la diferencia.
+        _v1.y = Math.max(_v1.y, 0.02 * s);
+      }
+      // rodilla mirando al frente (en crouch el eje cadera-pie es casi
+      // vertical y el polo debe empujar la rodilla bien adelante)
+      if (pose === 'crouch') _v2.set(side === 'L' ? 0.05 * s : -0.05 * s, 0.40 * s, 0.55 * s);
+      else _v2.set(side === 'L' ? 0.12 * s : -0.12 * s, 0.55 * s, 0.3 * s);
       this.body.localToWorld(_v2);
       this.aimChain(upleg, leg, foot, _v1, _v2, w);
       this.body.updateMatrixWorld(true);

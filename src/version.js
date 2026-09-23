@@ -4,8 +4,8 @@
  * (lo rellena con el commit HEAD y la fecha actuales) antes de cada entrega.
  */
 export const BUILD = {
-  tag: 'v0.12',
-  commit: '670b724',
+  tag: 'v0.13',
+  commit: 'a1b17ad',
   date: '2026-09-23',
-  notes: 'Controles absolutos tras cross-up, defensa mantenida, retratos con cara texturizada, ojos en el calco, pulido de locomocion'
+  notes: 'Pecho masculino sin tetillas; caminar y golpes generados por IK; golpes altos a la altura del hitbox; agachado y caida al suelo procedurales'
 };

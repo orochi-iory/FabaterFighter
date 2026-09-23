@@ -126,6 +126,16 @@ if (POSE === 'punch' || POSE === 'kick') {
 } else if (POSE === 'walk') {
   fighter.vx = 0.06 * (def.stats.walk / 0.06);
   for (let i = 0; i < 40; i++) { fighter.stateFrame = i; fighter.updateAnim(); step(); }
+} else if (POSE === 'crouch') {
+  for (let i = 0; i < 40; i++) { fighter.updateAnim(); fighter.anim.pose = 'crouch'; step(); }
+} else if (POSE === 'down') {
+  for (let i = 0; i < 50; i++) { fighter.updateAnim(); fighter.anim.pose = 'knockdown'; fighter.anim.frame = i; step(); }
+} else if (POSE === 'normH' || POSE === 'kickH') {
+  const mv = def.moveById[POSE === 'normH' ? '5HP' : '5HK'];
+  fighter.state = 'attack'; fighter.move = mv;
+  fighter.moveFrame = mv.startup + 1;
+  fighter.updateAnim();
+  step(3);
 } else if (POSE === 'face') {
   fighter.state = 'intro';          // brazos colgando: la cara queda despejada
   fighter.stateFrame = 8;

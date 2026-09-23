@@ -68,8 +68,11 @@ export const STATE_CLIP = {
 /** Peso de la guardia (manos arriba) por estado: 1 = postura de combate plena. */
 export const GUARD_WEIGHT = {
   idle: 1,
+  crouch: 1,
   walkF: 1, walkB: 1, walkSide: 1, run: 0.75,
   blockHigh: 1, blockLow: 1, parry: 1,
+  kickH: 0.7, kickL: 0.7, kickM: 0.7,
+  kickHigh: 0.7, kickMid: 0.7, kickLow: 0.7, kickSpin: 0.4, kickFront: 0.5, kickCombo: 0.6,
   // Encajar un golpe no tira los brazos al suelo: se cubre la cara.
   hitHigh: 0.7, hitLow: 0.7, launched: 0.45, guardcrush: 0.3,
   dizzy: 0.35,

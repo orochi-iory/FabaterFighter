@@ -474,11 +474,9 @@ export class Humanoid {
       if (female) {
         this.ball(g, [dx * chestX * 0.40, pecY - 0.015 * this.s, chestZ * 0.78], chestX * 0.34, gi,
           [this.boneIndex.Spine1], [1], [1, 0.85, 0.85], 10);
-      } else {
-        // Pectorales planos y pegados al torso: volumen sin parecer pecho.
-        this.ball(g, [dx * chestX * 0.48, pecY, chestZ * 0.40], chestX * 0.30, gi,
-          [this.boneIndex.Spine1], [1], [1.1, 0.5, 0.45], 10);
       }
+      // En ellos el loft del torso ya da el volumen de pecho: sin esferas
+      // sueltas, que se ven como bultos ("tetillas").
     }
   }
 
