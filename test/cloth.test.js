@@ -40,9 +40,10 @@ global.document = win.document;
 Object.defineProperty(global, 'navigator', { value: win.navigator, configurable: true });
 
 const { ROSTER } = await import('../src/data/roster.js');
-const { Humanoid } = await import('../src/render/humanoid.js');
+const { Humanoid, clothTexture } = await import('../src/render/humanoid.js');
 
 test('clothTexture usa ctx.ellipse con los 7 argumentos del spec', () => {
+  clothTexture();   // la trama se pinta contra el contexto estricto
   const h = new Humanoid(ROSTER.find((f) => f.id === 'kenji'));
   assert.ok(h.mesh, 'el humanoide se construye con contexto 2D estricto');
   assert.ok(ellipseCalls.length >= 46, `se pintaron arrugas (${ellipseCalls.length}) sin reviente`);

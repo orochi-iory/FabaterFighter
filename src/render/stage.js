@@ -314,10 +314,31 @@ export class Stage {
     g.add(spot.target);
     this.spot = spot;
     this.ambient = amb;
+    this.buildVeil(g, L.fog);
 
     // Niebla
-    this.scene.fog = new THREE.Fog(L.fog, 16, 52);
+    this.scene.fog = new THREE.Fog(L.fog, 13, 42);
     this.baseFog = this.scene.fog.color.clone();
+  }
+
+  /** Velo translucido tras el ring: suaviza el fondo (blur barato) para que
+   * los luchadores destaquen; no tapa el suelo ni el publico cercano. */
+  buildVeil(g, fogColor) {
+    const tex = canvasTexture(64, (ctx, s) => {
+      const grd = ctx.createLinearGradient(0, s, 0, 0);
+      grd.addColorStop(0, 'rgba(0,0,0,1)');       // alphaMap lee luminancia
+      grd.addColorStop(0.35, 'rgba(110,110,110,1)');
+      grd.addColorStop(1, 'rgba(165,165,165,1)');
+      ctx.fillStyle = grd;
+      ctx.fillRect(0, 0, s, s);
+    });
+    const mat = new THREE.MeshBasicMaterial({
+      color: fogColor, transparent: true, alphaMap: tex, depthWrite: false, fog: false
+    });
+    const veil = new THREE.Mesh(new THREE.PlaneGeometry(46, 9), mat);
+    veil.position.set(0, 3.2, -5.1);
+    veil.renderOrder = 1;
+    g.add(veil);
   }
 
   /* --- decorados por tema ------------------------------------------- */

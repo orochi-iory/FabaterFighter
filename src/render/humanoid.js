@@ -232,15 +232,13 @@ export class Humanoid {
     geo.computeBoundingSphere();
 
     // Dos grupos de material (tela / piel) según el atributo `mat`.
-    const cloth = clothTexture();
+    // Sin map/bumpMap: la trama de tela se leía como marcas cuadriculadas
+    // sobre el cuerpo en pantalla; el color por vértice ya viste bien.
     const clothMat = new THREE.MeshStandardMaterial({
       vertexColors: true,
       roughness: 0.78,
       metalness: 0.04,
-      side: THREE.DoubleSide,
-      map: cloth || null,
-      bumpMap: cloth || null,
-      bumpScale: 0.04
+      side: THREE.DoubleSide
     });
     const skinMat = new THREE.MeshStandardMaterial({
       vertexColors: true,
@@ -1132,7 +1130,7 @@ function splitGroupsByMat(geo, mats) {
  * diez luchadores. Sin contexto 2D (tests en Node) devuelve null y el
  * material queda liso.
  */
-function clothTexture() {
+export function clothTexture() {
   if (typeof document === 'undefined') return null;
   const c = document.createElement('canvas');
   c.width = c.height = 128;
