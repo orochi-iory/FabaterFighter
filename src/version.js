@@ -4,8 +4,8 @@
  * (lo rellena con el commit HEAD y la fecha actuales) antes de cada entrega.
  */
 export const BUILD = {
-  tag: 'v0.20',
-  commit: '7cc221b',
+  tag: 'v0.21',
+  commit: '8be4446',
   date: '2026-09-23',
-  notes: 'Modelado SDF de una sola superficie (marching tetrahedra) con cache por personaje, calco de cara shrinkwrap, 3 escenarios (templo/ciudad/playa) aleatorios por combate y publico humano instanciado'
+  notes: 'Brazos nunca en T ni deslizamientos tras golpes/saltos, masculinos musculosos (biceps/trapecios/dorsales/cuadriceps), caras 2x con rasgos grandes y casco/cinta recolocados'
 };

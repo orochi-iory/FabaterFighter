@@ -354,12 +354,14 @@ export class Humanoid {
       const thighLen = Math.hypot(knee[1] - hip[1], knee[0] - hip[0]);
       const shinLen = Math.hypot(ankle[1] - knee[1], ankle[0] - knee[0]);
 
-      const wide = (0.052 + 0.030 * (bulk - 1) + 0.010) * this.s * Math.sqrt(this.legLen);
+      const female = !!this.body.female;
+      const wide = (0.052 + 0.030 * (bulk - 1) + 0.010) * this.s * Math.sqrt(this.legLen) * (female ? 1 : 1.12);
       const dirK = [(knee[0] - hip[0]) / thighLen, (knee[1] - hip[1]) / thighLen, 0];
       // Muslo: grueso arriba, más fino en la rodilla (tres tramos)
       const thigh = [
         { d: 0.0, rx: wide * 1.25, rz: wide * 1.20, paint: pants, bw: this.legW(side, 0) },
-        { d: thighLen * 0.35, rx: wide * 1.10, rz: wide * 1.05, paint: pants, bw: this.legW(side, 0.1) },
+        { d: thighLen * 0.35, rx: wide * 1.12, rz: wide * 1.08, paint: pants, bw: this.legW(side, 0.1) },
+        { d: thighLen * 0.55, rx: wide * 1.06, rz: wide * 1.12, paint: pants, bw: this.legW(side, 0.2) },
         { d: thighLen * 0.75, rx: wide * 0.86, rz: wide * 0.84, paint: pants, bw: this.legW(side, 0.35) },
         { d: thighLen, rx: wide * 0.72, rz: wide * 0.72, paint: pants, bw: this.legW(side, 0.72) }
       ];
@@ -374,7 +376,7 @@ export class Humanoid {
       const dirA = [(ankle[0] - knee[0]) / shinLen, (ankle[1] - knee[1]) / shinLen, 0];
       const shin = [
         { d: 0.0, rx: wide * 0.74, rz: wide * 0.76, paint: shinC, bw: this.legW(side, 0.72) },
-        { d: shinLen * 0.22, rx: wide * 0.70, rz: wide * 0.86, paint: shinC, bw: this.legW(side, 0.85) },
+        { d: shinLen * 0.22, rx: wide * 0.70, rz: wide * 0.94, paint: shinC, bw: this.legW(side, 0.85) },
         { d: shinLen * 0.60, rx: wide * 0.52, rz: wide * 0.62, paint: shinC, bw: this.legW(side, 0.96) },
         { d: shinLen * 0.86, rx: wide * 0.40, rz: wide * 0.44, paint: boot, bw: this.legW(side, 1) },
         { d: shinLen, rx: wide * 0.40, rz: wide * 0.46, paint: boot, bw: this.footW(side, 0) }
@@ -479,7 +481,7 @@ export class Humanoid {
     // Trapecios / deltoides: volumen sobre los hombros (más sutiles en ellas)
     for (const side of ['Left', 'Right']) {
       const sh = this.bp[`${side}Arm`];
-      const dScale = female ? 0.82 : 1;
+      const dScale = female ? 0.82 : 1.18;
       F.ball([sh[0] * 0.55, sh[1] + 0.015 * this.s, 0],
         0.068 * this.s * (0.9 + 0.15 * bulk) * dScale * 1.1,
         0.068 * this.s * (0.9 + 0.15 * bulk) * dScale * 0.8,
@@ -491,6 +493,18 @@ export class Humanoid {
         0.062 * this.s * (0.95 + 0.18 * bulk) * dScale,
         (top === 'gi' ? gi : skin).c, (top === 'gi' ? gi : skin).mat,
         [this.boneIndex[`${side}Arm`]], [1]);
+      if (!female) {
+        // Trapecio: llena el hueco cuello-hombro (silueta de potencia)
+        F.ball([sh[0] * 0.35, sh[1] + 0.045 * this.s, -0.012 * this.s],
+          0.055 * this.s * (0.9 + 0.15 * bulk), 0.045 * this.s, 0.05 * this.s,
+          (top === 'gi' ? gi : skin).c, (top === 'gi' ? gi : skin).mat,
+          [this.boneIndex.Spine1, this.boneIndex[`${side}Shoulder`]], [0.6, 0.4]);
+        // Dorsal: la espalda en V también de perfil
+        F.ball([sh[0] * 0.55, spine[1] + 0.01 * this.s, -chestZ * 0.55],
+          chestX * 0.30, chestX * 0.36, chestX * 0.26,
+          (top === 'gi' ? gi : skin).c, (top === 'gi' ? gi : skin).mat,
+          [this.boneIndex.Spine], [1]);
+      }
     }
 
     // Busto femenino: dos volúmenes que el mínimo suave funde con el pecho
@@ -522,14 +536,17 @@ export class Humanoid {
       const dir = Math.sign(el[0] - sh[0]) || 1;
       const upLen = Math.abs(el[0] - sh[0]);
       const foreLen = Math.abs(wr[0] - el[0]);
-      const rUp = (0.050 + 0.016 * (bulk - 1)) * this.s * Math.sqrt(this.armLen);
-      const rFore = rUp * 0.82;
+      const female = !!this.body.female;
+      const rUp = (0.050 + 0.016 * (bulk - 1)) * this.s * Math.sqrt(this.armLen) * (female ? 0.92 : 1.16);
+      const rFore = rUp * (female ? 0.82 : 0.90);
 
       const sleeve = (this.body.top || 'gi') === 'gi' ? gi : skin;
-      // Bíceps lleno, codo más estrecho
-      this.tube(F, sh, el, rUp * 1.12, rUp * 1.08, rUp * 0.80, rUp * 0.80, sleeve, this.armW(side, 0.2));
-      // Antebrazo: musculoso arriba, muñeca fina
-      this.tube(F, el, [wr[0], wr[1], wr[2]], rFore * 1.05, rFore * 1.0, rFore * 0.66, rFore * 0.62, skin, this.armW(side, 0.9));
+      // Bíceps con pico al 45 % y codo estrecho: el brazo masculino no es un fideo
+      const mid = [sh[0] + (el[0] - sh[0]) * 0.45, sh[1] + (el[1] - sh[1]) * 0.45, sh[2]];
+      this.tube(F, sh, mid, rUp * 1.10, rUp * 1.06, rUp * 1.24, rUp * 1.20, sleeve, this.armW(side, 0.1));
+      this.tube(F, mid, el, rUp * 1.24, rUp * 1.20, rUp * 0.80, rUp * 0.80, sleeve, this.armW(side, 0.5));
+      // Antebrazo: gemelo del brazo, muñeca fina
+      this.tube(F, el, [wr[0], wr[1], wr[2]], rFore * 1.18, rFore * 1.10, rFore * 0.66, rFore * 0.62, skin, this.armW(side, 0.9));
       // Puño cerrado alineado con el antebrazo
       const handLen = 0.10 * this.s;
       this.tube(F, [wr[0] + dir * 0.012 * this.s, wr[1], wr[2]],
@@ -610,8 +627,10 @@ export class Humanoid {
     const cz = headBase[2];
     const C = [0, cy - 0.012 * hs, cz - 0.006 * hs];
     const cols = 12, rows = 14;
-    const a0 = -0.85, a1 = 0.85;      // horizontal (visible tambien de tres cuartos)
-    const b0 = -0.80, b1 = 0.40;      // vertical (negativo = barbilla)
+    // El arte de 96x128 representa la cabeza entera (coronilla a barbilla):
+    // el arco del calco debe abarcar lo mismo o los rasgos salen aplastados.
+    const a0 = -0.90, a1 = 0.90;      // horizontal: cara + tres cuartos
+    const b0 = -1.35, b1 = 1.05;      // vertical: coronilla a bajo-barbilla
     // Shrinkwrap: cada vértice del calco se apoya a 4 mm de la superficie real
     // del campo (bisección sobre el SDF), así ni flota ni se entierra aunque
     // la fusión de cejas/pómulos engorde la cara.
@@ -630,7 +649,7 @@ export class Humanoid {
           q[0] = C[0] + dx * mid; q[1] = C[1] + dy * mid; q[2] = C[2] + dz * mid;
           if (fieldVal(F, q) < 0) lo = mid; else hi = mid;
         }
-        const rr = (lo + hi) / 2 + 0.004 * hs;
+        const rr = (lo + hi) / 2 + 0.012 * hs;
         pos.push(C[0] + dx * rr, C[1] + dy * rr, C[2] + dz * rr);
         uv.push(c / cols, r / rows);
       }
@@ -682,7 +701,7 @@ export class Humanoid {
       const cap = new THREE.Mesh(new THREE.SphereGeometry(hs, 16, 12, 0, TAU, 0, Math.PI * theta), hairMat);
       cap.scale.set(0.110, 0.130, 0.120);
       cap.rotation.x = -tilt;
-      cap.position.set(0, 0.008 * hs, -0.010 * hs);
+      cap.position.set(0, 0.020 * hs, -0.022 * hs);
       return cap;
     };
 
@@ -700,11 +719,11 @@ export class Humanoid {
         for (let i = 0; i < 11; i++) {
           const a = (i / 11) * TAU;
           const spike = new THREE.Mesh(new THREE.ConeGeometry(0.026 * hs, 0.12 * hs, 5), hairMat);
-          spike.position.set(Math.cos(a) * 0.070 * hs, 0.062 * hs + Math.sin(i * 2.1) * 0.012 * hs, Math.sin(a) * 0.070 * hs);
+          spike.position.set(Math.cos(a) * 0.062 * hs, 0.092 * hs + Math.sin(i * 2.1) * 0.010 * hs, Math.sin(a) * 0.062 * hs - 0.012 * hs);
           spike.rotation.set(Math.sin(a) * 0.7, 0, -Math.cos(a) * 0.7);
           grp.add(spike);
         }
-        const cap = hairCap(0.52, 0.45);
+        const cap = hairCap(0.42, 0.62);
         grp.add(cap);
         add(grp);
         break;
@@ -722,7 +741,7 @@ export class Humanoid {
       }
       case 'long': {
         const grp = new THREE.Group();
-        const cap = hairCap(0.58, 0.4);
+        const cap = hairCap(0.46, 0.60);
         grp.add(cap);
         // Melena: cae por la espalda (se ancla al cuello para que acompañe)
         const tail = new THREE.Mesh(new THREE.CylinderGeometry(0.062 * hs, 0.030 * hs, 0.30 * hs, 10), hairMat);
@@ -735,7 +754,7 @@ export class Humanoid {
       }
       case 'ponytail': {
         const grp = new THREE.Group();
-        const cap = hairCap(0.55, 0.45);
+        const cap = hairCap(0.44, 0.62);
         grp.add(cap);
         const tail = new THREE.Mesh(new THREE.CylinderGeometry(0.026 * hs, 0.014 * hs, 0.26 * hs, 8), hairMat);
         tail.position.set(0, -0.10 * hs, -0.075 * hs);
@@ -746,7 +765,7 @@ export class Humanoid {
         break;
       }
       case 'flat': {
-        const cap = hairCap(0.48, 0.4);
+        const cap = hairCap(0.42, 0.58);
         add(cap);
         break;
       }
@@ -777,7 +796,7 @@ export class Humanoid {
         break;
       }
       default: {
-        const cap = hairCap(0.52, 0.45);
+        const cap = hairCap(0.42, 0.62);
         add(cap);
       }
     }
@@ -787,11 +806,11 @@ export class Humanoid {
       const band = new THREE.Mesh(new THREE.TorusGeometry(0.098 * hs, 0.013 * hs, 6, 18),
         mat(new THREE.Color(C.trim || '#c62828').convertSRGBToLinear()));
       band.rotation.x = Math.PI / 2;
-      band.position.set(0, 0.125 * hs, -0.004 * hs);
+      band.position.set(0, 0.152 * hs, -0.006 * hs);
       head.add(band);
       const tailL = new THREE.Mesh(new THREE.BoxGeometry(0.022 * hs, 0.13 * hs, 0.006 * hs),
         mat(new THREE.Color(C.trim || '#c62828').convertSRGBToLinear()));
-      tailL.position.set(0.03 * hs, 0.115 * hs, -0.095 * hs);
+      tailL.position.set(0.03 * hs, 0.145 * hs, -0.095 * hs);
       head.add(tailL);
       this.bandTail = tailL;
     }

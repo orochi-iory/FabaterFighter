@@ -9,7 +9,8 @@
  */
 import * as THREE from '../../vendor/three.module.min.js';
 
-const W = 96, H = 128;
+const SS = 2;                      // supersampling: textura 192x256, coords en 96x128
+const W = 96 * SS, H = 128 * SS;
 
 /* ------------------------------------------------------------------ */
 /* Mini-rasterizador con alpha                                         */
@@ -18,6 +19,10 @@ const W = 96, H = 128;
 function makeBuf() { return new Uint8ClampedArray(W * H * 4); }
 
 function blend(buf, x, y, r, g, b, a) {
+  blendD(buf, Math.round(x * SS), Math.round(y * SS), r, g, b, a);
+}
+
+function blendD(buf, x, y, r, g, b, a) {
   x |= 0; y |= 0;
   a = Math.min(1, a);
   if (x < 0 || y < 0 || x >= W || y >= H || a <= 0) return;
@@ -31,23 +36,25 @@ function blend(buf, x, y, r, g, b, a) {
 }
 
 function line(buf, x0, y0, x1, y1, w, r, g, b, a) {
+  x0 *= SS; y0 *= SS; x1 *= SS; y1 *= SS; w *= SS;
   const d = Math.hypot(x1 - x0, y1 - y0);
   const steps = Math.max(1, Math.ceil(d * 2));
   for (let i = 0; i <= steps; i++) {
     const t = i / steps;
     const x = x0 + (x1 - x0) * t, y = y0 + (y1 - y0) * t;
     for (let dy = -w; dy <= w; dy++) for (let dx = -w; dx <= w; dx++) {
-      if (dx * dx + dy * dy <= w * w) blend(buf, x + dx, y + dy, r, g, b, a);
+      if (dx * dx + dy * dy <= w * w) blendD(buf, x + dx, y + dy, r, g, b, a);
     }
   }
 }
 
 function ellipse(buf, cx, cy, rx, ry, r, g, b, a, rot = 0) {
+  cx *= SS; cy *= SS; rx *= SS; ry *= SS;
   const cr = Math.cos(rot), sr = Math.sin(rot);
   for (let y = -ry - 1; y <= ry + 1; y++) for (let x = -rx - 1; x <= rx + 1; x++) {
     const lx = x * cr + y * sr, ly = -x * sr + y * cr;
     const q = (lx * lx) / (rx * rx + 0.01) + (ly * ly) / (ry * ry + 0.01);
-    if (q <= 1) blend(buf, cx + x, cy + y, r, g, b, a * Math.min(1, 1.5 - q));
+    if (q <= 1) blendD(buf, cx + x, cy + y, r, g, b, a * Math.min(1, 1.5 - q));
   }
 }
 
@@ -81,22 +88,24 @@ export function faceArt(def) {
   // Cejas: el extremo interior baja con browAng>0 (ceño) y sube con <0 (arco)
   if (!R.mask && !R.visor) {
     for (const s of [-1, 1]) {
-      const len = 12 * (R.wide || 1);
+      const len = 13.5 * (R.wide || 1);
       const xIn = 48 + s * 8, xOut = 48 + s * (8 + len);
       const yIn = R.browY + R.browAng * 16;
       const yOut = R.browY - R.browAng * 8 + Math.abs(R.browAng) * 4;
-      line(buf, xIn, yIn, xOut, yOut, R.browW, bc[0], bc[1], bc[2], 0.95);
+      line(buf, xIn, yIn, xOut, yOut, R.browW + 1.2, bc[0], bc[1], bc[2], 0.98);
     }
   }
 
   // Ojos: blanco, iris del tono de las cejas, pupila y párpado superior.
   if (!R.mask && !R.visor) {
     for (const s of [-1, 1]) {
-      const ex = 48 + s * 14;
-      ellipse(buf, ex, 50, 6.2, 3.4, 242, 238, 230, 0.95);
-      ellipse(buf, ex + s * 0.7, 50.4, 2.7, 3.0, bc[0], bc[1], bc[2], 0.95);
-      ellipse(buf, ex + s * 0.7, 50.6, 1.2, 1.5, 12, 9, 8, 0.95);
-      line(buf, ex - 6, 47.2, ex + 6, 46.8, 1.1, 30, 20, 18, 0.8);
+      const ex = 48 + s * 13;
+      ellipse(buf, ex, 50, 8.2, 4.8, 25, 18, 14, 0.92);         // contorno
+      ellipse(buf, ex, 50, 7.2, 3.9, 246, 243, 236, 0.98);      // blanco
+      ellipse(buf, ex + s * 0.8, 50.4, 3.4, 3.5, bc[0], bc[1], bc[2], 0.98);
+      ellipse(buf, ex + s * 0.8, 50.6, 1.6, 1.9, 10, 8, 7, 0.98);
+      ellipse(buf, ex - 1.4, 49.0, 1.1, 0.8, 255, 255, 255, 0.85); // brillo
+      line(buf, ex - 7.6, 46.6, ex + 7.6, 46.2, 1.7, 25, 16, 12, 0.92); // parpado
     }
   }
 
@@ -123,9 +132,11 @@ export function faceArt(def) {
 
   // Sombra del tabique nasal
   if (!R.mask) {
-    ellipse(buf, 48, 74, 3.2, 1.6, 0, 0, 0, 0.22);
-    ellipse(buf, 44.5, 73, 1.4, 1.0, 0, 0, 0, 0.3);
-    ellipse(buf, 51.5, 73, 1.4, 1.0, 0, 0, 0, 0.3);
+    line(buf, 46.6, 56, 45.8, 70, 0.9, 60, 35, 25, 0.28);   // puente
+    line(buf, 49.4, 56, 50.2, 70, 0.9, 60, 35, 25, 0.28);
+    ellipse(buf, 48, 74, 3.2, 1.6, 0, 0, 0, 0.3);
+    ellipse(buf, 44.5, 73, 1.4, 1.0, 0, 0, 0, 0.38);
+    ellipse(buf, 51.5, 73, 1.4, 1.0, 0, 0, 0, 0.38);
   }
 
   // Barba incipiente / cerrada (ruido determinista)

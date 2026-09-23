@@ -30,7 +30,11 @@ const _qId = new THREE.Quaternion();
  * el torso con nuestras proporciones y los brazos salen disparados atrás.
  * Se escala la rotación muestreada antes de convertirla a cuaterniones. */
 const CLIP_SPINE_DAMP = {
-  hitReact: { LowerBack: 0.45, Spine: 0.4, Spine1: 0.4, Neck: 0.6, Head: 0.55 }
+  hitReact: { LowerBack: 0.45, Spine: 0.4, Spine1: 0.4, Neck: 0.6, Head: 0.55 },
+  // El salto capturado abre los brazos en cruz y retuerce los hombros: con eso
+  // en el suelo (aterrizajes, caidas) el luchador se ve "resetado" en T.
+  jump: { LeftShoulder: 0.45, RightShoulder: 0.45, LeftArm: 0.5, RightArm: 0.5,
+    LeftForeArm: 0.6, RightForeArm: 0.6, Spine1: 0.7, LowerBack: 0.7 }
 };
 const dampIdx = {};
 function dampRot(rot, clip) {
@@ -194,8 +198,9 @@ export class Rig {
     const hipsY = this.bp.Hips[1] + this.rootA[1];
     this.hips.position.y = hipsY;
     // El desplazamiento horizontal del mocap solo se usa en golpes (con moderación);
-    // en los bucles lo manda el motor, si no el luchador derivaría.
-    const drift = plan.loop ? 0 : 0.45;
+    // en los bucles lo manda el motor, si no el luchador derivaría. El salto y las
+    // reacciones capturadas arrastran la cadera medio metro: también a cero.
+    const drift = (plan.loop || plan.clip === 'jump' || plan.clip === 'hitReact') ? 0 : 0.45;
     this.hips.position.x = this.rootA[0] * drift;
     this.hips.position.z = this.rootA[2] * drift;
     // En ataques aereos el root del clip (y su fundido desde el salto) tira
@@ -217,6 +222,7 @@ export class Rig {
     this.applyCrouch(f);          // baja la cadera ANTES del IK de pies y de la guardia
     this.applyGuard(f, plan, dt); // tras el crouch: los brazos son hijos del torso
     this.applyHitPose(f, plan, dt);
+    this.applyArmSafety(f, plan);
     this.applyLocomotionPolish(f, plan, dt);
     this.applyStance(f, plan);
     this.applyProceduralWalk(f, plan, dt);
@@ -381,6 +387,37 @@ export class Rig {
       _pole.set(pe[0], pe[1], pe[2]);     // pole puro: codo pegado al costado
       this.body.localToWorld(_pole);
       this.aimChain(shoulder, elbow, hand, _v1, _pole, gw);
+      this.body.updateMatrixWorld(true);
+    }
+  }
+
+  /* --- red de seguridad: ningún brazo en T sobre el suelo -------------- */
+
+  /** Clips de salto/caída llevan los brazos abiertos en cruz; al tocar el
+   * suelo con ese clip (aterrizajes, lanzamientos) el luchador se ve "en T".
+   * Si el brazo queda casi horizontal sin estar atacando ni en el aire, lo
+   * cerramos a guardia con el mismo IK de dos huesos. */
+  applyArmSafety(f, plan) {
+    if (plan.attack || f.airborne) return;
+    const pose = f.anim ? f.anim.pose : 'idle';
+    if (['knockdown', 'ko', 'intro', 'win', 'maxactivate', 'crouch'].includes(pose)) return;
+    this.bones.LeftArm.getWorldPosition(_v1);
+    this.bones.LeftForeArm.getWorldPosition(_v2);
+    const down = _v2.sub(_v1).normalize().y;
+    if (down < -0.18) return;
+    const GUARD = guardFor(this);
+    for (const side of ['L', 'R']) {
+      const shoulder = this.bones[side === 'L' ? 'LeftArm' : 'RightArm'];
+      const elbow = this.bones[side === 'L' ? 'LeftForeArm' : 'RightForeArm'];
+      const hand = this.bones[side === 'L' ? 'LeftHand' : 'RightHand'];
+      if (!hand) continue;
+      const g = GUARD[`hand${side}`];
+      const pe = GUARD[`elbow${side}`];
+      _v1.set(g[0], g[1], g[2]);
+      this.body.localToWorld(_v1);
+      _v2.set(pe[0], pe[1], pe[2]);
+      this.body.localToWorld(_v2);
+      this.aimChain(shoulder, elbow, hand, _v1, _v2, 0.7);
       this.body.updateMatrixWorld(true);
     }
   }

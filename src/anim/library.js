@@ -74,11 +74,11 @@ export const GUARD_WEIGHT = {
   kickH: 0.7, kickL: 0.7, kickM: 0.7,
   kickHigh: 0.7, kickMid: 0.7, kickLow: 0.7, kickSpin: 0.4, kickFront: 0.5, kickCombo: 0.6,
   // Encajar un golpe no tira los brazos al suelo: se cubre la cara.
-  hitHigh: 0.7, hitLow: 0.7, launched: 0.45, guardcrush: 0.3,
+  hitHigh: 0.7, hitLow: 0.7, launched: 0.7, guardcrush: 0.3,
   dizzy: 0.35,
   intro: 0,   // en la reverencia los brazos cuelgan a los costados
   win: 0, salute: 0,
-  jump: 0.25, fall: 0.25
+  jump: 0.45, fall: 0.45
 };
 
 function fallbackForMove(move) {
