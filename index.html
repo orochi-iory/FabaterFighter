@@ -43,6 +43,18 @@
     </div>
   </div>
 
+  <script>
+    // Vigilante anti-cuelgue: si en 8 s no hay juego montado (servidor caido,
+    // modulos que no llegan...), la pantalla de carga lo dice claro.
+    setTimeout(function () {
+      if (!window.game) {
+        var el = document.querySelector('.boot-text');
+        if (el && el.textContent.indexOf('Error') !== 0) {
+          el.textContent = 'No llegan los modulos del juego: recarga la pagina (Ctrl+F5). Si persiste, el servidor del sandbox necesita reiniciarse.';
+        }
+      }
+    }, 8000);
+  </script>
   <script type="module" src="./src/main.js"></script>
 </body>
 </html>
