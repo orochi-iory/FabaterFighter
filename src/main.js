@@ -318,10 +318,18 @@ class Game {
 
 /* ------------------------------------------------------------------ */
 function boot() {
-  const vig = document.createElement('div');
-  vig.className = 'vignette';
-  document.getElementById('fx-layer').appendChild(vig);
-  window.game = new Game();
+  try {
+    const vig = document.createElement('div');
+    vig.className = 'vignette';
+    document.getElementById('fx-layer').appendChild(vig);
+    window.game = new Game();
+  } catch (err) {
+    // Nunca un cuelgue silencioso: si el arranque revienta, la pantalla de
+    // carga lo dice en vez de quedarse "Cargando…" eterna.
+    console.error(err);
+    const el = document.querySelector('.boot-text');
+    if (el) el.textContent = 'Error de arranque: ' + (err && err.message ? err.message : err);
+  }
 }
 
 if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot);

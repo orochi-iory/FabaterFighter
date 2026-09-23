@@ -5,7 +5,7 @@
  */
 export const BUILD = {
   tag: 'v0.21',
-  commit: '8be4446',
+  commit: 'a0df821',
   date: '2026-09-23',
-  notes: 'Brazos nunca en T ni deslizamientos tras golpes/saltos, masculinos musculosos (biceps/trapecios/dorsales/cuadriceps), caras 2x con rasgos grandes y casco/cinta recolocados'
+  notes: 'Sin T-pose ni deslizamientos tras golpes, masculinos musculosos, caras 2x legibles y arranque a prueba de cuelgues'
 };
