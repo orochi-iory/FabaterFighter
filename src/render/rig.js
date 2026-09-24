@@ -572,7 +572,7 @@ export class Rig {
       // Barrido/segada: ras de suelo. Embestida: media y contundente. El resto,
       // a la altura del hitbox con matiz por personaje.
       const yKick = sweep ? (sweepStyle === 'both' ? 0.16 * s : 0.12 * s)
-        : (charge ? hT * 0.8 : hT * (0.96 + 0.08 * seed));
+        : (charge ? hT * 0.8 : hT * (0.88 + 0.06 * seed));
       const legLen = up.getWorldPosition(_aA).distanceTo(leg.getWorldPosition(_aB))
         + leg.getWorldPosition(_aB).distanceTo(foot.getWorldPosition(_aC));
       // Pierna de pateo PLENA hacia la altura del golpe
@@ -614,10 +614,39 @@ export class Rig {
         this.bones.LowerBack.rotateX(0.22 * e);
         this.bones.Spine.rotateX(0.18 * e);
       } else {
-        // Tronco atrás, nunca volcado adelante
-        this.bones.LowerBack.rotateX(this.kickSign * 0.18 * e);
-        this.bones.Spine.rotateX(this.kickSign * 0.22 * e);
+        // Tronco atrás ~20°: la lamina compensa la altura de la patada
+        // inclinandose, no apuntando la pierna al cielo
+        this.bones.LowerBack.rotateX(this.kickSign * 0.30 * e);
+        this.bones.Spine.rotateX(this.kickSign * 0.34 * e);
       }
+      // PIES en espacio mundo (la garra leia como rodilla dislocada):
+      //  - apoyo: planta horizontal (el dedo a la altura del tobillo),
+      //    porque hereda el pitch de cadera/pantorrilla y apuntaba al suelo;
+      //  - pateo: los dedos siguen la linea de la espinilla (extension
+      //    natural, como el pie del sheet).
+      const bothStyle = sweep && sweepStyle === 'both';
+      const supFootB = bothStyle ? this.bones.RightFoot : this.bones.LeftFoot;
+      const supToeB = bothStyle ? this.bones.RightToeBase : this.bones.LeftToeBase;
+      const kFootB = bothStyle ? this.bones.LeftFoot : this.bones.RightFoot;
+      const kToeB = bothStyle ? this.bones.LeftToeBase : this.bones.RightToeBase;
+      const kLegB = bothStyle ? this.bones.LeftLeg : this.bones.RightLeg;
+      if (!sweep) {
+        this.bones.LeftUpLeg.quaternion.slerp(_qId, 0.30);
+        this.bones.LeftLeg.quaternion.slerp(_qId, 0.22);
+      }
+      this.body.updateMatrixWorld(true);
+      supFootB.getWorldPosition(_aB);
+      supToeB.getWorldPosition(_aC);
+      _v1.copy(_aC); _v1.y = _aB.y + 0.02 * s;       // planta horizontal
+      this.swing(supFootB, _aC, _v1, 0.9);
+      this.body.updateMatrixWorld(true);
+      kFootB.getWorldPosition(_aB);
+      kToeB.getWorldPosition(_aC);
+      kLegB.getWorldPosition(_aA);
+      _v1.copy(_aB).sub(_aA).normalize();
+      _v1.multiplyScalar(_aB.distanceTo(_aC)).add(_aB);
+      this.swing(kFootB, _aC, _v1, 0.9);
+      this.body.updateMatrixWorld(true);
       // Brazos en tijera: contrario adelanta a la cara, homólogo atrás-abajo
       _v1.set(0.12 * s, 1.30 * s, 0.55 * s); this.body.localToWorld(_v1);
       _v2.set(0.20 * s, 1.10 * s, 0.10 * s); this.body.localToWorld(_v2);
@@ -636,15 +665,21 @@ export class Rig {
       const seed = this.styleSeed;
       const sh = this.bones[`${side}Arm`], el = this.bones[`${side}ForeArm`], ha = this.bones[`${side}Hand`];
       if (e < 0) { sh.rotateX(-e * 1.2); return; }     // recoge el puño
-      // alcance = longitud real del brazo: puño extendido a la altura del golpe
+      // El objetivo se mide DESDE EL HOMBRO en mundo: el clip lanza el torso
+      // adelante y, medido desde el cuerpo, el objetivo le quedaba al hombro
+      // "al lado" (el brazo se doblaba para alcanzarlo = puño junto a la
+      // cabeza). Adelante = +Z local de la raiz (convencion BVH).
       const armLen = sh.getWorldPosition(_aA).distanceTo(el.getWorldPosition(_aB))
         + el.getWorldPosition(_aB).distanceTo(ha.getWorldPosition(_aC));
       const lat = side === 'Left' ? 0.10 * s : -0.10 * s;
       const yPunch = charge ? hT * 0.95 : hT * (0.97 + 0.06 * seed);
-      _v1.set(lat, yPunch, armLen * 0.95 * (0.35 + 0.65 * e));
-      this.body.localToWorld(_v1);
-      _v2.set(lat * 1.6, yPunch - 0.18 * s, 0.12 * s);  // codo bajo y atrás
-      this.body.localToWorld(_v2);
+      this.root.getWorldQuaternion(_sP);
+      _v3.set(0, 0, 1).applyQuaternion(_sP);            // adelante en mundo
+      const reach = armLen * 0.97 * (0.35 + 0.65 * e);
+      _v1.copy(_aA).addScaledVector(_v3, reach);
+      _v1.y = yPunch;
+      _v2.copy(_aA).addScaledVector(_v3, reach * 0.12);
+      _v2.y = yPunch - 0.20 * s;                        // codo bajo
       this.aimChain(sh, el, ha, _v1, _v2, w);
       this.body.updateMatrixWorld(true);
       const other = side === 'Left' ? 'Right' : 'Left';
@@ -652,8 +687,12 @@ export class Rig {
         // El cuerpo entra detrás del puño y el brazo contrario rema atrás
         this.bones.LowerBack.rotateX(0.20 * e);
         this.bones.Spine.rotateX(0.26 * e);
-        _v1.set(-lat * 1.5, 1.05 * s, -0.38 * s); this.body.localToWorld(_v1);
-        _v2.set(-lat * 2.0, 1.15 * s, -0.10 * s); this.body.localToWorld(_v2);
+        const oSh = this.bones[`${other}Arm`];
+        oSh.getWorldPosition(_aA);
+        _v1.copy(_aA).addScaledVector(_v3, -0.30 * s);
+        _v1.y = 1.05 * s;
+        _v2.copy(_aA).addScaledVector(_v3, -0.05 * s);
+        _v2.y = 1.15 * s;
         this.aimChain(this.bones[`${other}Arm`], this.bones[`${other}ForeArm`],
           this.bones[`${other}Hand`], _v1, _v2, 0.85);
       } else {
