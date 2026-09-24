@@ -4,8 +4,8 @@
  * (lo rellena con el commit HEAD y la fecha actuales) antes de cada entrega.
  */
 export const BUILD = {
-  tag: 'v0.29',
-  commit: '4185cfd',
+  tag: 'v0.30',
+  commit: 'ac4f297',
   date: '2026-09-24',
-  notes: 'Pad tactil analogico de 8 direcciones (diagonales), y el lote anti-parpadeo: FrontSide, camara de precision, calco y pelo separados del z'
+  notes: 'El damero por fin identificado al 100%: winding mezclado del marching (37% de aristas); ahora girado en los indices reales (0 inconsistentes)'
 };

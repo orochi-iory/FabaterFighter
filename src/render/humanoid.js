@@ -310,11 +310,22 @@ export class Humanoid {
         vol += ax * (by * cz - bz * cy) + ay * (bz * cx - bx * cz) + az * (bx * cy - by * cx);
       }
       const inv = vol < 0;
-      // normales por acumulacion de caras sobre la malla suave y coherente
+      // Aplicar el giro a los indices REALES: el winding consistente es lo que
+      // ve la GPU (el culling FrontSide y el volteo de normal por
+      // gl_FrontFacing dependen de el). Con winding mezclado, tres.js invierte
+      // la normal de medio triangulo y el cuerpo alterna claro/oscuro:
+      // eso ERA el damero/diamante.
+      for (let t = 0; t < nT; t++) {
+        if ((flip[t] !== 0) !== inv) {
+          const tmp = indices[t * 3 + 1];
+          indices[t * 3 + 1] = indices[t * 3 + 2];
+          indices[t * 3 + 2] = tmp;
+        }
+      }
+      // normales por acumulacion de caras (winding ya coherente: sin giros)
       for (let i = 0; i < nrm.length; i++) nrm[i] = 0;
       for (let t = 0; t < nT; t++) {
-        let a = indices[t * 3], b = indices[t * 3 + 1], c = indices[t * 3 + 2];
-        if (flip[t] !== (inv ? 1 : 0)) { const tmp = b; b = c; c = tmp; }
+        const a = indices[t * 3], b = indices[t * 3 + 1], c = indices[t * 3 + 2];
         const ux = positions[b * 3] - positions[a * 3];
         const uy = positions[b * 3 + 1] - positions[a * 3 + 1];
         const uz = positions[b * 3 + 2] - positions[a * 3 + 2];
