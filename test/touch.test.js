@@ -1,7 +1,7 @@
 /**
  * Test de controles táctiles: pulsar/soltar escribe en el estado de entrada,
- * la pausa es acción de flanco y deslizar sobre el d-pad cambia de dirección
- * sin levantar el dedo.
+ * la pausa es acción de flanco y el pad izquierdo es analógico de 8
+ * direcciones (diagonales sin levantar el dedo).
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
@@ -12,6 +12,7 @@ const dom = new JSDOM(`<!doctype html><html><body>
 <div id="touch">
   <div class="pad-left">
     <button data-k="left" class="tbtn">L</button>
+    <button data-k="up" class="tbtn">U</button>
     <button data-k="down" class="tbtn">D</button>
   </div>
   <div class="pad-right">
@@ -25,6 +26,7 @@ Object.defineProperty(global, 'navigator', { value: dom.window.navigator, config
 global.HTMLElement = dom.window.HTMLElement;
 
 const ev = (type) => new dom.window.Event(type, { cancelable: true });
+const mev = (type, x, y) => new dom.window.MouseEvent(type, { clientX: x, clientY: y, cancelable: true });
 
 test('touchAvailable devuelve booleano coherente con el dispositivo', () => {
   assert.equal(typeof touchAvailable(), 'boolean');
@@ -36,7 +38,7 @@ test('pulsar/soltar un botón escribe y borra su tecla del estado', () => {
   let resumes = 0;
   bindTouchLayer(layer, { state, onResume: () => resumes++, onPause: () => {} });
   const lp = layer.querySelector('[data-k="LP"]');
-  lp.dispatchEvent(ev('pointerdown'));
+  lp.dispatchEvent(mev('pointerdown', 300, 300));
   assert.equal(state.LP, true);
   assert.ok(resumes >= 1);
   lp.dispatchEvent(ev('pointerup'));
@@ -55,21 +57,32 @@ test('la pausa es acción directa, no tecla mantenida', () => {
   assert.equal(state.pause, undefined);
 });
 
-test('deslizar del d-pad cambia de dirección sin levantar el dedo', () => {
+test('el pad izquierdo es analógico: neutro, dirección y DIAGONAL', () => {
   const state = {};
   const layer = document.getElementById('touch');
   bindTouchLayer(layer, { state, onResume: () => {}, onPause: () => {} });
-  const left = layer.querySelector('[data-k="left"]');
-  const down = layer.querySelector('[data-k="down"]');
-  document.elementFromPoint = () => down;
-  left.dispatchEvent(ev('pointerdown'));
-  assert.equal(state.left, true);
-  left.dispatchEvent(ev('pointermove'));
+  const pad = layer.querySelector('.pad-left');
+  // origen del toque (centro del pad en coordenadas locales)
+  pad.dispatchEvent(mev('pointerdown', 75, 75));
   assert.equal(state.left, false);
+  assert.equal(state.up, false);
+  // deslizar a la izquierda: left
+  pad.dispatchEvent(mev('pointermove', 30, 75));
+  assert.equal(state.left, true);
+  assert.equal(state.up, false);
+  // deslizar a la izquierda-ARRIBA: diagonal (salto en retroceso)
+  pad.dispatchEvent(mev('pointermove', 30, 30));
+  assert.equal(state.left, true);
+  assert.equal(state.up, true);
+  // soltar: todo a cero
+  pad.dispatchEvent(ev('pointerup'));
+  assert.equal(state.left, false);
+  assert.equal(state.up, false);
+  // vertical puro: down
+  pad.dispatchEvent(mev('pointerdown', 75, 75));
+  pad.dispatchEvent(mev('pointermove', 75, 120));
   assert.equal(state.down, true);
-  // soltar el dedo (el pointer vive ahora en "down" tras la transferencia)
-  left.dispatchEvent(ev('pointerup'));
-  assert.equal(state.down, true, 'la transferencia no debe soltar por el botón viejo');
-  down.dispatchEvent(ev('pointerup'));
+  assert.equal(state.left, false);
+  pad.dispatchEvent(ev('pointercancel'));
   assert.equal(state.down, false);
 });

@@ -227,6 +227,8 @@ const mvp = new THREE.Matrix4().multiplyMatrices(camera.projectionMatrix, camera
 
 const L = new THREE.Vector3(0.45, 0.75, 0.5).normalize();   // luz principal
 const L2 = new THREE.Vector3(-0.6, 0.2, -0.4).normalize();  // relleno
+const SPEC = Number(process.env.SPEC || 0);                  // especular tipo navegador
+const CAM = camera.position;
 
 const fb = new Float32Array(W * H).fill(Infinity);
 const rgb = Buffer.alloc(W * H * 3);
@@ -285,6 +287,19 @@ for (let t = 0; t < (SKIP_BODY ? 0 : idx.count); t += 3) {
       let d = Math.max(0, n.dot(L)) * 0.80 + Math.max(0, n.dot(L2)) * 0.20
         + 0.24 + 0.10 * (n.y * 0.5 + 0.5)
         + Math.pow(Math.max(0, n.dot(RIM)), 3) * 0.30;
+      // Especular opcional (SPEC=1): imita el termino GGX del navegador para
+      // cazar micro-oscilaciones que el difuso esconde.
+      if (SPEC > 0) {
+        const wx = (skinPos[ia * 3] * w0 / a.w + skinPos[ib * 3] * w1 / b.w + skinPos[ic * 3] * w2 / c.w) * z;
+        const wy = (skinPos[ia * 3 + 1] * w0 / a.w + skinPos[ib * 3 + 1] * w1 / b.w + skinPos[ic * 3 + 1] * w2 / c.w) * z;
+        const wz = (skinPos[ia * 3 + 2] * w0 / a.w + skinPos[ib * 3 + 2] * w1 / b.w + skinPos[ic * 3 + 2] * w2 / c.w) * z;
+        const vx = CAM.x - wx, vy = CAM.y - wy, vz = CAM.z - wz;
+        const vl = Math.hypot(vx, vy, vz) || 1;
+        const hx = L.x + vx / vl, hy = L.y + vy / vl, hz = L.z + vz / vl;
+        const hl = Math.hypot(hx, hy, hz) || 1;
+        const sd = Math.max(0, (n.x * hx + n.y * hy + n.z * hz) / hl);
+        d += Math.pow(sd, 26) * SPEC;
+      }
       const o = (y * W + x) * 3;
       for (let k = 0; k < 3; k++) {
         const vc = col.getComponent(ia, k) * w0 + col.getComponent(ib, k) * w1 + col.getComponent(ic, k) * w2;
@@ -299,6 +314,7 @@ for (let t = 0; t < (SKIP_BODY ? 0 : idx.count); t += 3) {
 
 // --- segunda pasada: accesorios y calco de cara (mallas rígidas) -------
 if (process.env.HIDE_BODY) rig.mesh.visible = false;
+if (process.env.NODECAL && rig.humanoid.faceDecal) rig.humanoid.faceDecal.visible = false;
 if (process.env.ONLY_DECAL) rig.root.traverse((o) => { if (o.isMesh && o !== rig.mesh && o !== rig.humanoid.faceDecal) o.visible = false; });
 rig.root.updateMatrixWorld(true);
 const extras = [];

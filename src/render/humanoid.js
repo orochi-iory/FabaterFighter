@@ -399,13 +399,13 @@ export class Humanoid {
       vertexColors: true,
       roughness: 0.92,
       metalness: 0.02,
-      side: THREE.DoubleSide
+      side: THREE.FrontSide
     });
     const skinMat = new THREE.MeshStandardMaterial({
       vertexColors: true,
       roughness: 0.88,
       metalness: 0.02,
-      side: THREE.DoubleSide
+      side: THREE.FrontSide
     });
     splitGroupsByMat(geo, mats);
     this.mesh = new THREE.SkinnedMesh(geo, [clothMat, skinMat]);
@@ -789,7 +789,7 @@ export class Humanoid {
     // El arte de 96x128 representa la cabeza entera (coronilla a barbilla):
     // el arco del calco debe abarcar lo mismo o los rasgos salen aplastados.
     const a0 = -0.90, a1 = 0.90;      // horizontal: cara + tres cuartos
-    const b0 = -1.35, b1 = 1.05;      // vertical: coronilla a bajo-barbilla
+    const b0 = -1.35, b1 = 0.62;      // vertical: linea del pelo a bajo-barbilla (la coronilla la pinta el pelo 3D, no el calco: asi no compiten por el z)
     // Shrinkwrap: cada vértice del calco se apoya a 4 mm de la superficie real
     // del campo (bisección sobre el SDF), así ni flota ni se entierra aunque
     // la fusión de cejas/pómulos engorde la cara.
@@ -808,7 +808,7 @@ export class Humanoid {
           q[0] = C[0] + dx * mid; q[1] = C[1] + dy * mid; q[2] = C[2] + dz * mid;
           if (fieldVal(F, q) < 0) lo = mid; else hi = mid;
         }
-        const rr = (lo + hi) / 2 + 0.012 * hs;
+        const rr = (lo + hi) / 2 + 0.024 * hs;   // margen amplio: a rasante el z se empata
         pos.push(C[0] + dx * rr, C[1] + dy * rr, C[2] + dz * rr);
         uv.push(c / cols, r / rows);
       }
@@ -828,7 +828,7 @@ export class Humanoid {
     const mat = new THREE.MeshStandardMaterial({
       map: tex, transparent: true, roughness: 0.55, metalness: 0,
       side: THREE.FrontSide, depthWrite: false,
-      polygonOffset: true, polygonOffsetFactor: -2, polygonOffsetUnits: -2
+      polygonOffset: true, polygonOffsetFactor: -6, polygonOffsetUnits: -6
     });
     const mesh = new THREE.Mesh(g, mat);
     mesh.renderOrder = 2;
@@ -858,9 +858,12 @@ export class Humanoid {
     // abertura mira a la cara y la nuca queda cubierta.
     const hairCap = (theta = 0.5, tilt = 0.35) => {
       const cap = new THREE.Mesh(new THREE.SphereGeometry(hs, 16, 12, 0, TAU, 0, Math.PI * theta), hairMat);
-      cap.scale.set(0.110, 0.130, 0.120);
-      cap.rotation.x = -tilt;
-      cap.position.set(0, 0.020 * hs, -0.022 * hs);
+      cap.scale.set(0.134, 0.148, 0.138);
+      // El borde del casco termina POR ENCIMA del limite del calco (b1=0.62):
+      // entre ambos queda una banda fina de craneo y jamas se cruzan (sin
+      // linea de empate de z = sin motas en la frente).
+      cap.rotation.x = -tilt - 0.55;
+      cap.position.set(0, 0.042 * hs, -0.040 * hs);
       return cap;
     };
 

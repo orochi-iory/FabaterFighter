@@ -350,7 +350,9 @@ html, body {
 /* Táctil */
 .touch { position: absolute; inset: 0; pointer-events: none; } /* solo los botones capturan: los menus siguen clicables */
 .touch.hidden { display: none; }
-.pad-left { position: absolute; left: 3vw; bottom: 4vh; width: 150px; height: 150px; }
+.pad-left { position: absolute; left: 3vw; bottom: 4vh; width: 150px; height: 150px;
+  pointer-events: auto; touch-action: none; }   /* zona analógica: captura el dedo */
+.pad-left .tbtn { pointer-events: none; }        /* flechas solo visuales */
 .pad-right { position: absolute; right: 3vw; bottom: 4vh; width: 210px; height: 170px; }
 .tbtn {
   position: absolute; width: 52px; height: 52px; border-radius: 50%;

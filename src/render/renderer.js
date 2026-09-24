@@ -20,7 +20,7 @@ export class GameView {
     this.renderer.toneMappingExposure = 1.05;
 
     this.scene = new THREE.Scene();
-    this.camera = new THREE.PerspectiveCamera(40, 16 / 9, 0.1, 200);
+    this.camera = new THREE.PerspectiveCamera(40, 16 / 9, 0.25, 80);
     this.camera.position.set(0, 2.6, 10);
     this.camera.lookAt(0, 1.3, 0);
 

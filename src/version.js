@@ -4,8 +4,8 @@
  * (lo rellena con el commit HEAD y la fecha actuales) antes de cada entrega.
  */
 export const BUILD = {
-  tag: 'v0.28',
-  commit: 'fb9e92c',
+  tag: 'v0.29',
+  commit: '4185cfd',
   date: '2026-09-24',
-  notes: 'Controles tactiles arreglados: multi-touch real, deslizar en el pad, sin robo de gesto, pausa y GC; pista de rotacion'
+  notes: 'Pad tactil analogico de 8 direcciones (diagonales), y el lote anti-parpadeo: FrontSide, camara de precision, calco y pelo separados del z'
 };
