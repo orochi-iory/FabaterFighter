@@ -18,7 +18,7 @@ import json
 import os
 import statistics
 from collections import Counter, deque
-from PIL import Image, ImageChops, ImageFilter
+from PIL import Image, ImageChops, ImageDraw, ImageFilter
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 SPEC_PATH = os.path.join(HERE, "spec.json")
@@ -39,8 +39,9 @@ MATERIAL_OF = {
 LEVELS = {"outline": 1, "suit": 3, "navy": 3, "skin": 3, "mask": 3,
           "hair": 3, "yellow": 2, "white": 1}
 NO_STANDING = {"crouch", "crouch_punch", "crouch_kick", "crouch_hit",
-               "knockdown", "ko"}
-CROUCH_LIKE = {"crouch", "crouch_punch", "crouch_kick", "crouch_hit"}
+               "kick_weak", "jump_kick", "knockdown", "ko"}
+CROUCH_LIKE = {"crouch"}
+CROUCH_HEIGHT = {"crouch_punch", "crouch_kick", "crouch_hit", "kick_weak"}
 FIXED_HEIGHT = {"rayo_proj": 64, "portrait": 120}
 
 
@@ -97,9 +98,16 @@ def detect_head_px(frame):
         return None
     mask = Image.frombytes("L", (w, h), bytes(x * 255 for x in m))
     mask = mask.filter(ImageFilter.MaxFilter(5)).filter(ImageFilter.MinFilter(5))
+    # Relleno de huecos: el rayo teal y la cara quedan encerrados por el rosa
+    # de la mascara; sin esto fragmentan el blob y la cabeza se subestima.
+    inv = ImageChops.invert(mask)
+    for seed in ((0, 0), (w - 1, 0), (0, h - 1), (w - 1, h - 1)):
+        ImageDraw.floodfill(inv, seed, 128)
+    holes = inv.point(lambda v: 255 if v == 255 else 0)
+    mask = ImageChops.lighter(mask, holes)
     m2 = mask.tobytes()
     seen = bytearray(w * h)
-    best = None
+    blobs = []
     for i in range(w * h):
         if m2[i] and not seen[i]:
             q = deque([i])
@@ -115,11 +123,21 @@ def detect_head_px(frame):
                     if 0 <= nx < w and 0 <= ny < h and m2[k] and not seen[k]:
                         seen[k] = 1
                         q.append(k)
-            if best is None or len(xs) > best[0]:
-                best = (len(xs), min(xs), min(ys), max(xs), max(ys))
-    if best is None or best[0] < 400:
+            blobs.append((len(xs), min(xs), min(ys), max(xs), max(ys)))
+    blobs.sort(key=lambda b: -b[0])
+    if not blobs or blobs[0][0] < 400:
         return None
-    _, x0, y0, x1, y1 = best
+    _, x0, y0, x1, y1 = blobs[0]
+    # Absorber fragmentos proximos: el rayo teal parte el rosa de la mascara;
+    # solo se fusiona a <40px (el ruido disperso bajo la cabeza queda fuera).
+    for b in blobs[1:]:
+        if b[0] < 100:
+            continue
+        _, a0, c0, a1, c1 = b
+        dx = max(0, max(x0 - a1, a0 - x1))
+        dy = max(0, max(y0 - c1, c0 - y1))
+        if max(dx, dy) < 40:
+            x0, y0, x1, y1 = min(x0, a0), min(y0, c0), max(x1, a1), max(y1, c1)
     return max(x1 - x0 + 1, y1 - y0 + 1)
 
 
@@ -273,6 +291,9 @@ def qa_check_strip(sid, keyed, frames, expected, spec, strip_s, scale, heads, me
                         notes.append(("AVISO", f"agachado pleno {artmin:.0f}px-arte = {ratio:.0%} del de pie (rango 55-85%)"))
                     if abs(artmax - 160) / 160 > 0.12:
                         notes.append(("AVISO", f"de pie emergente {artmax:.0f} vs 160"))
+                elif sid in CROUCH_HEIGHT:
+                    if not 100 <= artmax <= 165:
+                        notes.append(("AVISO", f"altura agachado {artmax:.0f}px-arte fuera de 100-165"))
             elif abs(artmax - 160) / 160 > 0.12:
                 notes.append(("AVISO", f"de pie emergente {artmax:.0f} vs 160"))
     verdict = "OK"

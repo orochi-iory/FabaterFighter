@@ -641,13 +641,13 @@
     },
     "punch_weak": {
       "pixel": 1,
-      "head_med": 91,
-      "bg_flat": 0.6911
+      "head_med": 103,
+      "bg_flat": 0.643
     },
     "kick_weak": {
       "pixel": 1,
-      "head_med": 77,
-      "bg_flat": 0.7522
+      "head_med": 98,
+      "bg_flat": 0.6779
     },
     "dash": {
       "pixel": 1,

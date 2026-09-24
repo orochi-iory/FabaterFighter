@@ -78,6 +78,15 @@ regenerar si la puerta rechaza, nunca relajar la puerta):
 - Tiras multihilera: `LAYOUTS` en `build_sheet.py` + corte por gutters
   horizontales; el prompt exige `strict grid of N rows with M frames each,
   separated by clear flat green gutters` (verificado: stance 15/15, QA OK).
+- **Continuidad de base**: los débiles empiezan y terminan en su pose base
+  (`punch_weak`: guardia de pie → jab → guardia; `kick_weak`: agachado →
+  patada baja → agachado) para transiciones limpias en juego.
+- **Altura agachada**: `CROUCH_HEIGHT` (`crouch_punch/kick/hit`, `kick_weak`)
+  vive en banda 100–165 px-arte; `CROUCH_LIKE` (ratio 55–85 %) solo para
+  `crouch`, la única tira agachada con frame de pie.
+- **Detector de cabeza robusto al rayo**: absorción de fragmentos rosa a
+  <40 px + relleno de huecos (el rayo teal partía el blob: punch_weak medía
+  [43,89,44] cv=49 %; ahora [104,89,103] cv=7 %, cero regresión).
 
 ## 4. Puerta QA (automática)
 
