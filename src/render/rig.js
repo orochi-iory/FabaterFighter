@@ -132,6 +132,11 @@ export class Rig {
     this.crouchSign = -1;   // muslo adelante
     this.fallSign = 1;      // torso atrás; las piernas usan el signo opuesto
     this.kickSign = -1;     // chamber = muslo atrás
+    this.restPos = {};
+    for (const n in this.bones) {
+      const b = this.bones[n];
+      this.restPos[n] = [b.position.x, b.position.y, b.position.z];
+    }
     this.time = 0;
     this.recoil = 0;
     this.scarfVel = this.humanoid.scarf ? this.humanoid.scarf.map(() => 0) : null;
@@ -539,6 +544,51 @@ export class Rig {
    * golpe): un alto sube a la cara, un bajo a las piernas. Extensión con
    * windup -> snap -> retorno para que el golpe se LEA.
    */
+  /* --- ataques elásticos (Magnus): el brazo TELESPIZA de verdad ------- */
+  // El hitbox de sus especiales llega a 3+ m: si el brazo solo mide 0.9,
+  // "golpea de forma invisible". Estiramos los huesos (separando codo y
+  // muneca de su reposo) para que la superficie se alargue como goma y el
+  // golpe SE VEA tan lejos como alcanza.
+  resetLimbStretch() {
+    if (!this.restPos) return;
+    for (const n of ['LeftForeArm', 'LeftHand', 'RightForeArm', 'RightHand']) {
+      const b = this.bones[n];
+      if (!b || !this.restPos[n]) continue;
+      b.position.set(this.restPos[n][0], this.restPos[n][1], this.restPos[n][2]);
+    }
+  }
+
+  /** Cantidad de estiramiento elastico del golpe (0 si no es elastico). */
+  stretchAmt(mv, s) {
+    const isStretch = mv && (mv.pose === 'stretch' ||
+      (mv.tags && (mv.tags.includes('stretch') || mv.tags.includes('stretchHalf'))));
+    if (!isStretch) return 0;
+    const hb = mv.hits && mv.hits[0] && mv.hits[0].box;
+    if (!hb) return 0;
+    const half = mv.tags && mv.tags.includes('stretchHalf') ? 0.55 : 1;
+    // fondo del hitbox: box = {x (inicio), y, w (ancho), h} en metros
+    const sh = this.bones.RightArm, el = this.bones.RightForeArm, ha = this.bones.RightHand;
+    sh.getWorldPosition(_aA);
+    el.getWorldPosition(_aB);
+    ha.getWorldPosition(_aC);
+    const armLen = _aA.distanceTo(_aB) + _aB.distanceTo(_aC);
+    if (!(armLen > 0.05)) return 0;
+    // hasta el fondo del hitbox, tope x2.2 del brazo en reposo (Dhalsim, no goma infinita)
+    const reachX = (hb.x + hb.w) * s;
+    return Math.max(0, Math.min(reachX * 0.95, armLen * 2.2) - armLen) * half;
+  }
+
+  /** Desplaza codo/muneca a lo largo del eje del brazo (local T-pose). */
+  applyLimbStretch(side, amt) {
+    const restEl = this.restPos[`${side}ForeArm`];
+    const restHa = this.restPos[`${side}Hand`];
+    if (!restEl || !restHa || !(amt > 0.001)) return;
+    const ax = side === 'Right' ? -1 : 1;      // eje del hueso en local (T-pose)
+    this.bones[`${side}ForeArm`].position.set(restEl[0] + ax * amt * 0.45, restEl[1], restEl[2]);
+    this.bones[`${side}Hand`].position.set(restHa[0] + ax * amt, restHa[1], restHa[2]);
+    this.body.updateMatrixWorld(true);
+  }
+
   applyAttackPose(f, plan) {
     if (!plan.attack || !f.move) return;
     const mv = f.move;
@@ -657,6 +707,7 @@ export class Rig {
       this.aimChain(this.bones.RightArm, this.bones.RightForeArm, this.bones.RightHand, _v1, _v2, 0.9);
       this.body.updateMatrixWorld(true);
     } else {
+      this.resetLimbStretch();
       // El clip "strong" extiende el brazo derecho: el IK debe mandar ese
       // mismo brazo (y el jab, el izquierdo).
       const leftish = /LP/.test(mv.id || '');
@@ -665,6 +716,10 @@ export class Rig {
       const seed = this.styleSeed;
       const sh = this.bones[`${side}Arm`], el = this.bones[`${side}ForeArm`], ha = this.bones[`${side}Hand`];
       if (e < 0) { sh.rotateX(-e * 1.2); return; }     // recoge el puño
+      // Magnus: estirar ANTES del IK (el IK de abajo apunta la cadena ya
+      // estirada hacia el objetivo, asi el golpe se ve tan lejos como llega)
+      const stAmt = this.stretchAmt(mv, s) * Math.max(0, e);
+      if (stAmt > 0.001) this.applyLimbStretch(side, stAmt);
       // El objetivo se mide DESDE EL HOMBRO en mundo: el clip lanza el torso
       // adelante y, medido desde el cuerpo, el objetivo le quedaba al hombro
       // "al lado" (el brazo se doblaba para alcanzarlo = puño junto a la
@@ -681,6 +736,7 @@ export class Rig {
       _v2.copy(_aA).addScaledVector(_v3, reach * 0.12);
       _v2.y = yPunch - 0.20 * s;                        // codo bajo
       this.aimChain(sh, el, ha, _v1, _v2, w);
+      this.body.updateMatrixWorld(true);
       this.body.updateMatrixWorld(true);
       const other = side === 'Left' ? 'Right' : 'Left';
       if (charge) {

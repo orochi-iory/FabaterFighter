@@ -758,6 +758,14 @@ export function buildRoster(defs = ROSTER_DEFS) {
     for (const m of moves) {
       if (m.category === undefined) m.category = m.tags && m.tags.includes('throw') ? 'throw' : 'normal';
     }
+    // Magnus golpea con extremidades elasticas: sus fuertes estiran (media).
+    if (def.id === 'magnus') {
+      for (const m of moves) {
+        if (['5HP', 'jHP'].includes(m.id)) {
+          m.tags = [...(m.tags || []), 'stretchHalf'];
+        }
+      }
+    }
     return {
       ...def,
       moves,

@@ -4,8 +4,8 @@
  * (lo rellena con el commit HEAD y la fecha actuales) antes de cada entrega.
  */
 export const BUILD = {
-  tag: 'v0.33',
-  commit: 'ec6e842',
+  tag: 'v0.34',
+  commit: '8b207e1',
   date: '2026-09-24',
-  notes: 'Skinning afinado: dominio claro de cada hueso (pliegues que no colapsan) sin bultos; ingle sin competir con el muslo'
+  notes: 'Magnus elasticos de verdad: el brazo telespiza hasta el fondo del hitbox (Elastic Fist, Infinite Reach y fuertes), se ve tan lejos como golpea'
 };
