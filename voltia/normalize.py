@@ -1,27 +1,47 @@
 #!/usr/bin/env python3
-"""Sistema de coherencia de sprites de VOLTIA.
+"""Sistema de coherencia de sprites de VOLTIA (canon v1.2).
 
-Todo frame aceptado pasa por la normalizacion canonica:
-  1. Geometria: la altura del personaje se escala a H_ART pixeles-arte.
-  2. Pixel real: si la tira trae cuadricula (pixel>1) se extrae con BOX
-     (division entera, sin interpolacion); si es arte suavizado se impone
-     la cuadricula canonica al reescalar a H (las reglas exigen a la IA
-     pixel grueso real para minimizar este paso).
-  3. Paleta maestra: cada pixel se mapea al color canonico mas cercano,
-     con PROTECTOR DE PIEL: la piel solo mapea a tonos humanos viables.
-  4. Alfa dura: sin halos de fondo.
-  5. Exportacion a escala entera (NEAREST): 4x frames, 2x hoja uniforme, 1x resto.
+Escala: la cabeza (mascara rosa) es el ancla, invariante ante la pose.
+  Cada tira se escala por la mediana de cabezas de SUS frames: el de pie
+  emerge a ~160px-arte y el agachado/tumbado queda mas bajo con la MISMA
+  escala px/unidad. Nada se fuerza a 160 por frame.
+Sombras: rampas de material fijas (traje/navy/piel/mascara/pelo = 3 tonos
+  como el dash; resto 1-2) con histogram matching al ancla: toda tira
+  adopta la misma estructura de contraste.
+Piel: solo mapea a los 8 tonos humanos viables.
+Exportacion a escala entera (NEAREST): 4x frames, 2x hoja uniforme, 1x resto.
 
-La spec canonica vive en voltia/spec.json (se crea con analyze.py --freeze,
-usando block.png como ancla de estilo/tamano).
+La spec canonica vive en voltia/spec.json (analyze.py --freeze).
 """
+import bisect
 import json
 import os
 import statistics
-from PIL import Image, ImageChops
+from collections import Counter, deque
+from PIL import Image, ImageChops, ImageFilter
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 SPEC_PATH = os.path.join(HERE, "spec.json")
+
+# Etiqueta de material por indice de paleta maestra (48 + blanco 48)
+MATERIAL_OF = {
+    0: "hair", 1: "suit", 2: "skin", 3: "suit", 4: "hair", 5: "navy",
+    6: "suit", 7: "navy", 8: "suit", 9: "outline", 10: "suit", 11: "hair",
+    12: "outline", 13: "skin", 14: "navy", 15: "outline", 16: "suit",
+    17: "outline", 18: "mask", 19: "outline", 20: "navy", 21: "hair",
+    22: "navy", 23: "navy", 24: "mask", 25: "navy", 26: "mask", 27: "suit",
+    28: "outline", 29: "navy", 30: "suit", 31: "suit", 32: "mask",
+    33: "yellow", 34: "hair", 35: "navy", 36: "skin", 37: "suit",
+    38: "outline", 39: "navy", 40: "mask", 41: "hair", 42: "hair",
+    43: "hair", 44: "hair", 45: "outline", 46: "yellow", 47: "suit",
+    48: "white",
+}
+LEVELS = {"outline": 1, "suit": 3, "navy": 3, "skin": 3, "mask": 3,
+          "hair": 3, "yellow": 2, "white": 1}
+NO_STANDING = {"crouch", "crouch_punch", "crouch_kick", "crouch_hit",
+               "knockdown", "ko"}
+CROUCH_LIKE = {"crouch", "crouch_punch", "crouch_kick", "crouch_hit"}
+FIXED_HEIGHT = {"rayo_proj": 64, "portrait": 120}
 
 
 def load_spec():
@@ -29,6 +49,10 @@ def load_spec():
         raise SystemExit("Falta voltia/spec.json: ejecuta 'python3 voltia/analyze.py --freeze'")
     with open(SPEC_PATH, encoding="utf-8") as f:
         return json.load(f)
+
+
+def lum(r, g, b):
+    return 0.299 * r + 0.587 * g + 0.114 * b
 
 
 def is_skin_color(r, g, b):
@@ -58,53 +82,142 @@ def estimate_pixel_size(rgba, smax=8):
     return min(scores, key=scores.get), scores
 
 
-def _nearest_mapping(uniq_colors, palette):
-    pal = [tuple(c) for c in palette]
-    mapping = {}
-    for c in uniq_colors:
+def detect_head_px(frame):
+    """Altura (max dim) del blob de mascara rosa, o None si falla."""
+    rgba = frame.convert("RGBA")
+    w, h = rgba.size
+    dd = rgba.tobytes()
+    m = bytearray(w * h)
+    for i in range(w * h):
+        r, g, b, a = dd[4 * i], dd[4 * i + 1], dd[4 * i + 2], dd[4 * i + 3]
+        if (a > 100 and r > 140 and g < 150 and b > 70 and r >= g and b < r and b > g
+                and (r - g) > 10 and (r - b) < 150):
+            m[i] = 1
+    if sum(m) < 400:
+        return None
+    mask = Image.frombytes("L", (w, h), bytes(x * 255 for x in m))
+    mask = mask.filter(ImageFilter.MaxFilter(5)).filter(ImageFilter.MinFilter(5))
+    m2 = mask.tobytes()
+    seen = bytearray(w * h)
+    best = None
+    for i in range(w * h):
+        if m2[i] and not seen[i]:
+            q = deque([i])
+            seen[i] = 1
+            xs, ys = [], []
+            while q:
+                j = q.popleft()
+                x, y = j % w, j // w
+                xs.append(x)
+                ys.append(y)
+                for nx, ny in ((x - 1, y), (x + 1, y), (x, y - 1), (x, y + 1)):
+                    k = ny * w + nx
+                    if 0 <= nx < w and 0 <= ny < h and m2[k] and not seen[k]:
+                        seen[k] = 1
+                        q.append(k)
+            if best is None or len(xs) > best[0]:
+                best = (len(xs), min(xs), min(ys), max(xs), max(ys))
+    if best is None or best[0] < 400:
+        return None
+    _, x0, y0, x1, y1 = best
+    return max(x1 - x0 + 1, y1 - y0 + 1)
+
+
+def strip_scale(frames, spec, strip_s, fixed_height=None):
+    """Escala unica por tira. Devuelve (scale, heads, metodo)."""
+    if fixed_height is not None:
+        return None, [], "fixed"
+    heads = [detect_head_px(f) for f in frames]
+    valid = [x for x in heads if x]
+    if len(valid) < max(1, (len(frames) + 1) // 2):
+        med = statistics.median(f.height for f in frames)
+        return 160.0 / (med / strip_s), heads, "frame-fallback"
+    return spec["head_h"] / statistics.median(valid), heads, "head"
+
+
+def art_image(frame, scale, strip_s):
+    """Arte suavizado a escala canonica (sin paleta aun)."""
+    img = frame
+    if strip_s > 1:
+        img = frame.resize((max(1, frame.width // strip_s), max(1, frame.height // strip_s)),
+                           Image.BOX)
+    nw, nh = max(1, round(img.width * scale)), max(1, round(img.height * scale))
+    if (nw, nh) == img.size:
+        return img.convert("RGBA")
+    return img.resize((nw, nh), Image.LANCZOS).convert("RGBA")
+
+
+def _classify_unique(uniq, master, mat_of):
+    out = {}
+    for c in uniq:
+        if is_skin_color(*c):
+            out[c] = "skin"
+            continue
         best, bd = None, None
-        for p in pal:
+        for i, p in enumerate(master):
             d = (c[0] - p[0]) ** 2 + (c[1] - p[1]) ** 2 + (c[2] - p[2]) ** 2
             if bd is None or d < bd:
-                bd, best = d, p
-        mapping[c] = best
-    return mapping
+                bd, best = d, mat_of[i]
+        out[c] = best
+    return out
 
 
-def normalize_frame(frame, spec, strip_s, fix_height=True, target_h=None):
-    """Devuelve el frame normalizado a escala de exportacion (entera)."""
-    H = target_h or spec["art_height"]
-    K = spec["export_scale"]
-    art_in = frame
-    if strip_s > 1:  # pixel-art real: extraer la cuadricula nativa
-        art_in = frame.resize((max(1, frame.width // strip_s), max(1, frame.height // strip_s)),
-                               Image.BOX)
-    if fix_height and art_in.height != H:
-        f = H / art_in.height
-        art = art_in.resize((max(1, round(art_in.width * f)), H), Image.LANCZOS)
+def pool_material_lums(arts, master, mat_of):
+    """{material: luminancias ordenadas} ponderadas por pixel."""
+    counter = Counter()
+    for a in arts:
+        dd = a.convert("RGBA").tobytes()
+        for i in range(0, len(dd), 4):
+            if dd[i + 3] >= 128:
+                counter[(dd[i], dd[i + 1], dd[i + 2])] += 1
+    cls = _classify_unique(set(counter), master, mat_of)
+    pools = {}
+    for c, n in counter.items():
+        pools.setdefault(cls[c], []).extend([lum(*c)] * n)
+    for m in pools:
+        pools[m].sort()
+    return pools, counter, cls
+
+
+def normalize_strip(frames, spec, strip_s, scale=None, fixed_height=None):
+    """Tira completa normalizada: misma escala, rampas matched, export 4x."""
+    master = [tuple(c) for c in spec["palette"]]
+    mat_of = {int(k): v for k, v in spec.get("material_of", MATERIAL_OF).items()}
+    if fixed_height is not None:
+        scales = [fixed_height / (f.height / strip_s) for f in frames]
     else:
-        art = art_in
-    a = art.split()[3].point(lambda v: 255 if v >= 128 else 0)
-    rgb = art.convert("RGB")
-    data = rgb.tobytes()
-    uniq = set(zip(data[0::3], data[1::3], data[2::3]))
-    # Protector de piel: dos mapeos separados, sin contaminacion cruzada
-    skin = {c for c in uniq if is_skin_color(*c)}
-    rest = uniq - skin
+        scales = [scale] * len(frames)
+    arts = [art_image(f, sc, strip_s) for f, sc in zip(frames, scales)]
+    pools, counter, cls = pool_material_lums(arts, master, mat_of)
     mapping = {}
-    if skin and spec.get("skin_palette"):
-        mapping.update(_nearest_mapping(skin, spec["skin_palette"]))
-    if rest:
-        mapping.update(_nearest_mapping(rest, spec["palette"]))
-    if skin and not spec.get("skin_palette"):
-        mapping.update(_nearest_mapping(skin, spec["palette"]))
-    arr = bytearray(data)
-    for i in range(0, len(arr), 3):
-        m = mapping[(arr[i], arr[i + 1], arr[i + 2])]
-        arr[i], arr[i + 1], arr[i + 2] = m
-    out = Image.frombytes("RGB", rgb.size, bytes(arr)).convert("RGBA")
-    out.putalpha(a)
-    return out.resize((out.width * K, out.height * K), Image.NEAREST)
+    for c in counter:
+        m = cls[c]
+        L = lum(*c)
+        dec = spec["anchor_deciles"].get(m)
+        ramp = spec["ramps"][m]
+        if dec and m in pools and len(pools[m]) > 10:
+            rank = bisect.bisect_right(pools[m], L) / len(pools[m])
+            pos = min(9.999, rank * 10)
+            i0, f = int(pos), pos - int(pos)
+            target = dec[i0] * (1 - f) + dec[i0 + 1] * f
+        else:
+            target = L
+        lv = min(range(len(ramp["lums"])), key=lambda k: abs(ramp["lums"][k] - target))
+        mapping[c] = tuple(ramp["colors"][lv])
+    out = []
+    for a in arts:
+        rgba = a.convert("RGBA")
+        alpha = rgba.split()[3].point(lambda v: 255 if v >= 128 else 0)
+        arr = bytearray(rgba.convert("RGB").tobytes())
+        for i in range(0, len(arr), 3):
+            mm = mapping.get((arr[i], arr[i + 1], arr[i + 2]))
+            if mm:
+                arr[i], arr[i + 1], arr[i + 2] = mm
+        f2 = Image.frombytes("RGB", rgba.size, bytes(arr)).convert("RGBA")
+        f2.putalpha(alpha)
+        K = spec["export_scale"]
+        out.append(f2.resize((f2.width * K, f2.height * K), Image.NEAREST))
+    return out
 
 
 def _skin_fraction(rgba):
@@ -118,14 +231,9 @@ def _skin_fraction(rgba):
     return sk / max(1, tot)
 
 
-def qa_check(sid, keyed, frames, expected, spec, strip_s):
-    """Puerta de calidad. Devuelve (veredicto, [notas]).
-
-    OK: se acepta. AVISO: aceptable, la normalizacion lo corrige.
-    RECHAZAR: hay que regenerar la tira.
-    """
+def qa_check_strip(sid, keyed, frames, expected, spec, strip_s, scale, heads, method):
+    """Puerta de calidad. Devuelve (veredicto, [notas])."""
     notes = []
-    H = spec["art_height"]
     if len(frames) != expected:
         notes.append(("RECHAZAR", f"frames {len(frames)}/{expected}"))
     w, h = keyed.size
@@ -138,17 +246,34 @@ def qa_check(sid, keyed, frames, expected, spec, strip_s):
     else:
         notes.append(("RECHAZAR", "tira vacia tras el chroma"))
     if frames:
-        med = statistics.median(f.height for f in frames)
-        dev = abs(med / strip_s - H) / H
-        if dev > spec["thresholds"]["height_warn"]:
-            notes.append(("AVISO", f"altura {med / strip_s:.0f}px-arte vs canon {H} (se normaliza)"))
-        if strip_s != spec["anchor_pixel"]:
-            notes.append(("AVISO", f"pixel {strip_s}px vs {spec['anchor_pixel']}px del ancla (se normaliza)"))
         ref = spec.get("skin_frac_ref", 0)
-        if ref > 0:
+        if ref > 0 and method != "fixed":
             frac = _skin_fraction(frames[len(frames) // 2])
             if frac < ref * 0.3 or frac > ref * 3:
                 notes.append(("AVISO", f"piel {frac:.1%} vs ref {ref:.1%} (revisar tonos)"))
+        if method == "fixed":
+            pass
+        elif method == "frame-fallback":
+            notes.append(("AVISO", "sin cabezas fiables (fallback por altura)"))
+        else:
+            valid = [x for x in heads if x]
+            if len(valid) < len(frames):
+                notes.append(("AVISO", f"cabezas {len(valid)}/{len(frames)}"))
+            if len(valid) >= 2:
+                med = statistics.median(valid)
+                cv = statistics.pstdev(valid) / med
+                if cv > 0.12:
+                    notes.append(("AVISO", f"cabeza inconsistente cv={cv:.0%}"))
+            artmax = max(f.height for f in frames) * scale / strip_s
+            artmin = min(f.height for f in frames) * scale / strip_s
+            if sid in NO_STANDING:
+                if sid in CROUCH_LIKE:
+                    if not 85 <= artmin <= 130:
+                        notes.append(("AVISO", f"agachado pleno {artmin:.0f}px-arte fuera de 85-130"))
+                    if abs(artmax - 160) / 160 > 0.12:
+                        notes.append(("AVISO", f"de pie emergente {artmax:.0f} vs 160"))
+            elif abs(artmax - 160) / 160 > 0.12:
+                notes.append(("AVISO", f"de pie emergente {artmax:.0f} vs 160"))
     verdict = "OK"
     for (lvl, _) in notes:
         if lvl == "RECHAZAR":

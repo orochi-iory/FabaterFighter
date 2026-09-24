@@ -26,7 +26,8 @@ from PIL import Image, ImageChops, ImageDraw, ImageFont
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
-from normalize import load_spec, normalize_frame, qa_check, estimate_pixel_size  # noqa: E402
+from normalize import (load_spec, normalize_strip, qa_check_strip,  # noqa: E402
+                       estimate_pixel_size, strip_scale, FIXED_HEIGHT)
 
 RAW = os.path.join(HERE, "raw")
 FRAMES = os.path.join(HERE, "frames")
@@ -382,13 +383,16 @@ def main():
         keyed = load_and_key(p)
         frames = split_strip(keyed, exp)
         strip_s = estimate_pixel_size(frames[len(frames) // 2])[0] if frames else spec["anchor_pixel"]
-        verdict, notes = qa_check(sid, keyed, frames, exp, spec, strip_s)
+        fixed = FIXED_HEIGHT.get(sid)
+        scale, heads, method = strip_scale(frames, spec, strip_s, fixed_height=fixed)
+        verdict, notes = qa_check_strip(sid, keyed, frames, exp, spec, strip_s, scale, heads, method)
         detail = f" ({'; '.join(m for _, m in notes)})" if notes else ""
-        print(f"  {sid}: {len(frames)}f, pixel={strip_s} | QA {verdict}{detail}")
+        sc = f"{scale:.3f}" if scale else "-"
+        print(f"  {sid}: {len(frames)}f, pixel={strip_s}, escala={sc} ({method}) | QA {verdict}{detail}")
         if verdict == "RECHAZAR":
             print("    -> excluida del montaje: regenerar la tira")
             continue
-        frames = [normalize_frame(f, spec, strip_s) for f in frames]
+        frames = normalize_strip(frames, spec, strip_s, scale=scale, fixed_height=fixed)
         for i, f in enumerate(frames):
             f.save(os.path.join(FRAMES, f"voltia_{sid}_{i}.png"))
         rendered.append((sid, label, fps, loop, frames))
@@ -399,7 +403,7 @@ def main():
     if os.path.exists(pp):
         pframes = split_strip(load_and_key(pp), 3)
         ps = estimate_pixel_size(pframes[len(pframes) // 2])[0] if pframes else 1
-        portraits = [normalize_frame(f, spec, ps, target_h=120) for f in pframes]
+        portraits = normalize_strip(pframes, spec, ps, fixed_height=FIXED_HEIGHT["portrait"])
         for i, f in enumerate(portraits):
             f.save(os.path.join(FRAMES, f"voltia_portrait_{i}.png"))
 
