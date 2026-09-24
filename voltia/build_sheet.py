@@ -33,22 +33,28 @@ RAW = os.path.join(HERE, "raw")
 FRAMES = os.path.join(HERE, "frames")
 
 # (id, etiqueta, fps, loop, frames esperados)
+# Distribucion multihilera {sid: (filas, columnas)}; el resto es 1 x exp.
+LAYOUTS = {
+    "stance": (3, 5),
+}
+
+
 SECTIONS = [
-    ("idle", "Idle", 6, True, 4),
+    ("stance", "Stance", 10, True, 15),
     ("walk", "Walking", 10, True, 6),
     ("jump", "Jump", 9, False, 4),
     ("fwdjump", "Forward Jump", 9, False, 4),
     ("crouch", "Crouch", 8, True, 3),
     ("block", "Blocking", 8, True, 2),
-    ("punch_l", "L. Punch", 12, False, 3),
-    ("punch_mh", "M./H. Punch", 11, False, 4),
-    ("kick_lm", "L./M. Kick", 11, False, 4),
-    ("kick_h", "H. Kick", 10, False, 4),
+    ("punch_weak", "Weak Punch", 14, False, 3),
+    ("punch_strong", "Strong Punch", 11, False, 6),
+    ("kick_weak", "Weak Kick", 13, False, 3),
+    ("kick_strong", "Strong Kick", 10, False, 6),
     ("crouch_punch", "Crouch Punch", 11, False, 3),
     ("crouch_kick", "Crouch Kick", 10, False, 3),
     ("jump_kick", "Jump Kick", 10, False, 3),
     ("uppercut", "Volt Uppercut", 10, False, 5),
-    ("spinkick", "Volt Spin", 12, False, 4),
+    ("spinkick", "Volt Spin", 12, False, 6),
     ("rayo_throw", "Rayo Volt", 10, False, 4),
     ("rayo_proj", "Rayo Volt (Projectile)", 12, True, 3),
     ("hit", "Hit", 8, False, 3),
@@ -121,7 +127,36 @@ def load_and_key(path, tol=30, feather=25):
 
 
 # ---------------- Paso 3: deteccion de frames ----------------
-def split_strip(img, expected):
+def split_strip(img, expected, rows=1):
+    if rows > 1:
+        # Tira multihilera: cortar primero las filas por los gutters
+        # horizontales mas anchos y dividir cada fila por separado.
+        w, h = img.size
+        rprof = list(img.split()[3].resize((1, h), Image.BILINEAR).tobytes())
+        rfg = [v > 10 for v in rprof]
+        try:
+            rfirst = rfg.index(True)
+            rlast = h - 1 - rfg[::-1].index(True)
+        except ValueError:
+            return [img]
+        rgaps, i = [], rfirst
+        while i <= rlast:
+            if not rfg[i]:
+                j = i
+                while j <= rlast and not rfg[j]:
+                    j += 1
+                if j - i >= 2:
+                    rgaps.append((i, j, j - i))
+                i = j
+            else:
+                i += 1
+        rgaps.sort(key=lambda g: -g[2])
+        rcuts = sorted((a + b) // 2 for (a, b, _) in rgaps[:max(0, rows - 1)])
+        rbounds = [rfirst] + rcuts + [rlast + 1]
+        frames, cols = [], max(1, expected // rows)
+        for k in range(len(rbounds) - 1):
+            frames += split_strip(img.crop((0, rbounds[k], w, rbounds[k + 1])), cols)
+        return frames[:expected] if len(frames) >= expected else frames
     w, h = img.size
     alpha = img.split()[3]
     prof = list(alpha.resize((w, 1), Image.BILINEAR).tobytes())
@@ -381,7 +416,7 @@ def main():
             print(f"  FALTA tira: {sid}.png (se omite)")
             continue
         keyed = load_and_key(p)
-        frames = split_strip(keyed, exp)
+        frames = split_strip(keyed, exp, rows=LAYOUTS.get(sid, (1, exp))[0])
         strip_s = estimate_pixel_size(frames[len(frames) // 2])[0] if frames else spec["anchor_pixel"]
         fixed = FIXED_HEIGHT.get(sid)
         scale, heads, method = strip_scale(frames, spec, strip_s, fixed_height=fixed)

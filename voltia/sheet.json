@@ -7,19 +7,19 @@
     "palette_version": 1
   },
   "cell": {
-    "w": 318,
+    "w": 246,
     "h": 364
   },
-  "columns": 6,
-  "rows": 11,
+  "columns": 15,
+  "rows": 7,
   "frame_dir": "frames",
   "animations": [
     {
-      "id": "idle",
-      "label": "Idle",
+      "id": "stance",
+      "label": "Stance",
       "row": 0,
-      "frames": 4,
-      "fps": 6,
+      "frames": 15,
+      "fps": 10,
       "loop": true
     },
     {
@@ -63,41 +63,9 @@
       "loop": true
     },
     {
-      "id": "punch_l",
-      "label": "L. Punch",
-      "row": 6,
-      "frames": 3,
-      "fps": 12,
-      "loop": false
-    },
-    {
-      "id": "punch_mh",
-      "label": "M./H. Punch",
-      "row": 7,
-      "frames": 4,
-      "fps": 11,
-      "loop": false
-    },
-    {
-      "id": "kick_lm",
-      "label": "L./M. Kick",
-      "row": 8,
-      "frames": 4,
-      "fps": 11,
-      "loop": false
-    },
-    {
-      "id": "kick_h",
-      "label": "H. Kick",
-      "row": 9,
-      "frames": 4,
-      "fps": 10,
-      "loop": false
-    },
-    {
       "id": "dash",
       "label": "Dash",
-      "row": 10,
+      "row": 6,
       "frames": 3,
       "fps": 14,
       "loop": true

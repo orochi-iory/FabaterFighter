@@ -609,10 +609,10 @@
   ],
   "skin_frac_ref": 0.0834,
   "strips": {
-    "idle": {
+    "stance": {
       "pixel": 1,
-      "head_med": 93.0,
-      "bg_flat": 0.6106
+      "head_med": 38,
+      "bg_flat": 0.7682
     },
     "walk": {
       "pixel": 1,
@@ -638,26 +638,6 @@
       "pixel": 1,
       "head_med": 93.0,
       "bg_flat": 0.7856
-    },
-    "punch_l": {
-      "pixel": 1,
-      "head_med": 84,
-      "bg_flat": 0.7663
-    },
-    "punch_mh": {
-      "pixel": 1,
-      "head_med": 64.5,
-      "bg_flat": 0.8168
-    },
-    "kick_lm": {
-      "pixel": 1,
-      "head_med": 73.5,
-      "bg_flat": 0.7681
-    },
-    "kick_h": {
-      "pixel": 1,
-      "head_med": 80.0,
-      "bg_flat": 0.6881
     },
     "dash": {
       "pixel": 1,

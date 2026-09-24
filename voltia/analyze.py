@@ -18,7 +18,7 @@ from PIL import Image, ImageChops, ImageDraw
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
-from build_sheet import load_and_key, split_strip, SECTIONS, _sample_bg  # noqa: E402
+from build_sheet import load_and_key, split_strip, SECTIONS, LAYOUTS, _sample_bg  # noqa: E402
 from normalize import (MATERIAL_OF, LEVELS, estimate_pixel_size,  # noqa: E402
                        is_skin_color, detect_head_px, art_image,
                        pool_material_lums, lum)
@@ -29,7 +29,7 @@ EXPORT_SCALE = 4
 PALETTE_SIZE = 48
 SKIN_SIZE = 8
 WHITE_INK = [248, 248, 248]
-PALETTE_POOL = ["block", "idle", "walk", "punch_mh", "kick_lm", "kick_h", "jump"]
+PALETTE_POOL = ["block", "stance", "walk", "punch_strong", "kick_weak", "kick_strong", "jump"]
 SKIN_FALLBACK = [[255, 224, 189], [244, 196, 150], [232, 170, 120], [214, 145, 100],
                  [192, 120, 85], [170, 100, 70], [148, 82, 58], [126, 66, 48]]
 
@@ -63,7 +63,7 @@ def analyze_strip(sid, expected):
     p = os.path.join(HERE, "raw", f"{sid}.png")
     raw = Image.open(p)
     keyed = load_and_key(p)
-    frames = split_strip(keyed, expected)
+    frames = split_strip(keyed, expected, rows=LAYOUTS.get(sid, (1, expected))[0])
     hs = [f.height for f in frames]
     s, scores = estimate_pixel_size(frames[len(frames) // 2])
     flat, key = bg_flatness(p)

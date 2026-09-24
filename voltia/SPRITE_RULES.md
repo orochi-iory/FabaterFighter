@@ -65,6 +65,20 @@ regenerar si la puerta rechaza, nunca relajar la puerta):
 > Fallos vistos y corregidos: pies al borde (→ cláusula de margen),
 > complexión achaparrada (→ `never stocky`, piernas largas).
 
+### Golpes débiles/fuertes y stance multihilera (acuerdo 2026-09-24)
+
+- **Débiles ≤ 3 frames**: `punch_weak` 3, `kick_weak` 3, `crouch_punch` 3,
+  `crouch_kick` 3, `jump_kick` 3 (rápidos, fps 13–14).
+- **Fuertes 5–8 frames**: `punch_strong` 6, `kick_strong` 6, `uppercut` 5,
+  `spinkick` 6 (con anticipación y recuperación, fps 10–11).
+- Los golpes antiguos de 4f (`punch_l/mh`, `kick_lm/h`) no encajan en ninguna
+  categoría: **eliminados** (quedan en el historial git).
+- **Stance 15f** en cuadrícula **3 filas × 5**: fila 1 calentar brazos, fila 2
+  saltitos desentumeciendo (como el idle original), fila 3 guardia respirando.
+- Tiras multihilera: `LAYOUTS` en `build_sheet.py` + corte por gutters
+  horizontales; el prompt exige `strict grid of N rows with M frames each,
+  separated by clear flat green gutters` (verificado: stance 15/15, QA OK).
+
 ## 4. Puerta QA (automática)
 
 | Chequeo | Regla | Si falla |
