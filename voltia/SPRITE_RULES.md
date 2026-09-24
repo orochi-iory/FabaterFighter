@@ -44,7 +44,26 @@
    base; ~80 % de altura; N frames exactos en fila; fondo verde plano.
 7. **Prohibido**: texto, marcas, bordes, sombras, otros personajes, detalles de fondo.
 
-(Plantilla de prompt completa: ver §3 de la v1.1 + las cláusulas 2–3 de arriba.)
+**Prompt verificado** (lote piloto idle/crouch/kick_h → 3/3 QA OK;
+regenerar si la puerta rechaza, nunca relajar la puerta):
+
+> `2D fighting game sprite sheet, wide horizontal strip with exactly N
+> frames in a single row showing [DESCRIPCIÓN DE LA ANIMACIÓN], athletic
+> female luchadora with tall heroic build identical to the reference
+> character, long athletic legs, exactly 7 heads tall from supporting foot
+> to head, never stocky or short-bodied, long dark-purple ponytail, magenta
+> wrestling mask with teal lightning accents, teal and navy bodysuit with
+> yellow belt and lightning emblem, side view facing right, full body
+> visible, figure occupies about 80 percent of canvas height, clear flat
+> green margin on all sides, nothing touching canvas edges, feet aligned on
+> same baseline, consistent head size across all frames, same character
+> design in every frame, chunky pixel art with large visible square pixels,
+> flat solid colors, no anti-aliasing, no gradients, pure flat solid green
+> background, no text, no borders, no shadows, no other characters`
+>
+> Referencias: `raw/block.png` + `assets/voltia_concept.png`.
+> Fallos vistos y corregidos: pies al borde (→ cláusula de margen),
+> complexión achaparrada (→ `never stocky`, piernas largas).
 
 ## 4. Puerta QA (automática)
 

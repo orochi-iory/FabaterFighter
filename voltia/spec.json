@@ -611,8 +611,8 @@
   "strips": {
     "idle": {
       "pixel": 1,
-      "head_med": 75.5,
-      "bg_flat": 0.7026
+      "head_med": 93.0,
+      "bg_flat": 0.6106
     },
     "walk": {
       "pixel": 1,
@@ -631,8 +631,8 @@
     },
     "crouch": {
       "pixel": 1,
-      "head_med": 90,
-      "bg_flat": 0.8063
+      "head_med": 86,
+      "bg_flat": 0.6791
     },
     "block": {
       "pixel": 1,
@@ -656,8 +656,8 @@
     },
     "kick_h": {
       "pixel": 1,
-      "head_med": 85.0,
-      "bg_flat": 0.702
+      "head_med": 80.0,
+      "bg_flat": 0.6881
     },
     "dash": {
       "pixel": 1,

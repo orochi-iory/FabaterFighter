@@ -268,8 +268,9 @@ def qa_check_strip(sid, keyed, frames, expected, spec, strip_s, scale, heads, me
             artmin = min(f.height for f in frames) * scale / strip_s
             if sid in NO_STANDING:
                 if sid in CROUCH_LIKE:
-                    if not 85 <= artmin <= 130:
-                        notes.append(("AVISO", f"agachado pleno {artmin:.0f}px-arte fuera de 85-130"))
+                    ratio = artmin / artmax if artmax else 1
+                    if not 0.55 <= ratio <= 0.85:
+                        notes.append(("AVISO", f"agachado pleno {artmin:.0f}px-arte = {ratio:.0%} del de pie (rango 55-85%)"))
                     if abs(artmax - 160) / 160 > 0.12:
                         notes.append(("AVISO", f"de pie emergente {artmax:.0f} vs 160"))
             elif abs(artmax - 160) / 160 > 0.12:
