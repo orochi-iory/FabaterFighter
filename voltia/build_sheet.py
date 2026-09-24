@@ -48,10 +48,10 @@ SECTIONS = [
     ("block", "Blocking", 8, True, 2),
     ("punch_weak", "Weak Punch", 14, False, 3),
     ("punch_strong", "Strong Punch", 11, False, 6),
-    ("kick_weak", "Weak Kick", 13, False, 3),
+    ("kick_weak", "Low Weak Kick", 13, False, 3),
+    ("kick_weak_stand", "Weak Kick (stand)", 13, False, 3),
     ("kick_strong", "Strong Kick", 10, False, 6),
     ("crouch_punch", "Crouch Punch", 11, False, 3),
-    ("crouch_kick", "Crouch Kick", 10, False, 3),
     ("jump_kick", "Jump Kick", 10, False, 3),
     ("uppercut", "Volt Uppercut", 10, False, 5),
     ("spinkick", "Volt Spin", 12, False, 6),
@@ -249,9 +249,9 @@ def hue_shift(img, deg):
 
 # ---------------- Paso 6a: hoja estilo referencia ----------------
 DISPLAY_ROWS = [
-    ["idle", "walk", "jump", "fwdjump", "crouch", "block"],
-    ["punch_l", "punch_mh", "kick_lm", "kick_h"],
-    ["crouch_punch", "crouch_kick", "jump_kick", "dash"],
+    ["stance", "walk", "jump", "fwdjump", "crouch", "block"],
+    ["punch_weak", "punch_strong", "kick_weak", "kick_weak_stand", "kick_strong"],
+    ["crouch_punch", "jump_kick", "dash"],
     ["uppercut", "spinkick", "rayo_throw", "rayo_proj"],
     ["hit", "crouch_hit", "knockdown", "dizzy", "ko"],
     ["victory1", "victory2", "palettes", "mugshots"],
@@ -464,6 +464,10 @@ def main():
         return
     build_reference_sheet(data, portraits, palette_frames, spec).save(os.path.join(HERE, "sheet.png"))
     usheet, js = build_uniform_sheet(rendered, spec)
+    done = {sid for (sid, _, _, _, _) in rendered}
+    js["roster"] = [{"id": sid, "label": label, "frames": exp, "fps": fps,
+                     "loop": loop, "status": "done" if sid in done else "missing"}
+                    for (sid, label, fps, loop, exp) in SECTIONS]
     usheet.save(os.path.join(HERE, "sheet_uniform.png"))
     with open(os.path.join(HERE, "sheet.json"), "w", encoding="utf-8") as f:
         json.dump(js, f, ensure_ascii=False, indent=2)

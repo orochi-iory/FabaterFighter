@@ -1,7 +1,7 @@
 {
   "sprite": "sheet_uniform.png",
-  "version": "0.2.0",
-  "notes": "canon v1.2 + lote1v2: stance 15f, debiles rehechos, rampas 3 tonos",
+  "version": "0.3.0",
+  "notes": "familia debil completa (4) + puerta anti-cortes + visor-manual",
   "date": "2026-09-24",
   "canon": 1.2,
   "art": {
@@ -11,7 +11,7 @@
     "palette_version": 1
   },
   "cell": {
-    "w": 254,
+    "w": 350,
     "h": 364
   },
   "columns": 15,
@@ -76,7 +76,7 @@
     },
     {
       "id": "kick_weak",
-      "label": "Weak Kick",
+      "label": "Low Weak Kick",
       "row": 7,
       "frames": 3,
       "fps": 13,
@@ -89,6 +89,208 @@
       "frames": 3,
       "fps": 14,
       "loop": true
+    }
+  ],
+  "roster": [
+    {
+      "id": "stance",
+      "label": "Stance",
+      "frames": 15,
+      "fps": 10,
+      "loop": true,
+      "status": "done"
+    },
+    {
+      "id": "walk",
+      "label": "Walking",
+      "frames": 6,
+      "fps": 10,
+      "loop": true,
+      "status": "done"
+    },
+    {
+      "id": "jump",
+      "label": "Jump",
+      "frames": 4,
+      "fps": 9,
+      "loop": false,
+      "status": "done"
+    },
+    {
+      "id": "fwdjump",
+      "label": "Forward Jump",
+      "frames": 4,
+      "fps": 9,
+      "loop": false,
+      "status": "done"
+    },
+    {
+      "id": "crouch",
+      "label": "Crouch",
+      "frames": 3,
+      "fps": 8,
+      "loop": true,
+      "status": "done"
+    },
+    {
+      "id": "block",
+      "label": "Blocking",
+      "frames": 2,
+      "fps": 8,
+      "loop": true,
+      "status": "done"
+    },
+    {
+      "id": "punch_weak",
+      "label": "Weak Punch",
+      "frames": 3,
+      "fps": 14,
+      "loop": false,
+      "status": "done"
+    },
+    {
+      "id": "punch_strong",
+      "label": "Strong Punch",
+      "frames": 6,
+      "fps": 11,
+      "loop": false,
+      "status": "missing"
+    },
+    {
+      "id": "kick_weak",
+      "label": "Low Weak Kick",
+      "frames": 3,
+      "fps": 13,
+      "loop": false,
+      "status": "done"
+    },
+    {
+      "id": "kick_weak_stand",
+      "label": "Weak Kick (stand)",
+      "frames": 3,
+      "fps": 13,
+      "loop": false,
+      "status": "missing"
+    },
+    {
+      "id": "kick_strong",
+      "label": "Strong Kick",
+      "frames": 6,
+      "fps": 10,
+      "loop": false,
+      "status": "missing"
+    },
+    {
+      "id": "crouch_punch",
+      "label": "Crouch Punch",
+      "frames": 3,
+      "fps": 11,
+      "loop": false,
+      "status": "missing"
+    },
+    {
+      "id": "jump_kick",
+      "label": "Jump Kick",
+      "frames": 3,
+      "fps": 10,
+      "loop": false,
+      "status": "missing"
+    },
+    {
+      "id": "uppercut",
+      "label": "Volt Uppercut",
+      "frames": 5,
+      "fps": 10,
+      "loop": false,
+      "status": "missing"
+    },
+    {
+      "id": "spinkick",
+      "label": "Volt Spin",
+      "frames": 6,
+      "fps": 12,
+      "loop": false,
+      "status": "missing"
+    },
+    {
+      "id": "rayo_throw",
+      "label": "Rayo Volt",
+      "frames": 4,
+      "fps": 10,
+      "loop": false,
+      "status": "missing"
+    },
+    {
+      "id": "rayo_proj",
+      "label": "Rayo Volt (Projectile)",
+      "frames": 3,
+      "fps": 12,
+      "loop": true,
+      "status": "missing"
+    },
+    {
+      "id": "hit",
+      "label": "Hit",
+      "frames": 3,
+      "fps": 8,
+      "loop": false,
+      "status": "missing"
+    },
+    {
+      "id": "crouch_hit",
+      "label": "Crouch Hit",
+      "frames": 2,
+      "fps": 8,
+      "loop": false,
+      "status": "missing"
+    },
+    {
+      "id": "knockdown",
+      "label": "Knockdown/Recover",
+      "frames": 4,
+      "fps": 7,
+      "loop": false,
+      "status": "missing"
+    },
+    {
+      "id": "dizzy",
+      "label": "Stunned",
+      "frames": 2,
+      "fps": 6,
+      "loop": true,
+      "status": "missing"
+    },
+    {
+      "id": "ko",
+      "label": "K.O.",
+      "frames": 2,
+      "fps": 5,
+      "loop": false,
+      "status": "missing"
+    },
+    {
+      "id": "victory1",
+      "label": "Victory 1",
+      "frames": 4,
+      "fps": 8,
+      "loop": true,
+      "status": "missing"
+    },
+    {
+      "id": "victory2",
+      "label": "Victory 2",
+      "frames": 3,
+      "fps": 8,
+      "loop": true,
+      "status": "missing"
+    },
+    {
+      "id": "dash",
+      "label": "Dash",
+      "frames": 3,
+      "fps": 14,
+      "loop": true,
+      "status": "done"
     }
   ]
 }

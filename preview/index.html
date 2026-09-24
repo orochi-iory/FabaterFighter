@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>VOLTIA - Visor de sprites</title>
+<title>VOLTIA - Visor y manual</title>
 <style>
   :root { --bg:#181624; --panel:#222033; --cyan:#96ffeb; }
   * { box-sizing: border-box; }
@@ -33,6 +33,21 @@
   .info b { color:#ffcb3d; }
   canvas#strip { image-rendering:pixelated; border-radius:8px; max-width:100%;
     background: repeating-conic-gradient(#2c2a40 0 25%, #242233 0 50%) 0 0/24px 24px; }
+  section.manual { width:100%; max-width:1200px; padding:0 16px 16px; }
+  .card { background:#222033; border:2px solid #3a3752; border-radius:12px; padding:20px;
+          display:flex; gap:20px; flex-wrap:wrap; }
+  .card img.concept { width:300px; max-width:100%; border-radius:8px; border:1px solid #4a4767;
+                      align-self:flex-start; }
+  .card .bio { flex:1; min-width:260px; }
+  .card .bio h2 { margin:0 0 8px; color:#ffcb3d; letter-spacing:1px; }
+  .card .bio p { color:#d8d6ea; line-height:1.5; }
+  .card .bio p.draft { color:#9d9ab5; font-size:13px; }
+  table.moves { border-collapse:collapse; margin-top:12px; width:100%; font-size:14px; }
+  table.moves th, table.moves td { border:1px solid #3a3752; padding:5px 10px; text-align:left; }
+  table.moves th { background:#35324e; color:#96ffeb; }
+  table.moves tr.group td { background:#2c2a40; color:#ffcb3d; font-weight:bold; }
+  table.moves td.st { text-align:center; }
+  table.moves tr.missing td { color:#6d6b85; }
   footer { color:#6d6b85; font-size:13px; padding:10px; text-align:center; }
 </style>
 </head>
@@ -68,6 +83,20 @@
     <div class="info">Consejo: <b>magenta</b> y <b>verde</b> sirven para comprobar la transparencia y el chroma.</div>
   </div>
 </main>
+<section class="manual">
+  <div class="card">
+    <img class="concept" src="../assets/voltia_concept.png" alt="Arte conceptual de Voltia">
+    <div class="bio">
+      <h2>VOLTIA · La Luchadora Voltaje</h2>
+      <p>Enmascarada del circuito clandestino de Puerto Voltaje. Tras el accidente del
+      reactor que mató a su tag-team, su traje de lucha absorbe y devuelve cada voltio:
+      sus puños cargan estática y sus patadas cierran el circuito. Lucha para desmantelar
+      la promotora que amañó aquella noche… máscara rosa, coleta violeta y cero piedad.</p>
+      <p class="draft">Historia en borrador: corrígela a tu gusto y queda fijada como canon del manual.</p>
+      <div id="movelist"></div>
+    </div>
+  </div>
+</section>
 <footer id="foot">FabaterFighter</footer>
 <script>
 (async () => {
@@ -79,13 +108,42 @@
   const cell = meta.cell;              // {w,h} en px de hoja (uniform_scale)
   const unit = meta.art.uniform_scale; // px-hoja por px-arte
   const total = meta.animations.reduce((n, a) => n + a.frames, 0);
+  const ndone = (meta.roster || []).filter(r => r.status === 'done').length;
+  const ntot = (meta.roster || []).length;
   document.getElementById('ver').textContent =
     `Vista v${meta.version || 'dev'} · canon v${meta.canon || '?'} · ${meta.date || ''} · ` +
     `${meta.rows} animaciones · ${total} frames · de pie ~${meta.art.height_px}px-arte`;
   document.getElementById('notes').innerHTML =
-    meta.notes ? `Contenido: <b>${meta.notes}</b>` : '';
+    (meta.notes ? `Contenido: <b>${meta.notes}</b> · ` : '') +
+    `Roster: <b>${ndone}/${ntot}</b> movimientos`;
   document.getElementById('foot').innerHTML =
     `FabaterFighter · hoja <b>voltia/${meta.sprite}</b> + <b>voltia/sheet.json</b> · versión en <b>voltia/VERSION</b>`;
+
+  // ---- Manual: tabla de movimientos por grupos ----
+  const GROUPS = [
+    ['Base', ['stance','walk','jump','fwdjump','crouch','block','dash']],
+    ['Golpes débiles (≤3f)', ['punch_weak','kick_weak','kick_weak_stand','crouch_punch','jump_kick']],
+    ['Golpes fuertes (5–8f)', ['punch_strong','kick_strong','uppercut','spinkick']],
+    ['Especial', ['rayo_throw','rayo_proj']],
+    ['Reacción', ['hit','crouch_hit','knockdown','dizzy','ko']],
+    ['Poses', ['victory1','victory2']],
+  ];
+  if (meta.roster) {
+    const byId = Object.fromEntries(meta.roster.map(r => [r.id, r]));
+    let html = '<table class="moves"><tr><th></th><th>Movimiento</th><th>Frames</th><th>FPS</th><th>Loop</th></tr>';
+    for (const [g, ids] of GROUPS) {
+      html += `<tr class="group"><td colspan="5">${g}</td></tr>`;
+      for (const id of ids) {
+        const r = byId[id];
+        if (!r) continue;
+        const ok = r.status === 'done';
+        html += `<tr class="${ok ? '' : 'missing'}"><td class="st">${ok ? '✅' : '⬜'}</td>` +
+          `<td>${r.label}</td><td>${r.frames}f</td><td>${r.fps}</td><td>${r.loop ? 'sí' : 'no'}</td></tr>`;
+      }
+    }
+    html += '</table>';
+    document.getElementById('movelist').innerHTML = html;
+  }
 
   const cv = document.getElementById('anim');
   cv.width = cell.w; cv.height = cell.h;

@@ -641,13 +641,23 @@
     },
     "punch_weak": {
       "pixel": 1,
-      "head_med": 103,
-      "bg_flat": 0.643
+      "head_med": 94,
+      "bg_flat": 0.7021
     },
     "kick_weak": {
       "pixel": 1,
-      "head_med": 98,
-      "bg_flat": 0.6779
+      "head_med": 82,
+      "bg_flat": 0.7267
+    },
+    "kick_weak_stand": {
+      "pixel": 1,
+      "head_med": 109,
+      "bg_flat": 0.6262
+    },
+    "crouch_punch": {
+      "pixel": 1,
+      "head_med": 40,
+      "bg_flat": 0.5663
     },
     "dash": {
       "pixel": 1,

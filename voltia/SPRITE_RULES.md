@@ -87,6 +87,24 @@ regenerar si la puerta rechaza, nunca relajar la puerta):
 - **Detector de cabeza robusto al rayo**: absorción de fragmentos rosa a
   <40 px + relleno de huecos (el rayo teal partía el blob: punch_weak medía
   [43,89,44] cv=49 %; ahora [104,89,103] cv=7 %, cero regresión).
+- **Escala con cabezas ocluidas**: si cv > 12 %, se usa la mayor (la menos
+  ocluida) + AVISO (`head-max`); las cabezas gachas (crouch) subestiman.
+- **Puerta anti-cortes de split**: contenido opaco en bordes izq/der
+  INTERIORES = corte por figura vecina → AVISO (los bordes externos los cubre
+  el chequeo de tira). Causa raíz: figuras con solape en X (puño/coleta).
+- **Limpieza de motas**: componentes sueltas <8 px-arte se eliminan en
+  `normalize` (ruido de chroma; lo legítimo suelto mide cientos).
+- **Roster débil completo**: `punch_weak` (de pie), `kick_weak` (low, desde
+  agachado), `kick_weak_stand` (de pie), `crouch_punch` (agachado);
+  `crouch_kick` eliminado (duplicado de la low kick).
+- **Cláusulas de prompt que funcionan**: panorámica apaisada explícita (sin
+  ella salen cuadrículas; prohibir "grid" en negativo es contraproducente),
+  figura a 2/3 + 40 px de margen, extremidades contenidas, caras visibles
+  mirando al frente, agachados: referenciar el frame agachado pleno (la tira
+  de transición induce secuencias de pie→X→agachado).
+- **Regla de oro**: verificar antes de sustituir; jamás `rm`/`mv` destructivo
+  sobre la única copia (se perdió una tira reutilizable por limpieza
+  prematura).
 
 ## 4. Puerta QA (automática)
 

@@ -38,10 +38,10 @@ MATERIAL_OF = {
 }
 LEVELS = {"outline": 1, "suit": 3, "navy": 3, "skin": 3, "mask": 3,
           "hair": 3, "yellow": 2, "white": 1}
-NO_STANDING = {"crouch", "crouch_punch", "crouch_kick", "crouch_hit",
+NO_STANDING = {"crouch", "crouch_punch", "crouch_hit",
                "kick_weak", "jump_kick", "knockdown", "ko"}
 CROUCH_LIKE = {"crouch"}
-CROUCH_HEIGHT = {"crouch_punch", "crouch_kick", "crouch_hit", "kick_weak"}
+CROUCH_HEIGHT = {"crouch_punch", "crouch_hit", "kick_weak"}
 FIXED_HEIGHT = {"rayo_proj": 64, "portrait": 120}
 
 
@@ -150,6 +150,9 @@ def strip_scale(frames, spec, strip_s, fixed_height=None):
     if len(valid) < max(1, (len(frames) + 1) // 2):
         med = statistics.median(f.height for f in frames)
         return 160.0 / (med / strip_s), heads, "frame-fallback"
+    if len(valid) >= 2 and statistics.pstdev(valid) / statistics.median(valid) > 0.12:
+        # Cabezas inconsistentes (oclusiones): la mayor es la menos ocluida.
+        return spec["head_h"] / max(valid), heads, "head-max"
     return spec["head_h"] / statistics.median(valid), heads, "head"
 
 
@@ -233,6 +236,33 @@ def normalize_strip(frames, spec, strip_s, scale=None, fixed_height=None):
                 arr[i], arr[i + 1], arr[i + 2] = mm
         f2 = Image.frombytes("RGB", rgba.size, bytes(arr)).convert("RGBA")
         f2.putalpha(alpha)
+        # Limpieza de motas: componentes sueltas <8px-arte (ruido de chroma).
+        # Solo toca ruido: ningun detalle legitimo suelto es tan pequeno.
+        dd = f2.tobytes()
+        w0, h0 = f2.size
+        occ = bytearray(w0 * h0)
+        for i in range(w0 * h0):
+            if dd[4 * i + 3] > 128:
+                occ[i] = 1
+        seen = bytearray(w0 * h0)
+        am = f2.load()
+        for i in range(w0 * h0):
+            if occ[i] and not seen[i]:
+                q = deque([i])
+                seen[i] = 1
+                pix = []
+                while q:
+                    j = q.popleft()
+                    pix.append(j)
+                    x, y = j % w0, j // w0
+                    for nx, ny in ((x - 1, y), (x + 1, y), (x, y - 1), (x, y + 1)):
+                        k = ny * w0 + nx
+                        if 0 <= nx < w0 and 0 <= ny < h0 and occ[k] and not seen[k]:
+                            seen[k] = 1
+                            q.append(k)
+                if len(pix) < 8:
+                    for j in pix:
+                        am[j % w0, j // w0] = (0, 0, 0, 0)
         K = spec["export_scale"]
         out.append(f2.resize((f2.width * K, f2.height * K), Image.NEAREST))
     return out
@@ -263,6 +293,24 @@ def qa_check_strip(sid, keyed, frames, expected, spec, strip_s, scale, heads, me
             notes.append(("RECHAZAR", "figura tocando el borde (posible recorte)"))
     else:
         notes.append(("RECHAZAR", "tira vacia tras el chroma"))
+    # Cortes en limites de split: cada frame sale del corte con pad>=3, asi
+    # que el contenido opaco pegado al borde izq/der es un corte por figura.
+    if frames:
+        cut = []
+        nfr = len(frames)
+        for i, f in enumerate(frames):
+            a = f.convert("RGBA").split()[3]
+            fw, fh = a.size
+            px = a.load()
+            n = 0
+            if i > 0:
+                n += sum(1 for y in range(fh) if px[0, y] > 128)
+            if i < nfr - 1:
+                n += sum(1 for y in range(fh) if px[fw - 1, y] > 128)
+            if n >= 5:
+                cut.append(f"f{i + 1}")
+        if cut:
+            notes.append(("AVISO", f"posible corte en borde de split ({','.join(cut)})"))
     if frames:
         ref = spec.get("skin_frac_ref", 0)
         if ref > 0 and method != "fixed":
