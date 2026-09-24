@@ -639,6 +639,16 @@
       "head_med": 93.0,
       "bg_flat": 0.7856
     },
+    "punch_weak": {
+      "pixel": 1,
+      "head_med": 91,
+      "bg_flat": 0.6911
+    },
+    "kick_weak": {
+      "pixel": 1,
+      "head_med": 77,
+      "bg_flat": 0.7522
+    },
     "dash": {
       "pixel": 1,
       "head_med": 93,

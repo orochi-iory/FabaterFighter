@@ -7,11 +7,11 @@
     "palette_version": 1
   },
   "cell": {
-    "w": 246,
+    "w": 338,
     "h": 364
   },
   "columns": 15,
-  "rows": 7,
+  "rows": 9,
   "frame_dir": "frames",
   "animations": [
     {
@@ -63,9 +63,25 @@
       "loop": true
     },
     {
+      "id": "punch_weak",
+      "label": "Weak Punch",
+      "row": 6,
+      "frames": 3,
+      "fps": 14,
+      "loop": false
+    },
+    {
+      "id": "kick_weak",
+      "label": "Weak Kick",
+      "row": 7,
+      "frames": 3,
+      "fps": 13,
+      "loop": false
+    },
+    {
       "id": "dash",
       "label": "Dash",
-      "row": 6,
+      "row": 8,
       "frames": 3,
       "fps": 14,
       "loop": true
