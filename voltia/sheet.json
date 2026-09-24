@@ -1,6 +1,6 @@
 {
   "sprite": "sheet_uniform.png",
-  "version": "0.4.0",
+  "version": "0.4.1",
   "notes": "",
   "date": "2026-09-24",
   "canon": 1.2,
@@ -11,7 +11,7 @@
     "palette_version": 1
   },
   "cell": {
-    "w": 386,
+    "w": 392,
     "h": 364
   },
   "columns": 15,
