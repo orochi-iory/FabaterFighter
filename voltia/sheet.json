@@ -1,6 +1,6 @@
 {
   "sprite": "sheet_uniform.png",
-  "version": "0.4.1",
+  "version": "0.5.0",
   "notes": "",
   "date": "2026-09-24",
   "canon": 1.2,
@@ -15,7 +15,7 @@
     "h": 364
   },
   "columns": 15,
-  "rows": 11,
+  "rows": 12,
   "frame_dir": "frames",
   "animations": [
     {
@@ -99,9 +99,17 @@
       "loop": false
     },
     {
+      "id": "jump_kick",
+      "label": "Jump Kick",
+      "row": 10,
+      "frames": 3,
+      "fps": 10,
+      "loop": false
+    },
+    {
       "id": "dash",
       "label": "Dash",
-      "row": 10,
+      "row": 11,
       "frames": 3,
       "fps": 14,
       "loop": true
@@ -210,7 +218,7 @@
       "frames": 3,
       "fps": 10,
       "loop": false,
-      "status": "missing"
+      "status": "done"
     },
     {
       "id": "uppercut",

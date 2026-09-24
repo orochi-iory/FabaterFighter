@@ -36,3 +36,8 @@
    nunca el raw: el detalle fino funde al normalizar.
 3. El usuario elige número (o ninguna). Solo la elegida se instala.
 4. Las perdedoras se borran antes del commit.
+
+## Validado en
+- `kick_weak_stand` lote 2 C1 (elegida por usuario; QA OK head).
+- `crouch_punch` lote 1 C1 (elegida por usuario).
+- `jump_kick` lote 1 C2 (elegida por usuario).
