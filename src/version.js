@@ -4,8 +4,8 @@
  * (lo rellena con el commit HEAD y la fecha actuales) antes de cada entrega.
  */
 export const BUILD = {
-  tag: 'v0.32',
-  commit: '2ab2b41',
+  tag: 'v0.33',
+  commit: 'ec6e842',
   date: '2026-09-24',
-  notes: 'Auditoria de animaciones contra la lamina SF2: pies plantados (fin de la garra que leia como rodilla dislocada), tronco 20 atras en patada, punetazo fuerte medido desde el hombro (brazo extendido de verdad)'
+  notes: 'Skinning afinado: dominio claro de cada hueso (pliegues que no colapsan) sin bultos; ingle sin competir con el muslo'
 };

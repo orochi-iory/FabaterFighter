@@ -363,8 +363,8 @@ export class Humanoid {
         }
       }
       const hp = this.bp.Hips;
-      segs.push([[hp[0], hp[1] - 0.13, hp[2]], [hp[0], hp[1] + 0.05, hp[2]], this.boneIndex.Hips]);
-      const e2 = (0.035 * this.s) * (0.035 * this.s);
+      segs.push([[hp[0], hp[1] - 0.07, hp[2]], [hp[0], hp[1] + 0.05, hp[2]], this.boneIndex.Hips]);
+      const e2 = (0.022 * this.s) * (0.022 * this.s);
       for (let i = 0; i < positions.length / 3; i++) {
         const vx = positions[i * 3], vy = positions[i * 3 + 1], vz = positions[i * 3 + 2];
         // 4 segmentos mas cercanos por distancia punto-segmento
@@ -383,8 +383,12 @@ export class Humanoid {
           else if (d < d2) { d3 = d2; b3 = b2; d2 = d; b2 = sg; }
           else if (d < d3) { d3 = d; b3 = sg; }
         }
-        const w0 = 1 / (d0 + e2), w1 = b1 >= 0 ? 1 / (d1 + e2) : 0,
-              w2 = b2 >= 0 ? 1 / (d2 + e2) : 0, w3 = b3 >= 0 ? 1 / (d3 + e2) : 0;
+        // w = 1/(d^2+e) al CUADRADO: dominio claro de cada hueso (el pliegue
+        // no colapsa) con banda de mezcla suficiente para no puentear la
+        // articulacion (el cubo sacaba bultos en la rodilla).
+        const q0 = 1 / (d0 + e2), q1 = b1 >= 0 ? 1 / (d1 + e2) : 0,
+              q2 = b2 >= 0 ? 1 / (d2 + e2) : 0, q3 = b3 >= 0 ? 1 / (d3 + e2) : 0;
+        const w0 = q0 * q0, w1 = q1 * q1, w2 = q2 * q2, w3 = q3 * q3;
         const tot = w0 + w1 + w2 + w3;
         sis[i * 4] = segs[b0][2];     sws[i * 4] = w0 / tot;
         sis[i * 4 + 1] = b1 >= 0 ? segs[b1][2] : 0;  sws[i * 4 + 1] = w1 / tot;
