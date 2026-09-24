@@ -332,55 +332,53 @@ export class Humanoid {
       }
     }
 
-    // Suavizado de pesos de skinning sobre la grafica de la malla: el IDW en
-    // espacio deja que la mezcla de huesos oscile entre vertices vecinos y,
-    // al posar, esa oscilacion arruga las normales (damero/diamante). Unas
-    // pasadas de promedio en la superficie lo eliminan sin perder articulacion.
+    // Pesos de skinning por distancia al hueso: la distancia a un segmento es
+    // un campo continuo, asi que dos vertices vecinos jamas oscilan entre
+    // huesos a escala de celda. Con pesos que oscilan, el skinning de GPU
+    // desplaza vecinos de forma distinta al posar y la superficie chispea
+    // bajo luz especular (el damero persistente).
     {
-      const nV = positions.length / 3;
-      const deg2 = new Uint32Array(nV);
-      for (let t = 0; t < indices.length; t += 3) {
-        deg2[indices[t]] += 2; deg2[indices[t + 1]] += 2; deg2[indices[t + 2]] += 2;
-      }
-      const start2 = new Uint32Array(nV + 1);
-      for (let i = 0; i < nV; i++) start2[i + 1] = start2[i] + deg2[i];
-      const flat2 = new Uint32Array(start2[nV]);
-      const cur2 = Uint32Array.from(start2);
-      const link2 = (u, v) => { flat2[cur2[u]++] = v; };
-      for (let t = 0; t < indices.length; t += 3) {
-        const a = indices[t], b = indices[t + 1], c = indices[t + 2];
-        link2(a, b); link2(a, c); link2(b, a); link2(b, c); link2(c, a); link2(c, b);
-      }
-      const wSis = new Uint16Array(sis.length);
-      const wSws = new Float32Array(sws.length);
-      for (let iter = 0; iter < 3; iter++) {
-        for (let i = 0; i < nV; i++) {
-          const m = new Map();
-          for (let k = 0; k < 4; k++) {
-            const w = sws[i * 4 + k];
-            if (w > 0) m.set(sis[i * 4 + k], (m.get(sis[i * 4 + k]) || 0) + w * 0.55);
-          }
-          const nb = start2[i + 1] - start2[i];
-          for (let j = start2[i]; j < start2[i + 1]; j++) {
-            const v = flat2[j];
-            for (let k = 0; k < 4; k++) {
-              const w = sws[v * 4 + k];
-              if (w > 0) m.set(sis[v * 4 + k], (m.get(sis[v * 4 + k]) || 0) + w * 0.45 / nb);
-            }
-          }
-          const ent = [...m.entries()].sort((a, b) => b[1] - a[1]).slice(0, 4);
-          let tot = 0;
-          for (const e of ent) tot += e[1];
-          if (!(tot > 0)) {
-            for (let k = 0; k < 4; k++) { wSis[i * 4 + k] = sis[i * 4 + k]; wSws[i * 4 + k] = sws[i * 4 + k]; }
-            continue;
-          }
-          for (let k = 0; k < 4; k++) {
-            if (k < ent.length) { wSis[i * 4 + k] = ent[k][0]; wSws[i * 4 + k] = ent[k][1] / tot; }
-            else { wSis[i * 4 + k] = 0; wSws[i * 4 + k] = 0; }
-          }
+      const segs = [];
+      for (const j of JOINTS) {
+        const pi = j.parent;
+        if (pi >= 0) {
+          const a = this.bp[JOINTS[pi].name], b = this.bp[j.name];
+          if (Math.hypot(b[0] - a[0], b[1] - a[1], b[2] - a[2]) > 0.01)
+            segs.push([a, b, this.boneIndex[j.name]]);
         }
-        for (let i = 0; i < sis.length; i++) { sis[i] = wSis[i]; sws[i] = wSws[i]; }
+        if (j.end) {
+          const a = this.bp[j.name];
+          segs.push([a, [a[0] + j.end[0], a[1] + j.end[1], a[2] + j.end[2]], this.boneIndex[j.name]]);
+        }
+      }
+      const hp = this.bp.Hips;
+      segs.push([[hp[0], hp[1] - 0.13, hp[2]], [hp[0], hp[1] + 0.05, hp[2]], this.boneIndex.Hips]);
+      const e2 = (0.035 * this.s) * (0.035 * this.s);
+      for (let i = 0; i < positions.length / 3; i++) {
+        const vx = positions[i * 3], vy = positions[i * 3 + 1], vz = positions[i * 3 + 2];
+        // 4 segmentos mas cercanos por distancia punto-segmento
+        let b0 = -1, b1 = -1, b2 = -1, b3 = -1;
+        let d0 = Infinity, d1 = Infinity, d2 = Infinity, d3 = Infinity;
+        for (let sg = 0; sg < segs.length; sg++) {
+          const a = segs[sg][0], b = segs[sg][1];
+          const ux = b[0] - a[0], uy = b[1] - a[1], uz = b[2] - a[2];
+          const len2 = ux * ux + uy * uy + uz * uz || 1e-9;
+          let t = ((vx - a[0]) * ux + (vy - a[1]) * uy + (vz - a[2]) * uz) / len2;
+          t = t < 0 ? 0 : t > 1 ? 1 : t;
+          const dx = vx - (a[0] + ux * t), dy = vy - (a[1] + uy * t), dz = vz - (a[2] + uz * t);
+          const d = dx * dx + dy * dy + dz * dz;
+          if (d < d0) { d3 = d2; b3 = b2; d2 = d1; b2 = b1; d1 = d0; b1 = b0; d0 = d; b0 = sg; }
+          else if (d < d1) { d3 = d2; b3 = b2; d2 = d1; b2 = b1; d1 = d; b1 = sg; }
+          else if (d < d2) { d3 = d2; b3 = b2; d2 = d; b2 = sg; }
+          else if (d < d3) { d3 = d; b3 = sg; }
+        }
+        const w0 = 1 / (d0 + e2), w1 = b1 >= 0 ? 1 / (d1 + e2) : 0,
+              w2 = b2 >= 0 ? 1 / (d2 + e2) : 0, w3 = b3 >= 0 ? 1 / (d3 + e2) : 0;
+        const tot = w0 + w1 + w2 + w3;
+        sis[i * 4] = segs[b0][2];     sws[i * 4] = w0 / tot;
+        sis[i * 4 + 1] = b1 >= 0 ? segs[b1][2] : 0;  sws[i * 4 + 1] = w1 / tot;
+        sis[i * 4 + 2] = b2 >= 0 ? segs[b2][2] : 0;  sws[i * 4 + 2] = w2 / tot;
+        sis[i * 4 + 3] = b3 >= 0 ? segs[b3][2] : 0;  sws[i * 4 + 3] = w3 / tot;
       }
     }
 
