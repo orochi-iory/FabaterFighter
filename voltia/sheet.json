@@ -1,11 +1,17 @@
 {
   "sprite": "sheet_uniform.png",
+  "art": {
+    "height_px": 160,
+    "export_scale": 4,
+    "uniform_scale": 2,
+    "palette_version": 1
+  },
   "cell": {
-    "w": 219,
-    "h": 214
+    "w": 342,
+    "h": 334
   },
   "columns": 6,
-  "rows": 10,
+  "rows": 9,
   "frame_dir": "frames",
   "animations": [
     {
@@ -25,17 +31,9 @@
       "loop": true
     },
     {
-      "id": "jump",
-      "label": "Jump",
-      "row": 2,
-      "frames": 4,
-      "fps": 9,
-      "loop": false
-    },
-    {
       "id": "fwdjump",
       "label": "Forward Jump",
-      "row": 3,
+      "row": 2,
       "frames": 4,
       "fps": 9,
       "loop": false
@@ -43,7 +41,7 @@
     {
       "id": "crouch",
       "label": "Crouch",
-      "row": 4,
+      "row": 3,
       "frames": 3,
       "fps": 8,
       "loop": true
@@ -51,7 +49,7 @@
     {
       "id": "block",
       "label": "Blocking",
-      "row": 5,
+      "row": 4,
       "frames": 2,
       "fps": 8,
       "loop": true
@@ -59,7 +57,7 @@
     {
       "id": "punch_l",
       "label": "L. Punch",
-      "row": 6,
+      "row": 5,
       "frames": 3,
       "fps": 12,
       "loop": false
@@ -67,7 +65,7 @@
     {
       "id": "punch_mh",
       "label": "M./H. Punch",
-      "row": 7,
+      "row": 6,
       "frames": 4,
       "fps": 11,
       "loop": false
@@ -75,7 +73,7 @@
     {
       "id": "kick_lm",
       "label": "L./M. Kick",
-      "row": 8,
+      "row": 7,
       "frames": 4,
       "fps": 11,
       "loop": false
@@ -83,7 +81,7 @@
     {
       "id": "kick_h",
       "label": "H. Kick",
-      "row": 9,
+      "row": 8,
       "frames": 4,
       "fps": 10,
       "loop": false

@@ -1,25 +1,33 @@
 #!/usr/bin/env python3
 """Ensambla el tilesheet de VOLTIA a partir de tiras PNG generadas por IA.
 
-Pipeline:
-  1. Lee voltia/raw/<id>.png (tira horizontal sobre fondo magenta plano).
-  2. Elimina el fondo (chroma magenta + floodfill desde los bordes) -> canal alfa.
-  3. Detecta frames por columnas vacias (con fallback a division equitativa).
-  4. Guarda frames con transparencia en voltia/frames/.
-  5. Genera:
-     - voltia/sheet.png          (estilo hoja Ryu: secciones etiquetadas)
-     - voltia/sheet_uniform.png  + voltia/sheet.json (cuadricula uniforme + metadatos)
-     - voltia/preview.png        (contacto: primer frame de cada animacion)
+Pipeline (reglas v1, ver voltia/SPRITE_RULES.md):
+  1. Lee voltia/raw/<id>.png (tira horizontal sobre fondo plano).
+  2. Chroma con color muestreado + floodfill -> alfa.
+  3. Detecta frames por columnas vacias (+ cortes en valles si se tocan).
+  4. Puerta QA: OK / AVISO / RECHAZAR (lo rechazado se excluye).
+  5. Normaliza (voltia/normalize.py): altura canon, pixel real, paleta maestra.
+  6. Genera:
+     - voltia/sheet.png          (estilo hoja Ryu: secciones etiquetadas, 1x)
+     - voltia/sheet_uniform.png  + voltia/sheet.json (cuadricula 2x + metadatos)
+     - voltia/preview.png        (contacto 1x: primer frame de cada animacion)
      - voltia/raw_contact.png    (control de calidad de las tiras)
+     - voltia/frames/            (frames 4x con transparencia)
 
 Uso:
+    python3 voltia/analyze.py --freeze   # una vez (o al cambiar de reglas)
     python3 voltia/build_sheet.py
 """
 import json
 import os
+import statistics
+import sys
 from PIL import Image, ImageChops, ImageDraw, ImageFont
 
 HERE = os.path.dirname(os.path.abspath(__file__))
+sys.path.insert(0, HERE)
+from normalize import load_spec, normalize_frame, qa_check, estimate_pixel_size  # noqa: E402
+
 RAW = os.path.join(HERE, "raw")
 FRAMES = os.path.join(HERE, "frames")
 
@@ -64,30 +72,39 @@ def font(size):
         return ImageFont.load_default()
 
 
-# ---------------- Paso 1-2: recorte de fondo ----------------
-def load_and_key(path, tol=70, feather=50):
+# ---------------- Paso 2: recorte de fondo ----------------
+def _sample_bg(rgb):
+    """El fondo real varia por tira: se muestrea de bordes (mediana)."""
+    w, h = rgb.size
+    px = rgb.load()
+    pts = [(2, 2), (w - 3, 2), (2, h - 3), (w - 3, h - 3),
+           (w // 2, 2), (w // 2, h - 3), (2, h // 2), (w - 3, h // 2)]
+    return tuple(int(statistics.median(c)) for c in zip(*[px[x, y] for x, y in pts]))
+
+
+def load_and_key(path, tol=30, feather=25):
     img = Image.open(path).convert("RGB")
     w, h = img.size
+    key = _sample_bg(img)
     r, g, b = img.split()
-    # Distancia al cuadrado al magenta, en espacio /255 (todo en C, rapido).
-    # D ~= 0 -> fondo magenta -> transparente.
-    solid = Image.new("L", (w, h), 255)
-    dr = ImageChops.difference(r, solid)
-    db = ImageChops.difference(b, solid)
+    # Distancia al cuadrado al color muestreado, en espacio /255.
+    dr = ImageChops.difference(r, Image.new("L", (w, h), key[0]))
+    dg = ImageChops.difference(g, Image.new("L", (w, h), key[1]))
+    db = ImageChops.difference(b, Image.new("L", (w, h), key[2]))
     D = ImageChops.add(ImageChops.add(ImageChops.multiply(dr, dr),
-                                       ImageChops.multiply(g, g)),
+                                       ImageChops.multiply(dg, dg)),
                        ImageChops.multiply(db, db))
     t0, t1 = (tol / 255) ** 2 * 255, ((tol + feather) / 255) ** 2 * 255
     lut = [0 if v <= t0 else (255 if v >= t1 else int(255 * (v - t0) / (t1 - t0)))
            for v in range(256)]
     alpha = D.point(lut)
-    # Floodfill desde bordes: pilla degradados magenta que el chroma no ve
+    # Floodfill desde bordes como red de seguridad (degradados sutiles)
     flood = img.copy()
     seeds = [(0, 0), (w - 1, 0), (0, h - 1), (w - 1, h - 1),
              (w // 2, 0), (w // 2, h - 1), (0, h // 2), (w - 1, h // 2)]
     for s in seeds:
         try:
-            ImageDraw.floodfill(flood, s, (0, 255, 0), thresh=60)
+            ImageDraw.floodfill(flood, s, (0, 255, 0), thresh=40)
         except Exception:
             pass
     green = Image.new("RGB", (w, h), (0, 255, 0))
@@ -96,8 +113,7 @@ def load_and_key(path, tol=70, feather=50):
     alpha = ImageChops.darker(alpha, mask_green)
     rgba = img.convert("RGBA")
     rgba.putalpha(alpha)
-    total = w * h
-    fg_ratio = sum(alpha.tobytes()) / 255 / total
+    fg_ratio = sum(alpha.tobytes()) / 255 / (w * h)
     if fg_ratio > 0.7 or fg_ratio < 0.005:
         print(f"  AVISO {os.path.basename(path)}: fg={fg_ratio:.2f}, revisar key")
     return rgba
@@ -178,8 +194,11 @@ def split_strip(img, expected):
 
 
 def scale_h(img, th):
+    """Reescala a altura th; NEAREST si el factor es entero (pixel perfecto)."""
     if img.height == th:
         return img
+    if img.height % th == 0 or th % img.height == 0:
+        return img.resize((max(1, round(img.width * th / img.height)), th), Image.NEAREST)
     w = max(1, round(img.width * th / img.height))
     return img.resize((w, th), Image.LANCZOS)
 
@@ -192,7 +211,7 @@ def hue_shift(img, deg):
     return out
 
 
-# ---------------- Paso 5a: hoja estilo referencia ----------------
+# ---------------- Paso 6a: hoja estilo referencia ----------------
 DISPLAY_ROWS = [
     ["idle", "walk", "jump", "fwdjump", "crouch", "block"],
     ["punch_l", "punch_mh", "kick_lm", "kick_h"],
@@ -202,11 +221,13 @@ DISPLAY_ROWS = [
     ["victory1", "victory2", "palettes", "mugshots"],
 ]
 
-ROW_H, LABEL_H, FRAME_H = 210, 34, 168
 SIDEBAR_W = 300
+LABEL_H = 34
 
 
-def build_reference_sheet(data, portraits, palette_frames):
+def build_reference_sheet(data, portraits, palette_frames, spec):
+    FRAME_H = spec["art_height"] * spec["ref_scale"]
+    ROW_H = FRAME_H + 42
     f_label, f_title, f_small = font(24), font(64), font(17)
     data = dict(data)
     data["palettes"] = ("Alternate Palettes", palette_frames)
@@ -256,8 +277,9 @@ def build_reference_sheet(data, portraits, palette_frames):
         "Original character for",
         "FabaterFighter.",
         "",
-        "Sprites generated with AI,",
-        "assembled with pixel keying.",
+        "AI-generated sprites,",
+        "normalized to the",
+        f"{spec['art_height']}px-art canon.",
         "No rips, no Capcom assets.",
         "",
         "Cyber luchadora from the",
@@ -278,16 +300,17 @@ def build_reference_sheet(data, portraits, palette_frames):
     return sheet
 
 
-# ---------------- Paso 5b: hoja uniforme + JSON ----------------
-UH = 200
-
-
-def build_uniform_sheet(rendered):
+# ---------------- Paso 6b: hoja uniforme + JSON ----------------
+def build_uniform_sheet(rendered, spec):
+    K = spec["export_scale"] // spec["uniform_scale"]  # divisor entero exacto
     norm = {}
     for (sid, label, fps, loop, frames) in rendered:
-        norm[sid] = [scale_h(f, UH) for f in frames]
+        small = []
+        for f in frames:
+            small.append(f.resize((f.width // K, f.height // K), Image.NEAREST))
+        norm[sid] = small
     cell_w = max(f.width for fs in norm.values() for f in fs) + 14
-    cell_h = UH + 14
+    cell_h = max(f.height for fs in norm.values() for f in fs) + 14
     cols = max(len(fs) for fs in norm.values())
     rows = len(rendered)
     sheet = Image.new("RGBA", (cols * cell_w, rows * cell_h), (0, 0, 0, 0))
@@ -299,20 +322,27 @@ def build_uniform_sheet(rendered):
             sheet.paste(f, (x, y), f)
         meta.append({"id": sid, "label": label, "row": r, "frames": len(frames),
                      "fps": fps, "loop": loop})
-    js = {"sprite": "sheet_uniform.png", "cell": {"w": cell_w, "h": cell_h},
+    js = {"sprite": "sheet_uniform.png",
+          "art": {"height_px": spec["art_height"], "export_scale": spec["export_scale"],
+                  "uniform_scale": spec["uniform_scale"], "palette_version": spec["palette_version"]},
+          "cell": {"w": cell_w, "h": cell_h},
           "columns": cols, "rows": rows, "frame_dir": "frames", "animations": meta}
     return sheet, js
 
 
-def build_preview(rendered):
+def build_preview(rendered, spec):
     f_label = font(20)
     label_w = 260
-    thumbs = [(label, scale_h(frames[0], 110)) for (_, label, _, _, frames) in rendered]
+    K = spec["export_scale"] // spec["preview_scale"]
+    thumbs = []
+    for (_, label, _, _, frames) in rendered:
+        f = frames[0]
+        thumbs.append((label, f.resize((f.width // K, f.height // K), Image.NEAREST)))
     W = label_w + max(t.width for (_, t) in thumbs) + 30
     H = sum(t.height + 14 for (_, t) in thumbs) + 70
     prev = Image.new("RGB", (W, H), (24, 22, 34))
     d = ImageDraw.Draw(prev)
-    d.text((20, 16), "VOLTIA - primer frame por animacion", fill=(255, 203, 61), font=font(26))
+    d.text((20, 16), "VOLTIA - primer frame por animacion (canon 1x)", fill=(255, 203, 61), font=font(26))
     y = 66
     for (label, t) in thumbs:
         d.text((20, y + 40), label, fill=(150, 255, 235), font=f_label)
@@ -322,6 +352,7 @@ def build_preview(rendered):
 
 
 def main():
+    spec = load_spec()
     os.makedirs(FRAMES, exist_ok=True)
     # Contacto de tiras crudas (control de calidad)
     raws = []
@@ -348,8 +379,16 @@ def main():
         if not os.path.exists(p):
             print(f"  FALTA tira: {sid}.png (se omite)")
             continue
-        frames = split_strip(load_and_key(p), exp)
-        print(f"  {sid}: {len(frames)} frames (esperados {exp})")
+        keyed = load_and_key(p)
+        frames = split_strip(keyed, exp)
+        strip_s = estimate_pixel_size(frames[len(frames) // 2])[0] if frames else spec["anchor_pixel"]
+        verdict, notes = qa_check(sid, keyed, frames, exp, spec, strip_s)
+        detail = f" ({'; '.join(m for _, m in notes)})" if notes else ""
+        print(f"  {sid}: {len(frames)}f, pixel={strip_s} | QA {verdict}{detail}")
+        if verdict == "RECHAZAR":
+            print("    -> excluida del montaje: regenerar la tira")
+            continue
+        frames = [normalize_frame(f, spec, strip_s) for f in frames]
         for i, f in enumerate(frames):
             f.save(os.path.join(FRAMES, f"voltia_{sid}_{i}.png"))
         rendered.append((sid, label, fps, loop, frames))
@@ -358,7 +397,9 @@ def main():
     portraits = []
     pp = os.path.join(RAW, "portrait.png")
     if os.path.exists(pp):
-        portraits = split_strip(load_and_key(pp, tol=90, feather=60), 3)
+        pframes = split_strip(load_and_key(pp), 3)
+        ps = estimate_pixel_size(pframes[len(pframes) // 2])[0] if pframes else 1
+        portraits = [normalize_frame(f, spec, ps, target_h=120) for f in pframes]
         for i, f in enumerate(portraits):
             f.save(os.path.join(FRAMES, f"voltia_portrait_{i}.png"))
 
@@ -372,12 +413,12 @@ def main():
     if not rendered:
         print("Sin tiras: no se genera nada.")
         return
-    build_reference_sheet(data, portraits, palette_frames).save(os.path.join(HERE, "sheet.png"))
-    usheet, js = build_uniform_sheet(rendered)
+    build_reference_sheet(data, portraits, palette_frames, spec).save(os.path.join(HERE, "sheet.png"))
+    usheet, js = build_uniform_sheet(rendered, spec)
     usheet.save(os.path.join(HERE, "sheet_uniform.png"))
     with open(os.path.join(HERE, "sheet.json"), "w", encoding="utf-8") as f:
         json.dump(js, f, ensure_ascii=False, indent=2)
-    build_preview(rendered).save(os.path.join(HERE, "preview.png"))
+    build_preview(rendered, spec).save(os.path.join(HERE, "preview.png"))
     total = sum(len(fr) for (_, _, _, _, fr) in rendered)
     print(f"OK: {len(rendered)} animaciones, {total} frames + {len(portraits)} retratos")
 
