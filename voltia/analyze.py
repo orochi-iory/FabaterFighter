@@ -3,12 +3,13 @@
 
 Uso:
     python3 voltia/analyze.py            # solo informe -> voltia/qa_report.txt
-    python3 voltia/analyze.py --freeze   # informe + voltia/spec.json + paleta maestra
+    python3 voltia/analyze.py --freeze   # informe + voltia/spec.json + paletas
 
 El ancla de estilo es block.png (decision del proyecto). La resolucion canon
 es una REGLA fija (ART_HEIGHT), no un valor heredado de ninguna tira.
 """
 import json
+import math
 import os
 import statistics
 import sys
@@ -18,7 +19,7 @@ from PIL import Image, ImageChops, ImageDraw
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
 from build_sheet import load_and_key, split_strip, SECTIONS, _sample_bg  # noqa: E402
-from normalize import estimate_pixel_size  # noqa: E402
+from normalize import estimate_pixel_size, is_skin_color  # noqa: E402
 
 ANCHOR = "block"
 # Altura canonica en pixeles-arte. 160px = luchador detallado estilo SF
@@ -26,8 +27,12 @@ ANCHOR = "block"
 ART_HEIGHT = 160
 EXPORT_SCALE = 4
 PALETTE_SIZE = 48
+SKIN_SIZE = 8
 PALETTE_POOL = ["block", "idle", "walk", "punch_mh", "kick_lm", "kick_h", "jump"]
 HEIGHT_WARN = 0.15
+# Tonos humanos viables de respaldo (calidos; se usan si hay pocas muestras)
+SKIN_FALLBACK = [[255, 224, 189], [244, 196, 150], [232, 170, 120], [214, 145, 100],
+                 [192, 120, 85], [170, 100, 70], [148, 82, 58], [126, 66, 48]]
 
 
 def top_colors(rgba, n=6):
@@ -73,6 +78,16 @@ def analyze_strip(sid, expected):
     }
 
 
+def _median_cut(samples, n):
+    side = max(2, int(math.sqrt(len(samples))))
+    pool = Image.new("RGB", (side, side))
+    pool.putdata((samples * ((side * side) // len(samples) + 1))[:side * side])
+    q = pool.quantize(colors=n, method=Image.Quantize.MEDIANCUT)
+    pal = q.getpalette()
+    counts = sorted(q.getcolors(maxcolors=side * side), reverse=True)[:n]
+    return [[pal[i * 3], pal[i * 3 + 1], pal[i * 3 + 2]] for (_, i) in counts]
+
+
 def freeze_spec(results):
     by_id = {r["sid"]: r for r in results}
     anchor = by_id[ANCHOR]
@@ -88,25 +103,31 @@ def freeze_spec(results):
                 samples.append((data[i], data[i + 1], data[i + 2]))
         if len(samples) > 90000:
             break
-    side = int(len(samples) ** 0.5)
-    pool = Image.new("RGB", (side, side))
-    pool.putdata(samples[:side * side])
-    q = pool.quantize(colors=PALETTE_SIZE, method=Image.Quantize.MEDIANCUT)
-    pal = q.getpalette()
-    counts = sorted(q.getcolors(maxcolors=side * side), reverse=True)[:PALETTE_SIZE]
-    palette = [[pal[i * 3], pal[i * 3 + 1], pal[i * 3 + 2]] for (_, i) in counts]
-    # Muestrario PNG
+    palette = _median_cut(samples, PALETTE_SIZE)
     sw = Image.new("RGB", (len(palette) * 40, 40), (0, 0, 0))
     d = ImageDraw.Draw(sw)
     for i, c in enumerate(palette):
         d.rectangle([i * 40, 0, i * 40 + 39, 39], fill=tuple(c))
     sw.save(os.path.join(HERE, "master_palette.png"))
+    # Subpaleta de piel: solo tonos humanos viables (protector de piel)
+    skin_all = [s for s in samples if is_skin_color(*s)]
+    skin_frac_ref = len(skin_all) / max(1, len(samples))
+    if len(skin_all) >= 300:
+        skin_palette = _median_cut(skin_all, SKIN_SIZE)
+    else:
+        skin_palette = SKIN_FALLBACK
+    sw2 = Image.new("RGB", (len(skin_palette) * 60, 40), (0, 0, 0))
+    d2 = ImageDraw.Draw(sw2)
+    for i, c in enumerate(skin_palette):
+        d2.rectangle([i * 60, 0, i * 60 + 59, 39], fill=tuple(c))
+    sw2.save(os.path.join(HERE, "skin_palette.png"))
     spec = {
         "rules_version": 1, "anchor": ANCHOR, "anchor_pixel": anchor["pixel"],
         "art_height": ART_HEIGHT, "export_scale": EXPORT_SCALE,
         "uniform_scale": 2, "ref_scale": 1, "preview_scale": 1,
         "future_bg": "#00FF00",
         "palette_version": 1, "palette": palette,
+        "skin_palette": skin_palette, "skin_frac_ref": round(skin_frac_ref, 4),
         "thresholds": {"height_warn": HEIGHT_WARN},
         "strips": {sid: {"pixel": r["pixel"], "h_art_med": r["h_art_med"],
                          "bg_flat": r["bg_flat"]} for sid, r in by_id.items()},
@@ -138,9 +159,10 @@ def main():
         lines.append("")
         lines.append(f"CANON v1: altura_arte={spec['art_height']}px, export={spec['export_scale']}x, "
                      f"paleta v{spec['palette_version']} ({len(spec['palette'])} colores), "
+                     f"piel ({len(spec['skin_palette'])} tonos, ref {spec['skin_frac_ref']:.1%}), "
                      f"fondo_futuro={spec['future_bg']}")
         print(f"CANON v1: H={spec['art_height']}px-arte, export={spec['export_scale']}x, "
-              f"{len(spec['palette'])} colores")
+              f"{len(spec['palette'])} colores + {len(spec['skin_palette'])} piel")
     with open(os.path.join(HERE, "qa_report.txt"), "w", encoding="utf-8") as f:
         f.write("\n".join(lines) + "\n")
     print("\n".join(lines[:len(results) + 4]))

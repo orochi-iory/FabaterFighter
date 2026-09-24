@@ -11,7 +11,7 @@
     "h": 334
   },
   "columns": 6,
-  "rows": 9,
+  "rows": 11,
   "frame_dir": "frames",
   "animations": [
     {
@@ -31,9 +31,17 @@
       "loop": true
     },
     {
+      "id": "jump",
+      "label": "Jump",
+      "row": 2,
+      "frames": 4,
+      "fps": 9,
+      "loop": false
+    },
+    {
       "id": "fwdjump",
       "label": "Forward Jump",
-      "row": 2,
+      "row": 3,
       "frames": 4,
       "fps": 9,
       "loop": false
@@ -41,7 +49,7 @@
     {
       "id": "crouch",
       "label": "Crouch",
-      "row": 3,
+      "row": 4,
       "frames": 3,
       "fps": 8,
       "loop": true
@@ -49,7 +57,7 @@
     {
       "id": "block",
       "label": "Blocking",
-      "row": 4,
+      "row": 5,
       "frames": 2,
       "fps": 8,
       "loop": true
@@ -57,7 +65,7 @@
     {
       "id": "punch_l",
       "label": "L. Punch",
-      "row": 5,
+      "row": 6,
       "frames": 3,
       "fps": 12,
       "loop": false
@@ -65,7 +73,7 @@
     {
       "id": "punch_mh",
       "label": "M./H. Punch",
-      "row": 6,
+      "row": 7,
       "frames": 4,
       "fps": 11,
       "loop": false
@@ -73,7 +81,7 @@
     {
       "id": "kick_lm",
       "label": "L./M. Kick",
-      "row": 7,
+      "row": 8,
       "frames": 4,
       "fps": 11,
       "loop": false
@@ -81,10 +89,18 @@
     {
       "id": "kick_h",
       "label": "H. Kick",
-      "row": 8,
+      "row": 9,
       "frames": 4,
       "fps": 10,
       "loop": false
+    },
+    {
+      "id": "dash",
+      "label": "Dash",
+      "row": 10,
+      "frames": 3,
+      "fps": 14,
+      "loop": true
     }
   ]
 }

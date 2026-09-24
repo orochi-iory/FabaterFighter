@@ -251,6 +251,49 @@
       173
     ]
   ],
+  "skin_palette": [
+    [
+      242,
+      178,
+      133
+    ],
+    [
+      183,
+      105,
+      79
+    ],
+    [
+      203,
+      123,
+      92
+    ],
+    [
+      188,
+      116,
+      89
+    ],
+    [
+      242,
+      173,
+      127
+    ],
+    [
+      245,
+      184,
+      141
+    ],
+    [
+      140,
+      78,
+      60
+    ],
+    [
+      223,
+      156,
+      119
+    ]
+  ],
+  "skin_frac_ref": 0.0834,
   "thresholds": {
     "height_warn": 0.15
   },
@@ -258,52 +301,57 @@
     "idle": {
       "pixel": 1,
       "h_art_med": 587.5,
-      "bg_flat": 0.2974
+      "bg_flat": 0.7026
     },
     "walk": {
       "pixel": 1,
       "h_art_med": 373.0,
-      "bg_flat": 0.1847
+      "bg_flat": 0.8153
     },
     "jump": {
       "pixel": 1,
-      "h_art_med": 433.5,
-      "bg_flat": 0.2258
+      "h_art_med": 469.0,
+      "bg_flat": 0.7247
     },
     "fwdjump": {
       "pixel": 1,
       "h_art_med": 425.0,
-      "bg_flat": 0.1599
+      "bg_flat": 0.8401
     },
     "crouch": {
       "pixel": 1,
       "h_art_med": 471.0,
-      "bg_flat": 0.1937
+      "bg_flat": 0.8063
     },
     "block": {
       "pixel": 1,
       "h_art_med": 647.0,
-      "bg_flat": 0.2144
+      "bg_flat": 0.7856
     },
     "punch_l": {
       "pixel": 1,
       "h_art_med": 587.0,
-      "bg_flat": 0.2337
+      "bg_flat": 0.7663
     },
     "punch_mh": {
       "pixel": 1,
       "h_art_med": 415.0,
-      "bg_flat": 0.1832
+      "bg_flat": 0.8168
     },
     "kick_lm": {
       "pixel": 1,
       "h_art_med": 535.0,
-      "bg_flat": 0.2319
+      "bg_flat": 0.7681
     },
     "kick_h": {
       "pixel": 1,
       "h_art_med": 607.5,
-      "bg_flat": 0.298
+      "bg_flat": 0.702
+    },
+    "dash": {
+      "pixel": 1,
+      "h_art_med": 631.0,
+      "bg_flat": 0.6709
     }
   }
 }

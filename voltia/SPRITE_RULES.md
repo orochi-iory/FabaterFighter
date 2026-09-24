@@ -1,62 +1,69 @@
-# Reglas de coherencia de sprites — VOLTIA (canon v1)
+# Reglas de coherencia de sprites — VOLTIA (canon v1.1)
 
 > Sin reglas, cada tira generada por IA sale con distinta altura, distinto
 > "píxel" y distinta paleta. Este documento fija el sistema para que eso no
 > vuelva a pasar. **Ninguna tira entra en el montaje sin pasar la puerta QA.**
 
-## 1. El problema, medido (10 primeras tiras)
+## 1. El problema, medido (tiras originales)
 
 | Medida | Resultado |
 |---|---|
 | Altura de personaje | **373–647 px** según la tira (walk ≈ 58 % de block) |
-| Cuadrícula de píxel | **Ninguna**: la IA dibuja arte suavizado con *aspecto* pixel-art (píxel detectado = 1 en las 10) |
-| Fondo | No es magenta puro: varía **(185–204, 63–86, 146–172)** por tira |
-| Paleta | El teal del traje varía entre `(0,128,128)` y `(0,176,160)`; el rosa entre `(176,64,144)` y `(192,64,160)` |
-| Defectos | `jump.png` trae **botas cortadas** por el borde (detectado por QA, excluida) |
+| Cuadrícula de píxel | La IA dibuja arte **suavizado** con *aspecto* pixel-art (píxel detectado = 1) |
+| Fondo | No era magenta puro: variaba **(185–204, 63–86, 146–172)** por tira |
+| Paleta | El teal iba de `(0,128,128)` a `(0,176,160)`; el rosa de `(176,64,144)` a `(192,64,160)` |
+| Riesgo máscara/fondo | El rosa de la máscara está a ~50 niveles del rosa de fondo → el chroma podía comerse píxeles de la máscara |
+| Piel | Sin restricción, las sombras de piel podían mapear a verdes/azules/rojos exagerados |
+| Defectos | `jump.png` original traía **botas cortadas** (detectado por QA, regenerada) |
 
-Veredicto: el estilo es el aprobado ✅, pero hacían falta resolución fija,
-paleta fija y puerta de calidad. Eso es este sistema.
-
-## 2. Canon v1 (fijo, en `voltia/spec.json`)
+## 2. Canon v1.1 (fijo, en `voltia/spec.json`)
 
 | Regla | Valor | Por qué |
 |---|---|---|
 | Ancla de estilo | `raw/block.png` | Decisión del proyecto: ese tamaño/estilo es el objetivo |
 | Altura canónica | **160 px-arte** | Luchador detallado estilo SF (Ryu en SFA3 ≈ 100 px); a 4x = 640 px ≈ tamaño del ancla |
 | Escalas (enteras) | frames **4x** (640 px), hoja uniforme **2x**, hoja referencia y preview **1x** | Solo factores enteros con NEAREST: el píxel nunca se deforma |
-| Paleta maestra | **v1, 48 colores** (`master_palette.png`) | Median-cut de 7 tiras (incluye efectos como la chispa) |
-| Fondo futuro | **Verde puro `#00FF00`**, plano | El rosa actual está a ~50 niveles del rosa de la máscara (peligroso); nada de la paleta se acerca al verde |
+| Paleta maestra | **v1, 48 colores** (`master_palette.png`) | Median-cut de 7 tiras (incluye efectos) |
+| Subpaleta de piel | **v1, 8 tonos humanos** (`skin_palette.png`) | La piel SOLO puede mapear a estos 8 cálidos; nada de verdes/azules/rojos |
+| Fondo | **Verde puro `#00FF00`**, plano | Nada de la paleta (máscara, traje, piel, efectos) se acerca al verde |
 | Retratos | 120 px-arte de alto | Altura propia fija, mismo píxel y paleta |
 
 ## 3. Reglas de generación (toda tira nueva)
 
-1. **Referencia obligatoria**: cada generación se hace pasando el ancla
-   (`block.png`) como imagen de referencia + este bloque de personaje fijo.
-2. **Cambiar una sola variable**: mismo personaje, estilo y fondo; solo cambia la acción.
-3. **Primero UNA tira de prueba** → QA → si pasa, el lote. Nunca lotes a ciegas.
-4. **Composición obligatoria** (en el prompt): cuerpo entero visible con margen
-   por los 4 lados, nada cortado; pies sobre la misma línea base; el personaje
-   llena ~80 % de la altura de cada frame; N frames exactos en una fila.
-5. **Prohibido**: texto, marcas, bordes, sombras, otros personajes, detalles de fondo.
+1. **Referencia obligatoria**: cada generación pasa el ancla (`block.png`) como
+   imagen de referencia + el bloque de personaje fijo.
+2. **Píxel grueso real exigido**: el prompt pide cuadrícula visible sin
+   antialiasing; si la tira trae píxel `s>1` se extrae por división entera
+   (cero interpolación); si viene suavizada se impone el canon 160 en post.
+3. **Piel humana viable**: el prompt restringe la piel a tonos cálidos y el
+   protector de piel lo garantiza en el mapeo.
+4. **Cambiar una sola variable**: mismo personaje, estilo y fondo; solo cambia la acción.
+5. **Primero UNA tira de prueba** → QA → si pasa, el lote. Nunca lotes a ciegas.
+6. **Composición obligatoria**: cuerpo entero visible con margen por los 4 lados,
+   nada cortado; pies sobre la misma línea base; el personaje llena ~80 % de la
+   altura; N frames exactos en una fila.
+7. **Prohibido**: texto, marcas, bordes, sombras, otros personajes, detalles de fondo.
 
-### Plantilla de prompt (bloques fijos, solo cambia `{N}` y `{acción}`)
+### Plantilla de prompt v1.1 (bloques fijos, solo cambia `{N}` y `{acción}`)
 
 ```
-Sprite animation strip, exactly {N} frames in a single horizontal row from
-left to right, evenly spaced with clear gaps between frames, same character
-with identical design, size and colors in every frame, showing: {acción}.
-Full body visible with clear margin on all sides, nothing cropped. Feet
-aligned on the same baseline. Character fills ~80% of each frame height.
-Character: Voltia, an original female cyber luchadora wrestler:
-magenta-pink wrestling mask with a cyan lightning-bolt emblem, long flowing
-dark-purple ponytail, teal wrestling bodysuit with a yellow belt and a yellow
-lightning emblem on the chest, navy-blue gloves, navy-blue boots and navy
-knee pads. Match the attached reference image: same design, same
-proportions, same pixel size. Style: 2D fighting game sprite, 1990s Capcom
-arcade pixel-art style like Super Street Fighter 2, clean pixels, side view,
-full body, facing right. Background: plain flat solid pure green (#00FF00),
-no text, no watermark, no logo, no border, no floor shadow, no other
-characters, no background details.
+Using the attached reference image as the exact character design to match
+(same luchadora, same mask, suit, colors and proportions): sprite animation
+strip, exactly {N} frames in a single horizontal row from left to right,
+evenly spaced with clear gaps, identical design size and colors in every
+frame, showing: {acción}. Full body visible with clear margin on all sides,
+nothing cropped. Feet aligned on the same baseline. Character fills ~80% of
+each frame height. Character: Voltia, an original female cyber luchadora
+wrestler: magenta-pink wrestling mask with cyan lightning-bolt emblem, long
+flowing dark-purple ponytail, teal wrestling bodysuit with yellow belt and
+yellow lightning emblem on chest, navy-blue gloves, boots and knee pads,
+natural human skin tones on visible face and arms (warm tan and peach shades
+only). Style: TRUE 1990s Capcom arcade pixel art like Super Street Fighter 2:
+large chunky square pixels clearly visible, every pixel a flat solid color,
+absolutely no anti-aliasing, no gradients, no smooth shading, no blur,
+limited 16-bit console palette, side view, full body, facing right.
+Background: plain flat solid pure green (#00FF00), no text, no watermark, no
+logo, no border, no floor shadow, no other characters, no background details.
 ```
 
 ## 4. Puerta QA (automática, `normalize.qa_check`)
@@ -68,15 +75,17 @@ characters, no background details.
 | Tira vacía tras chroma | — | 🔴 RECHAZAR |
 | Altura vs canon | ±15 % | 🟡 AVISO (la normalización lo corrige) |
 | Tamaño de píxel vs ancla | igual | 🟡 AVISO (se corrige) |
+| Proporción de piel vs ref | ×0.3 – ×3 | 🟡 AVISO (revisar tonos) |
 | Contenido (pose, facing, dedos…) | contacto `raw_contact.png` | 👁 revisión humana obligatoria |
 
-Lo 🔴 **se excluye del montaje automáticamente**.
+Lo 🔴 **se excluye del montaje automáticamente**. La prueba v1.1
+(`qa_v2proof.png`) documenta el flujo aceptado.
 
 ## 5. Pipeline
 
 ```
-raw/*.png ──chroma+split──▶ QA ──normalizar──▶ frames/ (4x, alfa dura, paleta v1)
-(verdes o rosas)              │                        ├──▶ sheet.png (1x, estilo Ryu)
+raw/*.png ──chroma+split──▶ QA ──normalizar──▶ frames/ (4x, alfa dura, paleta v1 + piel)
+(verdes v1.1)                 │                        ├──▶ sheet.png (1x, estilo Ryu)
                          🔴 fuera                      ├──▶ sheet_uniform.png (2x) + sheet.json
                                                        └──▶ preview.png (1x)
 ```
@@ -85,23 +94,26 @@ Comandos:
 
 ```bash
 python3 voltia/analyze.py            # informe de coherencia -> qa_report.txt
-python3 voltia/analyze.py --freeze   # (re)congela spec.json + paleta maestra
+python3 voltia/analyze.py --freeze   # (re)congela spec.json + paletas
 python3 voltia/build_sheet.py        # QA + normaliza + monta todo
 ```
 
 ## 6. Versionado
 
-- **Reglas v1** = este documento. Si cambian (p. ej. H distinto), sube versión y
-  se regeneran **todos** los derivados con un solo comando (no cuesta imágenes).
-- **Paleta v1** = 48 colores. Si un efecto nuevo trae colores ausentes
-  (p. ej. el proyectil), se amplía a v2 y se re-mapea todo.
+- **Reglas v1.1** = este documento (v1 + fondo verde, protector de piel,
+  píxel grueso exigido). Si cambian, sube versión y se regeneran **todos** los
+  derivados con un solo comando (no cuesta imágenes).
+- **Paleta v1** = 48 colores + 8 de piel. Si un efecto nuevo trae colores
+  ausentes (p. ej. el proyectil), se amplía a v2 y se re-mapea todo.
 
 ## 7. Estado actual
 
-- ✅ 9/25 tiras aceptadas y normalizadas (idle, walk, fwdjump, crouch, block,
-  punch_l, punch_mh, kick_lm, kick_h).
-- 🔴 `jump.png` rechazada (botas cortadas) → **regenerar con reglas v1**.
-- ⏳ 16 tiras pendientes (con fondo verde + referencia a partir de ahora).
+- ✅ 11/25 tiras aceptadas: 9 originales normalizadas + `jump` rehecha y `dash`
+  nueva en v1.1 (verdes, con referencia).
+- 🔁 Pendiente de aprobación: **rehacer de cero las 9 originales** en v1.1 +
+  generar las 14 restantes + retrato (= 24 imágenes, ~3 turnos).
+- ⏳ Tras el OK: hoja final estilo Ryu completa + limpieza de assets viejos +
+  visor actualizado.
 
 ## 8. Base teórica (investigado en la red)
 
