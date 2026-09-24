@@ -317,7 +317,7 @@ export class Stage {
     this.buildVeil(g, L.fog);
 
     // Niebla
-    this.scene.fog = new THREE.Fog(L.fog, 13, 42);
+    this.scene.fog = new THREE.Fog(L.fog, 10, 32);
     this.baseFog = this.scene.fog.color.clone();
   }
 
@@ -327,8 +327,8 @@ export class Stage {
     const tex = canvasTexture(64, (ctx, s) => {
       const grd = ctx.createLinearGradient(0, s, 0, 0);
       grd.addColorStop(0, 'rgba(0,0,0,1)');       // alphaMap lee luminancia
-      grd.addColorStop(0.35, 'rgba(110,110,110,1)');
-      grd.addColorStop(1, 'rgba(165,165,165,1)');
+      grd.addColorStop(0.3, 'rgba(140,140,140,1)');
+      grd.addColorStop(1, 'rgba(205,205,205,1)');
       ctx.fillStyle = grd;
       ctx.fillRect(0, 0, s, s);
     });
@@ -585,7 +585,7 @@ export class Stage {
     // Cabezas en 10 lotes, cada uno con su cara pintada (5 mujeres, 5 hombres,
     // barbas/calvas/melenas variadas). Sin canvas 2D (Node) cae a color liso.
     const faces = crowdFaceTextures();
-    const BATCH = 10;
+    const BATCH = 16;
     const per = Math.ceil(N / BATCH);
     const headGeo = new THREE.SphereGeometry(0.15, 10, 8);
     const headBatches = [];
@@ -747,37 +747,57 @@ function bannerTexture(hex) {
   });
 }
 
-/* --- caras del publico (10 variantes hombre/mujer) -------------------- */
+/* --- caras del publico (16 variantes con gafas/gorras/barbas) --------- */
 
-/** Diez caras pintadas en canvas (esferas equirectangulares: la cara mira a
- * +Z en u=0.25). Devuelve null sin contexto 2D (tests en Node). */
+/** Dieciseis caras pintadas en canvas (esferas equirectangulares: la cara mira
+ * a +Z en u=0.25). Hombres y mujeres con accesorios variados. null sin 2D. */
 function crowdFaceTextures() {
   if (typeof document === 'undefined') return null;
   const skins = ['#c68642', '#f2cdb0', '#8d5524', '#e0ac69', '#5c3a21',
     '#ffdbac', '#a9714b', '#d9a06b', '#7a4a28', '#eec9a3'];
   const hairs = ['#202020', '#4a2f1b', '#0d0d0d', '#6b4423', '#808080',
-    '#3b2a1a', '#191919', '#5a3a20', '#2e2e2e', '#705030'];
+    '#3b2a1a', '#191919', '#5a3a20', '#2e2e2e', '#705030', '#101010', '#8a5a2a',
+    '#26160c', '#444444', '#302010', '#5f3d21'];
+  const caps = ['#c62828', '#1565c0', '#2e7d32', '#f9a825', '#6a1b9a', '#ef6c00'];
   const out = [];
-  for (let b = 0; b < 10; b++) {
+  for (let b = 0; b < 16; b++) {
     const c = document.createElement('canvas');
     c.width = c.height = 64;
     const x = c.getContext('2d');
     if (!x) return null;
     const female = b % 2 === 1;
     const hair = hairs[b];
-    x.fillStyle = skins[b]; x.fillRect(0, 0, 64, 64);
+    const acc = b % 4;                 // 0 nada, 1 gafas, 2 gorra, 3 barba/pendientes
+    x.fillStyle = skins[b % 10]; x.fillRect(0, 0, 64, 64);
     x.fillStyle = hair;
-    if (b !== 4) x.fillRect(0, 0, 64, female ? 15 : 11);      // uno calvo
-    if (female) { x.fillRect(0, 8, 7, 36); x.fillRect(57, 8, 7, 36); }  // melena
-    x.fillRect(36, 0, 28, female ? 52 : 24);                  // nuca
-    // cara (centrada en x=16, ecuador de la esfera)
-    if (female) {
+    const bald = (b === 4 || b === 12);
+    if (!bald && acc !== 2) x.fillRect(0, 0, 64, female ? 15 : 11);
+    if (female && !bald) {
+      if (b % 8 < 4) { x.fillRect(0, 8, 7, 36); x.fillRect(57, 8, 7, 36); }   // melena
+      else { x.fillRect(28, 0, 8, 10); x.fillRect(36, 0, 28, 52); }           // coleta + nuca
+    } else {
+      x.fillRect(36, 0, 28, female ? 52 : 24);                               // nuca
+    }
+    // gorra: casquete de color con visera
+    if (acc === 2) {
+      x.fillStyle = caps[b % 6];
+      x.fillRect(0, 0, 64, 12);
+      x.fillRect(6, 12, 22, 3);
+    }
+    // cara (centrada en x=16)
+    if (acc === 1) {                                                          // gafas
+      x.fillStyle = '#101010';
+      x.fillRect(9, 28, 7, 5); x.fillRect(19, 28, 7, 5);
+      x.fillRect(16, 29, 3, 2);
+      x.fillRect(4, 29, 5, 2); x.fillRect(26, 29, 5, 2);
+    } else if (female) {
       x.fillStyle = '#141414'; x.fillRect(10, 29, 4, 3); x.fillRect(19, 29, 4, 3);
       x.fillStyle = 'rgba(190,70,80,0.95)'; x.fillRect(12, 42, 9, 3);
+      if (acc === 3) { x.fillStyle = '#e8c040'; x.fillRect(8, 36, 2, 4); x.fillRect(24, 36, 2, 4); } // pendientes
     } else {
       x.fillStyle = '#141414'; x.fillRect(11, 29, 3, 3); x.fillRect(20, 29, 3, 3);
       x.fillStyle = 'rgba(70,30,25,0.9)'; x.fillRect(13, 42, 8, 2);
-      if (b % 4 === 2) {                                       // barba
+      if (acc === 3) {                                                        // barba
         x.fillStyle = hair; x.fillRect(8, 40, 17, 14);
         x.fillStyle = 'rgba(70,30,25,0.9)'; x.fillRect(13, 45, 8, 2);
       }

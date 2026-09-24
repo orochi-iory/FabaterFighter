@@ -23,6 +23,7 @@ import { JOINTS, RIG_HEIGHT } from '../anim/skeleton-def.js';
 /** Altura en unidades de mundo de un luchador de proporciones estándar. */
 export const WORLD_HEIGHT = 1.86;
 const UNIT = WORLD_HEIGHT / RIG_HEIGHT;
+const H_A_FIELD = 0.02;   // suavidad de mezcla de atributos/campo de normales
 const TAU = Math.PI * 2;
 
 /** Superficie extraída por personaje (la extracción SDF es lo caro). */
@@ -220,6 +221,23 @@ export class Humanoid {
       SURF_CACHE.set(this.def.id, surf);
     }
     let { positions, colors, mats, uvs, sis, sws, indices, nrm } = surf;
+    // Normales desde el campo mezclado (IDW sobre 3 primitivas): el gradiente
+    // del minimo suave salta donde cambia la identidad dominante y bajo la luz
+    // especular eso se lee como damante/diamante. Este campo es continuo.
+    {
+      const e = 0.012 * this.s;
+      const pA = [0, 0, 0];
+      for (let i = 0; i < positions.length / 3; i++) {
+        pA[0] = positions[i * 3]; pA[1] = positions[i * 3 + 1]; pA[2] = positions[i * 3 + 2];
+        const f0 = fieldBlend3(this.field, pA);
+        pA[0] += e; const gx = fieldBlend3(this.field, pA) - f0; pA[0] -= e;
+        pA[1] += e; const gy = fieldBlend3(this.field, pA) - f0; pA[1] -= e;
+        pA[2] += e; const gz = fieldBlend3(this.field, pA) - f0; pA[2] -= e;
+        const l = Math.hypot(gx, gy, gz) || 1;
+        nrm[i * 3] = gx / l; nrm[i * 3 + 1] = gy / l; nrm[i * 3 + 2] = gz / l;
+      }
+    }
+
     const geo = new THREE.BufferGeometry();
     geo.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
     geo.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3));
@@ -917,6 +935,27 @@ function smoothMin(d0, d1, h) {
   return d0 - 0.25 * h * (1 - t) * (1 - t);
 }
 
+/** Distancias a los 3 primitivas mas cercanos (para campos continuos). */
+function nearest3(F, p) {
+  let d0 = Infinity, d1 = Infinity, d2 = Infinity;
+  const P = F.prims;
+  for (let i = 0; i < P.length; i++) {
+    const d = F.sdPrim(p, P[i]);
+    if (d < d0) { d2 = d1; d1 = d0; d0 = d; }
+    else if (d < d1) { d2 = d1; d1 = d; }
+    else if (d < d2) { d2 = d; }
+  }
+  return [d0, d1, d2];
+}
+
+/** Campo mezclado IDW: continuo aunque cambie la identidad de los cercanos. */
+function fieldBlend3(F, p) {
+  const [d0, d1, d2] = nearest3(F, p);
+  const E = H_A_FIELD * H_A_FIELD;
+  const w0 = 1 / (d0 * d0 + E), w1 = 1 / (d1 * d1 + E), w2 = 1 / (d2 * d2 + E);
+  return (d0 * w0 + d1 * w1 + d2 * w2) / (w0 + w1 + w2);
+}
+
 /**
  * Extrae la superficie (valor 0 del campo) con marching tetrahedra: cada celda
  * de la rejilla se parte en 6 tetraedros y cada tetraedro se triangula según
@@ -992,7 +1031,7 @@ function extractSurface(F, s) {
         const w0 = 1 / (d0 * d0 + E), w1 = 1 / (d1 * d1 + E), w2 = 1 / (d2 * d2 + E);
         const ws = w0 + w1 + w2;
         const pa = P[i0], pb = P[i1], pc = P[i2];
-        colA[ci * 3] = (pa.col[0] * w0 + pb.col[0] * w1 + pc.col[2] * 0 + pc.col[0] * w2) / ws;
+        colA[ci * 3] = (pa.col[0] * w0 + pb.col[0] * w1 + pc.col[0] * w2) / ws;
         colA[ci * 3 + 1] = (pa.col[1] * w0 + pb.col[1] * w1 + pc.col[1] * w2) / ws;
         colA[ci * 3 + 2] = (pa.col[2] * w0 + pb.col[2] * w1 + pc.col[2] * w2) / ws;
         matA[ci] = (pa.mat * w0 + pb.mat * w1 + pc.mat * w2) / ws;
