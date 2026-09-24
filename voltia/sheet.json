@@ -1,5 +1,9 @@
 {
   "sprite": "sheet_uniform.png",
+  "version": "0.2.0",
+  "notes": "canon v1.2 + lote1v2: stance 15f, debiles rehechos, rampas 3 tonos",
+  "date": "2026-09-24",
+  "canon": 1.2,
   "art": {
     "height_px": 160,
     "export_scale": 4,

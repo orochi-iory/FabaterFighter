@@ -358,7 +358,17 @@ def build_uniform_sheet(rendered, spec):
             sheet.paste(f, (x, y), f)
         meta.append({"id": sid, "label": label, "row": r, "frames": len(frames),
                      "fps": fps, "loop": loop})
+    ver, notes = "0.0.0", ""
+    vpath = os.path.join(HERE, "VERSION")
+    if os.path.exists(vpath):
+        parts = open(vpath, encoding="utf-8").read().strip().split("|", 1)
+        ver = parts[0].strip()
+        notes = parts[1].strip() if len(parts) > 1 else ""
+    import datetime
     js = {"sprite": "sheet_uniform.png",
+          "version": ver, "notes": notes,
+          "date": datetime.date.today().isoformat(),
+          "canon": spec.get("rules_version", "?"),
           "art": {"height_px": spec["art_height"], "export_scale": spec["export_scale"],
                   "uniform_scale": spec["uniform_scale"], "palette_version": spec["palette_version"]},
           "cell": {"w": cell_w, "h": cell_h},

@@ -4,46 +4,46 @@ Juego de peleas 2D. Primer personaje jugable: **VOLTIA**, la luchadora voltaje. 
 
 ![Concepto de Voltia](assets/voltia_concept.png)
 
-## Tilesheet de Voltia
+## Sprites de Voltia (canon v1.2)
 
-- Sprites de **64×64** (un paso más grande que los clásicos 32/48), fondo transparente.
-- Hoja: `assets/voltia_spritesheet.png` (384×768, 6 columnas × 12 filas).
-- Metadatos para el motor: `assets/voltia_spritesheet.json` (fila, nº de frames, fps y loop por animación).
-- Frames sueltos: `assets/frames/voltia_<anim>_<n>.png`.
-- Vista previa etiquetada: `assets/voltia_preview.png`.
+- Arte generada por IA y normalizada: de pie **~160 px-arte**, cabeza **23 px**,
+  paleta congelada de **49 tintas**, rampas fijas de **3 tonos** por material.
+- Hoja uniforme: `voltia/sheet_uniform.png` + `voltia/sheet.json` (fila, nº de
+  frames, fps y loop por animación; incluye `version`, `canon` y `notes`).
+- Frames sueltos 4x: `voltia/frames/voltia_<anim>_<n>.png`.
+- Reglas de coherencia: `voltia/SPRITE_RULES.md`. Versión actual: `voltia/VERSION`.
 
-![Vista previa](assets/voltia_preview.png)
-
-### Movimientos (12)
+### Movimientos incluidos (9 de 25)
 
 | # | Animación | Frames | FPS | Loop |
 |---|-----------|--------|-----|------|
-| 01 | Quieta | 4 | 6 | sí |
-| 02 | Caminar | 6 | 10 | sí |
-| 03 | Saltar | 4 | 9 | no |
-| 04 | Agacharse | 3 | 8 | sí |
-| 05 | Puñetazo | 4 | 12 | no |
-| 06 | Patada | 5 | 11 | no |
-| 07 | Especial: Rayo Volt | 6 | 10 | no |
-| 08 | Daño | 3 | 8 | no |
-| 09 | Bloqueo | 3 | 8 | sí |
-| 10 | K.O. | 4 | 5 | no |
-| 11 | Victoria ✨ nuevo | 4 | 8 | sí |
-| 12 | Dash ✨ nuevo | 3 | 14 | sí |
+| 01 | Stance | 15 | 10 | sí |
+| 02 | Walking | 6 | 10 | sí |
+| 03 | Jump | 4 | 9 | no |
+| 04 | Forward Jump | 4 | 9 | no |
+| 05 | Crouch | 3 | 8 | sí |
+| 06 | Blocking | 2 | 8 | sí |
+| 07 | Weak Punch | 3 | 14 | no |
+| 08 | Weak Kick | 3 | 13 | no |
+| 09 | Dash | 3 | 14 | sí |
 
-### Visor animado
+### Visor animado (con versiones)
 
-Abre `preview/index.html` en un servidor local (p. ej. `python3 -m http.server` en la raíz
-y visita `/preview/`) para ver cada animación, cambiar la escala y comprobar la transparencia.
+Sirve la raíz (`python3 -m http.server` en la raíz y visita `/preview/`) para
+ver cada animación, cambiar la escala (1x/2x/4x de arte) y comprobar
+transparencia y chroma (fondos magenta y verde). La cabecera muestra la
+**versión** (v0.2.0), el canon y el contenido incluido; cada lote nuevo sube
+versión en `voltia/VERSION` y regenera la hoja.
 
 ### Regenerar / modificar
 
-Los sprites son 100 % procedurales (pixel-art dibujado por código, sin IA), así que puedes
-ajustar poses, paleta o añadir movimientos editando el generador:
-
 ```bash
 pip install pillow
-python3 tools/generate_spritesheet.py
+python3 voltia/analyze.py --freeze   # (re)congela el canon en spec.json
+python3 voltia/build_sheet.py        # QA + normaliza + hojas + JSON del visor
 ```
 
-Todo el arte de `assets/` es original y creado para este proyecto.
+Toda tira nueva pasa la puerta QA (`voltia/SPRITE_RULES.md` §4) antes de
+entrar en la hoja. El generador procedural antiguo (`tools/`,
+`assets/voltia_spritesheet.*`) está obsoleto: de `assets/` solo se conserva
+`voltia_concept.png` como referencia de diseño.
