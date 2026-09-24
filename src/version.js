@@ -4,8 +4,8 @@
  * (lo rellena con el commit HEAD y la fecha actuales) antes de cada entrega.
  */
 export const BUILD = {
-  tag: 'v0.30',
-  commit: 'ac4f297',
+  tag: 'v0.31',
+  commit: '4323c28',
   date: '2026-09-24',
-  notes: 'El damero por fin identificado al 100%: winding mezclado del marching (37% de aristas); ahora girado en los indices reales (0 inconsistentes)'
+  notes: 'Camino 2D: carga de tilesheets con contrato documentado, sprites provisionales por personaje (paleta y compleccion propias), mismo motor/escenario/HUD. Pruebalo con ?render=2d'
 };

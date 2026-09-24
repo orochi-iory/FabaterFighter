@@ -11,6 +11,7 @@ import { AI } from './game/ai.js';
 import { KeyboardInput, GamepadInput, CompositeInput } from './game/input.js';
 import { touchAvailable, bindTouchLayer } from './input/touch.js';
 import { GameView } from './render/renderer.js';
+import { Renderer2D } from './render2d/renderer2d.js';
 import { STAGE_THEMES } from './render/stage.js';
 import { HUD } from './ui/hud.js';
 import { Screens } from './ui/screens.js';
@@ -21,7 +22,12 @@ const STEP = 1000 / 60;
 class Game {
   constructor() {
     this.canvas = document.getElementById('gl');
-    this.view = new GameView(this.canvas, { debug: false });
+    // ?render=2d: sprites de tilesheet (mismo motor, escenario y HUD)
+    const render2d = typeof location !== 'undefined' &&
+      new URLSearchParams(location.search).get('render') === '2d';
+    this.view = render2d
+      ? new Renderer2D(this.canvas, { debug: false })
+      : new GameView(this.canvas, { debug: false });
     this.hud = new HUD(document.getElementById('hud-layer'));
     this.state = 'boot';
     this.mode = 'cpu';
