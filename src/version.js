@@ -4,8 +4,8 @@
  * (lo rellena con el commit HEAD y la fecha actuales) antes de cada entrega.
  */
 export const BUILD = {
-  tag: 'v0.27',
-  commit: '81128b0',
+  tag: 'v0.28',
+  commit: 'fb9e92c',
   date: '2026-09-24',
-  notes: 'Pesos de skinning por distancia al hueso (campo continuo, sin oscilaciones): ultimo mecanismo posible del damero eliminado'
+  notes: 'Controles tactiles arreglados: multi-touch real, deslizar en el pad, sin robo de gesto, pausa y GC; pista de rotacion'
 };

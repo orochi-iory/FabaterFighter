@@ -9,6 +9,7 @@ import { Fighter } from './game/fighter.js';
 import { Match } from './game/match.js';
 import { AI } from './game/ai.js';
 import { KeyboardInput, GamepadInput, CompositeInput } from './game/input.js';
+import { touchAvailable, bindTouchLayer } from './input/touch.js';
 import { GameView } from './render/renderer.js';
 import { STAGE_THEMES } from './render/stage.js';
 import { HUD } from './ui/hud.js';
@@ -130,17 +131,17 @@ class Game {
 
   bindTouch() {
     const layer = document.getElementById('touch');
-    if (!('ontouchstart' in window)) { layer.classList.add('hidden'); return; }
+    if (!layer) return;
+    if (!touchAvailable()) { layer.classList.add('hidden'); return; }
     layer.classList.remove('hidden');
-    const setKey = (k, v) => { this.touchState[k] = v; };
-    layer.querySelectorAll('.tbtn').forEach((btn) => {
-      const k = btn.dataset.k;
-      const on = (e) => { e.preventDefault(); sfx.resume(); setKey(k, true); };
-      const off = (e) => { e.preventDefault(); setKey(k, false); };
-      btn.addEventListener('pointerdown', on);
-      btn.addEventListener('pointerup', off);
-      btn.addEventListener('pointercancel', off);
-      btn.addEventListener('pointerleave', off);
+    document.body.classList.add('touchdev');
+    // La pista de rotación se va al girar (o al tocarla).
+    const rot = document.getElementById('rotate');
+    if (rot) rot.addEventListener('pointerdown', () => rot.classList.add('off'));
+    bindTouchLayer(layer, {
+      state: this.touchState,
+      onResume: () => sfx.resume(),
+      onPause: () => this.setPaused(!this.paused)
     });
   }
 
