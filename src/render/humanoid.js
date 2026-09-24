@@ -219,8 +219,7 @@ export class Humanoid {
       surf = { ...raw, nrm };
       SURF_CACHE.set(this.def.id, surf);
     }
-    const { positions, colors, mats, uvs, sis, sws, indices, nrm } = surf;
-
+    let { positions, colors, mats, uvs, sis, sws, indices, nrm } = surf;
     const geo = new THREE.BufferGeometry();
     geo.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
     geo.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3));
@@ -976,26 +975,32 @@ function extractSurface(F, s) {
       for (let x = 0; x <= nx; x++, ci++) {
         p[0] = min[0] + (x * (max[0] - min[0])) / nx;
         const list = buckets[(bz * ny + byy) * nx + Math.min(nx - 1, x)] || EMPTY;
-        let d0 = Infinity, i0 = 0, d1 = Infinity, i1 = 0;
+        let d0 = Infinity, i0 = 0, d1 = Infinity, i1 = 0, d2 = Infinity, i2 = 0;
         for (let li = 0; li < list.length; li++) {
           const i = list[li];
           const d = F.sdPrim(p, P[i]);
-          if (d < d0) { d1 = d0; i1 = i0; d0 = d; i0 = i; }
-          else if (d < d1) { d1 = d; i1 = i; }
+          if (d < d0) { d2 = d1; i2 = i1; d1 = d0; i1 = i0; d0 = d; i0 = i; }
+          else if (d < d1) { d2 = d1; i2 = i1; d1 = d; i1 = i; }
+          else if (d < d2) { d2 = d; i2 = i; }
         }
         if (d0 === Infinity) { val[ci] = 1; continue; }   // celda vacía: fuera
         val[ci] = smoothMin(d0, d1, H_G);
-        // atributos: mezcla de los dos primitivas dominantes
-        const t = Math.max(0, Math.min(1, 0.5 + 0.5 * (d0 - d1) / H_A)); // peso de i1
-        const pa = P[i0], pb = P[i1];
-        colA[ci * 3] = pa.col[0] + (pb.col[0] - pa.col[0]) * t;
-        colA[ci * 3 + 1] = pa.col[1] + (pb.col[1] - pa.col[1]) * t;
-        colA[ci * 3 + 2] = pa.col[2] + (pb.col[2] - pa.col[2]) * t;
-        matA[ci] = pa.mat + (pb.mat - pa.mat) * t;
-        // huesos: unión de los dos conjuntos, pesos mezclado-normalizados
+        // atributos: IDW sobre los 3 primitivas mas cercanos. El peso de cada
+        // primitiva tiende a 0 cuando deja de ser relevante, asi ningun
+        // intercambio de identidad entre celdas vecinas oscila en damero.
+        const E = H_A * H_A;
+        const w0 = 1 / (d0 * d0 + E), w1 = 1 / (d1 * d1 + E), w2 = 1 / (d2 * d2 + E);
+        const ws = w0 + w1 + w2;
+        const pa = P[i0], pb = P[i1], pc = P[i2];
+        colA[ci * 3] = (pa.col[0] * w0 + pb.col[0] * w1 + pc.col[2] * 0 + pc.col[0] * w2) / ws;
+        colA[ci * 3 + 1] = (pa.col[1] * w0 + pb.col[1] * w1 + pc.col[1] * w2) / ws;
+        colA[ci * 3 + 2] = (pa.col[2] * w0 + pb.col[2] * w1 + pc.col[2] * w2) / ws;
+        matA[ci] = (pa.mat * w0 + pb.mat * w1 + pc.mat * w2) / ws;
+        // huesos: union ponderada de los tres conjuntos
         const bw = {};
-        for (let k = 0; k < pa.bones.length; k++) bw[pa.bones[k]] = (bw[pa.bones[k]] || 0) + pa.weights[k] * (1 - t);
-        for (let k = 0; k < pb.bones.length; k++) bw[pb.bones[k]] = (bw[pb.bones[k]] || 0) + pb.weights[k] * t;
+        for (let k = 0; k < pa.bones.length; k++) bw[pa.bones[k]] = (bw[pa.bones[k]] || 0) + pa.weights[k] * w0;
+        for (let k = 0; k < pb.bones.length; k++) bw[pb.bones[k]] = (bw[pb.bones[k]] || 0) + pb.weights[k] * w1;
+        for (let k = 0; k < pc.bones.length; k++) bw[pc.bones[k]] = (bw[pc.bones[k]] || 0) + pc.weights[k] * w2;
         const entries = Object.entries(bw).sort((a, b2) => b2[1] - a[1]).slice(0, 4);
         let sum = 0;
         for (const [, w] of entries) sum += w;

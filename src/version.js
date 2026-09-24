@@ -4,8 +4,8 @@
  * (lo rellena con el commit HEAD y la fecha actuales) antes de cada entrega.
  */
 export const BUILD = {
-  tag: 'v0.22',
-  commit: '1a0fd8d',
-  date: '2026-09-23',
-  notes: 'Arranque a prueba de errores, sin marcas de tela, brazos cerrados en intro, antorchas/barriles/cajas, publico 156 con velo de fondo y niebla'
+  tag: 'v0.23',
+  commit: '2b1ffb4',
+  date: '2026-09-24',
+  notes: 'Pesos de skinning IDW (adios damero en el cuerpo), publico con 10 caras hombre/mujer al azar'
 };

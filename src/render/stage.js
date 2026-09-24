@@ -536,6 +536,7 @@ export class Stage {
     }
   }
 
+
   /* --- público ------------------------------------------------------- */
 
   /** Elementos de escenario que enmarcan el tatami sin tapar la pelea. */
@@ -579,10 +580,23 @@ export class Stage {
   buildCrowd(g) {
     const bodyGeo = crowdBodyGeo();
     const bodyMat = new THREE.MeshStandardMaterial({ roughness: 1, vertexColors: true });
-    const headMat = new THREE.MeshStandardMaterial({ roughness: 0.9 });
     const N = 156;   // 6 filas: menos multitud, mas escenario
     const crowd = new THREE.InstancedMesh(bodyGeo, bodyMat, N);
-    const heads = new THREE.InstancedMesh(new THREE.SphereGeometry(0.15, 8, 6), headMat, N);
+    // Cabezas en 10 lotes, cada uno con su cara pintada (5 mujeres, 5 hombres,
+    // barbas/calvas/melenas variadas). Sin canvas 2D (Node) cae a color liso.
+    const faces = crowdFaceTextures();
+    const BATCH = 10;
+    const per = Math.ceil(N / BATCH);
+    const headGeo = new THREE.SphereGeometry(0.15, 10, 8);
+    const headBatches = [];
+    for (let b = 0; b < BATCH; b++) {
+      const m = new THREE.MeshStandardMaterial({ roughness: 0.9 });
+      if (faces) m.map = faces[b];
+      const hm = new THREE.InstancedMesh(headGeo, m, per);
+      g.add(hm);
+      headBatches.push(hm);
+    }
+    const slot = new Array(BATCH).fill(0);
     const dummy = new THREE.Object3D();
     const cCol = new THREE.Color();
     const clothTones = ['#c62828', '#1565c0', '#f9a825', '#2e7d32', '#6a1b9a', '#e0e0e0', '#ef6c00', '#00838f', '#ad1457', '#455a64'];
@@ -591,13 +605,16 @@ export class Stage {
     for (let i = 0; i < N; i++) {
       const row = Math.floor(i / 26);
       const col = i % 26;
+      const b = (i * 7 + row * 3) % BATCH;      // cara al azar, repartida
+      const hs = slot[b]++;
       const d = {
         x: -12.5 + col * 1.0 + Math.random() * 0.3,
         y: 0.32 + row * 0.78,
         z: -5.6 - row * 1.1,
         rot: Math.random() * 0.6 - 0.3,
         sc: 0.9 + Math.random() * 0.3,
-        phase: Math.random() * 6.28
+        phase: Math.random() * 6.28,
+        hb: b, hs
       };
       this.crowdData.push(d);
       dummy.position.set(d.x, d.y, d.z);
@@ -607,20 +624,23 @@ export class Stage {
       crowd.setMatrixAt(i, dummy.matrix);
       dummy.position.y = d.y + 1.10 * d.sc;
       dummy.updateMatrix();
-      heads.setMatrixAt(i, dummy.matrix);
+      headBatches[b].setMatrixAt(hs, dummy.matrix);
       cCol.set(clothTones[(i * 5 + row) % clothTones.length]).multiplyScalar(0.5 + Math.random() * 0.6);
       crowd.setColorAt(i, cCol);
-      cCol.set(skinTones[(i * 7) % skinTones.length]).multiplyScalar(0.8 + Math.random() * 0.25);
-      heads.setColorAt(i, cCol);
+      if (!faces) {
+        cCol.set(skinTones[(i * 7) % skinTones.length]).multiplyScalar(0.8 + Math.random() * 0.25);
+        headBatches[b].setColorAt(hs, cCol);
+      }
     }
     crowd.instanceMatrix.needsUpdate = true;
-    heads.instanceMatrix.needsUpdate = true;
     if (crowd.instanceColor) crowd.instanceColor.needsUpdate = true;
-    if (heads.instanceColor) heads.instanceColor.needsUpdate = true;
+    for (const hm of headBatches) {
+      hm.instanceMatrix.needsUpdate = true;
+      if (hm.instanceColor) hm.instanceColor.needsUpdate = true;
+    }
     g.add(crowd);
-    g.add(heads);
     this.crowd = crowd;
-    this.crowdHeads = heads;
+    this.crowdHeads = headBatches;
   }
 
   /** Fondo dramático durante los supers. */
@@ -673,11 +693,11 @@ export class Stage {
         if (this.crowdHeads) {
           dummy.position.y = d.y + bounce + 1.10 * d.sc;
           dummy.updateMatrix();
-          this.crowdHeads.setMatrixAt(i, dummy.matrix);
+          this.crowdHeads[d.hb].setMatrixAt(d.hs, dummy.matrix);
         }
       }
       this.crowd.instanceMatrix.needsUpdate = true;
-      if (this.crowdHeads) this.crowdHeads.instanceMatrix.needsUpdate = true;
+      if (this.crowdHeads) for (const hm of this.crowdHeads) hm.instanceMatrix.needsUpdate = true;
     }
   }
 }
@@ -725,4 +745,46 @@ function bannerTexture(hex) {
     ctx.fillStyle = 'rgba(255,230,160,0.85)';
     ctx.fill();
   });
+}
+
+/* --- caras del publico (10 variantes hombre/mujer) -------------------- */
+
+/** Diez caras pintadas en canvas (esferas equirectangulares: la cara mira a
+ * +Z en u=0.25). Devuelve null sin contexto 2D (tests en Node). */
+function crowdFaceTextures() {
+  if (typeof document === 'undefined') return null;
+  const skins = ['#c68642', '#f2cdb0', '#8d5524', '#e0ac69', '#5c3a21',
+    '#ffdbac', '#a9714b', '#d9a06b', '#7a4a28', '#eec9a3'];
+  const hairs = ['#202020', '#4a2f1b', '#0d0d0d', '#6b4423', '#808080',
+    '#3b2a1a', '#191919', '#5a3a20', '#2e2e2e', '#705030'];
+  const out = [];
+  for (let b = 0; b < 10; b++) {
+    const c = document.createElement('canvas');
+    c.width = c.height = 64;
+    const x = c.getContext('2d');
+    if (!x) return null;
+    const female = b % 2 === 1;
+    const hair = hairs[b];
+    x.fillStyle = skins[b]; x.fillRect(0, 0, 64, 64);
+    x.fillStyle = hair;
+    if (b !== 4) x.fillRect(0, 0, 64, female ? 15 : 11);      // uno calvo
+    if (female) { x.fillRect(0, 8, 7, 36); x.fillRect(57, 8, 7, 36); }  // melena
+    x.fillRect(36, 0, 28, female ? 52 : 24);                  // nuca
+    // cara (centrada en x=16, ecuador de la esfera)
+    if (female) {
+      x.fillStyle = '#141414'; x.fillRect(10, 29, 4, 3); x.fillRect(19, 29, 4, 3);
+      x.fillStyle = 'rgba(190,70,80,0.95)'; x.fillRect(12, 42, 9, 3);
+    } else {
+      x.fillStyle = '#141414'; x.fillRect(11, 29, 3, 3); x.fillRect(20, 29, 3, 3);
+      x.fillStyle = 'rgba(70,30,25,0.9)'; x.fillRect(13, 42, 8, 2);
+      if (b % 4 === 2) {                                       // barba
+        x.fillStyle = hair; x.fillRect(8, 40, 17, 14);
+        x.fillStyle = 'rgba(70,30,25,0.9)'; x.fillRect(13, 45, 8, 2);
+      }
+    }
+    const tex = new THREE.CanvasTexture(c);
+    tex.colorSpace = THREE.SRGBColorSpace;
+    out.push(tex);
+  }
+  return out;
 }
