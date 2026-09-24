@@ -141,7 +141,7 @@ def detect_head_px(frame):
     return max(x1 - x0 + 1, y1 - y0 + 1)
 
 
-def strip_scale(frames, spec, strip_s, fixed_height=None):
+def strip_scale(frames, spec, strip_s, fixed_height=None, height_target=None):
     """Escala unica por tira. Devuelve (scale, heads, metodo)."""
     if fixed_height is not None:
         return None, [], "fixed"
@@ -149,11 +149,21 @@ def strip_scale(frames, spec, strip_s, fixed_height=None):
     valid = [x for x in heads if x]
     if len(valid) < max(1, (len(frames) + 1) // 2):
         med = statistics.median(f.height for f in frames)
-        return 160.0 / (med / strip_s), heads, "frame-fallback"
+        tgt = height_target or 160.0
+        return tgt / (med / strip_s), heads, "frame-fallback"
     if len(valid) >= 2 and statistics.pstdev(valid) / statistics.median(valid) > 0.12:
         # Cabezas inconsistentes (oclusiones): la mayor es la menos ocluida.
-        return spec["head_h"] / max(valid), heads, "head-max"
-    return spec["head_h"] / statistics.median(valid), heads, "head"
+        scale, method = spec["head_h"] / max(valid), "head-max"
+    else:
+        scale, method = spec["head_h"] / statistics.median(valid), "head"
+    if height_target:
+        # Validar contra la altura esperada: si la cabeza salio fusionada
+        # con la coleta, la escala colapsa -> bloquear por altura de figura.
+        artmax = max(f.height for f in frames) * scale / strip_s
+        if abs(artmax - height_target) / height_target > 0.12:
+            med = statistics.median(f.height for f in frames)
+            scale, method = height_target / (med / strip_s), "height-lock"
+    return scale, heads, method
 
 
 def art_image(frame, scale, strip_s):
@@ -322,6 +332,8 @@ def qa_check_strip(sid, keyed, frames, expected, spec, strip_s, scale, heads, me
         elif method == "frame-fallback":
             notes.append(("AVISO", "sin cabezas fiables (fallback por altura)"))
         else:
+            if method == "height-lock":
+                notes.append(("AVISO", "escala por altura de figura (cabezas no fiables)"))
             valid = [x for x in heads if x]
             if len(valid) < len(frames):
                 notes.append(("AVISO", f"cabezas {len(valid)}/{len(frames)}"))

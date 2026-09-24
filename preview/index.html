@@ -14,6 +14,7 @@
   header p { margin:6px 0 0; color:#96ffeb; }
   header p.notes { color:#9d9ab5; font-size:14px; }
   header p.notes b { color:#ffcb3d; }
+  header p#syncwarn { display:none; color:#ff7b7b; font-weight:bold; }
   main { display:flex; gap:20px; flex-wrap:wrap; justify-content:center; padding:16px;
          width:100%; max-width:1200px; }
   .stage { background:#222033; border:2px solid #3a3752; border-radius:12px; padding:16px;
@@ -56,6 +57,7 @@
   <h1>⚡ VOLTIA ⚡</h1>
   <p id="ver">cargando…</p>
   <p class="notes" id="notes"></p>
+  <p id="syncwarn"></p>
 </header>
 <main>
   <div class="stage">
@@ -100,13 +102,26 @@
 <footer id="foot">FabaterFighter</footer>
 <script>
 (async () => {
-  const meta = await (await fetch('../voltia/sheet.json')).json();
+  // Anti-caché: hoja y datos siempre frescos y emparejados (evita el "carrusel").
+  const QB = '?v=' + Date.now();
+  const meta = await (await fetch('../voltia/sheet.json' + QB, { cache: 'no-store' })).json();
   const sheet = new Image();
-  sheet.src = '../voltia/' + meta.sprite;
+  sheet.src = '../voltia/' + meta.sprite + QB;
   await sheet.decode();
 
   const cell = meta.cell;              // {w,h} en px de hoja (uniform_scale)
   const unit = meta.art.uniform_scale; // px-hoja por px-arte
+
+  // Guardia de sincronía: si la hoja no cubre la parrilla, avisar en vez de descuadrar.
+  const needW = Math.max(...meta.animations.map(a => a.frames)) * cell.w;
+  const needH = meta.rows * cell.h;
+  if (sheet.naturalWidth < needW - 2 || sheet.naturalHeight < needH - 2) {
+    const w = document.getElementById('syncwarn');
+    w.style.display = 'block';
+    w.textContent = `⚠️ Hoja y datos desincronizados (${sheet.naturalWidth}×${sheet.naturalHeight} ` +
+      `vs ${needW}×${needH} necesarios): haz recarga fuerte (Ctrl+F5).`;
+  }
+
   const total = meta.animations.reduce((n, a) => n + a.frames, 0);
   const ndone = (meta.roster || []).filter(r => r.status === 'done').length;
   const ntot = (meta.roster || []).length;
@@ -192,7 +207,8 @@
                    f * cell.w, 0, cell.w, cell.h);
     strip.style.width = Math.min(strip.width, 560) + 'px';
     strip.style.height = 'auto';
-    info.innerHTML = `<b>${a.label}</b> · fila ${a.row} · ${a.frames} frames @ ${a.fps}fps · ${a.loop ? 'loop' : 'una vez'}`;
+    info.innerHTML = `<b>${a.label}</b> · fila ${a.row} · ${a.frames} frames @ ${a.fps}fps · ` +
+      `${a.loop ? 'loop' : 'una vez'} · frame <b id="fcount">1/${a.frames}</b>`;
   }
 
   function select(i) {
@@ -213,9 +229,12 @@
       }
     }
     last = t;
+    // Cine, no carrusel: cada frame sustituye al anterior fijo en la celda.
     cx.clearRect(0, 0, cell.w, cell.h);
     cx.drawImage(sheet, frame * cell.w, a.row * cell.h, cell.w, cell.h,
                  0, 0, cell.w, cell.h);
+    const fc = document.getElementById('fcount');
+    if (fc && fc._v !== frame) { fc._v = frame; fc.textContent = (frame + 1) + '/' + a.frames; }
     requestAnimationFrame(loop);
   }
 

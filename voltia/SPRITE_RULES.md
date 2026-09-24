@@ -105,6 +105,10 @@ regenerar si la puerta rechaza, nunca relajar la puerta):
 - **Regla de oro**: verificar antes de sustituir; jamás `rm`/`mv` destructivo
   sobre la única copia (se perdió una tira reutilizable por limpieza
   prematura).
+- **Bloqueo por altura (`height-lock`)**: si la escala por cabeza deja la
+  figura fuera de ±12 % del objetivo (160 de pie; agachado = ref medida en
+  la low kick), se reescala por altura de figura + AVISO. Solo salta donde
+  el QA ya fallaba: cero regresión en el resto.
 
 ## 4. Puerta QA (automática)
 

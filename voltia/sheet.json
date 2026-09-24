@@ -1,7 +1,7 @@
 {
   "sprite": "sheet_uniform.png",
-  "version": "0.3.0",
-  "notes": "familia debil completa (4) + puerta anti-cortes + visor-manual",
+  "version": "0.4.0",
+  "notes": "",
   "date": "2026-09-24",
   "canon": 1.2,
   "art": {
@@ -11,11 +11,11 @@
     "palette_version": 1
   },
   "cell": {
-    "w": 350,
+    "w": 386,
     "h": 364
   },
   "columns": 15,
-  "rows": 9,
+  "rows": 11,
   "frame_dir": "frames",
   "animations": [
     {
@@ -83,9 +83,25 @@
       "loop": false
     },
     {
+      "id": "kick_weak_stand",
+      "label": "Weak Kick (stand)",
+      "row": 8,
+      "frames": 3,
+      "fps": 13,
+      "loop": false
+    },
+    {
+      "id": "crouch_punch",
+      "label": "Crouch Punch",
+      "row": 9,
+      "frames": 3,
+      "fps": 11,
+      "loop": false
+    },
+    {
       "id": "dash",
       "label": "Dash",
-      "row": 8,
+      "row": 10,
       "frames": 3,
       "fps": 14,
       "loop": true
@@ -170,7 +186,7 @@
       "frames": 3,
       "fps": 13,
       "loop": false,
-      "status": "missing"
+      "status": "done"
     },
     {
       "id": "kick_strong",
@@ -186,7 +202,7 @@
       "frames": 3,
       "fps": 11,
       "loop": false,
-      "status": "missing"
+      "status": "done"
     },
     {
       "id": "jump_kick",

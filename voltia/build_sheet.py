@@ -27,7 +27,7 @@ from PIL import Image, ImageChops, ImageDraw, ImageFont
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
 from normalize import (load_spec, normalize_strip, qa_check_strip,  # noqa: E402
-                       estimate_pixel_size, strip_scale, FIXED_HEIGHT)
+                       estimate_pixel_size, strip_scale, FIXED_HEIGHT, CROUCH_HEIGHT)
 
 RAW = os.path.join(HERE, "raw")
 FRAMES = os.path.join(HERE, "frames")
@@ -420,6 +420,7 @@ def main():
         contact.save(os.path.join(HERE, "raw_contact.png"))
 
     rendered, data = [], {}
+    crouch_ref = None  # altura agachada honesta, medida en kick_weak (QA OK)
     for (sid, label, fps, loop, exp) in SECTIONS:
         p = os.path.join(RAW, f"{sid}.png")
         if not os.path.exists(p):
@@ -429,7 +430,12 @@ def main():
         frames = split_strip(keyed, exp, rows=LAYOUTS.get(sid, (1, exp))[0])
         strip_s = estimate_pixel_size(frames[len(frames) // 2])[0] if frames else spec["anchor_pixel"]
         fixed = FIXED_HEIGHT.get(sid)
-        scale, heads, method = strip_scale(frames, spec, strip_s, fixed_height=fixed)
+        if sid in CROUCH_HEIGHT:
+            htarget = crouch_ref or 132  # ref medida; si no, centro del rango QA
+        else:
+            htarget = 160
+        scale, heads, method = strip_scale(frames, spec, strip_s, fixed_height=fixed,
+                                           height_target=htarget)
         verdict, notes = qa_check_strip(sid, keyed, frames, exp, spec, strip_s, scale, heads, method)
         detail = f" ({'; '.join(m for _, m in notes)})" if notes else ""
         sc = f"{scale:.3f}" if scale else "-"
@@ -437,6 +443,9 @@ def main():
         if verdict == "RECHAZAR":
             print("    -> excluida del montaje: regenerar la tira")
             continue
+        if sid == "kick_weak" and scale:
+            # Referencia de altura agachada para la familia crouch.
+            crouch_ref = max(f.height for f in frames) * scale / strip_s
         frames = normalize_strip(frames, spec, strip_s, scale=scale, fixed_height=fixed)
         for i, f in enumerate(frames):
             f.save(os.path.join(FRAMES, f"voltia_{sid}_{i}.png"))

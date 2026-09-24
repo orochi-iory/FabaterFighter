@@ -651,13 +651,13 @@
     },
     "kick_weak_stand": {
       "pixel": 1,
-      "head_med": 109,
-      "bg_flat": 0.6262
+      "head_med": 156,
+      "bg_flat": 0.6943
     },
     "crouch_punch": {
       "pixel": 1,
-      "head_med": 40,
-      "bg_flat": 0.5663
+      "head_med": 107.0,
+      "bg_flat": 0.7307
     },
     "dash": {
       "pixel": 1,
