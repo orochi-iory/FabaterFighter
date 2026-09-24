@@ -229,7 +229,7 @@ export class Rig {
     this.applyAttackPose(f, plan);
     this.applyLookAt(f, opponent);
     this.applyKnockdown(f);
-    this.fixGround();
+    this.fixGround(f);
 
     this.body.updateMatrixWorld(true);
     this.updateSecondary(f, dt);
@@ -467,13 +467,20 @@ export class Rig {
       this.bones[n].quaternion.slerp(_qId, Math.min(1, k * 1.6));
     }
     const g = this.fallSign;
-    this.bones.LowerBack.rotateX(-g * 1.45 * k);
-    this.bones.Spine.rotateX(-g * 0.30 * k);
-    this.bones.Head.rotateX(g * 0.55 * k);          // barbilla al pecho
-    this.bones.LeftUpLeg.rotateX(-g * (0.95 + Math.sin(f.anim.frame * 0.4) * 0.08) * k);
-    this.bones.RightUpLeg.rotateX(-g * 0.80 * k);
-    this.bones.LeftLeg.rotateX(g * 0.30 * k);
-    this.bones.RightLeg.rotateX(g * 0.30 * k);
+    // Pelvis tumbada: el pitch va en la raiz de la pierna para que el cuerpo
+    // entero quede plano boca arriba (antes solo arqueaba el torso, la
+    // pelvis seguia vertical y las piernas se hundian en el suelo).
+    this.bones.Hips.rotateX(-g * 1.42 * k);
+    this.bones.LowerBack.rotateX(-g * 0.10 * k);
+    this.bones.Spine.rotateX(-g * 0.08 * k);
+    this.bones.Head.rotateX(g * 0.30 * k);          // barbilla al pecho
+    const settle = smoothstep(Math.max(0, Math.min(1, (t - 0.5) / 0.5)));
+    const wob = Math.sin(f.anim.frame * 0.4) * 0.10 * (1 - settle);
+    // piernas medio recogidas: rodillas y talones visibles fuera del suelo
+    this.bones.LeftUpLeg.rotateX(-g * (0.22 + wob) * k);
+    this.bones.RightUpLeg.rotateX(-g * 0.14 * k);
+    this.bones.LeftLeg.rotateX(g * 0.25 * k);
+    this.bones.RightLeg.rotateX(g * 0.20 * k);
     this.bones.LeftArm.rotateX(g * 0.5 * k);
     this.bones.RightArm.rotateX(g * 0.5 * k);
     // Cadera al suelo interpolada (no de golpe).
@@ -813,19 +820,26 @@ export class Rig {
 
   /* --- que los pies no atraviesen el suelo --------------------------- */
 
-  fixGround() {
+  fixGround(f) {
+    const pose = f && f.anim ? f.anim.pose : '';
+    const lying = pose === 'knockdown' || pose === 'ko';
+    // Tumbado el punto mas bajo es la espalda/cadera/cabeza, no el pie:
+    // sondeamos esos nodos con el radio de superficie bajo cada hueso.
+    const probes = lying
+      ? [['LeftFoot', 0.05], ['RightFoot', 0.05], ['LeftToeBase', 0.03], ['RightToeBase', 0.03],
+         ['Head', 0.10], ['Hips', 0.12], ['Spine1', 0.13], ['Spine', 0.12]]
+      : [['LeftFoot', 0], ['RightFoot', 0], ['LeftToeBase', 0], ['RightToeBase', 0]];
     let lowest = Infinity;
-    // dedos incluidos: si el pie rota (barrido, crouch) el tobillo puede
-    // quedar arriba mientras el dedo atraviesa el suelo.
-    for (const n of ['LeftFoot', 'RightFoot', 'LeftToeBase', 'RightToeBase']) {
+    for (const [n, r] of probes) {
       const b = this.bones[n];
       if (!b) continue;
       b.getWorldPosition(_v1);
-      if (_v1.y < lowest) lowest = _v1.y;
+      const y = _v1.y - r;
+      if (y < lowest) lowest = y;
     }
     if (!Number.isFinite(lowest)) return;
     const sink = -lowest;              // cuánto hay que subir para apoyar
-    if (sink > 0.0005 && sink < 0.3) {
+    if (sink > 0.0005 && sink < 0.8) {
       this.hips.position.y += sink;
       this.body.updateMatrixWorld(true);
     }

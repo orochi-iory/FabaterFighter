@@ -23,7 +23,6 @@ import { JOINTS, RIG_HEIGHT } from '../anim/skeleton-def.js';
 /** Altura en unidades de mundo de un luchador de proporciones estándar. */
 export const WORLD_HEIGHT = 1.86;
 const UNIT = WORLD_HEIGHT / RIG_HEIGHT;
-const H_A_FIELD = 0.02;   // suavidad de mezcla de atributos/campo de normales
 const TAU = Math.PI * 2;
 
 /** Superficie extraída por personaje (la extracción SDF es lo caro). */
@@ -221,20 +220,115 @@ export class Humanoid {
       SURF_CACHE.set(this.def.id, surf);
     }
     let { positions, colors, mats, uvs, sis, sws, indices, nrm } = surf;
-    // Normales desde el campo mezclado (IDW sobre 3 primitivas): el gradiente
-    // del minimo suave salta donde cambia la identidad dominante y bajo la luz
-    // especular eso se lee como damante/diamante. Este campo es continuo.
+    // Suavizado Taubin de posiciones: el marching tetrahedra deja un ripple a
+    // escala de celda en la GEOMETRIA (no en las normales) que con luz
+    // especular se lee como damero/diamante. Pases lambda|mu (sin encogimiento
+    // neto) + normales acumuladas de la malla ya suave.
     {
-      const e = 0.012 * this.s;
-      const pA = [0, 0, 0];
+      const nV = positions.length / 3;
+      const deg = new Uint32Array(nV);
+      for (let t = 0; t < indices.length; t += 3) {
+        deg[indices[t]] += 2; deg[indices[t + 1]] += 2; deg[indices[t + 2]] += 2;
+      }
+      const start = new Uint32Array(nV + 1);
+      for (let i = 0; i < nV; i++) start[i + 1] = start[i] + deg[i];
+      const flat = new Uint32Array(start[nV]);
+      const cur = Uint32Array.from(start);
+      const link = (u, v) => { flat[cur[u]++] = v; };
+      for (let t = 0; t < indices.length; t += 3) {
+        const a = indices[t], b = indices[t + 1], c = indices[t + 2];
+        link(a, b); link(a, c); link(b, a); link(b, c); link(c, a); link(c, b);
+      }
+      const src = Float32Array.from(positions);
+      const dst = new Float32Array(src.length);
+      const relax = (k) => {
+        for (let i = 0; i < nV; i++) {
+          let ax = 0, ay = 0, az = 0;
+          for (let j = start[i]; j < start[i + 1]; j++) {
+            const v = flat[j];
+            ax += src[v * 3]; ay += src[v * 3 + 1]; az += src[v * 3 + 2];
+          }
+          const n = start[i + 1] - start[i] || 1;
+          dst[i * 3] = src[i * 3] + k * (ax / n - src[i * 3]);
+          dst[i * 3 + 1] = src[i * 3 + 1] + k * (ay / n - src[i * 3 + 1]);
+          dst[i * 3 + 2] = src[i * 3 + 2] + k * (az / n - src[i * 3 + 2]);
+        }
+        src.set(dst);
+      };
+      relax(0.52); relax(-0.56); relax(0.52); relax(-0.56); relax(0.45);
+      for (let i = 0; i < src.length; i++) positions[i] = src[i];
+      // El marching emite triangulos con winding inconsistente: propagamos
+      // una orientacion coherente por aristas compartidas (BFS) y fijamos el
+      // signo global con el volumen firmado. Sin esto, la mitad de las
+      // normales apunta hacia dentro.
+      const nT = indices.length / 3;
+      const flip = new Uint8Array(nT);
+      const edgeMap = new Map();
+      const ekey = (u, v) => u < v ? u * nV + v : v * nV + u;
+      for (let t = 0; t < nT; t++) {
+        for (let e = 0; e < 3; e++) {
+          const u = indices[t * 3 + e], v = indices[t * 3 + (e + 1) % 3];
+          const k = ekey(u, v);
+          let list = edgeMap.get(k);
+          if (!list) edgeMap.set(k, list = []);
+          list.push(t);
+        }
+      }
+      const seen = new Uint8Array(nT);
+      const stack = [0];
+      seen[0] = 1;
+      while (stack.length) {
+        const t = stack.pop();
+        for (let e = 0; e < 3; e++) {
+          const u = indices[t * 3 + e], v = indices[t * 3 + (e + 1) % 3];
+          const list = edgeMap.get(ekey(u, v));
+          for (let q = 0; q < list.length; q++) {
+            const o = list[q];
+            if (o === t) continue;
+            if (!seen[o]) {
+              // comparten arista: el vecino debe recorrerla en sentido opuesto
+              let same = false;
+              for (let e2 = 0; e2 < 3; e2++) {
+                const u2 = indices[o * 3 + e2], v2 = indices[o * 3 + (e2 + 1) % 3];
+                if (u2 === u && v2 === v) { same = true; break; }
+              }
+              flip[o] = flip[t] ^ (same ? 1 : 0);
+              seen[o] = 1;
+              stack.push(o);
+            }
+          }
+        }
+      }
+      // volumen firmado: negativo = orientacion global hacia dentro
+      let vol = 0;
+      for (let t = 0; t < nT; t++) {
+        let a = indices[t * 3], b = indices[t * 3 + 1], c = indices[t * 3 + 2];
+        if (flip[t]) { const tmp = b; b = c; c = tmp; }
+        const ax = positions[a*3], ay = positions[a*3+1], az = positions[a*3+2];
+        const bx = positions[b*3], by = positions[b*3+1], bz = positions[b*3+2];
+        const cx = positions[c*3], cy = positions[c*3+1], cz = positions[c*3+2];
+        vol += ax * (by * cz - bz * cy) + ay * (bz * cx - bx * cz) + az * (bx * cy - by * cx);
+      }
+      const inv = vol < 0;
+      // normales por acumulacion de caras sobre la malla suave y coherente
+      for (let i = 0; i < nrm.length; i++) nrm[i] = 0;
+      for (let t = 0; t < nT; t++) {
+        let a = indices[t * 3], b = indices[t * 3 + 1], c = indices[t * 3 + 2];
+        if (flip[t] !== (inv ? 1 : 0)) { const tmp = b; b = c; c = tmp; }
+        const ux = positions[b * 3] - positions[a * 3];
+        const uy = positions[b * 3 + 1] - positions[a * 3 + 1];
+        const uz = positions[b * 3 + 2] - positions[a * 3 + 2];
+        const vx = positions[c * 3] - positions[a * 3];
+        const vy = positions[c * 3 + 1] - positions[a * 3 + 1];
+        const vz = positions[c * 3 + 2] - positions[a * 3 + 2];
+        const nx = uy * vz - uz * vy, ny = uz * vx - ux * vz, nz = ux * vy - uy * vx;
+        nrm[a * 3] += nx; nrm[a * 3 + 1] += ny; nrm[a * 3 + 2] += nz;
+        nrm[b * 3] += nx; nrm[b * 3 + 1] += ny; nrm[b * 3 + 2] += nz;
+        nrm[c * 3] += nx; nrm[c * 3 + 1] += ny; nrm[c * 3 + 2] += nz;
+      }
       for (let i = 0; i < positions.length / 3; i++) {
-        pA[0] = positions[i * 3]; pA[1] = positions[i * 3 + 1]; pA[2] = positions[i * 3 + 2];
-        const f0 = fieldBlend3(this.field, pA);
-        pA[0] += e; const gx = fieldBlend3(this.field, pA) - f0; pA[0] -= e;
-        pA[1] += e; const gy = fieldBlend3(this.field, pA) - f0; pA[1] -= e;
-        pA[2] += e; const gz = fieldBlend3(this.field, pA) - f0; pA[2] -= e;
-        const l = Math.hypot(gx, gy, gz) || 1;
-        nrm[i * 3] = gx / l; nrm[i * 3 + 1] = gy / l; nrm[i * 3 + 2] = gz / l;
+        const l = Math.hypot(nrm[i * 3], nrm[i * 3 + 1], nrm[i * 3 + 2]) || 1;
+        nrm[i * 3] /= l; nrm[i * 3 + 1] /= l; nrm[i * 3 + 2] /= l;
       }
     }
 
@@ -253,13 +347,13 @@ export class Humanoid {
     // sobre el cuerpo en pantalla; el color por vértice ya viste bien.
     const clothMat = new THREE.MeshStandardMaterial({
       vertexColors: true,
-      roughness: 0.78,
-      metalness: 0.04,
+      roughness: 0.92,
+      metalness: 0.02,
       side: THREE.DoubleSide
     });
     const skinMat = new THREE.MeshStandardMaterial({
       vertexColors: true,
-      roughness: 0.5,
+      roughness: 0.88,
       metalness: 0.02,
       side: THREE.DoubleSide
     });
@@ -935,26 +1029,6 @@ function smoothMin(d0, d1, h) {
   return d0 - 0.25 * h * (1 - t) * (1 - t);
 }
 
-/** Distancias a los 3 primitivas mas cercanos (para campos continuos). */
-function nearest3(F, p) {
-  let d0 = Infinity, d1 = Infinity, d2 = Infinity;
-  const P = F.prims;
-  for (let i = 0; i < P.length; i++) {
-    const d = F.sdPrim(p, P[i]);
-    if (d < d0) { d2 = d1; d1 = d0; d0 = d; }
-    else if (d < d1) { d2 = d1; d1 = d; }
-    else if (d < d2) { d2 = d; }
-  }
-  return [d0, d1, d2];
-}
-
-/** Campo mezclado IDW: continuo aunque cambie la identidad de los cercanos. */
-function fieldBlend3(F, p) {
-  const [d0, d1, d2] = nearest3(F, p);
-  const E = H_A_FIELD * H_A_FIELD;
-  const w0 = 1 / (d0 * d0 + E), w1 = 1 / (d1 * d1 + E), w2 = 1 / (d2 * d2 + E);
-  return (d0 * w0 + d1 * w1 + d2 * w2) / (w0 + w1 + w2);
-}
 
 /**
  * Extrae la superficie (valor 0 del campo) con marching tetrahedra: cada celda

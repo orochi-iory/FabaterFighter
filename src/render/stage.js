@@ -292,9 +292,9 @@ export class Stage {
 
     // --- Luces ---
     const lights = {
-      temple: { amb: 0x7f88c9, hemi: [0x9fb4ff, 0x3a2a44], key: 0xfff0d8, rim: 0x66aaff, fog: 0x1a1430 },
-      city: { amb: 0x5d6a8c, hemi: [0x7d8fc9, 0x2a2030], key: 0xffd9a0, rim: 0x4488ff, fog: 0x101426 },
-      beach: { amb: 0xc98d6f, hemi: [0xffc9a0, 0x5a3a30], key: 0xffb060, rim: 0xff6644, fog: 0x3a2030 }
+      temple: { amb: 0x7f88c9, hemi: [0x9fb4ff, 0x3a2a44], key: 0xfff0d8, rim: 0x66aaff, fog: 0x4a4070 },
+      city: { amb: 0x5d6a8c, hemi: [0x7d8fc9, 0x2a2030], key: 0xffd9a0, rim: 0x4488ff, fog: 0x3d4563 },
+      beach: { amb: 0xc98d6f, hemi: [0xffc9a0, 0x5a3a30], key: 0xffb060, rim: 0xff6644, fog: 0x6e4a3e }
     };
     const L = lights[theme] || lights.temple;
     const amb = new THREE.AmbientLight(L.amb, 0.85);
@@ -317,7 +317,7 @@ export class Stage {
     this.buildVeil(g, L.fog);
 
     // Niebla
-    this.scene.fog = new THREE.Fog(L.fog, 10, 32);
+    this.scene.fog = new THREE.Fog(L.fog, 9, 24);
     this.baseFog = this.scene.fog.color.clone();
   }
 
@@ -326,14 +326,15 @@ export class Stage {
   buildVeil(g, fogColor) {
     const tex = canvasTexture(64, (ctx, s) => {
       const grd = ctx.createLinearGradient(0, s, 0, 0);
-      grd.addColorStop(0, 'rgba(0,0,0,1)');       // alphaMap lee luminancia
-      grd.addColorStop(0.3, 'rgba(140,140,140,1)');
-      grd.addColorStop(1, 'rgba(205,205,205,1)');
+      grd.addColorStop(0, 'rgba(35,35,35,1)');    // alphaMap lee luminancia
+      grd.addColorStop(0.3, 'rgba(120,120,120,1)');
+      grd.addColorStop(1, 'rgba(235,235,235,1)');
       ctx.fillStyle = grd;
       ctx.fillRect(0, 0, s, s);
     });
+    const mist = new THREE.Color(fogColor).lerp(new THREE.Color(0xffffff), 0.55);
     const mat = new THREE.MeshBasicMaterial({
-      color: fogColor, transparent: true, alphaMap: tex, depthWrite: false, fog: false
+      color: mist, transparent: true, alphaMap: tex, depthWrite: false, fog: false
     });
     const veil = new THREE.Mesh(new THREE.PlaneGeometry(46, 9), mat);
     veil.position.set(0, 3.2, -5.1);
