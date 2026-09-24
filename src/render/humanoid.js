@@ -332,6 +332,58 @@ export class Humanoid {
       }
     }
 
+    // Suavizado de pesos de skinning sobre la grafica de la malla: el IDW en
+    // espacio deja que la mezcla de huesos oscile entre vertices vecinos y,
+    // al posar, esa oscilacion arruga las normales (damero/diamante). Unas
+    // pasadas de promedio en la superficie lo eliminan sin perder articulacion.
+    {
+      const nV = positions.length / 3;
+      const deg2 = new Uint32Array(nV);
+      for (let t = 0; t < indices.length; t += 3) {
+        deg2[indices[t]] += 2; deg2[indices[t + 1]] += 2; deg2[indices[t + 2]] += 2;
+      }
+      const start2 = new Uint32Array(nV + 1);
+      for (let i = 0; i < nV; i++) start2[i + 1] = start2[i] + deg2[i];
+      const flat2 = new Uint32Array(start2[nV]);
+      const cur2 = Uint32Array.from(start2);
+      const link2 = (u, v) => { flat2[cur2[u]++] = v; };
+      for (let t = 0; t < indices.length; t += 3) {
+        const a = indices[t], b = indices[t + 1], c = indices[t + 2];
+        link2(a, b); link2(a, c); link2(b, a); link2(b, c); link2(c, a); link2(c, b);
+      }
+      const wSis = new Uint16Array(sis.length);
+      const wSws = new Float32Array(sws.length);
+      for (let iter = 0; iter < 3; iter++) {
+        for (let i = 0; i < nV; i++) {
+          const m = new Map();
+          for (let k = 0; k < 4; k++) {
+            const w = sws[i * 4 + k];
+            if (w > 0) m.set(sis[i * 4 + k], (m.get(sis[i * 4 + k]) || 0) + w * 0.55);
+          }
+          const nb = start2[i + 1] - start2[i];
+          for (let j = start2[i]; j < start2[i + 1]; j++) {
+            const v = flat2[j];
+            for (let k = 0; k < 4; k++) {
+              const w = sws[v * 4 + k];
+              if (w > 0) m.set(sis[v * 4 + k], (m.get(sis[v * 4 + k]) || 0) + w * 0.45 / nb);
+            }
+          }
+          const ent = [...m.entries()].sort((a, b) => b[1] - a[1]).slice(0, 4);
+          let tot = 0;
+          for (const e of ent) tot += e[1];
+          if (!(tot > 0)) {
+            for (let k = 0; k < 4; k++) { wSis[i * 4 + k] = sis[i * 4 + k]; wSws[i * 4 + k] = sws[i * 4 + k]; }
+            continue;
+          }
+          for (let k = 0; k < 4; k++) {
+            if (k < ent.length) { wSis[i * 4 + k] = ent[k][0]; wSws[i * 4 + k] = ent[k][1] / tot; }
+            else { wSis[i * 4 + k] = 0; wSws[i * 4 + k] = 0; }
+          }
+        }
+        for (let i = 0; i < sis.length; i++) { sis[i] = wSis[i]; sws[i] = wSws[i]; }
+      }
+    }
+
     const geo = new THREE.BufferGeometry();
     geo.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
     geo.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3));
@@ -1070,15 +1122,21 @@ function extractSurface(F, s) {
   }
 
   // Esquinas: valor + atributos mezclados (color, mat, huesos)
+  // Cada esquina evalua la UNION de sus 8 celdas contiguas: con un solo
+  // bucket, una primitiva cercana entra/sale segun la alineacion de la
+  // rejilla y la mezcla oscila entre esquinas vecinas (damero/dientes).
   const NC = (nx + 1) * (ny + 1) * (nz + 1);
-  const val = new Float32Array(NC);
   const colA = new Float32Array(NC * 3);
   const matA = new Float32Array(NC);
   const siA = new Uint16Array(NC * 4);
   const swA = new Float32Array(NC * 4);
-  const p = [0, 0, 0];
+  const val = new Float32Array(NC);
+  const lastSeen = new Int32Array(P.length).fill(-1);
   const EMPTY = [];
+  const cand = [];
+  const p = [0, 0, 0];
   let ci = 0;
+  let stamp = 0;
   for (let z = 0; z <= nz; z++) {
     p[2] = min[2] + (z * (max[2] - min[2])) / nz;
     const bz = Math.min(nz - 1, z);
@@ -1087,33 +1145,57 @@ function extractSurface(F, s) {
       const byy = Math.min(ny - 1, y);
       for (let x = 0; x <= nx; x++, ci++) {
         p[0] = min[0] + (x * (max[0] - min[0])) / nx;
-        const list = buckets[(bz * ny + byy) * nx + Math.min(nx - 1, x)] || EMPTY;
-        let d0 = Infinity, i0 = 0, d1 = Infinity, i1 = 0, d2 = Infinity, i2 = 0;
-        for (let li = 0; li < list.length; li++) {
-          const i = list[li];
-          const d = F.sdPrim(p, P[i]);
-          if (d < d0) { d2 = d1; i2 = i1; d1 = d0; i1 = i0; d0 = d; i0 = i; }
-          else if (d < d1) { d2 = d1; i2 = i1; d1 = d; i1 = i; }
-          else if (d < d2) { d2 = d; i2 = i; }
-        }
-        if (d0 === Infinity) { val[ci] = 1; continue; }   // celda vacía: fuera
-        val[ci] = smoothMin(d0, d1, H_G);
-        // atributos: IDW sobre los 3 primitivas mas cercanos. El peso de cada
-        // primitiva tiende a 0 cuando deja de ser relevante, asi ningun
-        // intercambio de identidad entre celdas vecinas oscila en damero.
-        const E = H_A * H_A;
-        const w0 = 1 / (d0 * d0 + E), w1 = 1 / (d1 * d1 + E), w2 = 1 / (d2 * d2 + E);
-        const ws = w0 + w1 + w2;
-        const pa = P[i0], pb = P[i1], pc = P[i2];
-        colA[ci * 3] = (pa.col[0] * w0 + pb.col[0] * w1 + pc.col[0] * w2) / ws;
-        colA[ci * 3 + 1] = (pa.col[1] * w0 + pb.col[1] * w1 + pc.col[1] * w2) / ws;
-        colA[ci * 3 + 2] = (pa.col[2] * w0 + pb.col[2] * w1 + pc.col[2] * w2) / ws;
-        matA[ci] = (pa.mat * w0 + pb.mat * w1 + pc.mat * w2) / ws;
-        // huesos: union ponderada de los tres conjuntos
+        // union de buckets de las 8 celdas que tocan la esquina (deduplicada)
+        cand.length = 0;
+        stamp++;
+        const xa = Math.max(0, x - 1), xb = Math.min(nx - 1, x);
+        const ya = Math.max(0, y - 1), yb = Math.min(ny - 1, y);
+        const za = Math.max(0, z - 1), zb = Math.min(nz - 1, z);
+        for (let zz = za; zz <= zb; zz++)
+          for (let yy = ya; yy <= yb; yy++)
+            for (let xx = xa; xx <= xb; xx++) {
+              const b = buckets[(zz * ny + yy) * nx + xx];
+              if (!b) continue;
+              for (let li = 0; li < b.length; li++) {
+                const i = b[li];
+                if (lastSeen[i] === stamp) continue;
+                lastSeen[i] = stamp;
+                cand.push(i);
+              }
+            }
+        if (!cand.length) { val[ci] = 1; continue; }      // celda vacía: fuera
+        // kernel compacto: peso que llega a cero dentro del margen del
+        // bucket (R ~ 2 celdas), asi ninguna primitiva contribuyente puede
+        // desaparecer de la union al pasar a la esquina vecina.
+        const R = 0.055 * s;
+        let d0 = Infinity, d1 = Infinity;
+        let cw0 = 0, cw1 = 0, cw2 = 0, cmat = 0, cw = 0;
         const bw = {};
-        for (let k = 0; k < pa.bones.length; k++) bw[pa.bones[k]] = (bw[pa.bones[k]] || 0) + pa.weights[k] * w0;
-        for (let k = 0; k < pb.bones.length; k++) bw[pb.bones[k]] = (bw[pb.bones[k]] || 0) + pb.weights[k] * w1;
-        for (let k = 0; k < pc.bones.length; k++) bw[pc.bones[k]] = (bw[pc.bones[k]] || 0) + pc.weights[k] * w2;
+        for (let li = 0; li < cand.length; li++) {
+          const i = cand[li];
+          const d = F.sdPrim(p, P[i]);
+          if (d < d0) { d1 = d0; d0 = d; }
+          else if (d < d1) { d1 = d; }
+          if (d >= R) continue;
+          let w = 1 - d / R;
+          w = w * w;
+          const pr = P[i];
+          cw0 += pr.col[0] * w; cw1 += pr.col[1] * w; cw2 += pr.col[2] * w;
+          cmat += pr.mat * w;
+          for (let k = 0; k < pr.bones.length; k++) bw[pr.bones[k]] = (bw[pr.bones[k]] || 0) + pr.weights[k] * w;
+          cw += w;
+        }
+        val[ci] = d0 === Infinity ? 1 : smoothMin(d0, d1, H_G);
+        if (cw > 0) {
+          colA[ci * 3] = cw0 / cw;
+          colA[ci * 3 + 1] = cw1 / cw;
+          colA[ci * 3 + 2] = cw2 / cw;
+          matA[ci] = cmat / cw;
+        } else {
+          const pr = P[cand[0]];
+          colA[ci * 3] = pr.col[0]; colA[ci * 3 + 1] = pr.col[1]; colA[ci * 3 + 2] = pr.col[2];
+          matA[ci] = pr.mat;
+        }
         const entries = Object.entries(bw).sort((a, b2) => b2[1] - a[1]).slice(0, 4);
         let sum = 0;
         for (const [, w] of entries) sum += w;
