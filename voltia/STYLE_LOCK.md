@@ -46,7 +46,9 @@
 3. El usuario elige número (o ninguna). Solo la elegida se instala.
 4. Las perdedoras se borran antes del commit.
 
-## Validado en
-- `kick_weak_stand` lote 2 C1 (elegida por usuario; QA OK head).
-- `crouch_punch` lote 1 C1 (elegida por usuario).
-- `jump_kick` lote 1 C2 (elegida por usuario).
+## Historial de lotes
+- `kick_weak_stand` lote 2 C1 (elegida; QA OK head).
+- `crouch_punch` lote 1 C1 (elegida).
+- `jump_kick` lote 1 C2 (elegida).
+- Lote 1 fuerte 0/3 (conteos, fondos exóticos, rebanados).
+- Lote 2 fuerte 0/3 (mecánica 6/9 OK; estilo/acción rechazados).
