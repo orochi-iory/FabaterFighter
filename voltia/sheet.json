@@ -5,17 +5,17 @@
   "date": "2026-09-25",
   "canon": 1.2,
   "art": {
-    "height_px": 160,
+    "height_px": 148,
     "export_scale": 4,
     "uniform_scale": 2,
     "palette_version": 1
   },
   "cell": {
-    "w": 392,
+    "w": 312,
     "h": 364
   },
   "columns": 15,
-  "rows": 12,
+  "rows": 16,
   "frame_dir": "frames",
   "animations": [
     {
@@ -75,9 +75,17 @@
       "loop": false
     },
     {
+      "id": "punch_strong",
+      "label": "Strong Punch",
+      "row": 7,
+      "frames": 6,
+      "fps": 11,
+      "loop": false
+    },
+    {
       "id": "kick_weak",
       "label": "Low Weak Kick",
-      "row": 7,
+      "row": 8,
       "frames": 3,
       "fps": 13,
       "loop": false
@@ -85,15 +93,23 @@
     {
       "id": "kick_weak_stand",
       "label": "Weak Kick (stand)",
-      "row": 8,
+      "row": 9,
       "frames": 3,
       "fps": 13,
       "loop": false
     },
     {
+      "id": "kick_strong",
+      "label": "Strong Kick",
+      "row": 10,
+      "frames": 6,
+      "fps": 10,
+      "loop": false
+    },
+    {
       "id": "crouch_punch",
       "label": "Crouch Punch",
-      "row": 9,
+      "row": 11,
       "frames": 3,
       "fps": 11,
       "loop": false
@@ -101,15 +117,31 @@
     {
       "id": "jump_kick",
       "label": "Jump Kick",
-      "row": 10,
+      "row": 12,
       "frames": 3,
       "fps": 10,
       "loop": false
     },
     {
+      "id": "uppercut",
+      "label": "Volt Uppercut",
+      "row": 13,
+      "frames": 5,
+      "fps": 10,
+      "loop": false
+    },
+    {
+      "id": "spinkick",
+      "label": "Volt Spin",
+      "row": 14,
+      "frames": 6,
+      "fps": 12,
+      "loop": false
+    },
+    {
       "id": "dash",
       "label": "Dash",
-      "row": 11,
+      "row": 15,
       "frames": 3,
       "fps": 14,
       "loop": true
@@ -178,7 +210,7 @@
       "frames": 6,
       "fps": 11,
       "loop": false,
-      "status": "missing"
+      "status": "done"
     },
     {
       "id": "kick_weak",
@@ -202,7 +234,7 @@
       "frames": 6,
       "fps": 10,
       "loop": false,
-      "status": "missing"
+      "status": "done"
     },
     {
       "id": "crouch_punch",
@@ -226,7 +258,7 @@
       "frames": 5,
       "fps": 10,
       "loop": false,
-      "status": "missing"
+      "status": "done"
     },
     {
       "id": "spinkick",
@@ -234,7 +266,7 @@
       "frames": 6,
       "fps": 12,
       "loop": false,
-      "status": "missing"
+      "status": "done"
     },
     {
       "id": "rayo_throw",

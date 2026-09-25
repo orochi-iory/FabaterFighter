@@ -39,6 +39,8 @@ LAYOUTS = {
 }
 
 
+FROM_FRAMES = False
+
 SECTIONS = [
     ("stance", "Stance", 10, True, 15),
     ("walk", "Walking", 10, True, 6),
@@ -399,6 +401,12 @@ def build_preview(rendered, spec):
 
 
 def main():
+    import argparse as _ap
+    global FROM_FRAMES
+    _p = _ap.ArgumentParser()
+    _p.add_argument('--from-frames', dest='ff', action='store_true',
+                    help='compone la hoja desde voltia/frames (modo hoja completa)')
+    FROM_FRAMES = _p.parse_args().ff
     spec = load_spec()
     os.makedirs(FRAMES, exist_ok=True)
     # Contacto de tiras crudas (control de calidad)
@@ -423,6 +431,21 @@ def main():
     rendered, data = [], {}
     crouch_ref = None  # altura agachada honesta, medida en kick_weak (QA OK)
     for (sid, label, fps, loop, exp) in SECTIONS:
+        if FROM_FRAMES:
+            # Modo hoja: los frames ya estan instalados (install_sheet.py).
+            import re
+            pat = re.compile(rf"^voltia_{re.escape(sid)}_(\d+)\.png$")
+            paths = [q for q in os.listdir(FRAMES) if pat.match(q)]
+            paths.sort(key=lambda q: int(pat.match(q).group(1)))
+            if paths:
+                frames = [Image.open(os.path.join(FRAMES, q)).convert("RGBA")
+                          for q in paths]
+                print(f"  {sid}: {len(frames)}f (instalados desde hoja)")
+                rendered.append((sid, label, fps, loop, frames))
+                data[sid] = (label, frames)
+                continue
+            print(f"  FALTA frames: {sid}")
+            continue
         p = os.path.join(RAW, f"{sid}.png")
         if not os.path.exists(p):
             print(f"  FALTA tira: {sid}.png (se omite)")

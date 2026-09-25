@@ -1,0 +1,152 @@
+{
+ "version": 1,
+ "notes": "Hojas completas generadas en UNA sola imagen. Cada hoja es una rejilla; el corte es geometrico (slice_grid.py).",
+ "style_block": "Pixel-art fighting-game sprite in the EXACT style of the reference frame: chunky large square pixels, simple bold shapes, minimal detail, thick dark outlines, FLAT solid color fills, absolutely no gradients or blended shading, at most one hard-edged shadow shape per area, no fine detail, no anti-aliasing.",
+ "identity_block": "masked luchadora with full-face magenta mask with teal eye patches, extremely long thick violet ponytail flowing behind, teal bodysuit with a LARGE FAT chunky zigzag yellow lightning bolt across the chest and thin gold belt, bare arms, long dark-navy gauntlet gloves, dark-navy boots with knee pads. Slender, about seven heads tall.",
+ "animations": {
+  "punch_weak": {
+   "label": "Weak Punch",
+   "frames": [
+    "standing guard, fists raised in front of the mask",
+    "front arm snapping forward at chest height, elbow still bent",
+    "jab fully extended forward, shoulder committed"
+   ]
+  },
+  "punch_strong": {
+   "label": "Strong Punch",
+   "frames": [
+    "weight on the back leg, rear fist cocked far back, torso coiled",
+    "deeper coil, knees bent, fist at the hip",
+    "body starting to rotate forward, fist travelling forward",
+    "arm driving forward, chest opening to the right",
+    "fist fully extended forward at chest height, whole body behind the punch",
+    "follow-through, recovering back to guard"
+   ]
+  },
+  "kick_weak": {
+   "label": "Low Weak Kick (starts crouched)",
+   "frames": [
+    "CROUCHED low guard, both fists up, knees deeply bent",
+    "still crouched, front leg snapping out low along the ground",
+    "crouched, low kick fully extended just above the floor"
+   ]
+  },
+  "kick_weak_stand": {
+   "label": "Weak Kick (standing)",
+   "frames": [
+    "standing guard, fists raised",
+    "front leg lifting and snapping outward at mid height",
+    "standing side kick extended at waist height, arms balancing"
+   ]
+  },
+  "kick_strong": {
+   "label": "Strong Kick",
+   "frames": [
+    "weight shifting onto the back leg, body leaning back",
+    "rear leg chambered close to the chest, knee high and bent",
+    "hip rotating, knee starting to drive upward and forward",
+    "leg driving up and forward, body leaning back",
+    "high kick fully extended at head height, supporting leg straight",
+    "landing, leg coming down, recovering to guard"
+   ]
+  },
+  "crouch_punch": {
+   "label": "Crouch Punch",
+   "frames": [
+    "crouched guard, fists up, knees bent",
+    "crouched, punch rising from the hip",
+    "crouched, fist punched upward and forward, body stretched"
+   ]
+  },
+  "jump_kick": {
+   "label": "Jump Kick",
+   "frames": [
+    "airborne, knees tucked, rising",
+    "airborne, front leg extending forward and down",
+    "airborne, jump kick fully extended forward, body tilted"
+   ]
+  },
+  "uppercut": {
+   "label": "Volt Uppercut",
+   "frames": [
+    "crouched low, fist loaded near the floor, coiling",
+    "rising out of the crouch, fist travelling up",
+    "rising, fist passing the chin, elbow high",
+    "fist punched high overhead, body fully extended, leaving the ground",
+    "landing back on the ground in standing guard"
+   ]
+  },
+  "spinkick": {
+   "label": "Volt Spin Kick",
+   "frames": [
+    "crouched wind-up, arms in, body coiled",
+    "starting to spin, torso rotating, ponytail whipping",
+    "mid spin seen from behind, arms spread",
+    "spinning, leg extended outward in a wide circular kick",
+    "rotation finishing, leg coming down",
+    "landing in standing guard, ponytail settling"
+   ]
+  }
+ },
+ "sheets": {
+  "golpes": {
+   "title": "Voltia - attack frames sheet",
+   "orientation": "wide horizontal sheet, wider than tall",
+   "cols": 8,
+   "rows": 5,
+   "grid": [
+    [
+     "punch_weak:0",
+     "punch_weak:1",
+     "punch_weak:2",
+     "punch_strong:0",
+     "punch_strong:1",
+     "punch_strong:2",
+     "punch_strong:3",
+     "punch_strong:4"
+    ],
+    [
+     "punch_strong:5",
+     "kick_weak:0",
+     "kick_weak:1",
+     "kick_weak:2",
+     "kick_weak_stand:0",
+     "kick_weak_stand:1",
+     "kick_weak_stand:2",
+     "kick_strong:0"
+    ],
+    [
+     "kick_strong:1",
+     "kick_strong:2",
+     "kick_strong:3",
+     "kick_strong:4",
+     "kick_strong:5",
+     "crouch_punch:0",
+     "crouch_punch:1",
+     "crouch_punch:2"
+    ],
+    [
+     "jump_kick:0",
+     "jump_kick:1",
+     "jump_kick:2",
+     "uppercut:0",
+     "uppercut:1",
+     "uppercut:2",
+     "uppercut:3",
+     "uppercut:4"
+    ],
+    [
+     "spinkick:0",
+     "spinkick:1",
+     "spinkick:2",
+     "spinkick:3",
+     "spinkick:4",
+     "spinkick:5",
+     null,
+     null
+    ]
+   ],
+   "ref_anim": "punch_weak"
+  }
+ }
+}

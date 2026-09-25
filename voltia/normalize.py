@@ -351,18 +351,19 @@ def qa_check_strip(sid, keyed, frames, expected, spec, strip_s, scale, heads, me
                     notes.append(("AVISO", f"cabeza inconsistente cv={cv:.0%}"))
             artmax = max(f.height for f in frames) * scale / strip_s
             artmin = min(f.height for f in frames) * scale / strip_s
+            H = float(spec.get("art_height", 160))
             if sid in NO_STANDING:
                 if sid in CROUCH_LIKE:
                     ratio = artmin / artmax if artmax else 1
                     if not 0.55 <= ratio <= 0.85:
                         notes.append(("AVISO", f"agachado pleno {artmin:.0f}px-arte = {ratio:.0%} del de pie (rango 55-85%)"))
-                    if abs(artmax - 160) / 160 > 0.12:
-                        notes.append(("AVISO", f"de pie emergente {artmax:.0f} vs 160"))
+                    if abs(artmax - H) / H > 0.12:
+                        notes.append(("AVISO", f"de pie emergente {artmax:.0f} vs {H:.0f}"))
                 elif sid in CROUCH_HEIGHT:
-                    if not 100 <= artmax <= 165:
-                        notes.append(("AVISO", f"altura agachado {artmax:.0f}px-arte fuera de 100-165"))
-            elif abs(artmax - 160) / 160 > 0.12:
-                notes.append(("AVISO", f"de pie emergente {artmax:.0f} vs 160"))
+                    if not 0.62 * H <= artmax <= 1.11 * H:
+                        notes.append(("AVISO", f"altura agachado {artmax:.0f}px-arte fuera de {0.62*H:.0f}-{1.11*H:.0f}"))
+            elif abs(artmax - H) / H > 0.12:
+                notes.append(("AVISO", f"de pie emergente {artmax:.0f} vs {H:.0f}"))
     verdict = "OK"
     for (lvl, _) in notes:
         if lvl == "RECHAZAR":
