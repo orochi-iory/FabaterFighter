@@ -294,6 +294,13 @@ def qa_check_strip(sid, keyed, frames, expected, spec, strip_s, scale, heads, me
     notes = []
     if len(frames) != expected:
         notes.append(("RECHAZAR", f"frames {len(frames)}/{expected}"))
+    if len(frames) >= 2:
+        # Guardia anti-rebanado: un frame mucho más estrecho que la
+        # mediana es un corte dentro de una figura (cola, puño...).
+        widths = sorted(f.width for f in frames)
+        med = widths[len(widths) // 2]
+        if widths[0] < 0.4 * med:
+            notes.append(("RECHAZAR", f"frame rebanado ({widths[0]}px vs mediana {med}px)"))
     w, h = keyed.size
     hard = keyed.split()[3].point(lambda v: 255 if v > 100 else 0)
     bb = hard.getbbox()

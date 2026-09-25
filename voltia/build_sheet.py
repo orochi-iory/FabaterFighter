@@ -187,9 +187,10 @@ def split_strip(img, expected, rows=1):
     segs = [(a, b) for (a, b) in segs if b - a >= min_w]
     if not segs:
         segs = [(first, last)]
-    # Si faltan frames (figuras pegadas), anadir cortes en los valles de
-    # alfa mas cercanos a una division equitativa ideal.
-    if 0 < len(segs) < expected:
+    # Solo si la tira es UN bloque conexo (sin huecos: dash con lineas de
+    # velocidad), forzar cortes en valles de alfa. Con 2+ segmentos se
+    # devuelven los que hay y el QA rechaza por conteo (forzar rebana).
+    if len(segs) == 1 and expected > 1:
         span = last - first + 1
         rad = max(2, w // 400)
         acc = [0] * (w + 1)
