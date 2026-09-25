@@ -86,6 +86,78 @@
     "rotation finishing, leg coming down",
     "landing in standing guard, ponytail settling"
    ]
+  },
+  "stance": {
+   "label": "Stance (idle)",
+   "frames": [
+    "standing guard, weight centred, fists at chin level",
+    "slight knee bend, guard dropping a little",
+    "lowest point of the idle bounce, knees clearly bent",
+    "rising again, guard lifting",
+    "back to the starting height, shoulders relaxed",
+    "weight shifting onto the back leg",
+    "back leg loaded, front heel lifting",
+    "weight shifting forward again",
+    "front foot flat, guard pushed forward",
+    "slight lean forward, fists leading",
+    "leaning back a touch, guard high",
+    "shoulders rolling back, chest open",
+    "guard tightening, elbows tucked in",
+    "head turning slightly toward the viewer, ponytail swinging",
+    "settling back into the opening guard pose"
+   ]
+  },
+  "walk": {
+   "label": "Walking (far leg leads)",
+   "frames": [
+    "contact: FAR leg (the leg further from the camera) forward, near leg back, both knees slightly bent",
+    "far leg supporting the weight, body at its lowest",
+    "near leg swinging forward past the far leg, body rising",
+    "contact with the NEAR leg forward, far leg behind",
+    "near leg supporting the weight, body lowering",
+    "far leg swinging forward again to return to the first pose"
+   ]
+  },
+  "jump": {
+   "label": "Jump (vertical)",
+   "frames": [
+    "crouching to load the jump, arms low",
+    "pushing off the ground, legs extending, leaving the floor",
+    "at the top of the jump, knees tucked, fists up",
+    "landing, knees bent to absorb the impact, guard up"
+   ]
+  },
+  "fwdjump": {
+   "label": "Forward Jump",
+   "frames": [
+    "crouching and leaning forward, arms swung back",
+    "push-off, body tilted forward, legs extended behind",
+    "airborne travelling forward, knees tucked, front knee leading",
+    "landing on the front foot, knees bent, guard up"
+   ]
+  },
+  "crouch": {
+   "label": "Crouch",
+   "frames": [
+    "standing guard, fists up",
+    "sinking down, knees bending",
+    "full crouch, low guard, fists up, back straight"
+   ]
+  },
+  "block": {
+   "label": "Blocking",
+   "frames": [
+    "standing block, both arms crossed in front of the mask, leaning back slightly",
+    "block held, braced, weight on the back foot, arms tight"
+   ]
+  },
+  "dash": {
+   "label": "Dash (forward run)",
+   "frames": [
+    "leaning far forward, knees bent, driving off the back leg",
+    "full sprint forward, body tilted, legs extended, back leg trailing behind",
+    "braking, leaning back, front foot planted"
+   ]
   }
  },
  "sheets": {
@@ -147,6 +219,65 @@
     ]
    ],
    "ref_anim": "punch_weak"
+  },
+  "basicos": {
+   "title": "Voltia - basic movement sheet",
+   "orientation": "wide horizontal sheet, wider than tall",
+   "cols": 8,
+   "rows": 5,
+   "ref_anim": "stance",
+   "grid": [
+    [
+     "stance:0",
+     "stance:1",
+     "stance:2",
+     "stance:3",
+     "stance:4",
+     "stance:5",
+     "stance:6",
+     "stance:7"
+    ],
+    [
+     "stance:8",
+     "stance:9",
+     "stance:10",
+     "stance:11",
+     "stance:12",
+     "stance:13",
+     "stance:14",
+     "walk:0"
+    ],
+    [
+     "walk:1",
+     "walk:2",
+     "walk:3",
+     "walk:4",
+     "walk:5",
+     "jump:0",
+     "jump:1",
+     "jump:2"
+    ],
+    [
+     "jump:3",
+     "fwdjump:0",
+     "fwdjump:1",
+     "fwdjump:2",
+     "fwdjump:3",
+     "crouch:0",
+     "crouch:1",
+     "crouch:2"
+    ],
+    [
+     "block:0",
+     "block:1",
+     "dash:0",
+     "dash:1",
+     "dash:2",
+     null,
+     null,
+     null
+    ]
+   ]
   }
  }
 }

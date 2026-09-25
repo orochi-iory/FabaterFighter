@@ -110,7 +110,11 @@ def main():
                                         s, scale, heads, "sheet")
         # En hoja el recorte es al bbox de la figura: el aviso de "corte en
         # borde de split" no aplica (no hay split, hay recorte).
-        notes = [n for n in notes if not n[1].startswith("posible corte")]
+        # En hoja el frame conserva el alto de la celda: el ratio de
+        # agachado se mide sobre la figura (fig_arte), no sobre la celda.
+        notes = [n for n in notes
+                 if not n[1].startswith("posible corte")
+                 and not n[1].startswith("agachado pleno")]
         verdict = "RECHAZAR" if any(l == "RECHAZAR" for l, _ in notes) else (
             "AVISO" if notes else "OK")
         fig = [round((f.getbbox()[3] - f.getbbox()[1]) * scale / s) for f in frames]

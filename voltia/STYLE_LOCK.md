@@ -82,9 +82,15 @@ Pipeline (determinista, sin heuristica de separacion de figuras):
 - Lote 1 fuerte 0/3 (conteos, fondos exóticos, rebanados).
 - Lote 2 fuerte 0/3 (mecánica 6/9 OK; estilo/acción rechazados).
 
+- **Hoja `basicos` C2 instalada** (37 frames: stance 15, walk 6, jump,
+  fwdjump 4, crouch 3, block 2, dash 3). Rejilla 8x5, escala 1.0000
+  (pixel perfect, sin remuestrear). C1 descartada: **crouch y jump salen
+  todos de pie** (147/148 px-arte en las 3 y 4 celdas) = poses ignoradas.
 - **Hoja `golpes` C2 instalada** (38 frames en una imagen: punch_weak,
   punch_strong, kick_weak, kick_weak_stand, kick_strong, crouch_punch,
   jump_kick, uppercut, spinkick). Rejilla 8x5 detectada limpia; rayo
   presente en las 38; orden de lectura verificado por alturas (patada baja
   agachada 124/114/111 px-arte, uppercut 122->152). C1 descartada: figuras
   empaquetadas sin gutters, imposible de cortar.
+- Con `basicos` + `golpes` el set instalado (75 frames) sale de **solo DOS
+  imagenes**, que es el objetivo del canon v2.
