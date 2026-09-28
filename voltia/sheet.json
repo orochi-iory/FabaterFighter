@@ -1,8 +1,8 @@
 {
   "sprite": "sheet_uniform.png",
-  "version": "0.5.0",
-  "notes": "",
-  "date": "2026-09-25",
+  "version": "0.6.0",
+  "notes": "Set completo: 3 hojas, 102 frames",
+  "date": "2026-09-28",
   "canon": 1.2,
   "art": {
     "height_px": 148,
@@ -11,11 +11,11 @@
     "palette_version": 1
   },
   "cell": {
-    "w": 312,
-    "h": 328
+    "w": 350,
+    "h": 332
   },
   "columns": 15,
-  "rows": 16,
+  "rows": 25,
   "frame_dir": "frames",
   "animations": [
     {
@@ -139,9 +139,81 @@
       "loop": false
     },
     {
+      "id": "rayo_throw",
+      "label": "Rayo Volt",
+      "row": 15,
+      "frames": 4,
+      "fps": 10,
+      "loop": false
+    },
+    {
+      "id": "rayo_proj",
+      "label": "Rayo Volt (Projectile)",
+      "row": 16,
+      "frames": 3,
+      "fps": 12,
+      "loop": true
+    },
+    {
+      "id": "hit",
+      "label": "Hit",
+      "row": 17,
+      "frames": 3,
+      "fps": 8,
+      "loop": false
+    },
+    {
+      "id": "crouch_hit",
+      "label": "Crouch Hit",
+      "row": 18,
+      "frames": 2,
+      "fps": 8,
+      "loop": false
+    },
+    {
+      "id": "knockdown",
+      "label": "Knockdown/Recover",
+      "row": 19,
+      "frames": 4,
+      "fps": 7,
+      "loop": false
+    },
+    {
+      "id": "dizzy",
+      "label": "Stunned",
+      "row": 20,
+      "frames": 2,
+      "fps": 6,
+      "loop": true
+    },
+    {
+      "id": "ko",
+      "label": "K.O.",
+      "row": 21,
+      "frames": 2,
+      "fps": 5,
+      "loop": false
+    },
+    {
+      "id": "victory1",
+      "label": "Victory 1",
+      "row": 22,
+      "frames": 4,
+      "fps": 8,
+      "loop": true
+    },
+    {
+      "id": "victory2",
+      "label": "Victory 2",
+      "row": 23,
+      "frames": 3,
+      "fps": 8,
+      "loop": true
+    },
+    {
       "id": "dash",
       "label": "Dash",
-      "row": 15,
+      "row": 24,
       "frames": 3,
       "fps": 14,
       "loop": true
@@ -274,7 +346,7 @@
       "frames": 4,
       "fps": 10,
       "loop": false,
-      "status": "missing"
+      "status": "done"
     },
     {
       "id": "rayo_proj",
@@ -282,7 +354,7 @@
       "frames": 3,
       "fps": 12,
       "loop": true,
-      "status": "missing"
+      "status": "done"
     },
     {
       "id": "hit",
@@ -290,7 +362,7 @@
       "frames": 3,
       "fps": 8,
       "loop": false,
-      "status": "missing"
+      "status": "done"
     },
     {
       "id": "crouch_hit",
@@ -298,7 +370,7 @@
       "frames": 2,
       "fps": 8,
       "loop": false,
-      "status": "missing"
+      "status": "done"
     },
     {
       "id": "knockdown",
@@ -306,7 +378,7 @@
       "frames": 4,
       "fps": 7,
       "loop": false,
-      "status": "missing"
+      "status": "done"
     },
     {
       "id": "dizzy",
@@ -314,7 +386,7 @@
       "frames": 2,
       "fps": 6,
       "loop": true,
-      "status": "missing"
+      "status": "done"
     },
     {
       "id": "ko",
@@ -322,7 +394,7 @@
       "frames": 2,
       "fps": 5,
       "loop": false,
-      "status": "missing"
+      "status": "done"
     },
     {
       "id": "victory1",
@@ -330,7 +402,7 @@
       "frames": 4,
       "fps": 8,
       "loop": true,
-      "status": "missing"
+      "status": "done"
     },
     {
       "id": "victory2",
@@ -338,7 +410,7 @@
       "frames": 3,
       "fps": 8,
       "loop": true,
-      "status": "missing"
+      "status": "done"
     },
     {
       "id": "dash",

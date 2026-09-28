@@ -65,17 +65,24 @@ def main():
     ncols = rep["grid"][0]
     sh = CFG["sheets"][a.sheet]
     if [sh["cols"], sh["rows"]] != rep["grid"]:
-        raise SystemExit(f"rejilla detectada {rep['grid']} != pedida "
-                         f"{[sh['cols'], sh['rows']]}")
-    flat = [it for row in sh["grid"] for it in row]
+        print(f"  AVISO: rejilla detectada {rep['grid']} != pedida "
+              f"{[sh['cols'], sh['rows']]} (se mapea por orden de lectura)")
+    # Mapeo tolerante: el modelo puede refluir la rejilla, pero conserva el
+    # orden de lectura. Las celdas ocupadas se emparejan con la lista de
+    # frames en orden; las sobrantes se ignoran.
+    flat = [it for row in sh["grid"] for it in row if it]
+    occupied = sorted(c["i"] for c in rep["cells"] if not c["empty"])
+    if len(occupied) < len(flat):
+        raise SystemExit(f"faltan celdas: {len(occupied)} ocupadas para "
+                         f"{len(flat)} frames")
+    pairs = list(zip(flat, occupied[:len(flat)]))
     groups = {}
-    for i, item in enumerate(flat):
-        if item is None:
-            continue
+    for item, i in pairs:
         anim, idx = item.split(":")
         groups.setdefault(anim, []).append((int(idx), i))
     empty = [c["i"] for c in rep["cells"] if c["empty"]]
-    print(f"hoja {a.sheet}_{a.variant}: rejilla {rep['grid']}, vacias {empty}")
+    print(f"hoja {a.sheet}_{a.variant}: rejilla {rep['grid']}, vacias {empty}, "
+          f"{len(flat)} frames mapeados sobre {len(occupied)} celdas ocupadas")
 
     # --- celdas: chroma + recorte horizontal al bbox (alto completo) ---
     cells = {}

@@ -1,10 +1,12 @@
 # Candado de estilo — VOLTIA (obligatorio en cada generación)
 
 ## Ancla única
-- `voltia/frames/voltia_stance_0.png` — único referente de identidad.
-- Como máximo, UN segundo frame de la hoja como referencia de POSE, o un
-  recorte ampliado del ancla para fijar un detalle (misma imagen: no
-  promedia). `voltia/ref_torso.png` fija el rayo gordo.
+- `voltia/ref_stance.png` — único referente de identidad. Es el stance
+  aprobado original, CONGELADO. Nunca se pisa al instalar hojas: el frame
+  de juego `voltia/frames/voltia_stance_0.png` se regenera y no vale como
+  referencia (fue lo que acható la hoja de reacciones).
+- Como máximo, UN segundo frame como referencia de detalle (misma imagen:
+  no promedia). `voltia/ref_torso.png` fija el rayo gordo.
 - **Prohibido**: el arte conceptual como referencia (arrastra al estilo
   "bonito" de presentación y rompe la hoja). Prohibido promediar 3+ refs.
 
@@ -94,3 +96,9 @@ Pipeline (determinista, sin heuristica de separacion de figuras):
   empaquetadas sin gutters, imposible de cortar.
 - Con `basicos` + `golpes` el set instalado (75 frames) sale de **solo DOS
   imagenes**, que es el objetivo del canon v2.
+- **Hoja `reacciones` C7 instalada** (30 frames: rayo, hit, crouch_hit,
+  knockdown, dizzy, ko, victory1, victory2, 3 bustos). Referencia congelada
+  en `voltia/ref_stance.png` (el stance de juego ya no se usa como ancla:
+  se achataba). Lienzo 1456x720, escala 0.881. Aceptados a sabiendas: rayo
+  de pecho más fino que el ancla, 2 frames de proyectil en forma de flecha,
+  K.O. tumbado recortado por la derecha.

@@ -25,7 +25,7 @@ def build_prompt(sheet_id):
     assert len(grid) == rows, f"grid filas {len(grid)} != {rows}"
     lines = []
     lines.append(
-        f"2D fighting game sprite sheet, {sh['orientation']} "
+        f"2D fighting game sprite sheet, {sh.get('aspect') or sh['orientation']}, "
         f"with a strict grid of exactly {cols} columns and {rows} rows "
         f"({cols * rows} cells), all cells perfectly aligned and the same size, "
         f"with wide empty green gutters between every cell.")
@@ -38,9 +38,19 @@ def build_prompt(sheet_id):
     lines.append(f"CHARACTER (identical in every single cell): {CFG['identity_block']}")
     lines.append(f"STYLE: {CFG['style_block']}")
     lines.append(
-        "The LARGE FAT YELLOW ZIGZAG LIGHTNING BOLT on the chest MUST be clearly "
-        "visible in EVERY cell, no exceptions. Same head size, same proportions "
-        "(exactly seven heads tall), same palette and same outline weight in every cell.")
+        "PROPORTION LOCK — copy the reference image, do not redraw her: she is tall "
+        "and slender, exactly seven heads tall, with LONG legs, a NARROW waist and "
+        "hips, and a SMALL head, the same body shape as the reference. Do NOT make "
+        "her squat, stocky, chibi or big-headed. Do NOT shorten the legs. Do NOT "
+        "enlarge the head. A crouch shortens the legs only; the head stays the same "
+        "small size as the reference. Do NOT stretch her sideways to fill the cell: "
+        "leave empty green on both sides of the body. Chunky square pixels and thick "
+        "dark outlines like the reference, no smooth illustrated style, no anti-aliasing.")
+    lines.append(
+        "The LARGE FAT YELLOW ZIGZAG LIGHTNING BOLT on the chest MUST be the same "
+        "chunky bolt as the reference, clearly visible in EVERY cell that shows her "
+        "body, no exceptions. Same head size, same proportions, same palette and same "
+        "outline weight in every cell. Cells marked NO character contain only the bolt.")
     lines.append(
         "WIDE EMPTY GREEN GUTTERS: leave a large empty green gap between every pair "
         "of neighbouring cells, horizontally AND vertically, at least half the height "

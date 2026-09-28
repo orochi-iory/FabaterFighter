@@ -158,6 +158,86 @@
     "full sprint forward, body tilted, legs extended, back leg trailing behind",
     "braking, leaning back, front foot planted"
    ]
+  },
+  "rayo_throw": {
+   "label": "Rayo Volt (throw)",
+   "frames": [
+    "crouched, both hands gathered at the hip, a small yellow spark forming between the palms",
+    "rising and pushing both hands forward, a FAT yellow zigzag bolt forming in front of the chest",
+    "both arms thrust forward, the big bolt launched away forward at chest height",
+    "follow-through, arms extended forward, body leaning forward, recovering"
+   ]
+  },
+  "rayo_proj": {
+   "label": "Rayo Volt (projectile)",
+   "frames": [
+    "NO character: only a small FAT yellow ZIGZAG lightning bolt, the same zigzag shape as the bolt on her chest, centred, pointing right. NEVER an arrow, NEVER a triangle, NEVER a chevron",
+    "NO character: the same fat yellow ZIGZAG bolt, a little longer, pointing right. NEVER an arrow",
+    "NO character: the same fat yellow ZIGZAG bolt, longest, pointing right. NEVER an arrow, NEVER a pointer"
+   ]
+  },
+  "hit": {
+   "label": "Hit",
+   "frames": [
+    "knocked back, head snapping backwards, guard broken, arms thrown up",
+    "body twisted back, arms flailing, front knee lifting",
+    "staggering forward, bent over, arms dropping, off balance"
+   ]
+  },
+  "crouch_hit": {
+   "label": "Crouch Hit",
+   "frames": [
+    "crouched, recoiling backwards, guard pushed back by the impact",
+    "crouched low, head down, both arms covering the mask"
+   ]
+  },
+  "knockdown": {
+   "label": "Knockdown / Recover",
+   "frames": [
+    "falling backwards, arms thrown up, legs folding under her",
+    "airborne on her back, body diagonal, limbs spread",
+    "lying curled on her side, knees bent up, head and feet both visible, whole body inside the cell, not stretched flat",
+    "pushing herself up from the ground, one knee down, getting up"
+   ]
+  },
+  "dizzy": {
+   "label": "Stunned",
+   "frames": [
+    "standing wobbling, head lolling to one side, arms hanging loose, knees bent",
+    "wobbling the other way, head tilted to the other side, arms limp, unsteady"
+   ]
+  },
+  "ko": {
+   "label": "K.O.",
+   "frames": [
+    "collapsing to her knees, head down, arms hanging",
+    "lying curled face-down, knees bent, head and feet both visible inside the cell, not stretched flat"
+   ]
+  },
+  "victory1": {
+   "label": "Victory 1",
+   "frames": [
+    "standing tall, both fists raised high above the head, chest out",
+    "arms crossed over the chest, confident, ponytail swinging",
+    "one fist punched up toward the sky, mask turned toward the viewer",
+    "relaxed guard, arms lowered, nodding, ponytail settling"
+   ]
+  },
+  "victory2": {
+   "label": "Victory 2",
+   "frames": [
+    "crouched on one knee, one hand on the ground, head up looking forward",
+    "standing tall, both arms raised out but elbows bent so the hands stay inside the cell, head lifted",
+    "one fist on the hip, the other hand raised, triumphant"
+   ]
+  },
+  "portrait": {
+   "label": "Mugshot",
+   "frames": [
+    "CLOSE-UP bust: ONLY head, mask and shoulders, tightly framed, filling about 75 percent of the cell, neutral expression",
+    "CLOSE-UP bust: ONLY head, mask and shoulders, angry expression, fists clenched under the chin",
+    "CLOSE-UP bust: ONLY head, mask and shoulders, determined grin, eyes narrowed"
+   ]
   }
  },
  "sheets": {
@@ -278,6 +358,56 @@
      null
     ]
    ]
+  },
+  "reacciones": {
+   "title": "Voltia - reactions, special and victory sheet",
+   "orientation": "wide horizontal sheet, wider than tall",
+   "cols": 8,
+   "rows": 4,
+   "ref_anim": "dizzy",
+   "grid": [
+    [
+     "rayo_throw:0",
+     "rayo_throw:1",
+     "rayo_throw:2",
+     "rayo_throw:3",
+     "rayo_proj:0",
+     "rayo_proj:1",
+     "rayo_proj:2",
+     "hit:0"
+    ],
+    [
+     "hit:1",
+     "hit:2",
+     "crouch_hit:0",
+     "crouch_hit:1",
+     "knockdown:0",
+     "knockdown:1",
+     "knockdown:2",
+     "knockdown:3"
+    ],
+    [
+     "dizzy:0",
+     "dizzy:1",
+     "ko:0",
+     "ko:1",
+     "victory1:0",
+     "victory1:1",
+     "victory1:2",
+     "victory1:3"
+    ],
+    [
+     "victory2:0",
+     "victory2:1",
+     "victory2:2",
+     "portrait:0",
+     "portrait:1",
+     "portrait:2",
+     null,
+     null
+    ]
+   ],
+   "aspect": "extremely wide and short, about twice as wide as it is tall, short rows"
   }
  }
 }
