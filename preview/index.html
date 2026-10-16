@@ -221,7 +221,8 @@
     punch_weak: 'grunt_light', kick_weak: 'grunt_light',
     kick_weak_stand: 'grunt_light', crouch_punch: 'grunt_light',
     punch_strong: 'grunt_heavy', kick_strong: 'grunt_heavy',
-    jump_kick: 'grunt_heavy', uppercut: 'grunt_heavy', spinkick: 'grunt_heavy',
+    jump_kick: 'grunt_heavy',
+    uppercut: 'voltia_uppercut', spinkick: 'voltia_spinkick',
     rayo_throw: 'voltia_rayo_throw', rayo_proj: 'voltia_rayo_proj',
     knockdown: 'voltia_knockdown', dizzy: 'voltia_dizzy', ko: 'voltia_ko',
     victory1: 'voltia_victory1', victory2: 'voltia_victory2',
@@ -229,6 +230,8 @@
   const LINES = {
     rayo_throw: '¡Rayo Volt!',
     rayo_proj: '¡Chispa!',
+    uppercut: '¡Arriba, voltaje!',
+    spinkick: '¡Vuelta volt!',
     knockdown: '¡Caigo!',
     dizzy: 'La cabeza me da vueltas.',
     ko: 'No puedo más.',
@@ -242,7 +245,7 @@
     if (say) say.textContent = '';
     const file = CLIP[id];
     if (!file) return;
-    const a = new Audio('../voltia/voices/' + file + '.mp3');
+    const a = new Audio('../voltia/voices/' + file + '.mp3?v=2');
     voice = a;
     const line = LINES[id];
     if (line) a.addEventListener('canplay', () => { if (say) say.textContent = '«' + line + '»'; });
