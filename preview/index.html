@@ -213,15 +213,11 @@
       `<div id="say"></div>`;
   }
 
-  // Golpes normales: gruñido de esfuerzo, no frase. Andar, guardia,
-  // agacharse, bloqueo y dash van en silencio. Especial, derrota y
-  // victoria sí tienen voz. Se dispara al elegir, no en cada loop.
+  // Golpes normales en silencio (el gruñido de esfuerzo queda para más
+  // adelante). Salto sí. Frase en especiales, derrota y victoria.
+  // Se dispara al elegir, no en cada loop.
   const CLIP = {
     jump: 'grunt_jump', fwdjump: 'grunt_jump',
-    punch_weak: 'grunt_light', kick_weak: 'grunt_light',
-    kick_weak_stand: 'grunt_light', crouch_punch: 'grunt_light',
-    punch_strong: 'grunt_heavy', kick_strong: 'grunt_heavy',
-    jump_kick: 'grunt_heavy',
     uppercut: 'voltia_uppercut', spinkick: 'voltia_spinkick',
     rayo_throw: 'voltia_rayo_throw', rayo_proj: 'voltia_rayo_proj',
     knockdown: 'voltia_knockdown', dizzy: 'voltia_dizzy', ko: 'voltia_ko',
