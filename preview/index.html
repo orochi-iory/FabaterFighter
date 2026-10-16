@@ -51,6 +51,16 @@
   table.moves td.st { text-align:center; }
   table.moves tr.missing td { color:#6d6b85; }
   footer { color:#6d6b85; font-size:13px; padding:10px; text-align:center; }
+  section.arena { width:100%; max-width:1200px; padding:0 16px 24px; }
+  section.arena h2 { color:#ffcb3d; letter-spacing:1px; margin:8px 0; }
+  section.arena .box { background:#222033; border:2px solid #3a3752; border-radius:12px; padding:16px; }
+  canvas#stagecv { image-rendering:pixelated; width:100%; max-width:960px; height:auto;
+    background:#101018; border-radius:8px; display:block; margin:0 auto; }
+  .arena .controls { margin-top:12px; }
+  .arena label { color:#9d9ab5; font-size:13px; display:flex; align-items:center; gap:6px; }
+  .arena input[type=range] { width:140px; }
+  .layers { color:#d8d6ea; font-size:13px; line-height:1.55; margin:12px 0 0; }
+  .layers b { color:#96ffeb; }
 </style>
 </head>
 <body>
@@ -86,6 +96,26 @@
     <div class="info">Consejo: <b>magenta</b> y <b>verde</b> sirven para comprobar la transparencia y el chroma.</div>
   </div>
 </main>
+<section class="arena" id="escenario">
+  <h2>Escenario · Cyber Fist</h2>
+  <div class="box">
+    <canvas id="stagecv" width="960" height="540"></canvas>
+    <div class="controls">
+      <label>Versión
+        <select id="stagePick"></select>
+      </label>
+      <label>Desplazamiento <input id="stageScroll" type="range" min="0" max="1000" value="500"></label>
+      <label>Zoom <input id="stageZoom" type="range" min="65" max="140" value="100"></label>
+      <button id="stageJump" type="button">Simular salto</button>
+      <label><input id="togCrowd" type="checkbox" checked> Público</label>
+      <label><input id="togLed" type="checkbox" checked> Pantallas</label>
+      <label><input id="togGirl" type="checkbox" checked> Voltia</label>
+      <label><input id="togFloor" type="checkbox"> Línea de suelo</label>
+      <label><input id="togSeam" type="checkbox"> Cortes de panel</label>
+    </div>
+    <p class="layers" id="stageNote"></p>
+  </div>
+</section>
 <section class="manual">
   <div class="card">
     <img class="concept" src="../assets/voltia_concept.png" alt="Arte conceptual de Voltia">
@@ -278,6 +308,140 @@
 
   select(0);
   requestAnimationFrame(loop);
+})();
+</script>
+<script>
+(() => {
+  const cv = document.getElementById('stagecv');
+  if (!cv) return;
+  const cx = cv.getContext('2d');
+  cx.imageSmoothingEnabled = false;
+  const note = document.getElementById('stageNote');
+  let spec = null, bg = null, stance = null;
+  const led = [], crowd = [];
+  let scroll = 0.5, zoom = 1, jump = 0, t0 = performance.now();
+
+  function load(src) {
+    return new Promise((res, rej) => {
+      const im = new Image();
+      im.onload = () => res(im);
+      im.onerror = rej;
+      im.src = src;
+    });
+  }
+
+  function world() {
+    const v = spec.view;
+    return { w: v.w / zoom, h: v.h / zoom };
+  }
+  function cam() {
+    const w = world();
+    const maxX = Math.max(0, bg.width - w.w);
+    const x = scroll * maxX;
+    let y = spec.floorY - w.h * 0.78 - jump * 0.35;
+    y = Math.max(0, Math.min(bg.height - w.h, y));
+    return { x, y, w: w.w, h: w.h };
+  }
+
+  function draw() {
+    if (!spec || !bg) return;
+    const c = cam();
+    const tick = Math.floor((performance.now() - t0) / 140);
+    cx.imageSmoothingEnabled = false;
+    cx.clearRect(0, 0, cv.width, cv.height);
+    cx.drawImage(bg, c.x, c.y, c.w, c.h, 0, 0, cv.width, cv.height);
+    const sx = cv.width / c.w, sy = cv.height / c.h;
+    const toX = (x) => (x - c.x) * sx;
+    const toY = (y) => (y - c.y) * sy;
+
+    if (document.getElementById('togCrowd').checked && crowd.length) {
+      const band = spec.crowd;
+      const fr = crowd[tick % crowd.length];
+      const h = band.h;
+      const fw = fr.width * (h / fr.height);
+      let i = 0;
+      for (let x = band.x0; x < band.x1; x += fw - 2, i++) {
+        const f = crowd[(tick + i) % crowd.length];
+        cx.drawImage(f, toX(x), toY(band.y), fw * sx, h * sy);
+      }
+    }
+    if (document.getElementById('togLed').checked && led.length) {
+      const f = led[tick % led.length];
+      for (const s of spec.screens) {
+        const dh = s.h, dw = dh * (f.width / f.height);
+        const dx = s.x + (s.w - dw) / 2;
+        cx.drawImage(f, toX(dx), toY(s.y), dw * sx, dh * sy);
+      }
+    }
+    if (document.getElementById('togSeam').checked) {
+      const pw = bg.width / (spec.panels || 3);
+      cx.strokeStyle = '#ffcb3d';
+      cx.lineWidth = 2;
+      for (let i = 1; i < spec.panels; i++) {
+        const x = toX(i * pw);
+        cx.beginPath(); cx.moveTo(x, 0); cx.lineTo(x, cv.height); cx.stroke();
+      }
+    }
+    if (document.getElementById('togFloor').checked) {
+      const y = toY(spec.floorY);
+      cx.strokeStyle = '#ffcb3d';
+      cx.setLineDash([6, 4]);
+      cx.beginPath(); cx.moveTo(0, y); cx.lineTo(cv.width, y); cx.stroke();
+      cx.setLineDash([]);
+    }
+    if (document.getElementById('togGirl').checked && stance) {
+      const fh = spec.fighterH;
+      const fw = stance.width * (fh / stance.height);
+      const feet = spec.floorY - jump;
+      cx.drawImage(stance, toX(bg.width / 2 - fw / 2), toY(feet - fh), fw * sx, fh * sy);
+    }
+    requestAnimationFrame(draw);
+  }
+
+  function fillPick() {
+    const sel = document.getElementById('stagePick');
+    sel.innerHTML = '';
+    for (const c of spec.candidates) {
+      const o = document.createElement('option');
+      o.value = c.file; o.textContent = c.label;
+      if (c.file === spec.active) o.selected = true;
+      sel.appendChild(o);
+    }
+    sel.onchange = async () => {
+      bg = await load('../voltia/stage/' + sel.value);
+    };
+  }
+
+  document.getElementById('stageScroll').oninput = e => { scroll = e.target.value / 1000; };
+  document.getElementById('stageZoom').oninput = e => { zoom = e.target.value / 100; };
+  document.getElementById('stageJump').onclick = () => {
+    const t = performance.now();
+    const step = (now) => {
+      const k = (now - t) / 700;
+      jump = k < 1 ? Math.sin(k * Math.PI) * 130 : 0;
+      if (k < 1) requestAnimationFrame(step);
+    };
+    requestAnimationFrame(step);
+  };
+
+  (async () => {
+    spec = await (await fetch('../voltia/stage/stage.json', { cache: 'no-store' })).json();
+    bg = await load('../voltia/stage/' + spec.active);
+    stance = await load('../voltia/frames/voltia_stance_0.png');
+    for (let i = 0; i < 4; i++) {
+      led.push(await load('../voltia/stage/led/f' + i + '.png'));
+      crowd.push(await load('../voltia/stage/crowd/f' + i + '.png'));
+    }
+    fillPick();
+    note.innerHTML =
+      `<b>${spec.name}</b> · ${bg.width}×${bg.height} px · partido en ` +
+      `<b>${spec.panels} paneles</b> de ${bg.width / spec.panels | 0} px. ` +
+      `${spec.note}<br>` +
+      `Capas: <b>fondo</b> fijo · <b>pantallas LED</b> 4 frames · <b>público</b> 4 frames. ` +
+      `El desplazamiento y el zoom son de cámara: hay aire arriba para el salto. ` +
+      `El paralaje por capas (fondo más lento que el ring) es el siguiente paso.`;
+    draw();
+  })().catch(err => { note.textContent = 'No se pudo cargar el escenario: ' + err; });
 })();
 </script>
 </body>
