@@ -213,28 +213,22 @@
       `<div id="say"></div>`;
   }
 
-  // Un grito por movimiento. Se dispara al elegirlo, no en cada loop.
-  const VOICES = {
-    stance: 'En guardia.',
-    walk: 'Vamos.',
-    jump: '¡Salto!',
-    fwdjump: '¡Allá voy!',
-    crouch: 'Abajo.',
-    block: '¡No pasarás!',
-    dash: '¡Corre!',
-    punch_weak: '¡Ja!',
-    punch_strong: '¡Toma!',
-    kick_weak: '¡Baja!',
-    kick_weak_stand: '¡Patada!',
-    kick_strong: '¡Fuera!',
-    crouch_punch: '¡Al suelo!',
-    jump_kick: '¡Desde arriba!',
-    uppercut: '¡Arriba, voltaje!',
-    spinkick: '¡Vuelta volt!',
+  // Golpes normales: gruñido de esfuerzo, no frase. Andar, guardia,
+  // agacharse, bloqueo y dash van en silencio. Especial, derrota y
+  // victoria sí tienen voz. Se dispara al elegir, no en cada loop.
+  const CLIP = {
+    jump: 'grunt_jump', fwdjump: 'grunt_jump',
+    punch_weak: 'grunt_light', kick_weak: 'grunt_light',
+    kick_weak_stand: 'grunt_light', crouch_punch: 'grunt_light',
+    punch_strong: 'grunt_heavy', kick_strong: 'grunt_heavy',
+    jump_kick: 'grunt_heavy', uppercut: 'grunt_heavy', spinkick: 'grunt_heavy',
+    rayo_throw: 'voltia_rayo_throw', rayo_proj: 'voltia_rayo_proj',
+    knockdown: 'voltia_knockdown', dizzy: 'voltia_dizzy', ko: 'voltia_ko',
+    victory1: 'voltia_victory1', victory2: 'voltia_victory2',
+  };
+  const LINES = {
     rayo_throw: '¡Rayo Volt!',
     rayo_proj: '¡Chispa!',
-    hit: '¡Agh!',
-    crouch_hit: '¡Uf!',
     knockdown: '¡Caigo!',
     dizzy: 'La cabeza me da vueltas.',
     ko: 'No puedo más.',
@@ -244,13 +238,14 @@
   let voice = null;
   function playVoice(id) {
     if (voice) { voice.pause(); voice = null; }
-    const line = VOICES[id];
     const say = document.getElementById('say');
     if (say) say.textContent = '';
-    if (!line) return;
-    const a = new Audio('../voltia/voices/voltia_' + id + '.mp3');
+    const file = CLIP[id];
+    if (!file) return;
+    const a = new Audio('../voltia/voices/' + file + '.mp3');
     voice = a;
-    a.addEventListener('canplay', () => { if (say) say.textContent = '«' + line + '»'; });
+    const line = LINES[id];
+    if (line) a.addEventListener('canplay', () => { if (say) say.textContent = '«' + line + '»'; });
     a.play().catch(() => {});
   }
 
