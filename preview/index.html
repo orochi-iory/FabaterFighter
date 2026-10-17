@@ -101,17 +101,19 @@
   <div class="box">
     <canvas id="stagecv" width="960" height="540"></canvas>
     <div class="controls">
-      <label>Versión
-        <select id="stagePick"></select>
-      </label>
       <label>Desplazamiento <input id="stageScroll" type="range" min="0" max="1000" value="500"></label>
-      <label>Zoom (100 = 1:1) <input id="stageZoom" type="range" min="35" max="140" value="100"></label>
+      <label>Zoom (100 = 1:1) <input id="stageZoom" type="range" min="45" max="140" value="55"></label>
       <button id="stageJump" type="button">Simular salto</button>
+      <label><input id="togParallax" type="checkbox" checked> Paralaje</label>
+      <label><input id="togFondo" type="checkbox" checked> Fondo</label>
+      <label><input id="togGradas" type="checkbox" checked> Gradas</label>
       <label><input id="togCrowd" type="checkbox" checked> Público</label>
+      <label><input id="togValla" type="checkbox" checked> Valla</label>
       <label><input id="togLed" type="checkbox" checked> Pantallas</label>
+      <label><input id="togRing" type="checkbox" checked> Suelo</label>
+      <label><input id="togRopes" type="checkbox" checked> Cuerdas</label>
       <label><input id="togGirl" type="checkbox" checked> Voltia</label>
       <label><input id="togFloor" type="checkbox"> Línea de suelo</label>
-      <label><input id="togSeam" type="checkbox"> Cortes de panel</label>
     </div>
     <p class="layers" id="stageNote"></p>
   </div>
@@ -317,9 +319,10 @@
   const cx = cv.getContext('2d');
   cx.imageSmoothingEnabled = false;
   const note = document.getElementById('stageNote');
-  let spec = null, bg = null, stance = null;
-  const led = [], crowd = [];
-  let scroll = 0.5, zoom = 1, jump = 0, t0 = performance.now();
+  let spec = null, stance = null, worldW = 0, worldH = 0;
+  const led = [], crowd = [], sheets = {};
+  let scroll = 0.5, zoom = 0.55, jump = 0, t0 = performance.now();
+  let camX = 0, camW = 1;
 
   function load(src) {
     return new Promise((res, rej) => {
@@ -338,80 +341,78 @@
     const w = world();
     const vw = Math.max(1, Math.round(w.w));
     const vh = Math.max(1, Math.round(w.h));
-    const maxX = Math.max(0, bg.width - vw);
+    const maxX = Math.max(0, worldW - vw);
     const x = Math.round(scroll * maxX);
-    // el suelo queda cerca del borde inferior; el salto desplaza la cámara
-    // para que se vea el aire de arriba sin recortar a Voltia
-    let y = spec.floorY + (spec.apron || 48) - vh - jump;
-    y = Math.round(Math.max(0, Math.min(Math.max(0, bg.height - vh), y)));
-    return { x, y, w: Math.min(vw, bg.width - x), h: Math.min(vh, bg.height - y) };
+    // el suelo queda cerca del borde inferior; el salto sube la cámara
+    let y = spec.floorY + (spec.apron || 36) - vh - jump;
+    y = Math.round(Math.max(0, Math.min(Math.max(0, worldH - vh), y)));
+    return { x, y, w: Math.min(vw, worldW - x), h: Math.min(vh, worldH - y) };
+  }
+
+  // El paralaje se mide desde el centro: ahí las capas coinciden con el dibujo.
+  // Al desplazarse, el muro se mueve menos que el ring.
+  function layerX(factor) {
+    if (!document.getElementById('togParallax').checked) factor = 1;
+    const mid = Math.max(0, (worldW - camW) / 2);
+    const offset = camX - mid;
+    const x = mid + offset * factor;
+    return Math.round(Math.max(0, Math.min(Math.max(0, worldW - camW), x)));
   }
 
   function draw() {
-    if (!spec || !bg) return;
+    if (!spec || !sheets.fondo) return;
     const c = cam();
+    camX = c.x;
+    camW = c.w;
     const tick = Math.floor((performance.now() - t0) / 140);
     cx.imageSmoothingEnabled = false;
     cx.clearRect(0, 0, cv.width, cv.height);
-    cx.drawImage(bg, c.x, c.y, c.w, c.h, 0, 0, cv.width, cv.height);
     const sx = cv.width / c.w, sy = cv.height / c.h;
-    const toX = (x) => (x - c.x) * sx;
-    const toY = (y) => (y - c.y) * sy;
-
-    // sprites a 1:1 en el mundo: el destino es el tamaño del PNG × la escala
-    // de la cámara. Nunca se estiran para rellenar un hueco.
-    const blit = (img, x, y) => {
-      cx.drawImage(img, Math.round(toX(x)), Math.round(toY(y)),
+    const on = (id) => document.getElementById(id).checked;
+    const sheet = (id) => {
+      if (!sheets[id]) return;
+      const lx = layerX(sheets[id].factor);
+      cx.drawImage(sheets[id].im, lx, c.y, c.w, c.h, 0, 0, cv.width, cv.height);
+    };
+    // sprite a 1:1 en el mundo de su capa. Nunca se estira.
+    const blit = (img, x, y, factor) => {
+      const lx = layerX(factor);
+      cx.drawImage(img, Math.round((x - lx) * sx), Math.round((y - c.y) * sy),
         Math.round(img.width * sx), Math.round(img.height * sy));
     };
-    if (document.getElementById('togCrowd').checked && crowd.length) {
+
+    if (on('togFondo')) sheet('fondo');
+    if (on('togLed') && led.length) {
+      const f = led[tick % led.length];
+      for (const s of spec.screens) blit(f, s.x, s.y, spec.screenFactor);
+    }
+    if (on('togGradas')) sheet('gradas');
+    if (on('togCrowd') && crowd.length) {
       const band = spec.crowd;
       const step = band.step || crowd[0].width;
       let i = 0;
       for (let x = band.x0; x + step <= band.x1 + 8; x += step, i++) {
         const f = crowd[(tick + i) % crowd.length];
-        blit(f, x, band.feet - f.height);
+        blit(f, x, band.feet - f.height, band.factor);
       }
     }
-    if (document.getElementById('togLed').checked && led.length) {
-      const f = led[tick % led.length];
-      for (const s of spec.screens) blit(f, s.x, s.y);
+    if (on('togValla')) sheet('valla');
+    if (on('togRopes')) sheet('cuerda_trasera');
+    if (on('togRing')) sheet('suelo');
+    if (on('togGirl') && stance) {
+      const feet = spec.floorY - jump;
+      blit(stance, worldW / 2 - stance.width / 2, feet - stance.height, 1);
     }
-    if (document.getElementById('togSeam').checked) {
-      const pw = bg.width / (spec.panels || 3);
-      cx.strokeStyle = '#ffcb3d';
-      cx.lineWidth = 2;
-      for (let i = 1; i < spec.panels; i++) {
-        const x = toX(i * pw);
-        cx.beginPath(); cx.moveTo(x, 0); cx.lineTo(x, cv.height); cx.stroke();
-      }
-    }
-    if (document.getElementById('togFloor').checked) {
-      const y = toY(spec.floorY);
+    if (on('togRopes')) sheet('cuerda_delantera');
+    if (on('togRing')) sheet('delantal');
+    if (on('togFloor')) {
+      const y = (spec.floorY - c.y) * sy;
       cx.strokeStyle = '#ffcb3d';
       cx.setLineDash([6, 4]);
       cx.beginPath(); cx.moveTo(0, y); cx.lineTo(cv.width, y); cx.stroke();
       cx.setLineDash([]);
     }
-    if (document.getElementById('togGirl').checked && stance) {
-      const feet = spec.floorY - jump;
-      blit(stance, bg.width / 2 - stance.width / 2, feet - stance.height);
-    }
     requestAnimationFrame(draw);
-  }
-
-  function fillPick() {
-    const sel = document.getElementById('stagePick');
-    sel.innerHTML = '';
-    for (const c of spec.candidates) {
-      const o = document.createElement('option');
-      o.value = c.file; o.textContent = c.label;
-      if (c.file === spec.active) o.selected = true;
-      sel.appendChild(o);
-    }
-    sel.onchange = async () => {
-      bg = await load('../voltia/stage/' + sel.value);
-    };
   }
 
   document.getElementById('stageScroll').oninput = e => { scroll = e.target.value / 1000; };
@@ -428,23 +429,25 @@
 
   (async () => {
     spec = await (await fetch('../voltia/stage/stage.json', { cache: 'no-store' })).json();
-    bg = await load('../voltia/stage/' + spec.active);
+    for (const layer of spec.layers) {
+      sheets[layer.id] = { im: await load('../voltia/stage/' + layer.file), factor: layer.factor };
+    }
+    worldW = sheets.fondo.im.width;
+    worldH = sheets.fondo.im.height;
     stance = await load('../voltia/stage/' + (spec.fighter || 'fighter.png'));
     for (let i = 0; i < 4; i++) {
       led.push(await load('../voltia/stage/led/f' + i + '.png'));
       crowd.push(await load('../voltia/stage/crowd/f' + i + '.png'));
     }
-    fillPick();
+    const ratio = (worldH / 151).toFixed(1).replace('.', ',');
     note.innerHTML =
-      `<b>${spec.name}</b> · ${bg.width}×${bg.height} px · ` +
-      `<b>${spec.panels} paneles</b> de ${bg.width / spec.panels | 0} px. ` +
-      `Voltia ${stance.width}×${stance.height} px, dibujada a 1:1. ` +
-      `Zoom 100 = un píxel del escenario es un píxel de ella. ` +
-      `Aléjalo para ver gradas y pantallas.<br>` +
-      `${spec.note} ` +
-      `Capas: <b>fondo</b> · <b>pantallas</b> ${led[0].width}×${led[0].height} · ` +
-      `<b>público</b> ${crowd[0].width}×${crowd[0].height}. ` +
-      `El salto (170 px) cabe en el aire de arriba.`;
+      `<b>${spec.name}</b> · ${worldW}×${worldH} px · ${ratio}× la figura. ` +
+      `Voltia ${stance.width}×${stance.height}, a 1:1. Zoom 100 = el pixel real.<br>` +
+      `${spec.note}<br>` +
+      `Orden, de atrás a adelante: <b>fondo</b> (muro) · <b>pantallas</b> · ` +
+      `<b>gradas</b> · <b>público</b> · <b>valla</b> · <b>cuerda trasera</b> · ` +
+      `<b>suelo</b> · <b>Voltia</b> · <b>cuerda delantera</b> · <b>delantal</b>. ` +
+      `Quita una capa para ver la de detrás. El paralaje se nota al desplazar.`;
     draw();
   })().catch(err => { note.textContent = 'No se pudo cargar el escenario: ' + err; });
 })();
