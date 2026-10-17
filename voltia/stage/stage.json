@@ -1,6 +1,6 @@
 {
   "name": "Cyber Fist",
-  "note": "Gradas llenas, en varias filas, detrás del ring. Dos focos barren despacio desde las lámparas. En las entradas laterales y en las esquinas delanteras del ring late un sello geométrico, corto y clandestino.",
+  "note": "Gradas del centro llenas, detrás de las cuerdas. En los laterales el público va en los asientos, más pequeño cuanto más lejos. Las entradas quedan libres. De vez en cuando, en una esquina del ring, sube un humo.",
   "active": "bg.png",
   "ring": "ring.png",
   "floorY": 408,
@@ -11,17 +11,43 @@
     {"x": 854, "y": 72}
   ],
   "rows": [
-    {"x0": 328, "x1": 1020, "feet": 292, "step": 162, "phase": 0},
-    {"x0": 370, "x1": 980, "feet": 274, "step": 162, "phase": 2},
-    {"x0": 410, "x1": 940, "feet": 258, "step": 168, "phase": 1},
-    {"x0": 70, "x1": 250, "feet": 286, "step": 160, "phase": 1},
-    {"x0": 1088, "x1": 1280, "feet": 286, "step": 160, "phase": 3}
+    {"x0": 328, "x1": 1020, "feet": 292, "step": 162, "phase": 0, "xMax": 1014},
+    {"x0": 370, "x1": 980, "feet": 274, "step": 162, "phase": 2, "xMax": 1014},
+    {"x0": 410, "x1": 940, "feet": 258, "step": 168, "phase": 1, "xMax": 1014}
   ],
-  "sigils": [
-    {"x": 290, "y": 382, "phase": 0},
-    {"x": 1032, "y": 382, "phase": 2},
-    {"x": 140, "y": 496, "phase": 1},
-    {"x": 1188, "y": 496, "phase": 3}
+  "figs": [
+    [[10, 29], [42, 30], [75, 29], [106, 29], [139, 28]],
+    [[3, 34], [38, 33], [73, 32], [107, 32], [141, 34]],
+    [[1, 29], [33, 35], [70, 34], [104, 36], [141, 35]],
+    [[0, 34], [38, 33], [73, 34], [110, 33], [145, 33]]
+  ],
+  "sides": [
+    {"x": 6, "feet": 312, "scale": 0.34, "slot": 0, "phase": 0},
+    {"x": 28, "feet": 312, "scale": 0.34, "slot": 1, "phase": 1},
+    {"x": 6, "feet": 284, "scale": 0.30, "slot": 2, "phase": 2},
+    {"x": 28, "feet": 284, "scale": 0.30, "slot": 3, "phase": 3},
+    {"x": 8, "feet": 244, "scale": 0.24, "slot": 0, "phase": 1},
+    {"x": 26, "feet": 244, "scale": 0.24, "slot": 4, "phase": 2},
+    {"x": 256, "feet": 234, "scale": 0.24, "slot": 1, "phase": 0},
+    {"x": 274, "feet": 234, "scale": 0.24, "slot": 2, "phase": 2},
+    {"x": 252, "feet": 248, "scale": 0.22, "slot": 3, "phase": 1},
+    {"x": 272, "feet": 248, "scale": 0.22, "slot": 0, "phase": 3},
+    {"x": 1052, "feet": 234, "scale": 0.24, "slot": 0, "phase": 1},
+    {"x": 1072, "feet": 234, "scale": 0.24, "slot": 1, "phase": 0},
+    {"x": 1056, "feet": 248, "scale": 0.22, "slot": 2, "phase": 2},
+    {"x": 1076, "feet": 248, "scale": 0.22, "slot": 4, "phase": 3},
+    {"x": 1300, "feet": 244, "scale": 0.24, "slot": 1, "phase": 2},
+    {"x": 1320, "feet": 244, "scale": 0.24, "slot": 2, "phase": 0},
+    {"x": 1294, "feet": 284, "scale": 0.30, "slot": 3, "phase": 1},
+    {"x": 1316, "feet": 284, "scale": 0.30, "slot": 0, "phase": 3},
+    {"x": 1296, "feet": 312, "scale": 0.34, "slot": 4, "phase": 0},
+    {"x": 1318, "feet": 312, "scale": 0.34, "slot": 1, "phase": 2}
+  ],
+  "smoke": [
+    {"x": 64, "y": 512, "scale": 0.68, "delay": 400, "cycle": 20000, "puff": 2500},
+    {"x": 1280, "y": 512, "scale": 0.68, "delay": 7400, "cycle": 23000, "puff": 2500, "flip": true},
+    {"x": 346, "y": 362, "scale": 0.72, "delay": 11800, "cycle": 19000, "puff": 2300},
+    {"x": 998, "y": 362, "scale": 0.72, "delay": 16800, "cycle": 26000, "puff": 2300, "flip": true}
   ],
   "spots": [
     {"x": 408, "y": 28, "y1": 460, "amp": 84, "speed": 0.5, "phase": 0, "wide": 26, "alpha": 0.16, "color": [70, 220, 230]},

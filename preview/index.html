@@ -107,7 +107,7 @@
       <label><input id="togCrowd" type="checkbox" checked> Público</label>
       <label><input id="togRing" type="checkbox" checked> Ring delante</label>
       <label><input id="togSpot" type="checkbox" checked> Focos</label>
-      <label><input id="togSigil" type="checkbox" checked> Sellos</label>
+      <label><input id="togSmoke" type="checkbox" checked> Humo</label>
       <label><input id="togLed" type="checkbox" checked> Pantallas</label>
       <label><input id="togGirl" type="checkbox" checked> Voltia</label>
       <label><input id="togFloor" type="checkbox" checked> Línea de suelo</label>
@@ -317,7 +317,7 @@
   cx.imageSmoothingEnabled = false;
   const note = document.getElementById('stageNote');
   let spec = null, bg = null, ring = null, stance = null;
-  const led = [], crowd = [], sigil = [];
+  const led = [], crowd = [], smoke = [];
   let fxCanvas = null;
   let scroll = 0.5, zoom = 0.7, jump = 0, t0 = performance.now();
 
@@ -401,6 +401,24 @@
       cx.drawImage(img, Math.round((x - c.x) * sx), Math.round((y - c.y) * sy),
         Math.round(img.width * sx), Math.round(img.height * sy));
     };
+    const blitPart = (img, sx0, sy0, sw, sh, x, y, dw, dh, flip) => {
+      dw = dw || sw;
+      dh = dh || sh;
+      const dx = Math.round((x - c.x) * sx);
+      const dy = Math.round((y - c.y) * sy);
+      const ddw = Math.max(1, Math.round(dw * sx));
+      const ddh = Math.max(1, Math.round(dh * sy));
+      if (!flip) {
+        cx.drawImage(img, sx0, sy0, sw, sh, dx, dy, ddw, ddh);
+        return;
+      }
+      cx.save();
+      cx.translate(dx + ddw, dy);
+      cx.scale(-1, 1);
+      cx.imageSmoothingEnabled = false;
+      cx.drawImage(img, sx0, sy0, sw, sh, 0, 0, ddw, ddh);
+      cx.restore();
+    };
     if (document.getElementById('togLed').checked && led.length) {
       const f = led[tick % led.length];
       for (const s of spec.screens) blit(f, s.x, s.y);
@@ -409,20 +427,44 @@
       const rows = spec.rows || (spec.crowd ? [spec.crowd] : []);
       for (const band of rows) {
         const step = band.step || crowd[0].width;
+        const limit = band.xMax != null ? band.xMax : bg.width;
         let i = 0;
         for (let x = band.x0; x + step <= band.x1 + 8; x += step, i++) {
           const f = crowd[(tick + i + (band.phase || 0)) % crowd.length];
-          blit(f, x, band.feet - f.height);
+          let sw = f.width;
+          if (x >= limit) continue;
+          if (x + sw > limit) sw = limit - x;
+          if (sw < 12) continue;
+          blitPart(f, 0, 0, sw, f.height, x, band.feet - f.height);
+        }
+      }
+      if (spec.sides && spec.figs) {
+        for (const p of spec.sides) {
+          const fi = (tick + (p.phase || 0)) % crowd.length;
+          const box = spec.figs[fi][p.slot % spec.figs[fi].length];
+          const f = crowd[fi];
+          const dw = box[1] * p.scale;
+          const dh = f.height * p.scale;
+          blitPart(f, box[0], 0, box[1], f.height, p.x, p.feet - dh, dw, dh);
         }
       }
     }
     if (document.getElementById('togRing').checked && ring) {
       cx.drawImage(ring, c.x, c.y, c.w, c.h, 0, 0, cv.width, cv.height);
     }
-    if (document.getElementById('togSigil').checked && sigil.length) {
-      for (const s of spec.sigils || []) {
-        const f = sigil[(Math.floor(tick / 4) + (s.phase || 0)) % sigil.length];
-        blit(f, s.x - f.width / 2, s.y - f.height / 2);
+    if (document.getElementById('togSmoke').checked && smoke.length && spec.smoke) {
+      const now = performance.now();
+      for (const s of spec.smoke) {
+        const cycle = s.cycle || 20000;
+        const puff = s.puff || 2400;
+        const t = (now + (s.delay || 0)) % cycle;
+        if (t >= puff) continue;
+        const fi = Math.min(smoke.length - 1, Math.floor(t / puff * smoke.length));
+        const f = smoke[fi];
+        const sc = s.scale || 1;
+        const dw = f.width * sc;
+        const dh = f.height * sc;
+        blitPart(f, 0, 0, f.width, f.height, s.x - dw / 2, s.y - dh, dw, dh, s.flip);
       }
     }
     if (document.getElementById('togGirl').checked && stance) {
@@ -462,13 +504,15 @@
     for (let i = 0; i < 4; i++) {
       led.push(await load('../voltia/stage/led/f' + i + '.png'));
       crowd.push(await load('../voltia/stage/crowd/f' + i + '.png'));
-      sigil.push(await load('../voltia/stage/fx/sigil_f' + i + '.png'));
+    }
+    for (let i = 0; i < 8; i++) {
+      smoke.push(await load('../voltia/stage/fx/smoke_f' + i + '.png'));
     }
     note.innerHTML =
       `<b>${spec.name}</b> · ${bg.width}×${bg.height} px · 4× la figura. ` +
       `Voltia ${stance.width}×${stance.height}, a 1:1. Zoom 100 = el pixel real.<br>` +
       `${spec.note} ` +
-      `Orden: fondo, pantallas, público, ring, sellos, Voltia, focos.`;
+      `Orden: fondo, pantallas, público, ring, humo, Voltia, focos.`;
     draw();
   })().catch(err => { note.textContent = 'No se pudo cargar el escenario: ' + err; });
 })();
