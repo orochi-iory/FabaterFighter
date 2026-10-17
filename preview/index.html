@@ -15,6 +15,10 @@
   header p.notes { color:#9d9ab5; font-size:14px; }
   header p.notes b { color:#ffcb3d; }
   header p#syncwarn { display:none; color:#ff7b7b; font-weight:bold; }
+  a.play { display:inline-block; margin-top:10px; background:#ffcb3d; color:#181624;
+    text-decoration:none; font-weight:700; padding:8px 14px; border-radius:8px; letter-spacing:0.3px; }
+  a.play:hover { background:#ffe08a; }
+  .controls a.play { margin-top:0; padding:8px 12px; font-size:14px; }
   main { display:flex; gap:20px; flex-wrap:wrap; justify-content:center; padding:16px;
          width:100%; max-width:1200px; }
   .stage { background:#222033; border:2px solid #3a3752; border-radius:12px; padding:16px;
@@ -67,6 +71,7 @@
 <header>
   <h1>⚡ VOLTIA ⚡</h1>
   <p id="ver">cargando…</p>
+  <a class="play" href="fight.html">Probar pelea · Voltia vs Voltia</a>
   <p class="notes" id="notes"></p>
   <p id="syncwarn"></p>
 </header>
@@ -105,6 +110,7 @@
       <label>Zoom (100 = 1:1) <input id="stageZoom" type="range" min="45" max="140" value="70"></label>
       <button id="stageJump" type="button">Simular salto</button>
       <button id="stageMusic" type="button" title="Puerto Voltaje, tema de Voltia. Bucle.">▶ Música</button>
+      <a class="play" href="fight.html" style="text-decoration:none">Probar pelea</a>
       <label>Volumen <input id="musicVol" type="range" min="0" max="100" value="75"></label>
       <label><input id="togCrowd" type="checkbox" checked> Público</label>
       <label><input id="togRing" type="checkbox" checked> Ring delante</label>
