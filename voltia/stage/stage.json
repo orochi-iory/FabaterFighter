@@ -1,6 +1,6 @@
 {
   "name": "Cyber Fist",
-  "note": "Gradas del centro llenas, detrás de las cuerdas. En los laterales el público va en los asientos, a un tamaño que se lee, más pequeño en las filas de atrás. Las entradas quedan libres. De vez en cuando sube una bocanada de humo en una esquina del ring.",
+  "note": "Gradas del centro llenas. En los laterales, el mismo público, a tamaño real, sentado en la perspectiva de esas gradas. Las entradas quedan libres. El humo de las esquinas es más grande y translúcido. El neón de VOLTIA falla de vez en cuando.",
   "active": "bg.png",
   "ring": "ring.png",
   "floorY": 408,
@@ -22,33 +22,35 @@
     [[0, 34], [38, 33], [73, 34], [110, 33], [145, 33]]
   ],
   "sides": [
-    {"x": 6, "feet": 312, "scale": 0.68, "slot": 0, "phase": 0},
-    {"x": 28, "feet": 312, "scale": 0.68, "slot": 1, "phase": 1},
-    {"x": 6, "feet": 284, "scale": 0.60, "slot": 2, "phase": 2},
-    {"x": 28, "feet": 284, "scale": 0.60, "slot": 3, "phase": 3},
-    {"x": 8, "feet": 244, "scale": 0.48, "slot": 0, "phase": 1},
-    {"x": 26, "feet": 244, "scale": 0.48, "slot": 4, "phase": 2},
-    {"x": 256, "feet": 234, "scale": 0.48, "slot": 1, "phase": 0},
-    {"x": 274, "feet": 234, "scale": 0.48, "slot": 2, "phase": 2},
-    {"x": 252, "feet": 248, "scale": 0.44, "slot": 3, "phase": 1},
-    {"x": 272, "feet": 248, "scale": 0.44, "slot": 0, "phase": 3},
-    {"x": 1052, "feet": 234, "scale": 0.48, "slot": 0, "phase": 1},
-    {"x": 1072, "feet": 234, "scale": 0.48, "slot": 1, "phase": 0},
-    {"x": 1056, "feet": 248, "scale": 0.44, "slot": 2, "phase": 2},
-    {"x": 1076, "feet": 248, "scale": 0.44, "slot": 4, "phase": 3},
-    {"x": 1300, "feet": 244, "scale": 0.48, "slot": 1, "phase": 2},
-    {"x": 1320, "feet": 244, "scale": 0.48, "slot": 2, "phase": 0},
-    {"x": 1294, "feet": 284, "scale": 0.60, "slot": 3, "phase": 1},
-    {"x": 1316, "feet": 284, "scale": 0.60, "slot": 0, "phase": 3},
-    {"x": 1296, "feet": 312, "scale": 0.68, "slot": 4, "phase": 0},
-    {"x": 1318, "feet": 312, "scale": 0.68, "slot": 1, "phase": 2}
+    {"x": 0, "feet": 316, "scale": 1, "slot": 0, "phase": 0},
+    {"x": 26, "feet": 318, "scale": 1, "slot": 1, "phase": 1},
+    {"x": 2, "feet": 272, "scale": 1, "slot": 2, "phase": 2},
+    {"x": 24, "feet": 274, "scale": 1, "slot": 3, "phase": 3},
+    {"x": 4, "feet": 246, "scale": 1, "slot": 4, "phase": 1},
+    {"x": 22, "feet": 246, "scale": 1, "slot": 0, "phase": 2},
+    {"x": 248, "feet": 254, "scale": 1, "slot": 1, "phase": 0},
+    {"x": 266, "feet": 238, "scale": 1, "slot": 2, "phase": 2},
+    {"x": 1054, "feet": 254, "scale": 1, "slot": 0, "phase": 1},
+    {"x": 1072, "feet": 238, "scale": 1, "slot": 3, "phase": 0},
+    {"x": 1290, "feet": 316, "scale": 1, "slot": 4, "phase": 2},
+    {"x": 1312, "feet": 318, "scale": 1, "slot": 1, "phase": 0},
+    {"x": 1292, "feet": 272, "scale": 1, "slot": 2, "phase": 1},
+    {"x": 1314, "feet": 274, "scale": 1, "slot": 0, "phase": 3},
+    {"x": 1300, "feet": 246, "scale": 1, "slot": 3, "phase": 2},
+    {"x": 1310, "feet": 246, "scale": 1, "slot": 4, "phase": 0}
   ],
   "smoke": [
-    {"x": 148, "y": 504, "scale": 1.55, "delay": 200, "cycle": 14000, "puff": 3400},
-    {"x": 1196, "y": 504, "scale": 1.55, "delay": 5000, "cycle": 16000, "puff": 3400, "flip": true},
-    {"x": 348, "y": 372, "scale": 1.25, "delay": 8800, "cycle": 13000, "puff": 3200},
-    {"x": 996, "y": 372, "scale": 1.25, "delay": 12400, "cycle": 18000, "puff": 3200, "flip": true}
+    {"x": 148, "y": 504, "scale": 3.1, "alpha": 0.5, "delay": 200, "cycle": 14000, "puff": 3400},
+    {"x": 1196, "y": 504, "scale": 3.1, "alpha": 0.5, "delay": 5000, "cycle": 16000, "puff": 3400, "flip": true},
+    {"x": 348, "y": 372, "scale": 2.5, "alpha": 0.48, "delay": 8800, "cycle": 13000, "puff": 3200},
+    {"x": 996, "y": 372, "scale": 2.5, "alpha": 0.48, "delay": 12400, "cycle": 18000, "puff": 3200, "flip": true}
   ],
+  "neon": {
+    "x": 180,
+    "y": 68,
+    "bars": ["neon_bar_top.png", "neon_bar_bot.png"],
+    "letters": ["neon_V.png", "neon_O.png", "neon_L.png", "neon_T.png", "neon_I.png", "neon_A.png"]
+  },
   "spots": [
     {"x": 408, "y": 28, "y1": 460, "amp": 84, "speed": 0.5, "phase": 0, "wide": 26, "alpha": 0.16, "color": [70, 220, 230]},
     {"x": 934, "y": 30, "y1": 460, "amp": 72, "speed": 0.38, "phase": 2.2, "wide": 20, "alpha": 0.13, "color": [190, 48, 150]},
