@@ -1,24 +1,14 @@
 {
   "name": "Cyber Fist",
-  "note": "Alto 604 px, 4× la figura de 151. El fondo es solo el muro y los letreros. Gradas, valla, cuerdas, suelo y delantal van en capas, a 1 px = 1 px de Voltia. El público queda detrás de la valla; ella, entre las dos cuerdas.",
-  "floorY": 520,
-  "apron": 36,
+  "note": "Lámina entera: el suelo, las cuerdas y las vallas no se recortan. La línea de suelo es el centro del ring, el cruce del diamante, no el borde de delante. El público se dibuja entero, de pie en la grada.",
+  "active": "bg.png",
+  "floorY": 408,
   "fighter": "fighter.png",
   "view": {"w": 480, "h": 270},
   "screens": [
     {"x": 20, "y": 72},
     {"x": 854, "y": 72}
   ],
-  "screenFactor": 0.88,
-  "crowd": {"x0": 300, "x1": 1050, "feet": 290, "step": 140, "factor": 0.94},
-  "layers": [
-    {"id": "fondo", "file": "layers/fondo.png", "factor": 0.88},
-    {"id": "gradas", "file": "layers/gradas.png", "factor": 0.94},
-    {"id": "valla", "file": "layers/valla.png", "factor": 0.97},
-    {"id": "cuerda_trasera", "file": "layers/cuerda_trasera.png", "factor": 1},
-    {"id": "suelo", "file": "layers/suelo.png", "factor": 1},
-    {"id": "cuerda_delantera", "file": "layers/cuerda_delantera.png", "factor": 1},
-    {"id": "delantal", "file": "layers/delantal.png", "factor": 1}
-  ],
+  "crowd": {"x0": 300, "x1": 1050, "feet": 286, "step": 140},
   "panels": 3
 }
