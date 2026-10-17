@@ -104,6 +104,8 @@
       <label>Desplazamiento <input id="stageScroll" type="range" min="0" max="1000" value="500"></label>
       <label>Zoom (100 = 1:1) <input id="stageZoom" type="range" min="45" max="140" value="70"></label>
       <button id="stageJump" type="button">Simular salto</button>
+      <button id="stageMusic" type="button" title="Puerto Voltaje, tema de Voltia. Bucle.">▶ Música</button>
+      <label>Volumen <input id="musicVol" type="range" min="0" max="100" value="75"></label>
       <label><input id="togCrowd" type="checkbox" checked> Público</label>
       <label><input id="togRing" type="checkbox" checked> Ring delante</label>
       <label><input id="togSpot" type="checkbox" checked> Focos</label>
@@ -265,12 +267,83 @@
     victory2: 'Máscara rosa. Cero piedad.',
   };
   let voice = null;
+  let themeCtx = null, themeBuf = null, themeGain = null, themeSrc = null, themeLoading = false;
+  function themeVolume() {
+    const el = document.getElementById('musicVol');
+    return el ? Number(el.value) / 100 : 0.75;
+  }
+  function duckTheme() {
+    if (!themeGain || !themeCtx) return;
+    const now = themeCtx.currentTime;
+    const base = themeVolume();
+    const g = themeGain.gain;
+    g.cancelScheduledValues(now);
+    g.setValueAtTime(g.value, now);
+    g.linearRampToValueAtTime(base * 0.35, now + 0.04);
+    g.linearRampToValueAtTime(base, now + 2.1);
+  }
+  async function toggleTheme() {
+    const btn = document.getElementById('stageMusic');
+    if (themeSrc) {
+      themeSrc.stop();
+      themeSrc = null;
+      btn.classList.remove('active');
+      btn.textContent = '▶ Música';
+      return;
+    }
+    if (themeLoading) return;
+    themeLoading = true;
+    btn.disabled = true;
+    btn.textContent = 'Cargando…';
+    try {
+      if (!themeCtx) {
+        try { themeCtx = new AudioContext({ sampleRate: 44100 }); }
+        catch (e) { themeCtx = new AudioContext(); }
+        themeGain = themeCtx.createGain();
+        themeGain.gain.value = themeVolume();
+        themeGain.connect(themeCtx.destination);
+      }
+      if (themeCtx.state === 'suspended') await themeCtx.resume();
+      if (!themeBuf) {
+        const res = await fetch('../voltia/theme.wav', { cache: 'no-store' });
+        themeBuf = await themeCtx.decodeAudioData(await res.arrayBuffer());
+      }
+      themeSrc = themeCtx.createBufferSource();
+      themeSrc.buffer = themeBuf;
+      themeSrc.loop = true;
+      themeSrc.connect(themeGain);
+      themeSrc.onended = () => {
+        themeSrc = null;
+        btn.classList.remove('active');
+        btn.textContent = '▶ Música';
+      };
+      themeSrc.start();
+      btn.classList.add('active');
+      btn.textContent = '⏸ Música';
+    } catch (err) {
+      btn.textContent = '▶ Música';
+      console.error(err);
+    } finally {
+      themeLoading = false;
+      btn.disabled = false;
+    }
+  }
+  document.getElementById('stageMusic').onclick = toggleTheme;
+  document.getElementById('musicVol').oninput = (e) => {
+    if (themeGain && themeCtx) {
+      const now = themeCtx.currentTime;
+      themeGain.gain.cancelScheduledValues(now);
+      themeGain.gain.setValueAtTime(Number(e.target.value) / 100, now);
+    }
+  };
+
   function playVoice(id) {
     if (voice) { voice.pause(); voice = null; }
     const say = document.getElementById('say');
     if (say) say.textContent = '';
     const file = CLIP[id];
     if (!file) return;
+    duckTheme();
     const a = new Audio('../voltia/voices/' + file + '.mp3?v=2');
     voice = a;
     const line = LINES[id];
@@ -556,7 +629,8 @@
       `<b>${spec.name}</b> · ${bg.width}×${bg.height} px · 4× la figura. ` +
       `Voltia ${stance.width}×${stance.height}, a 1:1. Zoom 100 = el pixel real.<br>` +
       `${spec.note} ` +
-      `Orden: fondo, neón, pantallas, público, ring, humo, Voltia, focos.`;
+      `Orden: fondo, neón, pantallas, público, ring, humo, Voltia, focos. ` +
+      `Música: tema «Puerto Voltaje», cumbia ligera en bucle.`;
     draw();
   })().catch(err => { note.textContent = 'No se pudo cargar el escenario: ' + err; });
 })();
