@@ -1,7 +1,8 @@
 {
   "name": "Cyber Fist",
-  "note": "Lámina entera: el suelo, las cuerdas y las vallas no se recortan. La línea de suelo es el centro del ring, el cruce del diamante, no el borde de delante. El público se dibuja entero, de pie en la grada.",
+  "note": "El ring, las cuerdas y los postes van en ring.png, con transparencia entre las cuerdas. El público se dibuja detrás, un poco más grande (8/7), para que las cuerdas lo tapen y los asientos no le queden grandes.",
   "active": "bg.png",
+  "ring": "ring.png",
   "floorY": 408,
   "fighter": "fighter.png",
   "view": {"w": 480, "h": 270},
@@ -9,6 +10,6 @@
     {"x": 20, "y": 72},
     {"x": 854, "y": 72}
   ],
-  "crowd": {"x0": 300, "x1": 1050, "feet": 286, "step": 140},
+  "crowd": {"x0": 328, "x1": 1020, "feet": 292, "step": 162},
   "panels": 3
 }

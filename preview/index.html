@@ -105,6 +105,7 @@
       <label>Zoom (100 = 1:1) <input id="stageZoom" type="range" min="45" max="140" value="70"></label>
       <button id="stageJump" type="button">Simular salto</button>
       <label><input id="togCrowd" type="checkbox" checked> Público</label>
+      <label><input id="togRing" type="checkbox" checked> Ring delante</label>
       <label><input id="togLed" type="checkbox" checked> Pantallas</label>
       <label><input id="togGirl" type="checkbox" checked> Voltia</label>
       <label><input id="togFloor" type="checkbox" checked> Línea de suelo</label>
@@ -313,7 +314,7 @@
   const cx = cv.getContext('2d');
   cx.imageSmoothingEnabled = false;
   const note = document.getElementById('stageNote');
-  let spec = null, bg = null, stance = null;
+  let spec = null, bg = null, ring = null, stance = null;
   const led = [], crowd = [];
   let scroll = 0.5, zoom = 0.7, jump = 0, t0 = performance.now();
 
@@ -367,6 +368,9 @@
         blit(f, x, band.feet - f.height);
       }
     }
+    if (document.getElementById('togRing').checked && ring) {
+      cx.drawImage(ring, c.x, c.y, c.w, c.h, 0, 0, cv.width, cv.height);
+    }
     if (document.getElementById('togGirl').checked && stance) {
       const feet = spec.floorY - jump;
       blit(stance, bg.width / 2 - stance.width / 2, feet - stance.height);
@@ -396,6 +400,7 @@
   (async () => {
     spec = await (await fetch('../voltia/stage/stage.json', { cache: 'no-store' })).json();
     bg = await load('../voltia/stage/' + spec.active);
+    ring = spec.ring ? await load('../voltia/stage/' + spec.ring) : null;
     stance = await load('../voltia/stage/' + (spec.fighter || 'fighter.png'));
     for (let i = 0; i < 4; i++) {
       led.push(await load('../voltia/stage/led/f' + i + '.png'));
@@ -405,7 +410,7 @@
       `<b>${spec.name}</b> · ${bg.width}×${bg.height} px · 4× la figura. ` +
       `Voltia ${stance.width}×${stance.height}, a 1:1. Zoom 100 = el pixel real.<br>` +
       `${spec.note} ` +
-      `Los sprites sueltos son solo las pantallas y el público, enteros, sin estirar.`;
+      `Orden: fondo, pantallas, público, ring (cuerdas y postes delante), Voltia.`;
     draw();
   })().catch(err => { note.textContent = 'No se pudo cargar el escenario: ' + err; });
 })();
