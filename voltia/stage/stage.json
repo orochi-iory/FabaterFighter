@@ -1,6 +1,6 @@
 {
   "name": "Cyber Fist",
-  "note": "El ring, las cuerdas y los postes van en ring.png, con transparencia entre las cuerdas. El público se dibuja detrás, un poco más grande (8/7), para que las cuerdas lo tapen y los asientos no le queden grandes.",
+  "note": "Gradas llenas, en varias filas, detrás del ring. Dos focos barren despacio desde las lámparas. En las entradas laterales y en las esquinas delanteras del ring late un sello geométrico, corto y clandestino.",
   "active": "bg.png",
   "ring": "ring.png",
   "floorY": 408,
@@ -10,6 +10,23 @@
     {"x": 20, "y": 72},
     {"x": 854, "y": 72}
   ],
-  "crowd": {"x0": 328, "x1": 1020, "feet": 292, "step": 162},
+  "rows": [
+    {"x0": 328, "x1": 1020, "feet": 292, "step": 162, "phase": 0},
+    {"x0": 370, "x1": 980, "feet": 274, "step": 162, "phase": 2},
+    {"x0": 410, "x1": 940, "feet": 258, "step": 168, "phase": 1},
+    {"x0": 70, "x1": 250, "feet": 286, "step": 160, "phase": 1},
+    {"x0": 1088, "x1": 1280, "feet": 286, "step": 160, "phase": 3}
+  ],
+  "sigils": [
+    {"x": 290, "y": 382, "phase": 0},
+    {"x": 1032, "y": 382, "phase": 2},
+    {"x": 140, "y": 496, "phase": 1},
+    {"x": 1188, "y": 496, "phase": 3}
+  ],
+  "spots": [
+    {"x": 408, "y": 28, "y1": 460, "amp": 84, "speed": 0.5, "phase": 0, "wide": 26, "alpha": 0.16, "color": [70, 220, 230]},
+    {"x": 934, "y": 30, "y1": 460, "amp": 72, "speed": 0.38, "phase": 2.2, "wide": 20, "alpha": 0.13, "color": [190, 48, 150]},
+    {"x": 670, "y": 16, "y1": 440, "amp": 40, "speed": 0.26, "phase": 1.1, "wide": 34, "alpha": 0.07, "color": [90, 170, 200]}
+  ],
   "panels": 3
 }

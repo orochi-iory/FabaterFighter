@@ -106,6 +106,8 @@
       <button id="stageJump" type="button">Simular salto</button>
       <label><input id="togCrowd" type="checkbox" checked> Público</label>
       <label><input id="togRing" type="checkbox" checked> Ring delante</label>
+      <label><input id="togSpot" type="checkbox" checked> Focos</label>
+      <label><input id="togSigil" type="checkbox" checked> Sellos</label>
       <label><input id="togLed" type="checkbox" checked> Pantallas</label>
       <label><input id="togGirl" type="checkbox" checked> Voltia</label>
       <label><input id="togFloor" type="checkbox" checked> Línea de suelo</label>
@@ -315,7 +317,8 @@
   cx.imageSmoothingEnabled = false;
   const note = document.getElementById('stageNote');
   let spec = null, bg = null, ring = null, stance = null;
-  const led = [], crowd = [];
+  const led = [], crowd = [], sigil = [];
+  let fxCanvas = null;
   let scroll = 0.5, zoom = 0.7, jump = 0, t0 = performance.now();
 
   function load(src) {
@@ -343,6 +346,49 @@
     return { x, y, w: Math.min(vw, bg.width - x), h: Math.min(vh, bg.height - y) };
   }
 
+  function paintBeam(fxx, lampX, lampY, floorX, floorY, w0, w1, rgb, alpha, cam) {
+    const y0 = lampY - cam.y;
+    const y1 = floorY - cam.y;
+    const span = y1 - y0;
+    if (span <= 1) return;
+    fxx.fillStyle = `rgba(${rgb[0]},${rgb[1]},${rgb[2]},${alpha})`;
+    const yStart = Math.max(0, y0 | 0);
+    const yEnd = Math.min(fxx.canvas.height - 1, y1 | 0);
+    for (let y = yStart; y <= yEnd; y++) {
+      const t = (y - y0) / span;
+      const cxw = lampX + (floorX - lampX) * t - cam.x;
+      const half = w0 + (w1 - w0) * t;
+      const x0 = Math.round(cxw - half);
+      const x1 = Math.round(cxw + half);
+      const left = Math.max(0, x0);
+      const right = Math.min(fxx.canvas.width, x1);
+      if (right > left) fxx.fillRect(left, y, right - left, 1);
+    }
+  }
+
+  function paintSpots(cam) {
+    if (!fxCanvas) fxCanvas = document.createElement('canvas');
+    if (fxCanvas.width !== cam.w || fxCanvas.height !== cam.h) {
+      fxCanvas.width = cam.w;
+      fxCanvas.height = cam.h;
+    }
+    const fxx = fxCanvas.getContext('2d');
+    fxx.imageSmoothingEnabled = false;
+    fxx.clearRect(0, 0, cam.w, cam.h);
+    const t = performance.now() / 1000;
+    for (const s of spec.spots) {
+      const wobble = 0.85 + 0.15 * Math.sin(t * 7 + s.phase);
+      const swing = Math.sin(t * s.speed + s.phase) * s.amp;
+      const floorX = s.x + swing;
+      paintBeam(fxx, s.x, s.y, floorX, s.y1, 1, s.wide, s.color, s.alpha * wobble, cam);
+      paintBeam(fxx, s.x, s.y, floorX, s.y1, 1, s.wide * 0.35, s.color, s.alpha * 1.6 * wobble, cam);
+    }
+    cx.save();
+    cx.globalCompositeOperation = 'lighter';
+    cx.drawImage(fxCanvas, 0, 0, cv.width, cv.height);
+    cx.restore();
+  }
+
   function draw() {
     if (!spec || !bg) return;
     const c = cam();
@@ -360,20 +406,31 @@
       for (const s of spec.screens) blit(f, s.x, s.y);
     }
     if (document.getElementById('togCrowd').checked && crowd.length) {
-      const band = spec.crowd;
-      const step = band.step || crowd[0].width;
-      let i = 0;
-      for (let x = band.x0; x + step <= band.x1 + 8; x += step, i++) {
-        const f = crowd[(tick + i) % crowd.length];
-        blit(f, x, band.feet - f.height);
+      const rows = spec.rows || (spec.crowd ? [spec.crowd] : []);
+      for (const band of rows) {
+        const step = band.step || crowd[0].width;
+        let i = 0;
+        for (let x = band.x0; x + step <= band.x1 + 8; x += step, i++) {
+          const f = crowd[(tick + i + (band.phase || 0)) % crowd.length];
+          blit(f, x, band.feet - f.height);
+        }
       }
     }
     if (document.getElementById('togRing').checked && ring) {
       cx.drawImage(ring, c.x, c.y, c.w, c.h, 0, 0, cv.width, cv.height);
     }
+    if (document.getElementById('togSigil').checked && sigil.length) {
+      for (const s of spec.sigils || []) {
+        const f = sigil[(Math.floor(tick / 4) + (s.phase || 0)) % sigil.length];
+        blit(f, s.x - f.width / 2, s.y - f.height / 2);
+      }
+    }
     if (document.getElementById('togGirl').checked && stance) {
       const feet = spec.floorY - jump;
       blit(stance, bg.width / 2 - stance.width / 2, feet - stance.height);
+    }
+    if (document.getElementById('togSpot').checked && spec.spots) {
+      paintSpots(c);
     }
     if (document.getElementById('togFloor').checked) {
       const y = (spec.floorY - c.y) * sy;
@@ -405,12 +462,13 @@
     for (let i = 0; i < 4; i++) {
       led.push(await load('../voltia/stage/led/f' + i + '.png'));
       crowd.push(await load('../voltia/stage/crowd/f' + i + '.png'));
+      sigil.push(await load('../voltia/stage/fx/sigil_f' + i + '.png'));
     }
     note.innerHTML =
       `<b>${spec.name}</b> · ${bg.width}×${bg.height} px · 4× la figura. ` +
       `Voltia ${stance.width}×${stance.height}, a 1:1. Zoom 100 = el pixel real.<br>` +
       `${spec.note} ` +
-      `Orden: fondo, pantallas, público, ring (cuerdas y postes delante), Voltia.`;
+      `Orden: fondo, pantallas, público, ring, sellos, Voltia, focos.`;
     draw();
   })().catch(err => { note.textContent = 'No se pudo cargar el escenario: ' + err; });
 })();
