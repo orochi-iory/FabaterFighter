@@ -1,18 +1,36 @@
 {
   "name": "Cyber Fist",
-  "note": "Panorámica en una sola imagen (para no perder coherencia) y partida en 3 paneles de 544 px. Los sprites animados están calibrados sobre C2.",
+  "note": "1 px del escenario = 1 px de Voltia. Alto 784, figura 151 (5,2×): hay foso bajo los pies y aire de sobra para el salto. El fondo no pinta público ni pantallas; van en sprites, a su tamaño, sin estirar.",
   "active": "bg.png",
   "candidates": [
-    {"id": "c2", "file": "bg.png", "label": "C2 — cartel enmarcado"},
-    {"id": "c1", "file": "bg_c1.png", "label": "C1 — cartel suelto"}
+    {
+      "id": "v2",
+      "file": "bg.png",
+      "label": "v2 — pixel de Voltia"
+    }
   ],
-  "floorY": 540,
-  "fighterH": 153,
-  "view": {"w": 480, "h": 270},
+  "floorY": 700,
+  "apron": 48,
+  "fighter": "fighter.png",
+  "view": {
+    "w": 480,
+    "h": 270
+  },
   "screens": [
-    {"x": 208, "y": 152, "w": 250, "h": 80},
-    {"x": 1176, "y": 152, "w": 248, "h": 80}
+    {
+      "x": 20,
+      "y": 252
+    },
+    {
+      "x": 854,
+      "y": 252
+    }
   ],
-  "crowd": {"x0": 90, "x1": 1540, "y": 330, "h": 40},
+  "crowd": {
+    "x0": 300,
+    "x1": 1040,
+    "feet": 430,
+    "step": 150
+  },
   "panels": 3
 }

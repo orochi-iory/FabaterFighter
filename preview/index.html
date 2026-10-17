@@ -105,7 +105,7 @@
         <select id="stagePick"></select>
       </label>
       <label>Desplazamiento <input id="stageScroll" type="range" min="0" max="1000" value="500"></label>
-      <label>Zoom <input id="stageZoom" type="range" min="65" max="140" value="100"></label>
+      <label>Zoom (100 = 1:1) <input id="stageZoom" type="range" min="35" max="140" value="100"></label>
       <button id="stageJump" type="button">Simular salto</button>
       <label><input id="togCrowd" type="checkbox" checked> Público</label>
       <label><input id="togLed" type="checkbox" checked> Pantallas</label>
@@ -336,11 +336,15 @@
   }
   function cam() {
     const w = world();
-    const maxX = Math.max(0, bg.width - w.w);
-    const x = scroll * maxX;
-    let y = spec.floorY - w.h * 0.78 - jump * 0.35;
-    y = Math.max(0, Math.min(bg.height - w.h, y));
-    return { x, y, w: w.w, h: w.h };
+    const vw = Math.max(1, Math.round(w.w));
+    const vh = Math.max(1, Math.round(w.h));
+    const maxX = Math.max(0, bg.width - vw);
+    const x = Math.round(scroll * maxX);
+    // el suelo queda cerca del borde inferior; el salto desplaza la cámara
+    // para que se vea el aire de arriba sin recortar a Voltia
+    let y = spec.floorY + (spec.apron || 48) - vh - jump;
+    y = Math.round(Math.max(0, Math.min(Math.max(0, bg.height - vh), y)));
+    return { x, y, w: Math.min(vw, bg.width - x), h: Math.min(vh, bg.height - y) };
   }
 
   function draw() {
@@ -354,24 +358,24 @@
     const toX = (x) => (x - c.x) * sx;
     const toY = (y) => (y - c.y) * sy;
 
+    // sprites a 1:1 en el mundo: el destino es el tamaño del PNG × la escala
+    // de la cámara. Nunca se estiran para rellenar un hueco.
+    const blit = (img, x, y) => {
+      cx.drawImage(img, Math.round(toX(x)), Math.round(toY(y)),
+        Math.round(img.width * sx), Math.round(img.height * sy));
+    };
     if (document.getElementById('togCrowd').checked && crowd.length) {
       const band = spec.crowd;
-      const fr = crowd[tick % crowd.length];
-      const h = band.h;
-      const fw = fr.width * (h / fr.height);
+      const step = band.step || crowd[0].width;
       let i = 0;
-      for (let x = band.x0; x < band.x1; x += fw - 2, i++) {
+      for (let x = band.x0; x + step <= band.x1 + 8; x += step, i++) {
         const f = crowd[(tick + i) % crowd.length];
-        cx.drawImage(f, toX(x), toY(band.y), fw * sx, h * sy);
+        blit(f, x, band.feet - f.height);
       }
     }
     if (document.getElementById('togLed').checked && led.length) {
       const f = led[tick % led.length];
-      for (const s of spec.screens) {
-        const dh = s.h, dw = dh * (f.width / f.height);
-        const dx = s.x + (s.w - dw) / 2;
-        cx.drawImage(f, toX(dx), toY(s.y), dw * sx, dh * sy);
-      }
+      for (const s of spec.screens) blit(f, s.x, s.y);
     }
     if (document.getElementById('togSeam').checked) {
       const pw = bg.width / (spec.panels || 3);
@@ -390,10 +394,8 @@
       cx.setLineDash([]);
     }
     if (document.getElementById('togGirl').checked && stance) {
-      const fh = spec.fighterH;
-      const fw = stance.width * (fh / stance.height);
       const feet = spec.floorY - jump;
-      cx.drawImage(stance, toX(bg.width / 2 - fw / 2), toY(feet - fh), fw * sx, fh * sy);
+      blit(stance, bg.width / 2 - stance.width / 2, feet - stance.height);
     }
     requestAnimationFrame(draw);
   }
@@ -418,7 +420,7 @@
     const t = performance.now();
     const step = (now) => {
       const k = (now - t) / 700;
-      jump = k < 1 ? Math.sin(k * Math.PI) * 130 : 0;
+      jump = k < 1 ? Math.sin(k * Math.PI) * 170 : 0;
       if (k < 1) requestAnimationFrame(step);
     };
     requestAnimationFrame(step);
@@ -427,19 +429,22 @@
   (async () => {
     spec = await (await fetch('../voltia/stage/stage.json', { cache: 'no-store' })).json();
     bg = await load('../voltia/stage/' + spec.active);
-    stance = await load('../voltia/frames/voltia_stance_0.png');
+    stance = await load('../voltia/stage/' + (spec.fighter || 'fighter.png'));
     for (let i = 0; i < 4; i++) {
       led.push(await load('../voltia/stage/led/f' + i + '.png'));
       crowd.push(await load('../voltia/stage/crowd/f' + i + '.png'));
     }
     fillPick();
     note.innerHTML =
-      `<b>${spec.name}</b> · ${bg.width}×${bg.height} px · partido en ` +
+      `<b>${spec.name}</b> · ${bg.width}×${bg.height} px · ` +
       `<b>${spec.panels} paneles</b> de ${bg.width / spec.panels | 0} px. ` +
-      `${spec.note}<br>` +
-      `Capas: <b>fondo</b> fijo · <b>pantallas LED</b> 4 frames · <b>público</b> 4 frames. ` +
-      `El desplazamiento y el zoom son de cámara: hay aire arriba para el salto. ` +
-      `El paralaje por capas (fondo más lento que el ring) es el siguiente paso.`;
+      `Voltia ${stance.width}×${stance.height} px, dibujada a 1:1. ` +
+      `Zoom 100 = un píxel del escenario es un píxel de ella. ` +
+      `Aléjalo para ver gradas y pantallas.<br>` +
+      `${spec.note} ` +
+      `Capas: <b>fondo</b> · <b>pantallas</b> ${led[0].width}×${led[0].height} · ` +
+      `<b>público</b> ${crowd[0].width}×${crowd[0].height}. ` +
+      `El salto (170 px) cabe en el aire de arriba.`;
     draw();
   })().catch(err => { note.textContent = 'No se pudo cargar el escenario: ' + err; });
 })();
