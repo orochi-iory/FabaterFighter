@@ -18,7 +18,9 @@
       jumpX: 2.3,
       gravity: 0.42,
       airAccel: 0.06,
-      airMax: 3.1
+      airMax: 3.1,
+      backHopV: -5.2,
+      backHopX: 3.1
     },
     hurt: {
       stand: { x: -22, y: -138, w: 46, h: 134 },

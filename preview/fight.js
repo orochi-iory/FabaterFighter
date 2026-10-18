@@ -190,7 +190,9 @@
         jumpX: spd(ph.jumpX),
         gravity: accel(ph.gravity),
         airAccel: accel(ph.airAccel),
-        airMax: spd(ph.airMax)
+        airMax: spd(ph.airMax),
+        backHopV: spd(ph.backHopV != null ? ph.backHopV : ph.jumpV * 0.55),
+        backHopX: spd(ph.backHopX != null ? ph.backHopX : ph.walkB)
       }
     });
   }
@@ -204,7 +206,7 @@
       state: 'idle', anim: 'stance', frame: 0, animAcc: 0, animDone: false,
       move: null, strength: 'strong', landed: [], didHit: false, spawned: false, airUsed: false,
       stun: 0, invuln: 0, flash: 0, combo: 0, comboTimer: 0, comboAge: 0, regenWait: 0,
-      kb: 0, dirs: [], lastFwd: -99, buffer: null, bolt: null, btnAt: { punch: -9, kick: -9 },
+      kb: 0, dirs: [], lastFwd: -99, lastBack: -99, airTime: 0, buffer: null, bolt: null, btnAt: { punch: -9, kick: -9 },
       blockFor: 0, blockLow: false, aiCd: 0.4, aiStep: 0, aiQueue: null
     };
   }
@@ -502,7 +504,7 @@
   }
 
   function tickAnim(p, dt) {
-    if (p.state === 'jump' || p.state === 'launch') {
+    if (p.state === 'jump' || p.state === 'launch' || p.state === 'backdash') {
       const n = animOf(p).frames;
       const jv = p.def.phys.jumpV;
       if (p.vy < jv * 0.24) p.frame = Math.min(1, n - 1);
@@ -568,7 +570,7 @@
 
   function blocking(defender, hit, inp) {
     if (defender.invuln > 0) return false;
-    if (defender.state === 'jump' || defender.state === 'launch' || defender.state === 'knockdown' || defender.state === 'ko' || defender.state === 'attack' || defender.state === 'hit') return false;
+    if (defender.state === 'jump' || defender.state === 'launch' || defender.state === 'backdash' || defender.state === 'knockdown' || defender.state === 'ko' || defender.state === 'attack' || defender.state === 'hit') return false;
     if (!holdingBack(defender, inp)) return false;
     if (hit.level === 'low' && !inp.down) return false;
     if (hit.level === 'overhead' && inp.down) return false;
@@ -766,7 +768,7 @@
   }
 
   function physics(p, dt) {
-    if (p.state === 'jump' || p.state === 'launch' || p.y < FLOOR) {
+    if (p.state === 'jump' || p.state === 'launch' || p.state === 'backdash' || p.y < FLOOR) {
       p.vy += p.def.phys.gravity * dt;
       p.x += p.vx * dt;
       p.y += p.vy * dt;
@@ -814,6 +816,7 @@
     }
     if (p.state === 'ko' || p.state === 'victory') { tickAnim(p, dt); return; }
     if (p.state === 'launch') { tickAnim(p, dt); physics(p, dt); return; }
+    if (p.state === 'backdash') { tickAnim(p, dt); physics(p, dt); return; }
     rememberDir(p, relDir(p, inp));
     if (p.state === 'idle' || p.state === 'walk' || p.state === 'crouch') {
       if (opp(p).x !== p.x) p.face = opp(p).x > p.x ? 1 : -1;
@@ -853,6 +856,17 @@
       physics(p, dt);
       return;
     }
+    if (backEdge(p, inp)) {
+      p.state = 'backdash';
+      p.vy = p.def.phys.backHopV;
+      p.vx = -p.face * p.def.phys.backHopX;
+      p.airUsed = true;
+      p.y -= 0.5;
+      setAnim(p, 'jump', true);
+      tickAnim(p, dt);
+      physics(p, dt);
+      return;
+    }
     if (fwdEdge(p, inp)) {
       p.state = 'dash';
       p.vx = 0;
@@ -888,17 +902,45 @@
     tickAnim(p, dt);
   }
 
-  function fwdEdge(p, inp) {
+  function tapEdge(p, inp, dir) {
     if (p.id === 1 && cpuOn()) return false;
-    const forward = inp.x === p.face && (
-      (p.face > 0 && ((p.id === 0 && pressed.has('KeyD')) || (p.id === 1 && pressed.has('ArrowRight')))) ||
-      (p.face < 0 && ((p.id === 0 && pressed.has('KeyA')) || (p.id === 1 && pressed.has('ArrowLeft'))))
-    );
-    if (!forward) return false;
-    const gap = time - p.lastFwd;
+    const want = dir > 0 ? p.face : -p.face;
+    if (inp.x !== want) return false;
+    const key = p.id === 0 ? (want > 0 ? 'KeyD' : 'KeyA') : (want > 0 ? 'ArrowRight' : 'ArrowLeft');
+    if (!pressed.has(key)) return false;
+    const stamp = dir > 0 ? 'lastFwd' : 'lastBack';
+    const gap = time - p[stamp];
     const ok = gap <= sec(18) && gap >= sec(3);
-    p.lastFwd = time;
+    p[stamp] = time;
     return ok && (p.state === 'idle' || p.state === 'walk');
+  }
+
+  function fwdEdge(p, inp) { return tapEdge(p, inp, 1); }
+  function backEdge(p, inp) { return tapEdge(p, inp, -1); }
+
+  function keepFalling(p, dt) {
+    if (!p) return;
+    if (p.y >= FLOOR) {
+      p.airTime = 0;
+      return;
+    }
+    p.airTime = (p.airTime || 0) + dt;
+    const roundOver = phase === 'end' || p.state === 'victory' || p.state === 'ko';
+    const stuck = p.airTime > 1.45;
+    if (!roundOver && !stuck) return;
+    if (roundOver && p.vy < 0) p.vy *= 0.4;
+    if (stuck) p.vy = Math.max(p.vy, spd(3.5));
+    p.vy += p.def.phys.gravity * dt;
+    p.y += p.vy * dt;
+    p.x += (p.vx || 0) * dt;
+    clampX(p);
+    if (p.y >= FLOOR) {
+      p.y = FLOOR;
+      p.vy = 0;
+      p.vx = 0;
+      p.airTime = 0;
+      p.airUsed = false;
+    }
   }
 
   function separate() {
@@ -1061,6 +1103,7 @@
     hitKick *= Math.pow(0.78, dt * HZ);
     if (Math.abs(hitKick) < 0.15) hitKick = 0;
     if (flashScreen > 0) flashScreen = Math.max(0, flashScreen - dt);
+    for (let i = 0; i < 2; i++) keepFalling(P[i], dt);
     pressed.clear();
   }
 
@@ -1559,7 +1602,9 @@
     if (!artCache[raw.sheet]) {
       const sheetUrl = new URL(raw.sheet, location.href);
       const meta = await (await fetch(sheetUrl.href, { cache: 'no-store' })).json();
-      const img = await loadImage(new URL(meta.sprite, sheetUrl).href);
+      const imgUrl = new URL(meta.sprite, sheetUrl);
+      imgUrl.searchParams.set('v', '3');
+      const img = await loadImage(imgUrl.href);
       const anims = {};
       for (let i = 0; i < meta.animations.length; i++) anims[meta.animations[i].id] = meta.animations[i];
       artCache[raw.sheet] = { img, anims, cell: [meta.cell.w, meta.cell.h] };
