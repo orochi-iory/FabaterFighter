@@ -119,43 +119,21 @@
     if (actx.state === 'suspended') actx.resume();
   }
 
-  function tone(freq, dur, gain, type) {
-    resumeAudio();
-    const o = actx.createOscillator();
-    const g = actx.createGain();
-    o.type = type || 'sine';
-    o.frequency.value = freq;
-    g.gain.setValueAtTime(Math.max(0.001, gain), actx.currentTime);
-    g.gain.exponentialRampToValueAtTime(0.001, actx.currentTime + dur);
-    o.connect(g);
-    g.connect(actx.destination);
-    o.start();
-    o.stop(actx.currentTime + dur);
-  }
+  const HIT_SFX = {
+    weak: ['sfx/hit_weak_1.wav?v=1', 'sfx/hit_weak_2.wav?v=1', 'sfx/hit_weak_3.wav?v=1', 'sfx/hit_weak_4.wav?v=1'],
+    strong: ['sfx/hit_strong_1.wav?v=1', 'sfx/hit_strong_2.wav?v=1', 'sfx/hit_strong_3.wav?v=1', 'sfx/hit_strong_4.wav?v=1']
+  };
+  let lastSfx = '';
 
   function impactSound(weight, blocked) {
-    try {
-      const w = Math.max(1, Math.min(5, weight || 1));
-      const dur = blocked ? 0.04 : 0.045 + w * 0.016;
-      resumeAudio();
-      const n = Math.max(1, Math.floor(actx.sampleRate * dur));
-      const buffer = actx.createBuffer(1, n, actx.sampleRate);
-      const data = buffer.getChannelData(0);
-      for (let i = 0; i < n; i++) data[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / n, blocked ? 1.8 : 1.15);
-      const src = actx.createBufferSource();
-      src.buffer = buffer;
-      const filter = actx.createBiquadFilter();
-      filter.type = 'lowpass';
-      filter.frequency.value = blocked ? 1600 : Math.max(320, 2400 - w * 380);
-      const g = actx.createGain();
-      g.gain.value = blocked ? 0.05 : 0.06 + w * 0.028;
-      src.connect(filter);
-      filter.connect(g);
-      g.connect(actx.destination);
-      src.start();
-      tone(blocked ? 620 : Math.max(110, 460 - w * 68), dur + 0.03, blocked ? 0.02 : 0.025 + w * 0.008, 'triangle');
-      if (!blocked && w >= 3) tone(78 - w * 4, 0.14, 0.04 + w * 0.008, 'sine');
-    } catch (err) {}
+    const kind = (!blocked && (weight || 1) >= 3) ? 'strong' : 'weak';
+    const list = HIT_SFX[kind];
+    let i = Math.floor(Math.random() * list.length);
+    if (list[i] === lastSfx) i = (i + 1) % list.length;
+    lastSfx = list[i];
+    const a = new Audio(list[i]);
+    a.volume = blocked ? 0.42 : (kind === 'strong' ? 0.8 : 0.62);
+    a.play().catch(() => {});
   }
 
   function voice(def, key) {
@@ -226,7 +204,7 @@
       state: 'idle', anim: 'stance', frame: 0, animAcc: 0, animDone: false,
       move: null, strength: 'strong', landed: [], didHit: false, spawned: false, airUsed: false,
       stun: 0, invuln: 0, flash: 0, combo: 0, comboTimer: 0, comboAge: 0, regenWait: 0,
-      kb: 0, dirs: [], lastFwd: -99, buffer: null, bolt: null,
+      kb: 0, dirs: [], lastFwd: -99, buffer: null, bolt: null, btnAt: { punch: -9, kick: -9 },
       blockFor: 0, blockLow: false, aiCd: 0.4, aiStep: 0, aiQueue: null
     };
   }
@@ -298,23 +276,48 @@
     if (p.dirs.length > 16) p.dirs.shift();
   }
 
-  function motion(p, seq, window) {
+  function motion(p, seq, window, opts) {
     const limit = window || 0.5;
-    if (!seq.length || !p.dirs.length) return false;
-    let end = p.dirs.length - 1;
-    if (p.dirs[end].d === 5 && end > 0 && time - p.dirs[end - 1].t <= 0.1) end--;
-    const last = p.dirs[end];
-    if (time - last.t > limit || last.d !== seq[seq.length - 1]) return false;
-    let s = seq.length - 2;
-    for (let i = end - 1; i >= 0 && s >= 0; i--) {
-      if (time - p.dirs[i].t > limit) return false;
-      const d = p.dirs[i].d;
-      if (d === 5) continue;
-      if (d === seq[s]) { s--; continue; }
-      if (d === seq[s + 1]) continue;
-      return false;
+    const release = (opts && opts.release) || [5];
+    const releaseTime = opts && opts.releaseTime != null ? opts.releaseTime : 0.14;
+    const tapGap = opts && opts.tapGap;
+    const dirs = p.dirs;
+    if (!seq.length || !dirs.length) return false;
+    const ends = [dirs.length - 1];
+    const lastI = dirs.length - 1;
+    if (release.indexOf(dirs[lastI].d) !== -1) {
+      for (let i = lastI - 1; i >= 0; i--) {
+        if (time - dirs[i + 1].t > releaseTime) break;
+        if (release.indexOf(dirs[i].d) === -1) { ends.push(i); break; }
+      }
     }
-    return s < 0;
+    for (let e = 0; e < ends.length; e++) {
+      const end = ends[e];
+      if (time - dirs[end].t > limit || dirs[end].d !== seq[seq.length - 1]) continue;
+      let s = seq.length - 2;
+      let prevT = dirs[end].t;
+      let ok = s < 0;
+      for (let i = end - 1; i >= 0 && s >= 0; i--) {
+        if (time - dirs[i].t > limit) { ok = false; break; }
+        const d = dirs[i].d;
+        if (d === 5) continue;
+        if (d === seq[s + 1]) continue;
+        if (d !== seq[s]) { ok = false; break; }
+        if (tapGap && s === 0 && prevT - dirs[i].t > tapGap) { ok = false; break; }
+        prevT = dirs[i].t;
+        s--;
+        ok = s < 0;
+      }
+      if (ok && s < 0) return true;
+    }
+    return false;
+  }
+
+  function commandMatches(p, cmd) {
+    if (motion(p, cmd.seq, cmd.window, cmd)) return true;
+    const alt = cmd.alt || [];
+    for (let i = 0; i < alt.length; i++) if (motion(p, alt[i], cmd.window, cmd)) return true;
+    return false;
   }
 
   function humanInput(map) {
@@ -437,13 +440,36 @@
     return (p.face > 0 && inp.holdL) || (p.face < 0 && inp.holdR);
   }
 
-  function btnDown(inp, kind) {
-    return kind === 'kick' ? (inp.lk || inp.hk) : (inp.lp || inp.hp);
+  function noteButtons(p, inp) {
+    if (inp.lp || inp.hp) {
+      p.btnAt.punch = time;
+      p.btnAt.punchStrong = !!inp.hp;
+    }
+    if (inp.lk || inp.hk) {
+      p.btnAt.kick = time;
+      p.btnAt.kickStrong = !!inp.hk;
+    }
+  }
+
+  function btnRecent(p, kind) {
+    const at = kind === 'kick' ? p.btnAt.kick : p.btnAt.punch;
+    return time - at <= 0.16;
   }
 
   function strengthOf(inp, kind) {
     if (kind === 'kick') return inp.hk ? 'strong' : 'weak';
     return inp.hp ? 'strong' : 'weak';
+  }
+
+  function cmdStrength(p, inp, kind) {
+    if (kind === 'kick') {
+      if (inp.hk) return 'strong';
+      if (inp.lk) return 'weak';
+      return p.btnAt.kickStrong ? 'strong' : 'weak';
+    }
+    if (inp.hp) return 'strong';
+    if (inp.lp) return 'weak';
+    return p.btnAt.punchStrong ? 'strong' : 'weak';
   }
 
   function tryAttack(p, inp) {
@@ -465,9 +491,9 @@
     const cmds = p.def.commands || [];
     for (let i = 0; i < cmds.length; i++) {
       const cmd = cmds[i];
-      if (cmd.type !== 'motion' || !btnDown(inp, cmd.btn)) continue;
-      if (!motion(p, cmd.seq, cmd.window)) continue;
-      startMove(p, cmd.move, strengthOf(inp, cmd.btn));
+      if (cmd.type !== 'motion' || !btnRecent(p, cmd.btn)) continue;
+      if (!commandMatches(p, cmd)) continue;
+      startMove(p, cmd.move, cmdStrength(p, inp, cmd.btn));
       return;
     }
     const table = inp.down ? p.def.normals.crouch : p.def.normals.stand;
@@ -764,6 +790,7 @@
   function control(p, inp, dt) {
     p._down = inp.down;
     p.inpDown = inp.down;
+    if (phase === 'fight' && !paused) noteButtons(p, inp);
     if (phase !== 'fight' || paused) {
       if (phase === 'end') tickAnim(p, dt);
       return;
@@ -1069,10 +1096,17 @@
   }
 
   function drawFighter(p) {
-    if (p.flash > 0 && Math.floor(worldTime * 12) % 2 === 0) return;
+    // El destello ilumina. No se oculta el sprite: en el freeze del golpe se quedaba invisible.
     const a = animOf(p);
     const frame = Math.max(0, Math.min(a.frames - 1, p.frame || 0));
     drawSheet(p, frame, a.row, p.x, p.y, p.face, p.def.pivot[0], p.def.pivot[1], p.def.scale);
+    if (p.flash > 0) {
+      ctx.save();
+      ctx.globalCompositeOperation = 'lighter';
+      ctx.globalAlpha = 0.7;
+      drawSheet(p, frame, a.row, p.x, p.y, p.face, p.def.pivot[0], p.def.pivot[1], p.def.scale);
+      ctx.restore();
+    }
   }
 
   function drawImpacts() {
@@ -1537,6 +1571,8 @@
   (async () => {
     try {
       for (let i = 0; i < MATCH.length; i++) await loadChar(MATCH[i]);
+      const sfxAll = HIT_SFX.weak.concat(HIT_SFX.strong);
+      for (let i = 0; i < sfxAll.length; i++) new Audio(sfxAll[i]);
       spec = await (await fetch('../voltia/stage/stage.json', { cache: 'no-store' })).json();
       bg = await loadImage('../voltia/stage/' + spec.active);
       ring = await loadImage('../voltia/stage/' + spec.ring);

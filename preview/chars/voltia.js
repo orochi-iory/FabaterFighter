@@ -44,9 +44,9 @@
       air: { lp: 'jump_kick', hp: 'jump_kick', lk: 'jump_kick', hk: 'jump_kick' }
     },
     commands: [
-      { type: 'motion', move: 'uppercut', seq: [6, 2, 3], btn: 'punch', window: 0.42 },
-      { type: 'motion', move: 'spinkick', seq: [2, 1, 4], btn: 'kick', window: 0.5 },
-      { type: 'motion', move: 'rayo', seq: [2, 3, 6], btn: 'punch', window: 0.55 }
+      { type: 'motion', move: 'uppercut', btn: 'punch', window: 0.55, seq: [6, 2, 3], alt: [[6, 3]], release: [5, 6], releaseTime: 0.5, tapGap: 0.42 },
+      { type: 'motion', move: 'spinkick', btn: 'kick', window: 0.55, seq: [2, 1, 4], alt: [[2, 4], [1, 4]], release: [5], releaseTime: 0.16 },
+      { type: 'motion', move: 'rayo', btn: 'punch', window: 0.55, seq: [2, 3, 6], release: [5], releaseTime: 0.14 }
     ],
     moves: {
       punch_weak: {
