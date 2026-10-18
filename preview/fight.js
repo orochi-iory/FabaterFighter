@@ -1,86 +1,21 @@
-/* Cyber Fist. El reloj es de segundos reales: el salto y el paso son los de antes,
-   expresados en px/s para que un monitor a 120 Hz no acelere la pelea.
-   Los niveles de IA viven en AI_LEVELS: añadir uno es añadir una ficha. */
+/* Motor de Cyber Fist. No conoce los golpes de Voltia: los lee de window.ROSTER.
+   El reloj es de segundos reales. La cámara recorre el ring y acerca el zoom
+   cuando se juntan o cuando un golpe pide zoom. */
 (function () {
   const HZ = 60;
   const STEP = 1 / HZ;
   const sec = (frames) => frames / HZ;
   const spd = (pxPerFrame) => pxPerFrame * HZ;
-  const acc = (pxPerFrame) => pxPerFrame * HZ * HZ;
+  const accel = (pxPerFrame) => pxPerFrame * HZ * HZ;
 
   const FLOOR = 408;
-  const WALL_L = 452;
-  const WALL_R = 892;
-  const SCALE = 0.5;
-  const PIVOT_X = 175;
-  const PIVOT_Y = 324;
-  const CELL_W = 350;
-  const CELL_H = 332;
-  const CAM = { x: 352, y: 149, w: 640, h: 360 };
-  const MAX_HP = 700;
+  const WALL_L = 286;
+  const WALL_R = 1058;
+  const STAGE_W = 1344;
+  const STAGE_H = 604;
   const ROUND_TIME = 60;
-  const WALK_F = spd(2.85);
-  const WALK_B = spd(2.15);
-  const DASH_V = spd(6.2);
-  const JUMP_V = spd(-9.3);
-  const JUMP_G = acc(0.42);
-  const AIR_A = acc(0.06);
-  const AIR_MAX = spd(3.1);
-  const JUMP_X = spd(2.3);
-  const BOLT_V = spd(5.4);
   const KB_DECAY = 0.86;
-
-  const MOVES = {
-    punch_weak: {
-      anim: 'punch_weak', active: [1], damage: 28, stun: sec(12), block: sec(7),
-      weight: 1, slide: spd(2.15), stop: sec(6), shake: 2.2, level: 'mid',
-      box: { x: 16, y: -90, w: 38, h: 22 }
-    },
-    punch_strong: {
-      anim: 'punch_strong', active: [2, 3], damage: 68, stun: sec(20), block: sec(11),
-      weight: 3, slide: spd(4.6), stop: sec(12), shake: 6.2, level: 'mid',
-      box: { x: 18, y: -92, w: 54, h: 26 }
-    },
-    kick_weak_stand: {
-      anim: 'kick_weak_stand', active: [1], damage: 36, stun: sec(14), block: sec(8),
-      weight: 2, slide: spd(3.0), stop: sec(8), shake: 3.6, level: 'mid',
-      box: { x: 18, y: -64, w: 52, h: 24 }
-    },
-    kick_weak: {
-      anim: 'kick_weak', active: [1], damage: 52, stun: sec(10), block: sec(10),
-      weight: 3, slide: spd(3.4), stop: sec(10), shake: 5.2, level: 'low', knockdown: true,
-      box: { x: 12, y: -30, w: 66, h: 22 }
-    },
-    kick_strong: {
-      anim: 'kick_strong', active: [2, 3], damage: 82, stun: sec(22), block: sec(12),
-      weight: 4, slide: spd(5.8), stop: sec(14), shake: 7.4, level: 'mid',
-      box: { x: 20, y: -108, w: 68, h: 30 }
-    },
-    crouch_punch: {
-      anim: 'crouch_punch', active: [1], damage: 24, stun: sec(13), block: sec(7),
-      weight: 1, slide: spd(1.9), stop: sec(6), shake: 2, level: 'low',
-      box: { x: 14, y: -42, w: 42, h: 18 }
-    },
-    jump_kick: {
-      anim: 'jump_kick', active: [1], damage: 58, stun: sec(16), block: sec(10),
-      weight: 3, slide: spd(3.2), stop: sec(11), shake: 5.6, level: 'overhead',
-      box: { x: 14, y: -58, w: 58, h: 26 }
-    },
-    uppercut: {
-      anim: 'uppercut', active: [1, 2], damage: 90, stun: sec(8), block: sec(12),
-      weight: 4, slide: spd(2.4), stop: sec(15), shake: 8, level: 'mid', launch: true,
-      box: { x: 2, y: -128, w: 42, h: 86 }
-    },
-    spinkick: {
-      anim: 'spinkick', active: [2, 3, 4], damage: 102, stun: sec(8), block: sec(14),
-      weight: 5, slide: spd(6.6), stop: sec(16), shake: 9, level: 'mid', knockdown: true,
-      box: { x: 6, y: -98, w: 72, h: 42 }
-    },
-    rayo_throw: {
-      anim: 'rayo_throw', active: [], damage: 0, stun: 0, block: 0,
-      weight: 1, slide: 0, stop: 0, shake: 0, level: 'mid', spawn: 2, box: null
-    }
-  };
+  const ASPECT = 540 / 960;
 
   const AI_LEVELS = {
     facil: {
@@ -106,7 +41,6 @@
     }
   };
   const LEVEL_ORDER = ['facil', 'normal', 'dificil'];
-
   const P1K = {
     left: 'KeyA', right: 'KeyD', up: 'KeyW', down: 'KeyS',
     lp: 'KeyF', hp: 'KeyG', lk: 'KeyR', hk: 'KeyT'
@@ -116,6 +50,7 @@
     lp: 'KeyK', hp: 'KeyL', lk: 'KeyO', hk: 'KeyP'
   };
   const MENU_ACTS = ['fight', 'train', 'versus', 'music'];
+  const SIDE = ['rgba(80,220,220,0.38)', 'rgba(220,80,180,0.38)'];
 
   const down = new Set();
   const pressed = new Set();
@@ -123,6 +58,46 @@
     'KeyA', 'KeyD', 'KeyW', 'KeyS', 'ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown',
     'Space', 'Enter'
   ]);
+
+  const cv = document.getElementById('fight');
+  const ctx = cv.getContext('2d');
+  const banner = document.getElementById('banner');
+  let sheetReady = false;
+  let bg, ring, spec;
+  let crowd = [], led = [], smoke = [];
+  let phase = 'load';
+  let paused = false;
+  let mode = 'fight';
+  let levelId = 'normal';
+  let menuIndex = 0;
+  let time = 0;
+  let worldTime = 0;
+  let hitstop = 0;
+  let shake = 0;
+  let hitKick = 0;
+  let zoomPunch = 0;
+  let flashScreen = 0;
+  let timer = ROUND_TIME;
+  let showBoxes = false;
+  let wins = [0, 0];
+  let impacts = [];
+  let bolts = [];
+  let floaters = [];
+  let actx = null;
+  let music = null;
+  let lastStamp = 0;
+  let simAcc = 0;
+  let cam = { x: 360, y: 150, w: 720, h: 405 };
+  let view = { x: 360, y: 150, w: 720, h: 405 };
+  let fxCanvas = null;
+  const MATCH = ['voltia', 'voltia'];
+  const chars = {};
+  const artCache = {};
+
+  function cpuOn() { return mode !== 'versus'; }
+  function trainOn() { return mode === 'train'; }
+  function aiLevel() { return AI_LEVELS[levelId] || AI_LEVELS.normal; }
+
   window.addEventListener('keydown', (e) => {
     if (!down.has(e.code)) pressed.add(e.code);
     down.add(e.code);
@@ -138,40 +113,6 @@
   });
   window.addEventListener('keyup', (e) => down.delete(e.code));
   window.addEventListener('blur', () => { down.clear(); pressed.clear(); });
-
-  const cv = document.getElementById('fight');
-  const ctx = cv.getContext('2d');
-  const banner = document.getElementById('banner');
-  let sheet, bg, ring, spec, crowd = [], led = [];
-  let AN = {};
-  let phase = 'load';
-  let paused = false;
-  let mode = 'fight';
-  let levelId = 'normal';
-  let menuIndex = 0;
-  let time = 0;
-  let worldTime = 0;
-  let hitstop = 0;
-  let shake = 0;
-  let hitKick = 0;
-  let shx = 0;
-  let shy = 0;
-  let flashScreen = 0;
-  let timer = ROUND_TIME;
-  let showBoxes = false;
-  let wins = [0, 0];
-  let matchNote = '';
-  let impacts = [];
-  let bolts = [];
-  let floaters = [];
-  let actx = null;
-  let music = null;
-  let lastStamp = 0;
-  let simAcc = 0;
-
-  function cpuOn() { return mode !== 'versus'; }
-  function trainOn() { return mode === 'train'; }
-  function aiLevel() { return AI_LEVELS[levelId] || AI_LEVELS.normal; }
 
   function resumeAudio() {
     if (!actx) actx = new AudioContext();
@@ -193,60 +134,112 @@
   }
 
   function impactSound(weight, blocked) {
-    try { impactSoundRaw(weight, blocked); } catch (err) {}
+    try {
+      const w = Math.max(1, Math.min(5, weight || 1));
+      const dur = blocked ? 0.04 : 0.045 + w * 0.016;
+      resumeAudio();
+      const n = Math.max(1, Math.floor(actx.sampleRate * dur));
+      const buffer = actx.createBuffer(1, n, actx.sampleRate);
+      const data = buffer.getChannelData(0);
+      for (let i = 0; i < n; i++) data[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / n, blocked ? 1.8 : 1.15);
+      const src = actx.createBufferSource();
+      src.buffer = buffer;
+      const filter = actx.createBiquadFilter();
+      filter.type = 'lowpass';
+      filter.frequency.value = blocked ? 1600 : Math.max(320, 2400 - w * 380);
+      const g = actx.createGain();
+      g.gain.value = blocked ? 0.05 : 0.06 + w * 0.028;
+      src.connect(filter);
+      filter.connect(g);
+      g.connect(actx.destination);
+      src.start();
+      tone(blocked ? 620 : Math.max(110, 460 - w * 68), dur + 0.03, blocked ? 0.02 : 0.025 + w * 0.008, 'triangle');
+      if (!blocked && w >= 3) tone(78 - w * 4, 0.14, 0.04 + w * 0.008, 'sine');
+    } catch (err) {}
   }
 
-  function impactSoundRaw(weight, blocked) {
-    const w = Math.max(1, Math.min(5, weight || 1));
-    const dur = blocked ? 0.04 : 0.045 + w * 0.016;
-    resumeAudio();
-    const n = Math.max(1, Math.floor(actx.sampleRate * dur));
-    const buffer = actx.createBuffer(1, n, actx.sampleRate);
-    const data = buffer.getChannelData(0);
-    for (let i = 0; i < n; i++) {
-      data[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / n, blocked ? 1.8 : 1.15);
-    }
-    const src = actx.createBufferSource();
-    src.buffer = buffer;
-    const filter = actx.createBiquadFilter();
-    filter.type = 'lowpass';
-    filter.frequency.value = blocked ? 1600 : Math.max(320, 2400 - w * 380);
-    const g = actx.createGain();
-    g.gain.value = blocked ? 0.05 : 0.06 + w * 0.028;
-    src.connect(filter);
-    filter.connect(g);
-    g.connect(actx.destination);
-    src.start();
-    tone(blocked ? 620 : Math.max(110, 460 - w * 68), dur + 0.03, blocked ? 0.02 : 0.025 + w * 0.008, 'triangle');
-    if (!blocked && w >= 3) tone(78 - w * 4, 0.14, 0.04 + w * 0.008, 'sine');
-  }
-
-  function voice(file) {
-    const a = new Audio('../voltia/voices/' + file + '.mp3');
+  function voice(def, key) {
+    const file = def && def.voices && def.voices[key];
+    if (!file) return;
+    const a = new Audio((def.voiceDir || '../voltia/voices/') + file + '.mp3');
     a.volume = 0.75;
     a.play().catch(() => {});
   }
 
-  function makeFighter(id, x) {
+  function compileChar(raw) {
+    const moves = {};
+    const byAi = {};
+    Object.keys(raw.moves).forEach((id) => {
+      const m = raw.moves[id];
+      const hits = (m.hits || []).map((h) => ({
+        ...h,
+        stun: sec(h.stun || 0),
+        block: sec(h.block || 0),
+        slide: spd(h.slide || 0),
+        stop: sec(h.stop || 0)
+      }));
+      let projectile = null;
+      if (m.projectile) {
+        const pr = m.projectile;
+        projectile = {
+          ...pr,
+          speeds: { weak: spd(pr.speeds.weak), strong: spd(pr.speeds.strong) },
+          life: sec(pr.life || 100),
+          hit: {
+            ...pr.hit,
+            stun: sec(pr.hit.stun || 0),
+            block: sec(pr.hit.block || 0),
+            slide: spd(pr.hit.slide || 0),
+            stop: sec(pr.hit.stop || 0)
+          }
+        };
+      }
+      moves[id] = Object.assign({}, m, { id, hits, projectile });
+      if (m.ai) {
+        if (!byAi[m.ai]) byAi[m.ai] = [];
+        byAi[m.ai].push(id);
+      }
+    });
+    const ph = raw.physics;
+    return Object.assign({}, raw, {
+      moves,
+      byAi,
+      phys: {
+        walkF: spd(ph.walkF),
+        walkB: spd(ph.walkB),
+        dash: spd(ph.dash),
+        jumpV: spd(ph.jumpV),
+        jumpX: spd(ph.jumpX),
+        gravity: accel(ph.gravity),
+        airAccel: accel(ph.airAccel),
+        airMax: spd(ph.airMax)
+      }
+    });
+  }
+
+  function makeFighter(id, x, charId) {
+    const def = chars[charId];
     return {
       id, x, y: FLOOR, vx: 0, vy: 0, face: id === 0 ? 1 : -1,
-      hp: MAX_HP, trail: MAX_HP,
+      def, charId,
+      hp: def.maxHp, trail: def.maxHp,
       state: 'idle', anim: 'stance', frame: 0, animAcc: 0, animDone: false,
-      move: null, didHit: false, spawned: false, airUsed: false,
+      move: null, strength: 'strong', landed: [], didHit: false, spawned: false, airUsed: false,
       stun: 0, invuln: 0, flash: 0, combo: 0, comboTimer: 0, comboAge: 0, regenWait: 0,
-      kb: 0, dirs: [], lastFwd: -99, buffer: null,
+      kb: 0, dirs: [], lastFwd: -99, buffer: null, bolt: null,
       blockFor: 0, blockLow: false, aiCd: 0.4, aiStep: 0, aiQueue: null
     };
   }
 
-  const P = [makeFighter(0, 530), makeFighter(1, 810)];
+  const P = [null, null];
 
   function opp(p) { return P[1 - p.id]; }
-
-  function clamp(p) {
+  function clampX(p) {
     if (p.x < WALL_L) p.x = WALL_L;
     if (p.x > WALL_R) p.x = WALL_R;
   }
+  function moveOf(p) { return p.move ? p.def.moves[p.move] : null; }
+  function animOf(p) { return p.def.art.anims[p.anim] || p.def.art.anims.stance; }
 
   function setAnim(p, id, restart) {
     if (p.anim !== id || restart) {
@@ -262,22 +255,27 @@
       (p.state === 'idle' || p.state === 'walk' || p.state === 'crouch');
   }
 
-  function startMove(p, id) {
-    const m = MOVES[id];
-    if (!m) return;
+  function limited(p, m) {
+    return m && m.kind === 'projectile' && m.limit && p.bolt;
+  }
+
+  function startMove(p, id, strength) {
+    const m = p.def.moves[id];
+    if (!m || limited(p, m)) return false;
     const air = p.y < FLOOR - 1;
     const avx = p.vx;
     p.state = 'attack';
     p.move = id;
+    p.strength = strength || 'strong';
     p.didHit = false;
     p.spawned = false;
+    p.landed = m.hits.map(() => false);
     p.buffer = null;
     p.aiQueue = null;
     p.vx = air ? avx : 0;
     setAnim(p, m.anim, true);
-    if (id === 'uppercut') voice('voltia_uppercut');
-    if (id === 'spinkick') voice('voltia_spinkick');
-    if (id === 'rayo_throw') voice('voltia_rayo_throw');
+    if (m.voice) voice(p.def, m.voice);
+    return true;
   }
 
   function relDir(p, inp) {
@@ -297,21 +295,26 @@
   function rememberDir(p, d) {
     const last = p.dirs[p.dirs.length - 1];
     if (!last || last.d !== d) p.dirs.push({ d, t: time });
-    if (p.dirs.length > 14) p.dirs.shift();
+    if (p.dirs.length > 16) p.dirs.shift();
   }
 
-  function motion(p, seq) {
-    let i = p.dirs.length - 1;
-    for (let s = seq.length - 1; s >= 0; s--) {
-      let found = false;
-      while (i >= 0) {
-        if (time - p.dirs[i].t > 0.55) return false;
-        if (p.dirs[i].d === seq[s]) { found = true; i--; break; }
-        i--;
-      }
-      if (!found) return false;
+  function motion(p, seq, window) {
+    const limit = window || 0.5;
+    if (!seq.length || !p.dirs.length) return false;
+    let end = p.dirs.length - 1;
+    if (p.dirs[end].d === 5 && end > 0 && time - p.dirs[end - 1].t <= 0.1) end--;
+    const last = p.dirs[end];
+    if (time - last.t > limit || last.d !== seq[seq.length - 1]) return false;
+    let s = seq.length - 2;
+    for (let i = end - 1; i >= 0 && s >= 0; i--) {
+      if (time - p.dirs[i].t > limit) return false;
+      const d = p.dirs[i].d;
+      if (d === 5) continue;
+      if (d === seq[s]) { s--; continue; }
+      if (d === seq[s + 1]) continue;
+      return false;
     }
-    return true;
+    return s < 0;
   }
 
   function humanInput(map) {
@@ -325,17 +328,12 @@
       hp: pressed.has(map.hp),
       lk: pressed.has(map.lk),
       hk: pressed.has(map.hk),
-      holdL: left,
-      holdR: right
+      holdL: left, holdR: right
     };
   }
 
   function emptyInput() {
-    return {
-      x: 0, up: false, down: false,
-      lp: false, hp: false, lk: false, hk: false,
-      holdL: false, holdR: false
-    };
+    return { x: 0, up: false, down: false, lp: false, hp: false, lk: false, hk: false, holdL: false, holdR: false };
   }
 
   function packAi(ai) {
@@ -349,6 +347,13 @@
 
   function thinkTime(level) {
     return level.think[0] + Math.random() * (level.think[1] - level.think[0]);
+  }
+
+  function aiSpecial(me, tag, strength) {
+    const list = me.def.byAi[tag];
+    if (!list || !list.length) return false;
+    const id = list[Math.floor(Math.random() * list.length)];
+    return startMove(me, id, strength || 'strong');
   }
 
   function cpuInput(me, dt) {
@@ -382,9 +387,9 @@
       } else me.aiStep = 0;
       return packAi(ai);
     }
+    const strength = level.special > 0.1 ? 'strong' : 'weak';
     if (dist > level.engage) {
-      if (level.special && dist < 250 && dist > 150 && Math.random() < level.special * 0.45) {
-        startMove(me, 'rayo_throw');
+      if (level.special && dist > 160 && dist < 320 && Math.random() < level.special * 0.45 && aiSpecial(me, 'projectile', strength)) {
         me.aiCd = thinkTime(level);
         return packAi(ai);
       }
@@ -395,10 +400,10 @@
     me.aiCd = thinkTime(level);
     me.aiStep = 0;
     const attacking = other.state === 'attack';
+    const om = other.move && other.def.moves[other.move];
     if (attacking && dist < 132 && Math.random() < level.block) {
       me.blockFor = level.blockTime;
-      const low = other.move && MOVES[other.move] && MOVES[other.move].level === 'low';
-      if (low && level.block > 0.25 && Math.random() < 0.6) me.blockLow = true;
+      if (om && om.hits[0] && om.hits[0].level === 'low' && level.block > 0.25 && Math.random() < 0.6) me.blockLow = true;
       return packAi(ai);
     }
     if (level.punish && attacking && !other.didHit && other.frame >= 2 && dist < 102 && Math.random() < level.punish) {
@@ -412,11 +417,9 @@
       return packAi(ai);
     }
     const roll = Math.random();
-    if (roll < level.special && dist > 64 && dist < 250) {
-      if (dist > 132) startMove(me, 'rayo_throw');
-      else if (Math.random() < 0.55) startMove(me, 'uppercut');
-      else startMove(me, 'spinkick');
-      return packAi(ai);
+    if (roll < level.special && dist > 64 && dist < 280) {
+      const tag = dist > 150 ? 'projectile' : 'special';
+      if (aiSpecial(me, tag, strength)) return packAi(ai);
     }
     if (dist < level.range && roll < level.special + level.heavy) {
       me.aiQueue = Math.random() < 0.5 ? 'hp' : 'hk';
@@ -426,7 +429,7 @@
       me.aiQueue = Math.random() < 0.55 ? 'lp' : 'lk';
       return packAi(ai);
     }
-    if (Math.random() < level.jump && dist > 78 && dist < 168) me.aiQueue = 'up';
+    if (Math.random() < level.jump && dist > 78 && dist < 200) me.aiQueue = 'up';
     return packAi(ai);
   }
 
@@ -434,15 +437,24 @@
     return (p.face > 0 && inp.holdL) || (p.face < 0 && inp.holdR);
   }
 
+  function btnDown(inp, kind) {
+    return kind === 'kick' ? (inp.lk || inp.hk) : (inp.lp || inp.hp);
+  }
+
+  function strengthOf(inp, kind) {
+    if (kind === 'kick') return inp.hk ? 'strong' : 'weak';
+    return inp.hp ? 'strong' : 'weak';
+  }
+
   function tryAttack(p, inp) {
     const punch = inp.lp || inp.hp;
     const kick = inp.lk || inp.hk;
-    const strongP = inp.hp;
-    const strongK = inp.hk;
     if (p.state === 'jump') {
       if ((punch || kick) && !p.airUsed) {
         p.airUsed = true;
-        startMove(p, 'jump_kick');
+        const air = p.def.normals.air;
+        const id = (inp.hk && air.hk) || (inp.hp && air.hp) || (inp.lk && air.lk) || air.lp;
+        if (id) startMove(p, id, strengthOf(inp, kick ? 'kick' : 'punch'));
       }
       return;
     }
@@ -450,30 +462,34 @@
       if (punch || kick) p.buffer = { inp: { lp: inp.lp, hp: inp.hp, lk: inp.lk, hk: inp.hk, down: inp.down, x: inp.x }, until: time + 0.17 };
       return;
     }
-    if (punch && motion(p, [2, 3, 6])) { startMove(p, 'rayo_throw'); return; }
-    if (strongP && (inp.down || motion(p, [6, 2, 3]))) { startMove(p, 'uppercut'); return; }
-    if (strongK && holdingBack(p, inp)) { startMove(p, 'spinkick'); return; }
-    if (inp.down && inp.lp) { startMove(p, 'crouch_punch'); return; }
-    if (inp.down && (inp.lk || inp.hk)) { startMove(p, 'kick_weak'); return; }
-    if (inp.lp) { startMove(p, 'punch_weak'); return; }
-    if (strongP) { startMove(p, 'punch_strong'); return; }
-    if (inp.lk) { startMove(p, 'kick_weak_stand'); return; }
-    if (strongK) { startMove(p, 'kick_strong'); return; }
+    const cmds = p.def.commands || [];
+    for (let i = 0; i < cmds.length; i++) {
+      const cmd = cmds[i];
+      if (cmd.type !== 'motion' || !btnDown(inp, cmd.btn)) continue;
+      if (!motion(p, cmd.seq, cmd.window)) continue;
+      startMove(p, cmd.move, strengthOf(inp, cmd.btn));
+      return;
+    }
+    const table = inp.down ? p.def.normals.crouch : p.def.normals.stand;
+    const id = (inp.hp && table.hp) || (inp.lp && table.lp) || (inp.hk && table.hk) || (inp.lk && table.lk);
+    if (id) startMove(p, id, (inp.hp || inp.hk) ? 'strong' : 'weak');
   }
 
   function tickAnim(p, dt) {
     if (p.state === 'jump' || p.state === 'launch') {
-      const n = (AN[p.anim] || AN.stance).frames;
-      if (p.vy < spd(-2.2)) p.frame = Math.min(1, n - 1);
-      else if (p.vy < spd(2.4)) p.frame = Math.min(2, n - 1);
+      const n = animOf(p).frames;
+      const jv = p.def.phys.jumpV;
+      if (p.vy < jv * 0.24) p.frame = Math.min(1, n - 1);
+      else if (p.vy < -jv * 0.26) p.frame = Math.min(2, n - 1);
       else p.frame = n - 1;
       return;
     }
     if (p.state === 'idle') setAnim(p, 'stance');
     if (p.state === 'walk' || p.state === 'dash') setAnim(p, p.state === 'dash' ? 'dash' : 'walk');
-    const a = AN[p.anim];
+    const a = animOf(p);
     if (!a) return;
-    if ((p.state === 'crouch' || (p.state === 'attack' && (p.move === 'crouch_punch' || p.move === 'kick_weak'))) && p.anim === 'crouch') {
+    const mv = moveOf(p);
+    if ((p.state === 'crouch' || (p.state === 'attack' && mv && mv.pose === 'crouch')) && p.anim === 'crouch') {
       p.frame = Math.min(2, a.frames - 1);
       return;
     }
@@ -494,31 +510,42 @@
   }
 
   function hurtbox(p) {
-    if (p.state === 'knockdown' || p.state === 'ko') return { x: p.x - 44, y: p.y - 28, w: 88, h: 26 };
-    if (p.y < FLOOR - 6) return { x: p.x - 20, y: p.y - 112, w: 42, h: 100 };
-    if (p.state === 'crouch' || p.move === 'crouch_punch' || p.move === 'kick_weak') return { x: p.x - 26, y: p.y - 64, w: 52, h: 60 };
-    return { x: p.x - 22, y: p.y - 138, w: 46, h: 134 };
+    const h = p.def.hurt;
+    const box = (p.state === 'knockdown' || p.state === 'ko') ? h.down
+      : (p.y < FLOOR - 6) ? h.air
+      : (p.state === 'crouch' || (moveOf(p) && moveOf(p).pose === 'crouch')) ? h.crouch
+      : h.stand;
+    return { x: p.x + box.x, y: p.y + box.y, w: box.w, h: box.h };
+  }
+
+  function liveHit(p) {
+    const m = moveOf(p);
+    if (!m || p.state !== 'attack') return null;
+    for (let i = 0; i < m.hits.length; i++) {
+      if (p.landed[i]) continue;
+      if (m.hits[i].active.indexOf(p.frame) >= 0) return { i, hit: m.hits[i], move: m };
+    }
+    return null;
   }
 
   function attackBox(p) {
-    const m = MOVES[p.move];
-    if (!m || !m.box || p.didHit) return null;
-    if (m.active.indexOf(p.frame) < 0) return null;
-    const b = m.box;
+    const live = liveHit(p);
+    if (!live || !live.hit.box) return null;
+    const b = live.hit.box;
     const x = p.face > 0 ? p.x + b.x : p.x - b.x - b.w;
-    return { x, y: p.y + b.y, w: b.w, h: b.h };
+    return { x, y: p.y + b.y, w: b.w, h: b.h, live };
   }
 
   function overlap(a, b) {
     return a.x < b.x + b.w && a.x + a.w > b.x && a.y < b.y + b.h && a.y + a.h > b.y;
   }
 
-  function blocking(defender, move, inp) {
+  function blocking(defender, hit, inp) {
     if (defender.invuln > 0) return false;
     if (defender.state === 'jump' || defender.state === 'launch' || defender.state === 'knockdown' || defender.state === 'ko' || defender.state === 'attack' || defender.state === 'hit') return false;
     if (!holdingBack(defender, inp)) return false;
-    if (move.level === 'low' && !inp.down) return false;
-    if (move.level === 'overhead' && inp.down) return false;
+    if (hit.level === 'low' && !inp.down) return false;
+    if (hit.level === 'overhead' && inp.down) return false;
     return true;
   }
 
@@ -542,31 +569,17 @@
         y: y + (Math.random() - 0.5) * 4,
         vx: spd(dir * (0.28 + Math.random() * (0.35 + w * 0.28)) + (Math.random() - 0.5) * 1.1),
         vy: spd(-0.25 - Math.random() * (0.35 + w * 0.22)),
-        w: w >= 4 && i % 4 === 0 ? 4 : 2,
-        h: 2,
+        w: w >= 4 && i % 4 === 0 ? 4 : 2, h: 2,
         color: colors[i % colors.length]
       });
-    }
-    if (!blocked && w >= 2) {
-      for (let i = 0; i < w; i++) {
-        bits.push({
-          x, y,
-          vx: spd(dir * (1.1 + w * 0.35 + Math.random() * 0.6)),
-          vy: spd((Math.random() - 0.5) * 0.35),
-          w: 5 + w, h: 2,
-          color: i % 2 ? '#fff' : colors[0]
-        });
-      }
     }
     if (!blocked && feetX != null) {
       for (let i = 0; i < 2 + w; i++) {
         bits.push({
-          x: feetX + (Math.random() - 0.5) * 12,
-          y: feetY - 1,
-          vx: spd(dir * (0.15 + Math.random() * (0.35 + w * 0.12)) + (Math.random() - 0.5) * 0.5),
+          x: feetX + (Math.random() - 0.5) * 12, y: feetY - 1,
+          vx: spd(dir * (0.15 + Math.random() * (0.35 + w * 0.12))),
           vy: spd(-0.12 - Math.random() * 0.4),
-          w: 3, h: 2,
-          color: i % 2 ? '#e7d3a1' : '#ffcb3d'
+          w: 3, h: 2, color: i % 2 ? '#e7d3a1' : '#ffcb3d'
         });
       }
     }
@@ -574,62 +587,63 @@
     impacts.push({ x, y, dir, weight: w, blocked, life, max: life, bits });
   }
 
-  function applyHit(attacker, defender, move, blocked, point) {
-    const box = attackBox(attacker);
-    attacker.didHit = true;
-    const w = move.weight || 1;
+  function applyHit(attacker, defender, hit, move, blocked, point, hitIndex) {
     const dir = attacker.face || 1;
+    const w = hit.weight || 1;
+    let prevClean = hitIndex > 0;
+    if (hitIndex != null) {
+      for (let k = 0; k < hitIndex; k++) if (attacker.landed[k] !== 'hit') prevClean = false;
+      attacker.landed[hitIndex] = blocked ? 'block' : 'hit';
+    }
+    const cleanBoth = !blocked && hit.knockdown && (!hit.requiresPrev || prevClean);
     const scale = attacker.combo <= 1 ? 1 : Math.max(0.55, 1 - (attacker.combo - 1) * 0.08);
-    const dmg = Math.round((move.damage || 0) * (blocked ? 0 : scale));
+    const dmg = Math.round((hit.damage || 0) * (blocked ? 0 : scale));
     if (!trainOn()) defender.hp = Math.max(0, defender.hp - dmg);
     else if (dmg > 0) {
       defender.hp = Math.max(1, defender.hp - dmg);
       defender.regenWait = sec(22 + w * 6);
     }
     defender.flash = blocked ? sec(2) : sec(2 + Math.min(4, w));
-    const stop = blocked ? Math.max(sec(3), (move.stop || sec(4)) - sec(3)) : (move.stop || sec(4));
-    hitstop = Math.max(hitstop, stop);
-    shake = Math.max(shake, blocked ? 1.4 : (move.shake || 2));
+    hitstop = Math.max(hitstop, blocked ? Math.max(sec(3), (hit.stop || sec(4)) - sec(3)) : (hit.stop || sec(4)));
+    shake = Math.max(shake, blocked ? 1.4 : (hit.shake || 2));
     hitKick = dir * (blocked ? 1.4 : 1.8 + w * 1.05);
-    if (!blocked && w >= 4) flashScreen = Math.max(flashScreen, w >= 5 ? sec(3) : sec(2));
-    const slide = (move.slide || 0) * (blocked ? 0.38 : 1);
+    const zoom = !blocked && (hit.zoom || move.zoom || (w >= 4 ? 0.45 : 0));
+    if (zoom) zoomPunch = Math.max(zoomPunch, zoom);
+    if (!blocked && w >= 4) flashScreen = Math.max(flashScreen, sec(w >= 5 ? 3 : 2));
+    const slide = (hit.slide || 0) * (blocked ? 0.38 : 1);
     defender.kb = dir * slide;
-    defender.vx = 0;
-    const pt = point || (box
-      ? { x: box.x + box.w / 2, y: box.y + box.h / 2 }
-      : { x: defender.x - dir * 18, y: defender.y - 80 });
+    if (!hit.keepAir) defender.vx = 0;
+    const pt = point || { x: defender.x - dir * 18, y: defender.y - 80 };
     spawnImpact(pt.x, pt.y, w, blocked, dir, defender.x, defender.y);
     impactSound(w, blocked);
     const col = blocked ? '#96ffeb' : ['#fff4c2', '#ffe08a', '#ffcb3d', '#ff9a3c', '#ff6b3d'][Math.min(4, w - 1)];
     if (blocked) {
       defender.state = 'block';
-      defender.stun = move.block || sec(8);
+      defender.stun = hit.block || sec(8);
       setAnim(defender, defender.inpDown ? 'crouch' : 'block', true);
       floaters.push({ x: defender.x, y: defender.y - 108, text: 'bloqueo', life: sec(26), max: sec(26), vy: spd(-0.28), color: '#96ffeb', size: 15 });
       attacker.combo = 0;
       attacker.comboTimer = 0;
       return;
     }
+    attacker.didHit = true;
     attacker.combo = (attacker.comboTimer > 0 ? attacker.combo : 0) + 1;
-    attacker.comboTimer = sec(72) + (move.stun || sec(12));
+    attacker.comboTimer = sec(72) + (hit.stun || sec(12));
     attacker.comboAge = 0;
     defender.combo = 0;
     defender.comboTimer = 0;
     const life = sec(30 + w * 4);
-    floaters.push({
-      x: defender.x, y: defender.y - 118, text: String(dmg),
-      life, max: life, vy: spd(-0.22 - w * 0.03), color: col, size: 14 + w * 4
-    });
+    floaters.push({ x: defender.x, y: defender.y - 118, text: String(dmg), life, max: life, vy: spd(-0.22 - w * 0.03), color: col, size: 14 + w * 4 });
     if (defender.hp <= 0 && !trainOn()) {
       defender.state = 'ko';
       defender.stun = 99;
       defender.kb = dir * Math.max(slide, spd(3.2));
       setAnim(defender, 'ko', true);
-      voice('voltia_ko');
+      voice(defender.def, 'ko');
       endRound(attacker);
       return;
     }
-    if (move.launch) {
+    if (hit.launch) {
       defender.state = 'launch';
       defender.vy = spd(-8.6);
       defender.vx = dir * spd(1.6);
@@ -638,76 +652,88 @@
       setAnim(defender, 'hit', true);
       return;
     }
-    if (move.knockdown) {
+    if (cleanBoth || (hit.knockdown && !hit.requiresPrev)) {
       defender.state = 'knockdown';
       defender.stun = sec(40);
       defender.kb = dir * Math.max(slide, spd(3.2));
       setAnim(defender, 'knockdown', true);
-      voice('voltia_knockdown');
+      voice(defender.def, 'knockdown');
       return;
     }
     defender.state = 'hit';
-    defender.stun = move.stun || sec(12);
+    defender.stun = hit.stun || sec(12);
     setAnim(defender, defender.inpDown ? 'crouch_hit' : 'hit', true);
   }
 
   function endRound(winner) {
     phase = 'end';
+    let note = 'Tiempo';
     if (winner) {
       wins[winner.id]++;
       winner.state = 'victory';
-      setAnim(winner, wins[winner.id] % 2 ? 'victory1' : 'victory2', true);
-      voice(winner.anim === 'victory1' ? 'voltia_victory1' : 'voltia_victory2');
-      matchNote = wins[winner.id] >= 2 ? 'Gana la pelea' : 'Ronda';
+      const which = wins[winner.id] % 2 ? 'victory1' : 'victory2';
+      setAnim(winner, which, true);
+      voice(winner.def, which);
+      note = wins[winner.id] >= 2 ? 'Gana la pelea' : 'Ronda';
+      banner.innerHTML = `VOLTIA ${winner.id + 1}<small>${note}</small>`;
     } else {
-      matchNote = 'Tiempo';
       const a = P[0].hp, b = P[1].hp;
       if (a !== b) {
         const w = a > b ? P[0] : P[1];
         wins[w.id]++;
         w.state = 'victory';
         setAnim(w, 'victory1', true);
+        voice(w.def, 'victory1');
       }
+      banner.innerHTML = a === b ? 'Empate' : `VOLTIA ${a > b ? 1 : 2}<small>por tiempo</small>`;
     }
-    banner.innerHTML = winner
-      ? `VOLTIA ${winner.id + 1}<small>${matchNote}</small>`
-      : (P[0].hp === P[1].hp ? 'Empate' : `VOLTIA ${P[0].hp > P[1].hp ? 1 : 2}<small>por tiempo</small>`);
     syncUi();
   }
 
+  function spawnBolt(p, m) {
+    if (p.bolt || !m.projectile) return;
+    const pr = m.projectile;
+    const speed = pr.speeds[p.strength] || pr.speeds.strong;
+    const bolt = {
+      owner: p.id,
+      x: p.x + p.face * pr.offset.x,
+      y: p.y + pr.offset.y,
+      vx: p.face * speed,
+      frame: 0, acc: 0, life: pr.range ? pr.range / speed : pr.life,
+      def: pr, face: p.face
+    };
+    p.bolt = bolt;
+    p.spawned = true;
+    bolts.push(bolt);
+    if (pr.voice) voice(p.def, pr.voice);
+  }
+
   function resolveHits(inputs) {
-    for (const p of P) {
+    for (let n = 0; n < 2; n++) {
+      const p = P[n];
       if (p.state !== 'attack') continue;
-      const m = MOVES[p.move];
+      const m = moveOf(p);
       if (!m) continue;
-      if (m.spawn != null && !p.spawned && p.frame >= m.spawn) {
-        p.spawned = true;
-        bolts.push({
-          owner: p.id, x: p.x + p.face * 48, y: p.y - 78, vx: p.face * BOLT_V,
-          frame: 0, acc: 0, life: sec(100)
-        });
-        voice('voltia_rayo_proj');
-      }
+      if (m.spawn != null && !p.spawned && p.frame >= m.spawn) spawnBolt(p, m);
       const box = attackBox(p);
       if (!box) continue;
       const other = opp(p);
       if (other.invuln > 0 || other.state === 'ko') continue;
       if (!overlap(box, hurtbox(other))) continue;
-      applyHit(p, other, m, blocking(other, m, inputs[other.id]));
+      const blocked = blocking(other, box.live.hit, inputs[other.id]);
+      const pt = { x: box.x + box.w / 2, y: box.y + box.h / 2 };
+      applyHit(p, other, box.live.hit, m, blocked, pt, box.live.i);
     }
     for (let i = bolts.length - 1; i >= 0; i--) {
       const b = bolts[i];
       const owner = P[b.owner];
       const other = opp(owner);
-      const box = { x: b.x - 18, y: b.y - 12, w: 36, h: 22 };
+      const box = { x: b.x + b.def.box.x, y: b.y + b.def.box.y, w: b.def.box.w, h: b.def.box.h };
       if (other.invuln <= 0 && other.state !== 'ko' && overlap(box, hurtbox(other))) {
-        const move = {
-          damage: 64, stun: sec(16), block: sec(10), slide: spd(4.4), stop: sec(12), shake: 6.4,
-          weight: 4, level: 'mid'
-        };
-        const prevHit = owner.didHit;
-        applyHit(owner, other, move, blocking(other, move, inputs[other.id]), { x: b.x, y: b.y });
-        owner.didHit = prevHit;
+        const prev = owner.didHit;
+        applyHit(owner, other, b.def.hit, { zoom: b.def.hit.zoom }, blocking(other, b.def.hit, inputs[other.id]), { x: b.x, y: b.y }, null);
+        owner.didHit = prev;
+        if (owner.bolt === b) owner.bolt = null;
         bolts.splice(i, 1);
       }
     }
@@ -715,7 +741,7 @@
 
   function physics(p, dt) {
     if (p.state === 'jump' || p.state === 'launch' || p.y < FLOOR) {
-      p.vy += JUMP_G * dt;
+      p.vy += p.def.phys.gravity * dt;
       p.x += p.vx * dt;
       p.y += p.vy * dt;
       if (p.y >= FLOOR) {
@@ -729,12 +755,10 @@
           setAnim(p, 'knockdown', true);
         } else if (p.state !== 'ko' && p.state !== 'attack') {
           p.state = p._down ? 'crouch' : 'idle';
-        } else if (p.state === 'attack' && p.animDone) {
-          p.state = 'idle';
-        }
+        } else if (p.state === 'attack' && p.animDone) p.state = 'idle';
       }
     }
-    clamp(p);
+    clampX(p);
   }
 
   function control(p, inp, dt) {
@@ -748,7 +772,7 @@
     if (p.flash > 0) p.flash = Math.max(0, p.flash - dt);
     if (p.stun > 0) {
       p.stun = Math.max(0, p.stun - dt);
-      if (p.stun === 0 && (p.state === 'hit' || p.state === 'block')) {
+      if (p.stun <= 0 && (p.state === 'hit' || p.state === 'block')) {
         p.state = inp.down ? 'crouch' : 'idle';
         p.move = null;
       }
@@ -763,19 +787,16 @@
     }
     if (p.state === 'ko' || p.state === 'victory') { tickAnim(p, dt); return; }
     if (p.state === 'launch') { tickAnim(p, dt); physics(p, dt); return; }
-
     rememberDir(p, relDir(p, inp));
     if (p.state === 'idle' || p.state === 'walk' || p.state === 'crouch') {
       if (opp(p).x !== p.x) p.face = opp(p).x > p.x ? 1 : -1;
     }
-
     if (p.buffer && time <= p.buffer.until && canAct(p)) {
       const b = p.buffer.inp;
       p.buffer = null;
       tryAttack(p, Object.assign({ holdL: inp.holdL, holdR: inp.holdR, x: inp.x, up: false }, b));
     }
     tryAttack(p, inp);
-
     if (p.state === 'attack') {
       tickAnim(p, dt);
       if (p.animDone) {
@@ -785,60 +806,55 @@
       physics(p, dt);
       return;
     }
-
     if (p.state === 'jump') {
-      p.vx += inp.x * AIR_A * dt;
-      p.vx = Math.max(-AIR_MAX, Math.min(AIR_MAX, p.vx));
+      p.vx += inp.x * p.def.phys.airAccel * dt;
+      const cap = p.def.phys.airMax;
+      if (p.vx > cap) p.vx = cap;
+      if (p.vx < -cap) p.vx = -cap;
       tickAnim(p, dt);
       physics(p, dt);
       return;
     }
-
     if (inp.up && (p.state === 'idle' || p.state === 'walk' || p.state === 'crouch')) {
       p.state = 'jump';
-      p.vy = JUMP_V;
-      p.vx = inp.x * JUMP_X;
+      p.vy = p.def.phys.jumpV;
+      p.vx = inp.x * p.def.phys.jumpX;
       p.airUsed = false;
       setAnim(p, inp.x ? 'fwdjump' : 'jump', true);
-      voice('grunt_jump');
+      voice(p.def, 'jump');
       tickAnim(p, dt);
       physics(p, dt);
       return;
     }
-
     if (fwdEdge(p, inp)) {
       p.state = 'dash';
       p.vx = 0;
       setAnim(p, 'dash', true);
     }
-
     if (p.state === 'dash') {
-      p.x += p.face * DASH_V * dt;
+      p.x += p.face * p.def.phys.dash * dt;
       tickAnim(p, dt);
       if (p.animDone) p.state = 'idle';
-      clamp(p);
+      clampX(p);
       return;
     }
-
     if (inp.down) {
       p.state = 'crouch';
       setAnim(p, 'crouch');
-      p.frame = Math.min(2, (AN.crouch.frames || 3) - 1);
+      p.frame = Math.min(2, (animOf(p).frames || 3) - 1);
       p.vx = 0;
       return;
     }
-
     if (inp.x) {
       const back = inp.x !== p.face;
       p.state = 'walk';
-      p.vx = inp.x * (back ? WALK_B : WALK_F);
+      p.vx = inp.x * (back ? p.def.phys.walkB : p.def.phys.walkF);
       p.x += p.vx * dt;
       setAnim(p, 'walk');
       tickAnim(p, dt);
-      clamp(p);
+      clampX(p);
       return;
     }
-
     p.vx = 0;
     p.state = 'idle';
     p.move = null;
@@ -860,6 +876,7 @@
 
   function separate() {
     const a = P[0], b = P[1];
+    if (!a || !b) return;
     if (a.y < FLOOR - 8 || b.y < FLOOR - 8) return;
     if (a.state === 'ko' || b.state === 'ko') return;
     const gap = 50;
@@ -868,18 +885,19 @@
       const s = b.x >= a.x ? 1 : -1;
       a.x = mid - s * gap / 2;
       b.x = mid + s * gap / 2;
-      clamp(a);
-      clamp(b);
+      clampX(a);
+      clampX(b);
     }
   }
 
   function slideAll(dt) {
     const decay = Math.pow(KB_DECAY, dt * HZ);
-    for (const p of P) {
+    for (let i = 0; i < 2; i++) {
+      const p = P[i];
       if (!p.kb) continue;
       const before = p.x;
       p.x += p.kb * dt;
-      clamp(p);
+      clampX(p);
       if ((p.x === WALL_L || p.x === WALL_R) && Math.abs(p.x - before) + 0.15 < Math.abs(p.kb * dt)) {
         const o = opp(p);
         o.kb = (o.kb || 0) - p.kb * 0.55;
@@ -898,7 +916,10 @@
       b.life -= dt;
       b.acc += dt;
       if (b.acc >= sec(5)) { b.acc = 0; b.frame = (b.frame + 1) % 3; }
-      if (b.life <= 0 || b.x < WALL_L - 40 || b.x > WALL_R + 40) bolts.splice(i, 1);
+      if (b.life <= 0 || b.x < WALL_L - 80 || b.x > WALL_R + 80) {
+        if (P[b.owner] && P[b.owner].bolt === b) P[b.owner].bolt = null;
+        bolts.splice(i, 1);
+      }
     }
   }
 
@@ -907,10 +928,11 @@
     for (let i = impacts.length - 1; i >= 0; i--) {
       const s = impacts[i];
       s.life -= dt;
-      for (const b of s.bits) {
+      for (let k = 0; k < s.bits.length; k++) {
+        const b = s.bits[k];
         b.x += b.vx * dt;
         b.y += b.vy * dt;
-        b.vy += acc(0.09) * dt;
+        b.vy += accel(0.09) * dt;
         b.vx *= drag;
       }
       if (s.life <= 0) impacts.splice(i, 1);
@@ -923,45 +945,62 @@
   }
 
   function tickCombos(dt) {
-    for (const p of P) {
+    for (let i = 0; i < 2; i++) {
+      const p = P[i];
       if (p.comboTimer > 0) {
         p.comboTimer -= dt;
         p.comboAge += dt;
-        if (p.comboTimer <= 0) {
-          p.combo = 0;
-          p.comboAge = 0;
-        }
+        if (p.comboTimer <= 0) { p.combo = 0; p.comboAge = 0; }
       }
     }
   }
 
-  function decayShake(dt, frozen) {
-    const k = dt * HZ;
-    shake *= Math.pow(frozen ? 0.93 : 0.84, k);
-    if (shake < 0.3) shake = 0;
-    hitKick *= Math.pow(frozen ? 0.86 : 0.78, k);
-    if (Math.abs(hitKick) < 0.15) hitKick = 0;
-    if (flashScreen > 0) flashScreen = Math.max(0, flashScreen - dt);
+  function updateCamera(dt, snap) {
+    if (!P[0] || !P[1]) return;
+    const dist = Math.abs(P[0].x - P[1].x);
+    const mid = (P[0].x + P[1].x) / 2;
+    const t = Math.max(0, Math.min(1, (dist - 70) / 460));
+    let wantW = 620 + t * 360;
+    wantW *= 1 - Math.min(0.16, 0.1 * zoomPunch);
+    let wantH = wantW * ASPECT;
+    if (wantH > STAGE_H) { wantH = STAGE_H; wantW = wantH / ASPECT; }
+    if (wantW > STAGE_W) { wantW = STAGE_W; wantH = wantW * ASPECT; }
+    const floorBias = Math.min(0.86, 0.78 - t * 0.08 + Math.min(0.08, zoomPunch * 0.05));
+    let x = mid - wantW / 2;
+    let y = FLOOR - wantH * floorBias;
+    if (x < 0) x = 0;
+    if (y < 0) y = 0;
+    if (x + wantW > STAGE_W) x = STAGE_W - wantW;
+    if (y + wantH > STAGE_H) y = STAGE_H - wantH;
+    const k = snap ? 1 : Math.min(1, dt * 5.5);
+    cam.x += (x - cam.x) * k;
+    cam.y += (y - cam.y) * k;
+    cam.w += (wantW - cam.w) * k;
+    cam.h += (wantH - cam.h) * k;
   }
 
   function step(dt) {
-    if (paused || phase === 'load') return;
+    if (paused || phase === 'load' || !P[0]) return;
     if (hitstop > 0) {
       hitstop = Math.max(0, hitstop - dt);
       tickImpacts(dt);
-      decayShake(dt, true);
+      updateCamera(dt, false);
+      shake *= Math.pow(0.93, dt * HZ);
+      if (shake < 0.3) shake = 0;
       return;
     }
+    if (zoomPunch > 0) zoomPunch = Math.max(0, zoomPunch - dt * 2.4);
     worldTime += dt;
     time += dt;
+    updateCamera(dt, false);
     if (phase === 'menu') {
-      for (const p of P) tickAnim(p, dt);
+      for (let i = 0; i < 2; i++) tickAnim(P[i], dt);
       return;
     }
     if (phase === 'intro') {
       if (time > 1.05) { phase = 'fight'; banner.textContent = ''; }
       else banner.innerHTML = time > 0.65 ? '¡YA!' : 'Preparados';
-      for (const p of P) tickAnim(p, dt);
+      for (let i = 0; i < 2; i++) tickAnim(P[i], dt);
       pressed.clear();
       return;
     }
@@ -978,10 +1017,11 @@
     if (hitstop <= 0) slideAll(dt);
     separate();
     updateBolts(dt);
-    for (const p of P) {
+    for (let i = 0; i < 2; i++) {
+      const p = P[i];
       if (trainOn()) {
         if (p.regenWait > 0) p.regenWait = Math.max(0, p.regenWait - dt);
-        else if (p.hp < MAX_HP) p.hp = Math.min(MAX_HP, p.hp + 51 * dt);
+        else if (p.hp < p.def.maxHp) p.hp = Math.min(p.def.maxHp, p.hp + 51 * dt);
       }
       const follow = 1 - Math.pow(0.94, dt * HZ);
       p.trail += (p.hp - p.trail) * follow;
@@ -989,77 +1029,71 @@
     }
     tickImpacts(dt);
     tickCombos(dt);
-    decayShake(dt, false);
+    shake *= Math.pow(0.84, dt * HZ);
+    if (shake < 0.3) shake = 0;
+    hitKick *= Math.pow(0.78, dt * HZ);
+    if (Math.abs(hitKick) < 0.15) hitKick = 0;
+    if (flashScreen > 0) flashScreen = Math.max(0, flashScreen - dt);
     pressed.clear();
   }
 
   function worldToScreen(x, y) {
-    const sx = cv.width / CAM.w;
-    const sy = cv.height / CAM.h;
-    return [(x - CAM.x) * sx + shx, (y - CAM.y) * sy + shy, sx, sy];
+    const sx = cv.width / view.w;
+    const sy = cv.height / view.h;
+    return [(x - view.x) * sx, (y - view.y) * sy, sx, sy];
   }
 
-  function drawSheet(img, col, row, x, y, face, pivotX, pivotY, scale) {
+  function drawSheet(p, col, row, x, y, face, pivotX, pivotY, scale) {
+    const art = p.def.art;
     const [sx, sy, scx, scy] = worldToScreen(x, y);
-    const dw = CELL_W * scale * scx;
-    const dh = CELL_H * scale * scy;
+    const cw = art.cell[0], ch = art.cell[1];
     ctx.save();
     ctx.translate(sx, sy);
     ctx.scale(face, 1);
     ctx.imageSmoothingEnabled = false;
-    ctx.drawImage(img, col * CELL_W, row * CELL_H, CELL_W, CELL_H,
-      -pivotX * scale * scx, -pivotY * scale * scy, dw, dh);
+    ctx.drawImage(art.img, col * cw, row * ch, cw, ch,
+      -pivotX * scale * scx, -pivotY * scale * scy, cw * scale * scx, ch * scale * scy);
     ctx.restore();
+  }
+
+  function drawShadow(p) {
+    const lift = Math.max(0, FLOOR - p.y);
+    const grow = 1 + Math.min(0.42, lift / 230);
+    const [fx, fy, scx, scy] = worldToScreen(p.x, FLOOR);
+    ctx.fillStyle = SIDE[p.id];
+    ctx.globalAlpha = 0.9;
+    ctx.beginPath();
+    ctx.ellipse(fx, fy, 22 * grow * scx, 7 * grow * scy, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.globalAlpha = 1;
   }
 
   function drawFighter(p) {
     if (p.flash > 0 && Math.floor(worldTime * 12) % 2 === 0) return;
-    const a = AN[p.anim] || AN.stance;
+    const a = animOf(p);
     const frame = Math.max(0, Math.min(a.frames - 1, p.frame || 0));
-    const [fx, fy, scx, scy] = worldToScreen(p.x, p.y);
-    ctx.save();
-    ctx.fillStyle = p.id === 0 ? 'rgba(80,220,220,0.35)' : 'rgba(220,80,180,0.35)';
-    ctx.beginPath();
-    ctx.ellipse(fx, fy, 28 * scx, 8 * scy, 0, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.restore();
-    drawSheet(sheet, frame, a.row, p.x, p.y, p.face, PIVOT_X, PIVOT_Y, SCALE);
+    drawSheet(p, frame, a.row, p.x, p.y, p.face, p.def.pivot[0], p.def.pivot[1], p.def.scale);
   }
 
   function drawImpacts() {
-    for (const s of impacts) {
+    for (let n = 0; n < impacts.length; n++) {
+      const s = impacts[n];
       const [sx, sy, kx] = worldToScreen(s.x, s.y);
       const age = 1 - s.life / s.max;
       const alpha = Math.max(0, s.life / s.max);
       const col = s.blocked ? '#96ffeb' : (s.weight >= 4 ? '#fff1b0' : '#ffcb3d');
       ctx.save();
       ctx.globalAlpha = alpha;
-      ctx.lineCap = 'square';
       ctx.strokeStyle = col;
       ctx.lineWidth = s.weight >= 3 ? 3 : 2;
       const ringR = (5 + s.weight * 4 + age * (10 + s.weight * 8)) * kx;
       ctx.beginPath();
       ctx.arc(sx, sy, Math.max(3, ringR), 0, Math.PI * 2);
       ctx.stroke();
-      if (s.weight >= 4) {
-        ctx.strokeStyle = s.weight >= 5 ? '#ff8ad4' : '#96ffeb';
-        ctx.lineWidth = 2;
-        ctx.beginPath();
-        ctx.arc(sx, sy, Math.max(3, ringR * 0.62), 0, Math.PI * 2);
-        ctx.stroke();
-      }
-      if (age < 0.34) {
-        ctx.globalAlpha = (1 - age / 0.34) * 0.95;
-        ctx.fillStyle = '#fff';
-        const core = (3 + s.weight * 2) * kx;
-        ctx.fillRect(sx - core / 2, sy - core / 2, core, core);
-      }
-      ctx.globalAlpha = alpha;
       const rays = s.blocked ? 4 : 4 + s.weight * 2;
       const reach = (7 + s.weight * 5) * (1 - age * 0.45) * kx;
-      ctx.lineWidth = s.weight >= 4 ? 3 : 2;
       for (let i = 0; i < rays; i++) {
-        const spread = (i - (rays - 1) / 2) * (0.55 - Math.min(0.22, s.weight * 0.04));
+        const spread = (i - (rays - 1) / 2) * 0.42;
         const ang = Math.atan2(-0.42, s.dir || 1) + spread;
         ctx.strokeStyle = i % 2 ? '#fff' : col;
         ctx.beginPath();
@@ -1067,14 +1101,8 @@
         ctx.lineTo(sx + Math.cos(ang) * reach, sy + Math.sin(ang) * reach * 0.72);
         ctx.stroke();
       }
-      const slash = (12 + s.weight * 8) * (1 - age * 0.25) * kx;
-      ctx.strokeStyle = '#fff';
-      ctx.lineWidth = s.weight >= 3 ? 4 : 2;
-      ctx.beginPath();
-      ctx.moveTo(sx - s.dir * slash * 0.7, sy - slash * 0.22);
-      ctx.lineTo(sx + s.dir * slash * 0.4, sy + slash * 0.1);
-      ctx.stroke();
-      for (const b of s.bits) {
+      for (let i = 0; i < s.bits.length; i++) {
+        const b = s.bits[i];
         const [px, py, bkx, bky] = worldToScreen(b.x, b.y);
         ctx.fillStyle = b.color;
         ctx.fillRect(px, py, Math.max(2, b.w * bkx), Math.max(2, b.h * bky));
@@ -1083,25 +1111,84 @@
     }
   }
 
-  function drawFloaters() {
-    ctx.textAlign = 'center';
-    for (const t of floaters) {
-      const [sx, sy] = worldToScreen(t.x, t.y);
-      ctx.font = '800 ' + (t.size || 16) + 'px system-ui, sans-serif';
-      ctx.globalAlpha = Math.max(0, Math.min(1, t.life / (t.max || 0.4)));
-      ctx.lineWidth = 4;
-      ctx.strokeStyle = '#181624';
-      ctx.strokeText(t.text, sx, sy);
-      ctx.fillStyle = t.color;
-      ctx.fillText(t.text, sx, sy);
-      ctx.globalAlpha = 1;
+  function paintBeam(fxx, lampX, lampY, floorX, floorY, w0, w1, rgb, alpha) {
+    const y0 = lampY - view.y;
+    const y1 = floorY - view.y;
+    const span = y1 - y0;
+    if (span <= 1) return;
+    fxx.fillStyle = 'rgba(' + rgb[0] + ',' + rgb[1] + ',' + rgb[2] + ',' + alpha + ')';
+    const yStart = Math.max(0, y0 | 0);
+    const yEnd = Math.min(fxx.canvas.height - 1, y1 | 0);
+    for (let y = yStart; y <= yEnd; y++) {
+      const t = (y - y0) / span;
+      const cxw = lampX + (floorX - lampX) * t - view.x;
+      const half = w0 + (w1 - w0) * t;
+      const left = Math.max(0, Math.round(cxw - half));
+      const right = Math.min(fxx.canvas.width, Math.round(cxw + half));
+      if (right > left) fxx.fillRect(left, y, right - left, 1);
+    }
+  }
+
+  function drawSpots() {
+    if (!spec || !spec.spots) return;
+    if (!fxCanvas) fxCanvas = document.createElement('canvas');
+    const cw = Math.max(1, view.w | 0);
+    const ch = Math.max(1, view.h | 0);
+    if (fxCanvas.width !== cw || fxCanvas.height !== ch) {
+      fxCanvas.width = cw;
+      fxCanvas.height = ch;
+    }
+    const fxx = fxCanvas.getContext('2d');
+    fxx.imageSmoothingEnabled = false;
+    fxx.clearRect(0, 0, cw, ch);
+    const t = performance.now() / 1000;
+    for (let i = 0; i < spec.spots.length; i++) {
+      const s = spec.spots[i];
+      const wobble = 0.85 + 0.15 * Math.sin(t * 7 + s.phase);
+      const swing = Math.sin(t * s.speed + s.phase) * s.amp;
+      const floorX = s.x + swing;
+      paintBeam(fxx, s.x, s.y, floorX, s.y1, 1, s.wide, s.color, s.alpha * wobble);
+      paintBeam(fxx, s.x, s.y, floorX, s.y1, 1, s.wide * 0.35, s.color, s.alpha * 1.6 * wobble);
+    }
+    ctx.save();
+    ctx.globalCompositeOperation = 'lighter';
+    ctx.drawImage(fxCanvas, 0, 0, cv.width, cv.height);
+    ctx.restore();
+  }
+
+  function drawSmoke() {
+    if (!smoke.length || !spec || !spec.smoke) return;
+    const now = performance.now();
+    for (let i = 0; i < spec.smoke.length; i++) {
+      const s = spec.smoke[i];
+      const cycle = s.cycle || 20000;
+      const puff = s.puff || 2400;
+      const u = (now + (s.delay || 0)) % cycle;
+      if (u >= puff) continue;
+      const fi = Math.min(smoke.length - 1, Math.floor(u / puff * smoke.length));
+      const f = smoke[fi];
+      const sc = s.scale || 1;
+      const dw = f.width * sc;
+      const dh = f.height * sc;
+      const [sx, sy, kx, ky] = worldToScreen(s.x - dw / 2, s.y - dh);
+      ctx.save();
+      ctx.globalAlpha = s.alpha != null ? s.alpha : 0.5;
+      if (s.flip) {
+        ctx.translate(sx + dw * kx, sy);
+        ctx.scale(-1, 1);
+        ctx.drawImage(f, 0, 0, dw * kx, dh * ky);
+      } else {
+        ctx.drawImage(f, sx, sy, dw * kx, dh * ky);
+      }
+      ctx.restore();
     }
   }
 
   function drawCombo() {
     if (phase !== 'fight' || paused) return;
     let best = null;
-    for (const p of P) {
+    for (let i = 0; i < 2; i++) {
+      const p = P[i];
       if (p.combo < 2 || p.comboTimer <= 0) continue;
       if (!best || p.combo > best.combo || (p.combo === best.combo && p.comboAge < best.comboAge)) best = p;
     }
@@ -1129,26 +1216,38 @@
   }
 
   function drawWorld() {
+    const w = Math.max(1, Math.round(cam.w));
+    const h = Math.max(1, Math.round(cam.h));
+    const jx = ((shake ? (Math.random() - 0.5) * shake * 1.25 : 0) + hitKick) * w / cv.width;
+    const jy = (shake ? (Math.random() - 0.5) * shake * 0.65 : 0) * h / cv.height;
+    let x = Math.round(cam.x + jx);
+    let y = Math.round(cam.y + jy);
+    if (x < 0) x = 0;
+    if (y < 0) y = 0;
+    if (x + w > STAGE_W) x = Math.max(0, STAGE_W - w);
+    if (y + h > STAGE_H) y = Math.max(0, STAGE_H - h);
+    view = { x, y, w, h };
     ctx.imageSmoothingEnabled = false;
-    shx = (shake ? (Math.random() - 0.5) * shake * 1.25 : 0) + hitKick;
-    shy = shake ? (Math.random() - 0.5) * shake * 0.65 : 0;
-    ctx.drawImage(bg, CAM.x, CAM.y, CAM.w, CAM.h, 0, 0, cv.width, cv.height);
+    ctx.drawImage(bg, view.x, view.y, view.w, view.h, 0, 0, cv.width, cv.height);
     if (led.length && spec && spec.screens) {
       const f = led[Math.floor(worldTime * (HZ / 10)) % led.length];
-      for (const s of spec.screens) {
+      for (let i = 0; i < spec.screens.length; i++) {
+        const s = spec.screens[i];
         const [sx, sy, kx, ky] = worldToScreen(s.x, s.y);
         ctx.drawImage(f, sx, sy, f.width * kx, f.height * ky);
       }
     }
     if (crowd.length && spec) {
       const tick = Math.floor(worldTime * (HZ / 9));
-      for (const band of spec.rows || []) {
+      const rows = spec.rows || [];
+      for (let r = 0; r < rows.length; r++) {
+        const band = rows[r];
         const stepX = band.step || crowd[0].width;
         let i = 0;
         for (let x = band.x0; x + stepX <= band.x1 + 8; x += stepX, i++) {
           const f = crowd[(tick + i + (band.phase || 0)) % crowd.length];
           let sw = f.width;
-          const limit = band.xMax != null ? band.xMax : 1344;
+          const limit = band.xMax != null ? band.xMax : STAGE_W;
           if (x >= limit) continue;
           if (x + sw > limit) sw = limit - x;
           if (sw < 12) continue;
@@ -1157,7 +1256,8 @@
         }
       }
       if (spec.sides && spec.figs) {
-        for (const s of spec.sides) {
+        for (let i = 0; i < spec.sides.length; i++) {
+          const s = spec.sides[i];
           const fi = (tick + (s.phase || 0)) % crowd.length;
           const box = spec.figs[fi][s.slot % spec.figs[fi].length];
           const f = crowd[fi];
@@ -1168,26 +1268,43 @@
         }
       }
     }
-    if (ring) ctx.drawImage(ring, CAM.x, CAM.y, CAM.w, CAM.h, 0, 0, cv.width, cv.height);
-    for (const p of P) drawFighter(p);
-    if (AN.rayo_proj) {
-      for (const b of bolts) {
-        drawSheet(sheet, b.frame, AN.rayo_proj.row, b.x, b.y, b.vx > 0 ? 1 : -1, 174, 154, 0.42);
-      }
+    if (ring) ctx.drawImage(ring, view.x, view.y, view.w, view.h, 0, 0, cv.width, cv.height);
+    drawSmoke();
+    for (let i = 0; i < 2; i++) drawShadow(P[i]);
+    for (let i = 0; i < 2; i++) drawFighter(P[i]);
+    for (let i = 0; i < bolts.length; i++) {
+      const b = bolts[i];
+      const owner = P[b.owner];
+      const row = owner.def.art.anims[b.def.anim];
+      if (!row) continue;
+      drawSheet(owner, b.frame, row.row, b.x, b.y, b.vx > 0 ? 1 : -1, b.def.pivot[0], b.def.pivot[1], b.def.scale);
     }
     drawImpacts();
-    drawFloaters();
+    drawSpots();
+    ctx.textAlign = 'center';
+    for (let i = 0; i < floaters.length; i++) {
+      const t = floaters[i];
+      const [sx, sy] = worldToScreen(t.x, t.y);
+      ctx.font = '800 ' + (t.size || 16) + 'px system-ui, sans-serif';
+      ctx.globalAlpha = Math.max(0, Math.min(1, t.life / (t.max || 0.4)));
+      ctx.lineWidth = 4;
+      ctx.strokeStyle = '#181624';
+      ctx.strokeText(t.text, sx, sy);
+      ctx.fillStyle = t.color;
+      ctx.fillText(t.text, sx, sy);
+      ctx.globalAlpha = 1;
+    }
     if (flashScreen > 0) {
       ctx.fillStyle = 'rgba(255,246,220,' + Math.min(0.16, flashScreen * 2.2) + ')';
       ctx.fillRect(0, 0, cv.width, cv.height);
     }
     if (showBoxes) {
       ctx.strokeStyle = '#7dff7d';
-      for (const p of P) {
-        const h = hurtbox(p);
+      for (let i = 0; i < 2; i++) {
+        const h = hurtbox(P[i]);
         const [sx, sy, kx, ky] = worldToScreen(h.x, h.y);
         ctx.strokeRect(sx, sy, h.w * kx, h.h * ky);
-        const ab = attackBox(p);
+        const ab = attackBox(P[i]);
         if (ab) {
           ctx.strokeStyle = '#ff5b6a';
           const [ax, ay, akx, aky] = worldToScreen(ab.x, ab.y);
@@ -1200,12 +1317,11 @@
   }
 
   function drawHud() {
-    const set = (id, hp, trail) => {
-      document.getElementById(id).style.width = Math.max(0, hp / MAX_HP * 100) + '%';
-      document.getElementById(id === 'h1' ? 't1' : 't2').style.width = Math.max(0, trail / MAX_HP * 100) + '%';
-    };
-    set('h1', P[0].hp, P[0].trail);
-    set('h2', P[1].hp, P[1].trail);
+    const max0 = P[0].def.maxHp, max1 = P[1].def.maxHp;
+    document.getElementById('h1').style.width = Math.max(0, P[0].hp / max0 * 100) + '%';
+    document.getElementById('t1').style.width = Math.max(0, P[0].trail / max0 * 100) + '%';
+    document.getElementById('h2').style.width = Math.max(0, P[1].hp / max1 * 100) + '%';
+    document.getElementById('t2').style.width = Math.max(0, P[1].trail / max1 * 100) + '%';
     document.getElementById('timer').textContent = trainOn() && phase !== 'menu' ? '∞' : String(Math.ceil(timer - 1e-6));
     for (let i = 0; i < 2; i++) {
       const el = document.getElementById(i === 0 ? 'w1' : 'w2');
@@ -1222,25 +1338,23 @@
     if (pauseEl) pauseEl.hidden = !paused || phase === 'menu' || phase === 'load' || phase === 'end';
     if (end) end.hidden = phase !== 'end';
     if (hud) hud.classList.toggle('dim', phase === 'menu' || phase === 'load');
+    const n1 = document.getElementById('n1');
     const n2 = document.getElementById('n2');
-    if (n2) {
-      if (phase === 'menu' || phase === 'load') n2.textContent = 'VOLTIA';
+    if (n1 && P[0]) n1.textContent = P[0].def.name;
+    if (n2 && P[1]) {
+      if (phase === 'menu' || phase === 'load') n2.textContent = P[1].def.name;
       else if (trainOn()) n2.textContent = 'MUÑECO';
-      else if (!cpuOn()) n2.textContent = 'VOLTIA 2';
+      else if (!cpuOn()) n2.textContent = P[1].def.name + ' 2';
       else n2.textContent = 'CPU · ' + aiLevel().name.toUpperCase();
     }
     const pauseLine = document.getElementById('pause-line');
-    if (pauseLine) {
-      pauseLine.textContent = trainOn() ? 'Entrenamiento' : (cpuOn() ? 'Pelea · ' + aiLevel().name : 'Versus');
-    }
+    if (pauseLine) pauseLine.textContent = trainOn() ? 'Entrenamiento' : (cpuOn() ? 'Pelea · ' + aiLevel().name : 'Versus');
     paintMenu();
     paintMusic();
   }
 
   function paintMenu() {
-    document.querySelectorAll('#menu-nav .item').forEach((el, i) => {
-      el.classList.toggle('on', i === menuIndex);
-    });
+    document.querySelectorAll('#menu-nav .item').forEach((el, i) => el.classList.toggle('on', i === menuIndex));
     const levels = document.getElementById('levels');
     if (levels) levels.classList.toggle('dim', menuIndex !== 0);
     document.querySelectorAll('#levels button').forEach((el) => {
@@ -1263,12 +1377,9 @@
     else if (code === 'ArrowDown') menuIndex = (menuIndex + 1) % MENU_ACTS.length;
     else if ((code === 'ArrowLeft' || code === 'ArrowRight') && menuIndex === 0) {
       const i = LEVEL_ORDER.indexOf(levelId);
-      const d = code === 'ArrowRight' ? 1 : -1;
-      levelId = LEVEL_ORDER[(i + d + LEVEL_ORDER.length) % LEVEL_ORDER.length];
-    } else if (code === 'Enter') {
-      activateMenu();
-      return;
-    } else return;
+      levelId = LEVEL_ORDER[(i + (code === 'ArrowRight' ? 1 : -1) + LEVEL_ORDER.length) % LEVEL_ORDER.length];
+    } else if (code === 'Enter') { activateMenu(); return; }
+    else return;
     paintMenu();
   }
 
@@ -1291,7 +1402,7 @@
       simAcc -= STEP;
       guard++;
     }
-    if (sheet) {
+    if (sheetReady && P[0]) {
       ctx.setTransform(1, 0, 0, 1, 0, 0);
       ctx.clearRect(0, 0, cv.width, cv.height);
       drawWorld();
@@ -1309,21 +1420,28 @@
     shake = 0;
     hitKick = 0;
     flashScreen = 0;
+    if (P[0]) P[0].bolt = null;
+    if (P[1]) P[1].bolt = null;
+  }
+
+  function placeFighters() {
+    P[0] = makeFighter(0, 500, MATCH[0]);
+    P[1] = makeFighter(1, 844, MATCH[1]);
+    if (cpuOn() && !trainOn()) P[1].aiCd = aiLevel().think[0];
   }
 
   function resetRound(clearWins) {
     if (clearWins) wins = [0, 0];
-    P[0] = makeFighter(0, 530);
-    P[1] = makeFighter(1, 810);
-    if (cpuOn() && !trainOn()) P[1].aiCd = aiLevel().think[0];
+    placeFighters();
     clearFx();
     timer = ROUND_TIME;
     time = 0;
+    zoomPunch = 0;
     phase = 'intro';
     paused = false;
     banner.textContent = 'Preparados';
-    matchNote = '';
     pressed.clear();
+    updateCamera(1, true);
     syncUi();
   }
 
@@ -1341,14 +1459,15 @@
   function toMenu() {
     paused = false;
     phase = 'menu';
-    P[0] = makeFighter(0, 530);
-    P[1] = makeFighter(1, 810);
+    placeFighters();
     clearFx();
     timer = ROUND_TIME;
     time = 0;
+    zoomPunch = 0;
     wins = [0, 0];
     banner.textContent = '';
     pressed.clear();
+    updateCamera(1, true);
     syncUi();
   }
 
@@ -1370,30 +1489,18 @@
 
   async function toggleMusic() {
     resumeAudio();
-    if (music && !music.paused) {
-      music.pause();
-      paintMusic();
-      return;
-    }
+    if (music && !music.paused) { music.pause(); paintMusic(); return; }
     if (!music) {
       music = new Audio('../voltia/theme.wav?v=3');
       music.loop = true;
       music.volume = 0.45;
     }
-    try {
-      await music.play();
-      paintMusic();
-    } catch (err) {
-      document.getElementById('status').textContent = 'No se pudo poner la música.';
-    }
+    try { await music.play(); paintMusic(); }
+    catch (err) { document.getElementById('status').textContent = 'No se pudo poner la música.'; }
   }
 
   document.querySelectorAll('#menu-nav .item').forEach((el, i) => {
-    el.addEventListener('click', () => {
-      menuIndex = i;
-      el.blur();
-      activateMenu();
-    });
+    el.addEventListener('click', () => { menuIndex = i; el.blur(); activateMenu(); });
   });
   document.querySelectorAll('#levels button').forEach((el) => {
     el.addEventListener('click', () => {
@@ -1403,25 +1510,44 @@
       startMatch('fight');
     });
   });
-  document.getElementById('resume').onclick = () => { togglePause(); };
+  document.getElementById('resume').onclick = () => togglePause();
   document.getElementById('pause-menu').onclick = () => toMenu();
   document.getElementById('pause-music').onclick = () => toggleMusic();
   document.getElementById('rematch').onclick = () => again();
   document.getElementById('to-menu').onclick = () => toMenu();
   paintMenu();
 
+  async function loadChar(id) {
+    if (chars[id]) return;
+    const raw = window.ROSTER && window.ROSTER[id];
+    if (!raw) throw new Error('falta la ficha de ' + id);
+    const compiled = compileChar(raw);
+    if (!artCache[raw.sheet]) {
+      const sheetUrl = new URL(raw.sheet, location.href);
+      const meta = await (await fetch(sheetUrl.href, { cache: 'no-store' })).json();
+      const img = await loadImage(new URL(meta.sprite, sheetUrl).href);
+      const anims = {};
+      for (let i = 0; i < meta.animations.length; i++) anims[meta.animations[i].id] = meta.animations[i];
+      artCache[raw.sheet] = { img, anims, cell: [meta.cell.w, meta.cell.h] };
+    }
+    compiled.art = artCache[raw.sheet];
+    chars[id] = compiled;
+  }
+
   (async () => {
     try {
-      const meta = await (await fetch('../voltia/sheet.json', { cache: 'no-store' })).json();
+      for (let i = 0; i < MATCH.length; i++) await loadChar(MATCH[i]);
       spec = await (await fetch('../voltia/stage/stage.json', { cache: 'no-store' })).json();
-      for (const a of meta.animations) AN[a.id] = a;
-      sheet = await loadImage('../voltia/' + meta.sprite);
-      bg = await loadImage('../voltia/stage/bg.png');
-      ring = await loadImage('../voltia/stage/ring.png');
+      bg = await loadImage('../voltia/stage/' + spec.active);
+      ring = await loadImage('../voltia/stage/' + spec.ring);
       for (let i = 0; i < 4; i++) {
         crowd.push(await loadImage('../voltia/stage/crowd/f' + i + '.png'));
         led.push(await loadImage('../voltia/stage/led/f' + i + '.png'));
       }
+      for (let i = 0; i < 8; i++) smoke.push(await loadImage('../voltia/stage/fx/smoke_f' + i + '.png'));
+      placeFighters();
+      updateCamera(1, true);
+      sheetReady = true;
       phase = 'menu';
       syncUi();
       requestAnimationFrame(frame);
