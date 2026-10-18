@@ -186,6 +186,7 @@
         walkF: spd(ph.walkF),
         walkB: spd(ph.walkB),
         dash: spd(ph.dash),
+        run: spd(ph.run != null ? ph.run : (ph.dash || 4) * 0.74),
         jumpV: spd(ph.jumpV),
         jumpX: spd(ph.jumpX),
         gravity: accel(ph.gravity),
@@ -313,6 +314,34 @@
       if (ok && s < 0) return true;
     }
     return false;
+  }
+
+  function dpShape(p, window) {
+    const dirs = p.dirs;
+    const limit = window || 0.85;
+    let sawForward = false;
+    let sawDown = false;
+    let sawFinish = false;
+    for (let i = 0; i < dirs.length; i++) {
+      if (time - dirs[i].t > limit) continue;
+      const d = dirs[i].d;
+      if (d === 5) continue;
+      if (!sawDown && d === 6) { sawForward = true; continue; }
+      if (sawForward && (d === 1 || d === 2 || d === 3)) { sawDown = true; if (d === 3) sawFinish = true; continue; }
+      if (sawDown && (d === 3 || d === 6)) sawFinish = true;
+    }
+    return sawForward && sawDown && sawFinish;
+  }
+
+  function commandOverride(p, cmd) {
+    if (!cmd.loseTo) return null;
+    const cmds = p.def.commands || [];
+    for (let i = 0; i < cmds.length; i++) {
+      const other = cmds[i];
+      if (other.move !== cmd.loseTo) continue;
+      if (commandMatches(p, other) || (other.dp && dpShape(p, other.window))) return other;
+    }
+    return null;
   }
 
   function commandMatches(p, cmd) {
@@ -455,7 +484,7 @@
 
   function btnRecent(p, kind) {
     const at = kind === 'kick' ? p.btnAt.kick : p.btnAt.punch;
-    return time - at <= 0.16;
+    return time - at <= 0.22;
   }
 
   function strengthOf(inp, kind) {
@@ -495,7 +524,9 @@
       const cmd = cmds[i];
       if (cmd.type !== 'motion' || !btnRecent(p, cmd.btn)) continue;
       if (!commandMatches(p, cmd)) continue;
-      startMove(p, cmd.move, cmdStrength(p, inp, cmd.btn));
+      const over = commandOverride(p, cmd);
+      const picked = over || cmd;
+      startMove(p, picked.move, cmdStrength(p, inp, picked.btn));
       return;
     }
     const table = inp.down ? p.def.normals.crouch : p.def.normals.stand;
@@ -513,7 +544,7 @@
       return;
     }
     if (p.state === 'idle') setAnim(p, 'stance');
-    if (p.state === 'walk' || p.state === 'dash') setAnim(p, p.state === 'dash' ? 'dash' : 'walk');
+    if (p.state === 'walk' || p.state === 'dash' || p.state === 'run') setAnim(p, p.state === 'walk' ? 'walk' : 'dash');
     const a = animOf(p);
     if (!a) return;
     const mv = moveOf(p);
@@ -527,7 +558,7 @@
       p.animAcc -= dur;
       p.frame++;
       if (p.frame >= a.frames) {
-        if (a.loop && (p.state === 'idle' || p.state === 'walk' || p.state === 'block' || p.state === 'dizzy' || p.state === 'victory')) {
+        if (a.loop && (p.state === 'idle' || p.state === 'walk' || p.state === 'run' || p.state === 'block' || p.state === 'dizzy' || p.state === 'victory')) {
           p.frame = 0;
         } else {
           p.frame = a.frames - 1;
@@ -728,6 +759,7 @@
       y: p.y + pr.offset.y,
       vx: p.face * speed,
       frame: 0, acc: 0, life: pr.range ? pr.range / speed : pr.life,
+      maxLife: pr.range ? pr.range / speed : pr.life,
       def: pr, face: p.face
     };
     p.bolt = bolt;
@@ -768,25 +800,39 @@
   }
 
   function physics(p, dt) {
+    p.fell = true;
     if (p.state === 'jump' || p.state === 'launch' || p.state === 'backdash' || p.y < FLOOR) {
-      p.vy += p.def.phys.gravity * dt;
+      pullDown(p, dt);
       p.x += p.vx * dt;
       p.y += p.vy * dt;
-      if (p.y >= FLOOR) {
-        p.y = FLOOR;
-        p.vy = 0;
-        p.vx = 0;
-        p.airUsed = false;
-        if (p.state === 'launch' || p.state === 'knockdown') {
-          p.state = 'knockdown';
-          p.stun = Math.max(p.stun, sec(32));
-          setAnim(p, 'knockdown', true);
-        } else if (p.state !== 'ko' && p.state !== 'attack') {
-          p.state = p._down ? 'crouch' : 'idle';
-        } else if (p.state === 'attack' && p.animDone) p.state = 'idle';
-      }
+      if (p.y >= FLOOR) landFromAir(p);
     }
     clampX(p);
+  }
+
+  function pullDown(p, dt) {
+    if ((p.airTime || 0) > 1.05 && p.vy < spd(2.2)) p.vy = spd(2.2);
+    p.vy += p.def.phys.gravity * dt;
+  }
+
+  function landFromAir(p) {
+    p.y = FLOOR;
+    p.vy = 0;
+    p.vx = 0;
+    p.airUsed = false;
+    p.airTime = 0;
+    if (p.state === 'launch' || p.state === 'knockdown') {
+      p.state = 'knockdown';
+      p.stun = Math.max(p.stun, sec(32));
+      setAnim(p, 'knockdown', true);
+    } else if (p.state === 'attack') {
+      if (p.animDone) p.state = 'idle';
+    } else if (p.state === 'hit' || p.state === 'block' || p.state === 'ko' || p.state === 'victory') {
+      /* la reacción sigue en el suelo; no se corta el stun */
+    } else {
+      p.state = p._down ? 'crouch' : 'idle';
+      p.move = null;
+    }
   }
 
   function control(p, inp, dt) {
@@ -802,13 +848,16 @@
     if (p.stun > 0) {
       p.stun = Math.max(0, p.stun - dt);
       if (p.stun <= 0 && (p.state === 'hit' || p.state === 'block')) {
-        p.state = inp.down ? 'crouch' : 'idle';
         p.move = null;
+        if (p.y < FLOOR - 1) {
+          p.state = 'jump';
+          setAnim(p, 'jump', true);
+        } else p.state = inp.down ? 'crouch' : 'idle';
       }
       if (p.state === 'knockdown' && p.stun <= 0) {
-        p.state = 'idle';
-        p.invuln = sec(16);
         p.move = null;
+        p.invuln = sec(16);
+        p.state = p.y < FLOOR - 1 ? 'jump' : 'idle';
       }
       tickAnim(p, dt);
       physics(p, dt);
@@ -845,7 +894,7 @@
       physics(p, dt);
       return;
     }
-    if (inp.up && (p.state === 'idle' || p.state === 'walk' || p.state === 'crouch')) {
+    if (inp.up && (p.state === 'idle' || p.state === 'walk' || p.state === 'crouch' || p.state === 'run' || p.state === 'dash')) {
       p.state = 'jump';
       p.vy = p.def.phys.jumpV;
       p.vx = inp.x * p.def.phys.jumpX;
@@ -869,15 +918,25 @@
     }
     if (fwdEdge(p, inp)) {
       p.state = 'dash';
+      p.dashT = 0;
       p.vx = 0;
       setAnim(p, 'dash', true);
     }
-    if (p.state === 'dash') {
-      p.x += p.face * p.def.phys.dash * dt;
-      tickAnim(p, dt);
-      if (p.animDone) p.state = 'idle';
-      clampX(p);
-      return;
+    if (p.state === 'dash' || p.state === 'run') {
+      p.dashT = (p.dashT || 0) + dt;
+      const held = inp.x === p.face;
+      if (p.state === 'dash' && held && p.dashT >= 0.08) p.state = 'run';
+      if (p.state === 'run' && !held) {
+        p.state = 'idle';
+        p.vx = 0;
+      } else {
+        const pace = p.state === 'run' ? p.def.phys.run : p.def.phys.dash;
+        p.x += p.face * pace * dt;
+        tickAnim(p, dt);
+        if (p.state === 'dash' && (p.animDone || p.dashT > 0.34)) p.state = 'idle';
+        clampX(p);
+        return;
+      }
     }
     if (inp.down) {
       p.state = 'crouch';
@@ -918,29 +977,22 @@
   function fwdEdge(p, inp) { return tapEdge(p, inp, 1); }
   function backEdge(p, inp) { return tapEdge(p, inp, -1); }
 
-  function keepFalling(p, dt) {
+  function ensureFall(p, dt, lockX) {
     if (!p) return;
     if (p.y >= FLOOR) {
       p.airTime = 0;
       return;
     }
     p.airTime = (p.airTime || 0) + dt;
-    const roundOver = phase === 'end' || p.state === 'victory' || p.state === 'ko';
-    const stuck = p.airTime > 1.45;
-    if (!roundOver && !stuck) return;
-    if (roundOver && p.vy < 0) p.vy *= 0.4;
-    if (stuck) p.vy = Math.max(p.vy, spd(3.5));
-    p.vy += p.def.phys.gravity * dt;
-    p.y += p.vy * dt;
-    p.x += (p.vx || 0) * dt;
-    clampX(p);
-    if (p.y >= FLOOR) {
-      p.y = FLOOR;
-      p.vy = 0;
-      p.vx = 0;
-      p.airTime = 0;
-      p.airUsed = false;
+    if (p.fell) return;
+    if (p.state === 'victory' || p.state === 'ko') {
+      if (p.vy < 0) p.vy *= 0.45;
     }
+    pullDown(p, dt);
+    p.y += p.vy * dt;
+    if (!lockX) p.x += (p.vx || 0) * dt;
+    clampX(p);
+    if (p.y >= FLOOR) landFromAir(p);
   }
 
   function separate() {
@@ -986,6 +1038,7 @@
       b.acc += dt;
       if (b.acc >= sec(5)) { b.acc = 0; b.frame = (b.frame + 1) % 3; }
       if (b.life <= 0 || b.x < WALL_L - 80 || b.x > WALL_R + 80) {
+        if (b.life <= 0) spawnImpact(b.x, b.y, 1, true, b.face || 1, null, null);
         if (P[b.owner] && P[b.owner].bolt === b) P[b.owner].bolt = null;
         bolts.splice(i, 1);
       }
@@ -1050,8 +1103,10 @@
 
   function step(dt) {
     if (paused || phase === 'load' || !P[0]) return;
+    if (P[0]) { P[0].fell = false; P[1].fell = false; }
     if (hitstop > 0) {
       hitstop = Math.max(0, hitstop - dt);
+      for (let i = 0; i < 2; i++) ensureFall(P[i], dt, true);
       tickImpacts(dt);
       updateCamera(dt, false);
       shake *= Math.pow(0.93, dt * HZ);
@@ -1103,7 +1158,7 @@
     hitKick *= Math.pow(0.78, dt * HZ);
     if (Math.abs(hitKick) < 0.15) hitKick = 0;
     if (flashScreen > 0) flashScreen = Math.max(0, flashScreen - dt);
-    for (let i = 0; i < 2; i++) keepFalling(P[i], dt);
+    for (let i = 0; i < 2; i++) ensureFall(P[i], dt);
     pressed.clear();
   }
 
@@ -1354,7 +1409,12 @@
       const owner = P[b.owner];
       const row = owner.def.art.anims[b.def.anim];
       if (!row) continue;
+      const span = b.maxLife || 0.01;
+      const left = Math.max(0, b.life / span);
+      ctx.save();
+      ctx.globalAlpha = left < 0.3 ? Math.max(0, left / 0.3) : 1;
       drawSheet(owner, b.frame, row.row, b.x, b.y, b.vx > 0 ? 1 : -1, b.def.pivot[0], b.def.pivot[1], b.def.scale);
+      ctx.restore();
     }
     drawImpacts();
     drawSpots();
@@ -1603,7 +1663,7 @@
       const sheetUrl = new URL(raw.sheet, location.href);
       const meta = await (await fetch(sheetUrl.href, { cache: 'no-store' })).json();
       const imgUrl = new URL(meta.sprite, sheetUrl);
-      imgUrl.searchParams.set('v', '3');
+      imgUrl.searchParams.set('v', '4');
       const img = await loadImage(imgUrl.href);
       const anims = {};
       for (let i = 0; i < meta.animations.length; i++) anims[meta.animations[i].id] = meta.animations[i];

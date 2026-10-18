@@ -14,6 +14,7 @@
       walkF: 2.85,
       walkB: 2.15,
       dash: 6.2,
+      run: 4.6,
       jumpV: -9.3,
       jumpX: 2.3,
       gravity: 0.42,
@@ -46,9 +47,9 @@
       air: { lp: 'jump_kick', hp: 'jump_kick', lk: 'jump_kick', hk: 'jump_kick' }
     },
     commands: [
-      { type: 'motion', move: 'uppercut', btn: 'punch', window: 0.55, seq: [6, 2, 3], alt: [[6, 3]], release: [5, 6], releaseTime: 0.5, tapGap: 0.42 },
+      { type: 'motion', move: 'uppercut', btn: 'punch', window: 0.85, seq: [6, 2, 3], alt: [[6, 3], [6, 2, 6]], release: [5, 6], releaseTime: 0.7, dp: true },
       { type: 'motion', move: 'spinkick', btn: 'kick', window: 0.55, seq: [2, 1, 4], alt: [[2, 4], [1, 4]], release: [5], releaseTime: 0.16 },
-      { type: 'motion', move: 'rayo', btn: 'punch', window: 0.55, seq: [2, 3, 6], release: [5], releaseTime: 0.14 }
+      { type: 'motion', move: 'rayo', btn: 'punch', window: 0.55, seq: [2, 3, 6], release: [5], releaseTime: 0.14, loseTo: 'uppercut' }
     ],
     moves: {
       punch_weak: {
@@ -102,7 +103,7 @@
           scale: 0.42,
           offset: { x: 48, y: -78 },
           speeds: { weak: 3.0, strong: 5.4 },
-          range: 640,
+          range: 420,
           life: 120,
           voice: 'rayoProj',
           box: { x: -18, y: -12, w: 36, h: 22 },
