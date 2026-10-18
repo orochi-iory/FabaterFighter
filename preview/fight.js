@@ -1663,7 +1663,7 @@
       const sheetUrl = new URL(raw.sheet, location.href);
       const meta = await (await fetch(sheetUrl.href, { cache: 'no-store' })).json();
       const imgUrl = new URL(meta.sprite, sheetUrl);
-      imgUrl.searchParams.set('v', '5');
+      imgUrl.searchParams.set('v', '6');
       const img = await loadImage(imgUrl.href);
       const anims = {};
       for (let i = 0; i < meta.animations.length; i++) anims[meta.animations[i].id] = meta.animations[i];
