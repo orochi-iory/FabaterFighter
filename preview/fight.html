@@ -42,13 +42,13 @@
            padding:8px 12px; cursor:pointer; font-size:14px; }
   button:hover { background:#454163; }
   button.on { background:#0e7c8c; border-color:var(--cyan); color:#fff; }
-  #status { color:#ff7b7b; min-height:1.2em; font-size:14px; }
+  #status { color:#9d9ab5; min-height:1.2em; font-size:14px; }
 </style>
 </head>
 <body>
 <header>
   <h1>⚡ VOLTIA vs VOLTIA ⚡</h1>
-  <p>Motor de pelea, primera prueba. El visor sigue en <a href="index.html">su página</a>.</p>
+  <p>Prueba de tacto, más lenta y con más peso. El visor sigue en <a href="index.html">su página</a>.</p>
 </header>
 <div class="wrap">
   <div class="stage">
@@ -69,21 +69,23 @@
     <div class="banner" id="banner"></div>
   </div>
   <p class="help">
-    <b>P1</b> A D mover · W salto · S abajo · F puño · G puño fuerte · R patada · T patada fuerte<br>
-    <b>P2</b> flechas · K puño · L puño fuerte · O patada · P patada fuerte<br>
-    Atrás bloquea. Los bajos (patada agachada, puño agachado) hay que bloquearlos agachado.
-    El salto pega por arriba. S+G uppercut · atrás+patada fuerte gira · ↓↘→ + puño lanza el rayo.
-    Doble toque adelante: dash. Esc pausa. Enter, al terminar: otra ronda.
+    <b>P1</b> A D mover · W salto · S abajo · F puño leve · G puño fuerte · R patada leve · T patada fuerte<br>
+    <b>P2</b> flechas · K L puños · O P patadas<br>
+    Atrás bloquea. Los bajos hay que bloquearlos agachado. El salto pega por arriba.
+    S+G uppercut · atrás+patada fuerte gira · ↓↘→ + puño lanza el rayo. Doble toque adelante: dash.<br>
+    <b>Muñeco quieto</b> empieza activado: el rival no actúa, solo lo empujan los golpes. La vida baja y se recupera, sin KO.
+    Quítalo para una CPU que espera y pega poco. F/R empujan poco y chispean corto; G/T paran más el golpe y lo echan más atrás.
+    El combo sale arriba, a partir de 2. Esc pausa. Enter, al terminar: otra ronda.
   </p>
   <div class="row">
     <button id="cpu" class="on" type="button">P2: CPU</button>
-    <button id="train" type="button">Entrenamiento</button>
+    <button id="train" class="on" type="button">Muñeco quieto: on</button>
     <button id="music" type="button">▶ Música</button>
     <button id="again" type="button">Otra ronda</button>
     <button id="boxes" type="button">Cajas</button>
   </div>
   <p id="status"></p>
 </div>
-<script src="fight.js?v=1"></script>
+<script src="fight.js?v=2"></script>
 </body>
 </html>
