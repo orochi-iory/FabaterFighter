@@ -1,0 +1,22 @@
+{
+  "hardware": "CPS-1 no rota ni escala. El volteo horizontal es gratis, asi que todo se dibuja mirando a la derecha. Una voltereta no se puede sacar girando un frame.",
+  "source": "https://fabiensanglard.net/sf2_sheets/",
+  "land": "idle_0",
+  "flip_fwd": [
+    "flip_fwd_0",
+    "flip_fwd_1",
+    "flip_fwd_2",
+    "flip_fwd_3",
+    "flip_fwd_4",
+    "idle_0"
+  ],
+  "flip_back": [
+    "flip_back_0",
+    "flip_back_1",
+    "flip_back_2",
+    "flip_back_3",
+    "flip_back_4",
+    "idle_0"
+  ],
+  "not_shared": "El despegue y el giro no se comparten: adelante se encoge hacia la cara, atras echa la cabeza al lado contrario. La coleta delata el sentido, asi que el frame boca abajo tampoco se voltea."
+}
