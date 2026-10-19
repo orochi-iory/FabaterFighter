@@ -527,5 +527,12 @@
  "goldenRules": {
   "ponytail": "REGLA DE ORO: la coleta se mueve. Es parte de la animacion, no un adorno fijo. Andando hacia adelante se separa de la espalda y se abre hacia atras; andando hacia atras se pega al cuerpo y se comprime; al saltar sube retrasada al ascender y flota al caer, y cae despues del aterrizaje. Va uno o dos frames por detras del cuerpo. Nunca la misma silueta de coleta en todos los frames.",
   "ponytailDetail": "La coleta conserva su dibujo: arco grande, cuatro o cinco lineas de mechon marcadas con el tono de sombra y punta definida. Si sale como una mancha lisa, se repite."
+ },
+ "sheetWorkflow": {
+  "cap": "El generador devuelve siempre ~1,05 Mpx, pida lo que pida. Con sprite de 200 px eso da para 30 poses por imagen (~1 px generado por px de sprite) o una sola pose a 4,7-5,9 px por px.",
+  "prompt": "Imagen 1 = ref/cammy_gba_sheet.png (maquetacion). Imagen 2 = stance aprobada (personaje). 6 columnas x 5 filas, mismo tamano, mirando a la derecha, verde plano, sin texto.",
+  "cut": "build_sheet.py <hoja> <salida> 200 240 238 6 5 30 --per-cell. Escala por celda con mediana y limite +-8 %.",
+  "check": "27 de 30 cabezas a 30 px exactos; el resto solo donde la mascara no se puede medir (figura girada).",
+  "limit": "El modelo no compone ciclos: la fila de saltos trae guardias y una voltereta suelta. Los frames en el aire se quedan pegados al suelo porque el recorte alinea por los pies."
  }
 }

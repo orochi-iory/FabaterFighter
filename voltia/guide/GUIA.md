@@ -335,6 +335,54 @@ primero que el modelo acorta cuando se despista.
 **Una pose por imagen.** `{POSE}` describe solo las piernas y, si toca, los
 brazos; el resto lo arrastra la referencia.
 
+## La hoja completa (30 poses en una imagen)
+
+Es la vía para tener **un solo trabajo por personaje**: una imagen con todas
+las poses, mismo diseño y misma escala. Medido, sí funciona como base.
+
+**Cómo se pide.** Imagen 1 = hoja de Cammy de GBA (`ref/cammy_gba_sheet.png`),
+que fija la maquetación (rejilla de sprites pequeños, fondo plano, sin texto).
+Imagen 2 = la stance aprobada, que fija el personaje. Se piden **6 columnas x 5
+filas = 30 poses**, todas del mismo tamaño, mirando a la derecha, con fondo
+verde plano y sin etiquetas. Cada fila es una animación.
+
+**Por qué 30 y no 100.** El generador devuelve siempre ~1,05 Mpx, pida lo que
+pida (1024 x 1024, 720 x 1456...). Con sprite de 200 px:
+
+| Poses en la imagen | px generados por px de sprite |
+| --- | --- |
+| 1 | 4,7-5,9 |
+| 4 | 4,7 |
+| 12 | 1,6 |
+| 30 | ~1,0 |
+
+A 30 poses se puede trabajar (es lo que hay en `nueva/hoja`), pero el modelo
+deja de componer ciclos: coloca bien las figuras y no ordena las poses.
+
+**Cómo se recorta.**
+
+```
+PYTHONPATH=tools/pylibs python3 tools/build_sheet.py <hoja.png> <salida> \
+    200 240 238 6 5 30 --per-cell
+```
+
+`--per-cell` es obligatorio en hojas grandes: la escala se calcula **por celda**,
+se toma la **mediana** de la hoja y cada celda se limita a ±8 % de esa mediana.
+Sin eso el modelo dibuja las filas de abajo más grandes y el recorte sale con
+cabezas de 30 a 34 px. Con eso: **27 de 30 cabezas a 30 px exactos** y el resto
+a 21-29 solo donde la máscara no se puede medir (la voltereta girada).
+
+**Lo que hay que saber antes de usarla:**
+
+- Las poses que trae el modelo **no forman ciclos**: la fila de saltos suele
+  venir con guardias repetidas y una sola voltereta. La hoja da coherencia y
+  ahorra trabajo; el ciclo se remata por animación.
+- **Los saltos se quedan pegados al suelo**: el recorte alinea cada figura por
+  los pies, así que un frame en el aire pierde su altura. Para saltos hay que
+  conservar el hueco respecto a la línea de suelo de su fila (pendiente).
+- La coleta se mueve entre frames (regla de oro), así que el alto total y el
+  área de pelo cambian a propósito: `consistency.py` no los bloquea.
+
 ## Comprobar el tamaño antes de mirarlo
 
 ```
