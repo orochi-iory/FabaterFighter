@@ -126,7 +126,8 @@ def is_bg(p):
     return (abs(p[0] - 16) < 12 and abs(p[1] - 48) < 14 and abs(p[2] - 80) < 16)
 
 
-def retarget(mat, y, top, bot, boot_frac=0.86, leg_frac=0.55):
+def retarget(mat, y, top, bot, boot_frac=0.86, leg_frac=0.55,
+             belt_row=None):
     """Decide el material final segun donde esta el pixel en la figura.
 
     Cammy y Voltia no llevan la misma ropa: Cammy tiene leotardo alto y las
@@ -145,6 +146,9 @@ def retarget(mat, y, top, bot, boot_frac=0.86, leg_frac=0.55):
     ny = (y - top) / max(1, (bot - top))
     if mat in ('gold', 'white') and ny > 0.55:
         return mat
+    if belt_row is not None:
+        # el cinturon manda: debajo es pierna, aunque la figura este agachada
+        leg_frac = (belt_row - top) / max(1, (bot - top)) + 0.03
     if ny >= boot_frac:
         return 'white' if mat == 'white' else 'navy'
     if ny >= leg_frac:
