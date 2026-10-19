@@ -66,6 +66,15 @@
     <p class="tiny">Bloque 3 no sirve con estas figuras: da 92-100 px de alto. El tamaño final es altura de origen ÷ bloque, así que hay que fijar el bloque según el tamaño con el que salga el dibujo, no al revés.</p>
   </div>
 
+  <h2>0c · Prueba de «vídeo»: encadenar frames</h2>
+  <div class="box warn">
+    <img src="../voltia/guide/ref/prueba_encadenado.png?v=5" alt="Frame A y supuesto siguiente frame B">
+    <p>No hay generador de vídeo aquí, pero el principio del vídeo —que el frame siguiente se genere <em>a partir</em> del anterior— sí se puede probar por imagen. Le di el frame A y le pedí «el siguiente frame de la misma animación, cambia solo el pecho y la coleta».</p>
+    <p><span class="ok">Lo que gana:</span> conserva identidad, paleta y estilo (22 colores, mismo rayo, mismo visor).</p>
+    <p><span class="bad">Lo que pierde:</span> <strong>IoU de silueta 0,47</strong>. Es decir, ni siquiera la mitad de los píxeles coinciden: cambió la coleta entera, el brazo, la inclinación y la escala. Se reencuadra y se redimensiona por su cuenta.</p>
+    <p>Conclusión medida: el vídeo resolvería <em>el orden</em> de los frames, no <em>la geometría</em>. Y arrastra un problema nuevo: comprimirlo en pixel art limpio (GIF/MP4 traen ruido y suavizado) es más difícil que recortar una hoja.</p>
+  </div>
+
   <h2>1 · Recoloreo de la hoja GBA</h2>
   <div class="box">
     <img src="../voltia/guide/ref/voltia_half_cmp.png?v=2" alt="Cammy arriba, Voltia abajo, mismas poses y posiciones">
