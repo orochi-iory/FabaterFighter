@@ -4,3 +4,6 @@ __pycache__/
 # local style references, not shipped
 voltia/ref/
 image-search/
+
+# librería local de Pillow, se instala aparte
+/tools/pylibs/
