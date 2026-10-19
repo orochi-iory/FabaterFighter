@@ -136,6 +136,58 @@ def rows_of_cells(im, ncol=5, nrows=4):
             for (a, b) in bands]
 
 
+def cut_figure_centre(cell, tol=70):
+    """Recorta la figura de una celda de rejilla fija.
+
+    Se queda con la masa conectada cuyo centro está más cerca del centro de la
+    celda. En una hoja grande las figuras se tocan y una coleta vecina puede
+    entrar en la celda; quedarse con «la masa más grande» elige entonces la
+    figura del vecino. Por el centro, no.
+    """
+    cell = cell.convert('RGBA')
+    px = cell.load()
+    w, h = cell.size
+    for y in range(h):
+        for x in range(w):
+            r, g, b, a = px[x, y]
+            if a and g > 120 and g > r * 2.2 and g > b * 2.2:
+                px[x, y] = (0, 0, 0, 0)
+    solid = [(x, y) for y in range(h) for x in range(w) if px[x, y][3]]
+    if not solid:
+        return cell
+    seen = set()
+    comps = []
+    for seed in solid:
+        if seed in seen:
+            continue
+        comp = [seed]
+        stack = [seed]
+        seen.add(seed)
+        while stack:
+            cx, cy = stack.pop()
+            for dx in (-1, 0, 1):
+                for dy in (-1, 0, 1):
+                    n = (cx + dx, cy + dy)
+                    if n in seen or not (0 <= n[0] < w and 0 <= n[1] < h):
+                        continue
+                    if px[n[0], n[1]][3]:
+                        seen.add(n)
+                        stack.append(n)
+                        comp.append(n)
+        if len(comp) >= 60:
+            comps.append(comp)
+    if not comps:
+        return cell
+    cx0 = w / 2
+    best = min(comps, key=lambda c: abs(sum(p[0] for p in c) / len(c) - cx0))
+    keep = set(best)
+    for y in range(h):
+        for x in range(w):
+            if px[x, y][3] and (x, y) not in keep:
+                px[x, y] = (0, 0, 0, 0)
+    return cell.crop(cell.getbbox())
+
+
 def cut_figure(cell):
     """Recorta la figura de su celda: verde -> transparente y se queda la
     masa conectada más grande.
@@ -295,13 +347,221 @@ def _place(fig, factor, cw, ch, ground, close=False):
     return frame
 
 
+
+
+def _runs(flags, min_gap=6, min_len=8):
+    """Agrupa índices contiguos en True, tolerando huecos menores que min_gap."""
+    runs, start, last = [], None, None
+    for i, f in enumerate(flags):
+        if not f:
+            continue
+        if start is None:
+            start = last = i
+        elif i - last - 1 <= min_gap:
+            last = i
+        else:
+            if last - start + 1 >= min_len:
+                runs.append((start, last))
+            start = last = i
+    if start is not None and last - start + 1 >= min_len:
+        runs.append((start, last))
+    return runs
+
+
+
+def _valley_grid(im, ncols, min_w=70):
+    """Corta por los valles de densidad de tinta.
+
+    Las figuras de una hoja generada suelen tocarse, así que no hay ninguna
+    columna vacía entre ellas. Pero sí hay columnas con muy poca tinta (el
+    final de una coleta, un guante). Se eligen como cortes las `ncols-1`
+    columnas de mínima densidad, respetando una anchura mínima por figura: así
+    el corte nunca cae sobre el torso.
+    """
+    im = im.convert('RGB')
+    w, h = im.size
+    px = im.load()
+    ink = [[not is_green(px[x, y]) for x in range(w)] for y in range(h)]
+    rows = _runs([any(r) for r in ink], 8, 10)
+    grid = []
+    for (y0, y1) in rows:
+        col = [sum(1 for y in range(y0, y1 + 1) if ink[y][x]) for x in range(w)]
+        lo = next(x for x in range(w) if col[x])
+        hi = max(x for x in range(w) if col[x])
+        cand = sorted(range(lo + min_w, hi - min_w + 1), key=lambda x: col[x])
+        cuts = []
+        for x in cand:
+            if all(abs(x - c) >= min_w for c in cuts):
+                cuts.append(x)
+            if len(cuts) == ncols - 1:
+                break
+        cuts.sort()
+        edges = [lo] + cuts + [hi + 1]
+        cells = []
+        for a, b in zip(edges, edges[1:]):
+            sub = im.crop((max(0, a - 1), y0, min(w, b + 1), y1 + 1))
+            cells.append(sub)
+        grid.append(cells)
+    return grid
+
+def _projection_grid(im, row_gap=8, col_gap=8):
+    """Corta la hoja por proyección: el verde separa filas y columnas.
+
+    No supone rejilla regular ni celdas de tamaño fijo: busca las bandas de
+    tinta. Con una hoja cuyas figuras están separadas por verde, cada banda
+    contiene exactamente una figura; después se queda la masa principal.
+    """
+    im = im.convert('RGB')
+    w, h = im.size
+    px = im.load()
+    ink = [[not is_green(px[x, y]) for x in range(w)] for y in range(h)]
+    rows = _runs([any(ink[y]) for y in range(h)], row_gap, 10)
+    grid = []
+    for (y0, y1) in rows:
+        cols = _runs([any(ink[y][x] for y in range(y0, y1 + 1))
+                      for x in range(w)], col_gap, 6)
+        grid.append([im.crop((x0, y0, x1 + 1, y1 + 1)) for (x0, x1) in cols])
+    return grid
+
+def _blob_grid(im, gap=3, min_area=120):
+    """Encuentra las figuras por conectividad y las ordena en filas y columnas.
+
+    Es el corte que no parte nada: se etiquetan los bultos de tinta (8
+    vecinos), se unen los que están a menos de `gap` píxeles (coleta + cuerpo,
+    guante suelto...), y cada figura resultante se coloca en su fila por la
+    altura del centro y en su columna por la x. No depende de que el modelo
+    reparta las figuras a intervalos regulares.
+    """
+    im = im.convert('RGB')
+    w, h = im.size
+    px = im.load()
+    seen = [[False] * w for _ in range(h)]
+    comps = []
+    for y in range(h):
+        for x in range(w):
+            if seen[y][x] or is_green(px[x, y]):
+                continue
+            stack = [(x, y)]
+            seen[y][x] = True
+            pts = []
+            while stack:
+                cx, cy = stack.pop()
+                pts.append((cx, cy))
+                for dx in (-1, 0, 1):
+                    for dy in (-1, 0, 1):
+                        nx, ny = cx + dx, cy + dy
+                        if 0 <= nx < w and 0 <= ny < h and not seen[ny][nx] \
+                                and not is_green(px[nx, ny]):
+                            seen[ny][nx] = True
+                            stack.append((nx, ny))
+            if len(pts) >= min_area:
+                xs = [p[0] for p in pts]
+                ys = [p[1] for p in pts]
+                comps.append([min(xs), min(ys), max(xs), max(ys), len(pts)])
+
+    # unir bultos vecinos (una figura puede venir en dos trozos)
+    merged = True
+    while merged:
+        merged = False
+        for i in range(len(comps)):
+            for j in range(i + 1, len(comps)):
+                a, b = comps[i], comps[j]
+                near = (a[0] - gap <= b[2] + gap and b[0] - gap <= a[2] + gap and
+                        a[1] - gap <= b[3] + gap and b[1] - gap <= a[3] + gap)
+                # solo se unen trozos pequeños a una figura grande (coleta
+                # partida, guante suelto). Dos figuras completas nunca se unen:
+                # eso era lo que fundía filas enteras en un bulto.
+                small = min(a[4], b[4]) / max(a[4], b[4]) < 0.30
+                if near and small:
+                    comps[i] = [min(a[0], b[0]), min(a[1], b[1]),
+                                max(a[2], b[2]), max(a[3], b[3]), a[4] + b[4]]
+                    comps.pop(j)
+                    merged = True
+                    break
+            if merged:
+                break
+
+    comps.sort(key=lambda c: (c[1] + c[3]) / 2)
+    rows, cur, last = [], [], None
+    for c in comps:
+        cy = (c[1] + c[3]) / 2
+        hh = c[3] - c[1]
+        if last is None or abs(cy - last) < hh * 0.6:
+            cur.append(c)
+        else:
+            rows.append(cur)
+            cur = [c]
+        last = cy
+    if cur:
+        rows.append(cur)
+
+    out = []
+    for r in rows:
+        r.sort(key=lambda c: (c[0] + c[2]) / 2)
+        out.append([im.crop((c[0], c[1], c[2] + 1, c[3] + 1)) for c in r])
+    return out
+
+def _fixed_grid(im, ncol, nrows):
+    """Parte la hoja en celdas iguales.
+
+    Es el corte que aguanta cuando el modelo dibuja las figuras casi pegadas:
+    separar por pasillos verdes falla en cuanto dos poses se rozan y parte una
+    figura en trozos. Con rejilla fija cada celda se queda con su figura y la
+    que se cuele de la vecina se descarta por tamaño.
+    """
+    w, h = im.size
+    cw, chh = w / ncol, h / nrows
+    cells = []
+    for j in range(nrows):
+        row = []
+        for i in range(ncol):
+            row.append(im.crop((round(i * cw), round(j * chh),
+                                round((i + 1) * cw), round((j + 1) * chh))))
+        cells.append(row)
+    return cells
+
+
 def build(sheet, outdir, cw, ch, ground, ncol=5, nrows=4, write=True, head=0,
-          close=False, per_cell=False, clamp=0.08):
+          close=False, per_cell=False, clamp=0.08, grid_mode=False,
+          blob_mode=False, drop_gray=False, proj_mode=False,
+          valley_mode=False):
     im = Image.open(sheet)
-    grid = rows_of_cells(im, ncol, nrows)
+    if drop_gray:
+        im = im.convert('RGB')
+        px = im.load()
+        w, h = im.size
+        for y in range(h):
+            for x in range(w):
+                r, g, b = px[x, y]
+                if max(r, g, b) - min(r, g, b) < 26 and 25 < r < 150:
+                    px[x, y] = (17, 239, 6)
+    if valley_mode:
+        grid = _valley_grid(im, ncol if ncol else 6)
+        nrows = len(grid)
+        grid = [r + [Image.new('RGB', (8, 8), (17, 239, 6))] * (ncol - len(r))
+                for r in grid]
+    elif proj_mode:
+        grid = _projection_grid(im)
+        ncol = max(len(r) for r in grid)
+        nrows = len(grid)
+        grid = [r + [Image.new('RGB', (8, 8), (17, 239, 6))] * (ncol - len(r))
+                for r in grid]
+    elif blob_mode:
+        grid = _blob_grid(im)
+        ncol = max(len(r) for r in grid)
+        nrows = len(grid)
+        grid = [r + [Image.new('RGB', (8, 8), (17, 239, 6))] * (ncol - len(r))
+                for r in grid]
+    else:
+        grid = _fixed_grid(im, ncol, nrows) if grid_mode else rows_of_cells(im, ncol, nrows)
     if len(grid) > nrows:
         raise SystemExit('la hoja dio %d filas, se esperaban %d' % (len(grid), nrows))
-    figs = [cut_figure(grid[j][i]) for j in range(nrows) for i in range(ncol)]
+    cut = cut_figure_centre if grid_mode else cut_figure
+    figs = []
+    for j in range(nrows):
+        for i in range(ncol):
+            cell = grid[j][i]
+            figs.append(cut(cell))
     for f in figs:
         strip_fringe(f)
     figs = [f for f in figs if f.width > 4 and f.height > 4]   # celdas vacías
@@ -358,6 +618,11 @@ if __name__ == '__main__':
     head = int(args[7]) if len(args) > 7 else 0
     frames = build(sheet, outdir, cw, ch, ground, ncol=ncol, nrows=nrows,
                    head=head, close='--close' in args,
-                   per_cell='--per-cell' in args)
+                   per_cell='--per-cell' in args,
+                   grid_mode='--grid' in args,
+                   blob_mode='--blobs' in args,
+                   drop_gray='--drop-gray' in args,
+                   proj_mode='--project' in args,
+                   valley_mode='--valley' in args)
     print('%s -> %s: %d frames de %dx%d, suelo %d'
           % (sheet, outdir, len(frames), cw, ch, ground))

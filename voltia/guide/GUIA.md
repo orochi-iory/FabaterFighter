@@ -242,6 +242,34 @@ corte itera (`mascara 174 px -> 30 px (real 30)`).
 4. Nunca se pide «la otra mitad», ni espejar, ni cambiar tonos: eso ya se probó
    y sale una figura distinta que además invierte la paleta.
 
+## La hoja única: medida y descartada (2026-10-19)
+
+Se intentó la vía de **una sola imagen con todas las animaciones** (la hoja de
+Cammy GBA como plantilla: filas de idle, walk, salto). Se generaron hojas de
+2 filas (5 + 6) y de 4 filas (5 / 6 / 5 / 4). El dibujo sale bien; **el corte
+no existe**.
+
+Medición sobre la hoja de 2 filas (863 x 1248): entre figura y figura hay
+**0 columnas de verde** — las coletas tocan al vecino — así que ninguna
+partición puede separarlas. Cinco métodos probados:
+
+| método | resultado |
+|---|---|
+| pasillo verde (`rows_of_cells`) | parte la figura en dos, coleta cercenada |
+| rejilla fija (`--grid`) | 6 columnas de 143 px sobre figuras de 200 px: corta las botas |
+| bultos por conectividad (`--blobs`) | las figuras se tocan y se funden en una sola masa |
+| proyección de filas/columnas (`--project`) | una sola columna de tinta por fila: no separa |
+| valles de densidad (`--valley`) | cortes en sitios aceptables, pero arrastra restos y corta pies |
+
+Y además **la escala se va dentro de la misma hoja**: en la hoja de 12 poses la
+máscara pasa de 30 px arriba a 34 px abajo (tinta +33 %), así que 11 de 12
+frames se salían de la puerta. `--per-cell` corrige la máscara, no la tinta ni
+el torso.
+
+**Regla que queda:** la hoja sirve para **leer** poses (y para la stance), no
+para **producir** frames. Cada frame de animación se genera en una imagen con
+una sola figura.
+
 ## Cómo camina un personaje (referencia fija)
 
 La referencia de animación está en el repo y no se toca:

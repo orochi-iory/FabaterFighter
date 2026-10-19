@@ -1,566 +1,417 @@
 {
- "title": "Guía de estilo",
- "updated": "2026-10-19",
- "character": "Voltia",
- "status": "Un sprite, 150 × 200 nativos. Sin idle todavía.",
- "anchor": "nueva/stance/00.png",
- "anchorNote": "Stance (ida y vuelta de la respiracion), 200 px de alto, lienzo de 200 x 240. Los 24 frames comparten lienzo, escala, suelo (238) y eje de cabeza (x=128).",
- "styleRef": {
-  "files": [
-   "ref/chunli_sf2_sheet.png",
-   "ref/blue_mary_sheet.png",
-   "ref/cammy_sf2_sheet.png"
+  "title": "Guía de estilo",
+  "updated": "2026-10-19",
+  "character": "Voltia",
+  "status": "Un sprite, 150 × 200 nativos. Sin idle todavía.",
+  "anchor": "nueva/stance/00.png",
+  "anchorNote": "Stance (ida y vuelta de la respiracion), 200 px de alto, lienzo de 200 x 240. Los 24 frames comparten lienzo, escala, suelo (238) y eje de cabeza (x=128).",
+  "styleRef": {
+    "files": [
+      "ref/chunli_sf2_sheet.png",
+      "ref/blue_mary_sheet.png",
+      "ref/cammy_sf2_sheet.png"
+    ],
+    "what": "Hojas fijas de referencia, dentro del repo y siempre a mano: Chun-Li (Street Fighter II) y Blue Mary (KOF). Definen el DIBUJO y la ANIMACION: pixel gordo, contorno grueso, tonos planos, y como se mueve un luchador de estos. No se copia su ropa ni su anatomia.",
+    "walk": "ref/walk_ref.png junta la fila Walking de CAMMY (paso corto cruzado) y la de Chun-Li con la stance aprobada de Voltia. Es la referencia del walk: piernas juntas, pies casi en linea, paso que se cruza."
+  },
+  "designRef": {
+    "file": "ref_stance.png",
+    "what": "Diseño de Voltia: máscara magenta entera, visor teal, boca bajo el visor, coleta violeta, traje teal, rayo gordo amarillo, cinturón dorado, guantes y botas navy.",
+    "forbidden": "assets/voltia_concept.png no se usa para generar. Es un póster, no un sprite."
+  },
+  "consistency": "Siempre que haya un sprite bueno, ese es la referencia. Cuando ya existe, TODO prompt lo nombra como imagen 1 y pide no cambiar ni el dibujo ni los colores, solo la pose. Cuando se empieza de cero no hay referencia buena: se dice en la guía y se aprueba un solo sprite antes de seguir. Si el resultado no se parece a la guía, se para la generación y se vuelve al punto de partida con aprobación del usuario.",
+  "facing": "derecha",
+  "standHeight": 120,
+  "key": {
+    "hex": "#11EF06",
+    "rgb": [
+      17,
+      239,
+      6
+    ],
+    "measured": [
+      28,
+      221,
+      8
+    ],
+    "hard": 60,
+    "exclude": 120,
+    "why": "El fondo se mide en el borde de cada imagen. Nunca rosa ni magenta: ese era el color de la máscara y el recorte se la comía. El verde del borde de esta tirada salió (28, 221, 8)."
+  },
+  "nearest": {
+    "name": "visor y teal",
+    "rgb": [
+      16,
+      144,
+      144
+    ],
+    "distance": 157
+  },
+  "sacrifice": "Si una tinta nueva cae a menos de 120 del verde medido, se mueve esa tinta. No se mueve el recorte y no se toca la máscara. Se sacrifica el rosa como color de fondo, para siempre.",
+  "clip": "Un píxel es fondo solo si está más cerca del verde medido que de la paleta, con umbral 60 sobre la imagen grande. Después se reduce a 120 de alto con muestreo al centro (NEAREST), nunca LANCZOS, y se tapa con el contorno cualquier píxel de borde que salga verdoso. No hay halo.",
+  "palette": [
+    {
+      "name": "contorno",
+      "rgb": [
+        10,
+        8,
+        20
+      ]
+    },
+    {
+      "name": "navy sombra",
+      "rgb": [
+        16,
+        20,
+        54
+      ]
+    },
+    {
+      "name": "navy",
+      "rgb": [
+        27,
+        34,
+        80
+      ]
+    },
+    {
+      "name": "traje sombra",
+      "rgb": [
+        16,
+        96,
+        104
+      ]
+    },
+    {
+      "name": "traje",
+      "rgb": [
+        23,
+        147,
+        141
+      ]
+    },
+    {
+      "name": "traje luz",
+      "rgb": [
+        31,
+        177,
+        164
+      ]
+    },
+    {
+      "name": "coleta sombra",
+      "rgb": [
+        60,
+        15,
+        95
+      ]
+    },
+    {
+      "name": "coleta",
+      "rgb": [
+        85,
+        21,
+        124
+      ]
+    },
+    {
+      "name": "coleta luz",
+      "rgb": [
+        186,
+        104,
+        232
+      ]
+    },
+    {
+      "name": "mascara sombra",
+      "rgb": [
+        120,
+        16,
+        80
+      ]
+    },
+    {
+      "name": "mascara",
+      "rgb": [
+        190,
+        25,
+        130
+      ]
+    },
+    {
+      "name": "piel sombra",
+      "rgb": [
+        196,
+        120,
+        84
+      ]
+    },
+    {
+      "name": "piel",
+      "rgb": [
+        240,
+        176,
+        132
+      ]
+    },
+    {
+      "name": "cinturon",
+      "rgb": [
+        176,
+        112,
+        36
+      ]
+    },
+    {
+      "name": "rayo",
+      "rgb": [
+        250,
+        210,
+        50
+      ]
+    },
+    {
+      "name": "blanco ojo",
+      "rgb": [
+        255,
+        255,
+        255
+      ]
+    }
   ],
-  "what": "Hojas fijas de referencia, dentro del repo y siempre a mano: Chun-Li (Street Fighter II) y Blue Mary (KOF). Definen el DIBUJO y la ANIMACION: pixel gordo, contorno grueso, tonos planos, y como se mueve un luchador de estos. No se copia su ropa ni su anatomia.",
-  "walk": "ref/walk_ref.png junta la fila Walking de CAMMY (paso corto cruzado) y la de Chun-Li con la stance aprobada de Voltia. Es la referencia del walk: piernas juntas, pies casi en linea, paso que se cruza."
- },
- "designRef": {
-  "file": "ref_stance.png",
-  "what": "Diseño de Voltia: máscara magenta entera, visor teal, boca bajo el visor, coleta violeta, traje teal, rayo gordo amarillo, cinturón dorado, guantes y botas navy.",
-  "forbidden": "assets/voltia_concept.png no se usa para generar. Es un póster, no un sprite."
- },
- "consistency": "Siempre que haya un sprite bueno, ese es la referencia. Cuando ya existe, TODO prompt lo nombra como imagen 1 y pide no cambiar ni el dibujo ni los colores, solo la pose. Cuando se empieza de cero no hay referencia buena: se dice en la guía y se aprueba un solo sprite antes de seguir. Si el resultado no se parece a la guía, se para la generación y se vuelve al punto de partida con aprobación del usuario.",
- "facing": "derecha",
- "standHeight": 120,
- "key": {
-  "hex": "#11EF06",
-  "rgb": [
-   17,
-   239,
-   6
+  "rules": [
+    "REGLA DE ORO: 170 cm con coleta = 200 píxeles. Bloques de 5. El sprite se dibuja 1:1.",
+    "Escala: 170 cm con coleta = 200 px de alto. Todos los personajes se miden así y se dibujan 1:1 en el escenario.",
+    "La altura de ring es 300 px de mundo. Si el dibujo nativo es 127, se llega con ×2 exacto (254) o se acepta el ×2,37 de 300. Nunca se genera un PNG derivado: se dibuja a esa escala.",
+    "Primero se aprueba UN sprite. Hasta que el usuario lo apruebe no se generan las demás poses del idle.",
+    "La escala se pide en el prompt (1024, bloques de 8, 120 bloques de alto), pero el archivo se guarda como sale: no se recorta a la caja, no se escala y no se cuantiza.",
+    "Prohibido reducir el archivo. Ni con LANCZOS, ni con NEAREST, ni dividiendo por el bloque. El zoom es cosa de la vista, no del PNG.",
+    "La resolución nativa del dibujo es su rejilla: 8 px por bloque. Se mide el bloque, no se supone por el tamaño del lienzo.",
+    "Antes de aprobar un sprite: el archivo del visor y el generado, mismo tamaño en píxeles y mismo bloque. Si no, se empieza de nuevo.",
+    "El dibujo es el de la hoja de Chun-Li de SF2: píxel gordo, contorno negro grueso, tonos planos, 16 colores, tres tonos por material.",
+    "El diseño es el de Voltia: traje teal entero hasta la bota, sin muslos desnudos. Muslos desnudos es el diseño de Chun-Li y es un fallo.",
+    "La máscara se queda entera, con visor y con boca: abertura oscura y labio de piel, bajo el visor, mirando a la derecha. Sin boca no entra.",
+    "El rayo amarillo va en el pecho, gordo y entero. No se tapa con un brazo.",
+    "Hay margen de fondo en los cuatro lados, mínimo 40 px reales. Si la coleta o la bota tocan el borde, la imagen no vale y se repite.",
+    "El fondo es un verde plano medido en el borde, nunca rosa ni magenta ni un tono del traje.",
+    "Al bajar, se quitan los píxeles verdes de borde: verde dominante sobre rojo y azul. El teal tiene verde igual a azul y no se toca.",
+    "No se cuantiza a ciegas: si la máscara pierde el magenta, el rayo pierde el amarillo o el cinturón pierde el oro, el resultado no entra.",
+    "Al quitar el fondo se toca el archivo lo mínimo: se vuelve transparente el verde medido en el borde. Nada más. Ni recorte, ni retoque de borde, ni cuantizado.",
+    "Un frame partido no se entrega. La pelea no cambia de hoja hasta que el ciclo se acepte.",
+    "Esta guía no reproduce animaciones. Los frames se miran en el visor del modelo nuevo."
   ],
-  "measured": [
-   28,
-   221,
-   8
+  "prompt": "Image 1 (Chun-Li sheet) defines the RENDERING STYLE only. Image 2 defines Voltia's design. If a previous Voltia sprite is attached, it is image 3 and it defines the drawing to keep: do not change its pixels, colours or proportions, only the pose.\n\nDraw ONE full-body arcade sprite of Voltia in the exact visual language of the 1991 CPS-1 Street Fighter II sprites.\n\nFIXED PIXEL GRID, this is the most important part: the canvas is 1024 x 1024. Every sprite pixel is a SOLID 8 x 8 SCREEN-PIXEL BLOCK, aligned from the top-left corner. No colour edge, outline or highlight may be finer than 8 pixels. The character is EXACTLY 120 sprite pixels tall, which is 960 screen pixels from the sole of the lowest boot to the top of the hair. At least 24 screen pixels of clear green on all four sides, so nothing touches an edge.\n\nSTYLE: exactly 16 flat colours, thick 1-sprite-pixel near-black outline, three hard tones per material, chunky clusters, no gradients, no anti-aliasing, no soft shading, no glow, no anime or webcomic look, no smooth vector curves.\n\nCHARACTER: Voltia, slender masked luchadora, about 7.5 heads, natural athletic proportions. Full magenta wrestling mask; teal eye visor with dark eye slit; readable mouth below the visor, dark opening plus skin-tone lower lip, facing right. One huge thick violet ponytail tied high, flowing back and left. Teal bodysuit covering the legs down into the boots, no bare thighs, short teal trunks, thin gold belt with round buckle, LARGE FAT angular yellow lightning bolt on the chest, bare upper arms, long navy gauntlet gloves with dark cuffs, navy boots with knee pads and dark soles.\n\nPOSE: Street Fighter II standing guard, side view facing right, weight low, feet wide, knees bent, rear heel planted, both fists raised at chin height, elbows tucked, torso slightly turned.\n\nBACKGROUND: flat solid bright green #11EF06 edge to edge. No floor, no shadow, no text, no logo, no border, no second character, no green halo on the sprite.",
+  "keys": [
+    {
+      "id": "stand",
+      "file": "nueva/00.png",
+      "use": "Guardia. Frame de referencia del idle."
+    },
+    {
+      "id": "sheet",
+      "file": "nueva/src/sheet20.png",
+      "use": "Hoja original de 20 poses (5x4). Es la fuente: se vuelve a cortar de aqui si hay que retocar."
+    },
+    {
+      "id": "groom",
+      "file": "nueva/11.png",
+      "use": "Atusandose el muslo. El gesto que define el idle."
+    }
   ],
-  "hard": 60,
-  "exclude": 120,
-  "why": "El fondo se mide en el borde de cada imagen. Nunca rosa ni magenta: ese era el color de la máscara y el recorte se la comía. El verde del borde de esta tirada salió (28, 221, 8)."
- },
- "nearest": {
-  "name": "visor y teal",
-  "rgb": [
-   16,
-   144,
-   144
+  "lessons": [
+    "2026-10-19. LA HOJA UNICA NO SE PUEDE CORTAR, y esta medido: en la hoja generada no hay NI UNA columna de verde entre figuras (0 columnas vacias de 863), porque las coletas tocan al vecino. Cinco cortes probados —pasillo, rejilla fija, bultos por conectividad, proyeccion de filas/columnas y valles de densidad— y los cinco parten figuras o arrastran restos. Conclusion: una hoja sirve para LEER poses, no para producir frames. El frame se genera de una en una, una figura por imagen.",
+    "2026-10-19. Medido en la hoja de 12 poses: la figura crece segun baja en la hoja (mascara 30 px arriba, 34 abajo; tinta +33 %), asi que 11 de 12 frames se salian de la puerta. Escalar por celda arregla la mascara pero no la tinta ni el torso. Generar por separado es mas lento pero es lo unico que pasa la puerta.",
+    "2026-10-19. Los frames se cortan de UNA SOLA HOJA de 5x4. Asi el tamano de celda, la escala y la linea de suelo son los mismos por construccion: no hay normalizacion por frame y no puede volver a descuadrarse. El aire se hace con lift, no escalando.",
+    "2026-10-19. El fallo de la coleta no era el dibujo: al normalizar CADA pose a 200 px de alto, cada frame cambiaba de escala. Ahora todas las poses se escalan con el mismo factor y el alto de cada pose es consecuencia de su postura. Se mide la proporcion de pixeles de coleta sobre el cuerpo, no el numero absoluto.",
+    "2026-10-19. La paleta se fija a 16 colores exactos y se aplica a todos los frames. Antes cada frame traia sus propios medios tonos y la sombra cambiaba.",
+    "2026-10-19. La regla de 5 bloques funciona: figura de 1000 px de lienzo partido por 5 son 200 nativos, y el recorte queda perfecto. Es la escala de trabajo para todos los personajes.",
+    "2026-10-19. Escala definitiva: 170 cm con coleta = 200 px. Cuatro intentos de sacar 200 nativos del generador (bloques de 5, zoom x5 declarado, figura pequeña a 1 px, referencia con bloques de 5) devuelven el mismo raster de 8. El sprite de juego se fija a 200 desde el maestro aprobado y se dibuja 1:1.",
+    "2026-10-19. El suelo de la placa (408) era el borde trasero del ring, no el centro del rombo. Bajado a 426, los pies pisan el rombo. Solo en el visor nuevo: window.STAGE_FLOOR_Y.",
+    "2026-10-19. Tres tiradas pidiendo 300 nativos (bloques de 3 en 960, lienzo pequeño de 320, y 300 px de alto explícito). Las tres devuelven 1024 con bloques de 8 y la figura de 1014: el techo nativo del modelo es ~127. Para el ring se dibuja a 254 (×2 exacto) o 300 si se acepta ×2,37.",
+    "2026-10-19. Error de método: se redujo el archivo generado dos veces (LANCZOS a 120 y luego ÷8 a 95 × 126). El archivo no se toca: se guarda a 1024 y se mira con zoom. La resolución nativa del dibujo es la de sus bloques, 8 px por bloque, es decir ~127 píxeles de sprite, que ya es escala de juego. Se comprueba midiendo el bloque, no el lienzo.",
+    "2026-10-19. Tirada 1. Dibujo de dibujos animados, no pixel art de SF2. Fallo: faltaba la hoja de Chun-Li como referencia de dibujo; solo había diseño. Desde aquí la hoja entra siempre como imagen 1.",
+    "2026-10-19. Tirada 2, con hoja. El pixelado ya es el bueno, pero la figura toca el borde y los puños no se leen. Se pide margen explícito en píxeles y puño con nudillos y línea del pulgar.",
+    "2026-10-19. Tirada 3. Copió el diseño de Chun-Li: muslos desnudos. Fallo: la referencia de diseño tiene que ir listada como imagen aparte y el prompt tiene que decir 'sin muslos desnudos'.",
+    "2026-10-19. Tirada 4. El modelo no hace zoom hacia atrás pidiéndolo en palabras. Se hace como edición de la propia imagen y aun así la reducción final se hace en código: recorte, reducción a 120 de alto, borde verdoso tapado con el contorno.",
+    "2026-10-19. Cuantizar a 20 colores mata el magenta de la máscara y el oro del cinturón. El sprite de referencia se guarda sin cuantizar; la reducción de paleta, cuando toque, se revisa color a color.",
+    "2026-10-19. Lo que funcionó: hoja como estilo, diseño aparte, 'un solo sprite', margen en píxeles, guardia SF2, y reducir en código en vez de pedirle al modelo que se aleje.",
+    "2026-10-19. La reducción a 120 con LANCZOS era el problema: se cargaba el detalle de un dibujo bueno. Probado el recorte nativo en el visor y en el escenario: mide 567 × 1022 y se sale de la placa, no cabe sin reescalar. Conclusión: no se puede usar el nativo sin escalar; hay que generar el sprite ya a tamaño de juego.",
+    "2026-10-19. Tirada con rejilla exigida en el prompt (1024, bloques de 8, 120 bloques de alto). El modelo NO obedece: no hay ningún escalón de 8, y la figura mide 1014 px de alto, no 960. Lo que sí acierta son bloques de ~8. Se corta dividiendo por 8 entero: 95 × 126, sin interpolar, y se limpian 122 píxeles verdes de borde. Ese es el sprite de referencia.",
+    "2026-10-19. Conclusión para el escenario: la figura que ya juega mide 153 y esta 126, así que entra sin escalar. Si algún día hay que igualarla a 120, se genera a 120 bloques de 8 = 960 y se corta ÷8 exacto.",
+    "2026-10-19. Medido: una pose generada de cero llega con ~105.000 colores distintos y la stance aprobada tiene 15. Al forzar la paleta ese ruido se reparte de otra forma y cambia la proporcion de tonos: eso es «algo ha pasado con la paleta». Hay que medirlo ANTES de cortar (tools/palette_report.py), no mirarlo.",
+    "2026-10-19. El contorno solo se cierra donde el traje toca el aire (seal_teal_edge): convierte en contorno los pixeles teal que ya estan en el borde, sin engordar la silueta. Asi el borde queda 71-82 % contorno como la stance. close_outline engorda la figura y sube el contorno al 14 %: no se usa.",
+    "2026-10-19. El walk de un juego de pelea NO es un paseo: se anda en guardia, con los puños arriba, pasos cortos y la linea de la cabeza casi fija. Brazos colgando y zancada larga es lo que hacia que se viera ridiculo. Referencia fija: guide/ref/walk_ref.png.",
+    "2026-10-19. La hoja de referencia se recorta a la fila que toca y se junta con un frame aprobado (ref/walk_ref.png). Con esa imagen sola como imagen 1 el generador ya dibuja la fila entera en guardia: es la mejor forma de pedir una animacion, mejor que describirla con palabras.",
+    "2026-10-19. El walk que se lee bien en lateral no separa las piernas: las mantiene juntas y cruza un pie por delante del otro (Cammy). Con zancada abierta la silueta se ensancha y el paso se ve tosco; con paso corto cruzado el ciclo aguanta con cuatro poses.",
+    "2026-10-19. Un frame no puede quedar 'achatado': si al cruzar las piernas la silueta se estrecha o el cuerpo se ensancha, ese frame se tira. Se pide explicitamente 'mismo ancho de cuerpo y misma coleta en todos los frames'.",
+    "2026-10-19. El fallo de 'el personaje cambia de tamano' era real y medible: los frames del walk anterior eran un 11 % mas estrechos de torso y un 12 % mas ligeros de tinta que la stance, aunque la cabeza midiera lo mismo. Ahora tools/consistency.py compara cabeza, alto total, coleta, tinta y ancho de torso contra la stance y bloquea lo que pase de +-5 %.",
+    "2026-10-19. El prompt que sostiene el tamano: imagen 1 = la stance aprobada; 'SIZE IS LOCKED' con los cinco anclajes (arriba de la coleta, barbilla, cinturon, suelas, borde izquierdo de la coleta) y el ancho de hombros; 'cambia SOLO las piernas'; y una frase aparte para la coleta, que es lo que el modelo acorta cuando se despista.",
+    "2026-10-19. La coleta es el 35 % de la tinta del personaje: si se queda tiesa en todos los frames, la animacion se lee como un recorte moviendose. Entra como regla de oro con el comportamiento por direccion (adelante se abre, atras se pega, salto con gravedad).",
+    "2026-10-19. La hoja completa de 30 poses SI se puede: con la escala por celda iterada, 29 de 30 cabezas quedan exactamente a 30 px y el recorte sale limpio. Lo que no controla el modelo son las POSES (la fila de saltos no trae el ciclo, trae tres poses de guardia y una voltereta suelta). Sirve para diseno y coherencia; para una animacion concreta sigue ganando una imagen por animacion.",
+    "2026-10-19. Clonar poses de la referencia es la unica forma que ha dado variedad: la hoja inventada repetia poses (IoU 0,85+) y la clonada da 0,51-0,65. Hay que unir los tres bloques en el prompt: clonar poses, candado de tamano y paleta con los 16 hex escritos."
   ],
-  "distance": 157
- },
- "sacrifice": "Si una tinta nueva cae a menos de 120 del verde medido, se mueve esa tinta. No se mueve el recorte y no se toca la máscara. Se sacrifica el rosa como color de fondo, para siempre.",
- "clip": "Un píxel es fondo solo si está más cerca del verde medido que de la paleta, con umbral 60 sobre la imagen grande. Después se reduce a 120 de alto con muestreo al centro (NEAREST), nunca LANCZOS, y se tapa con el contorno cualquier píxel de borde que salga verdoso. No hay halo.",
- "palette": [
-  {
-   "name": "contorno",
-   "rgb": [
-    10,
-    8,
-    20
-   ]
+  "changelog": [
+    "2026-10-19. El idle aprobado pasa a llamarse stance: carpeta nueva/stance, 24 frames, y se borra el bloque idle viejo de la primera pasada.",
+    "2026-10-19. Idle reconstruido: eje de cabeza fijo (x=128) y atusado x3; el salto anterior pasa al grupo de pruebas.",
+    "2026-10-19. Idle rehecho desde una hoja unica de 20 poses: mismo tamano, misma escala, mismo suelo, 16 colores.",
+    "2026-10-19. Idle rehecho: escala unica, paleta de 16, y las poses que no mantenian la coleta, regeneradas con la hoja de 4 poses como referencia.",
+    "2026-10-19. Regla de oro guardada: 170 cm = 200 px, bloques de 5. El zoom del escenario pasa a escala entera para no deformar el píxel. Primera pasada del idle de 20 frames.",
+    "2026-10-19. Regla de escala por altura real: 170 cm = 200 px. El sprite de juego queda en 150 × 200 y el escenario lo pinta 1:1.",
+    "2026-10-19. Altura de ring a 200. Suelo del visor nuevo a 426, en el centro del rombo. El escenario acepta STAGE_FLOOR_Y por página.",
+    "2026-10-19. Altura de ring a 300. Se mide el techo del generador: ~127 nativos. Se añaden los modos 254/300/381 en el escenario y la figura ya no puede tumbar la carga del ring.",
+    "2026-10-19. Se deja de reducir el archivo. El sprite de referencia es el PNG generado de 1024 × 1024, solo con el verde quitado. La resolución nativa se mide por bloques: ~127 de alto.",
+    "2026-10-19. La escala pasa a ser regla de primera: rejilla en el prompt y bajada por bloques enteros en código. Sprite de referencia nuevo, 95 × 126, sin escalar.",
+    "2026-10-19. Se tira el idle de 20 frames entero y su recorte. Queda un solo sprite de referencia, sin aprobar. El script que comía píxeles está borrado.",
+    "2026-10-19. La hoja de Chun-Li entra como referencia de dibujo. El prompt se reescribe con pixelado, 16 colores, encuadre y traje teal entero.",
+    "2026-10-19. Entra el walk: hoja de 20 poses nueva, recortada con el mismo lienzo 200 x 240, suelo 238 y eje de cabeza x=128. La hoja anterior se descarto.",
+    "2026-10-19. Se apunta la tecnica de la hoja 4 x 2 (1024, bloques de 6, figura de 660 px) en sheetMethod/sheetPrompt: es la que aguanta el recorte. El walk anterior de 20 poses se tira y se rehace con 8 poses reales.",
+    "2026-10-19. Walk de 6 poses: una hoja de 3 x 2 con figura grande (mascara de 30 px de alto ya escalada), segunda mitad por cambio de tonos (tools/opposite_half.py). Se tira el walk de 8 y el de 20.",
+    "2026-10-19. Se tira el walk entero (6 poses, hoja y scripts) y las herramientas de la segunda mitad. Solo quedan aprobadas la stance y la prueba del salto.",
+    "2026-10-19. Walk de cero con poses sueltas (tools/build_pose.py): 4 frames, 15 colores exactos y huella de paleta a menos de 2 puntos de la stance. Se descarta la rejilla para animaciones que el generador no sabe ordenar.",
+    "2026-10-19. Entra el walk lateral de 4 frames con la coleta animada, y la regla de oro de la coleta en la guia. build_pose.py itera la escala hasta que la mascara mide exactamente 30 px (antes el redondeo la dejaba en 28-29)."
+  ],
+  "scale": {
+    "rule": "El archivo NO se reduce nunca. Se guarda a la resolución a la que lo generó el modelo. Si hay que verlo más pequeño, se cambia el zoom de la vista, no el archivo.",
+    "native": "El sprite de juego es newref/ref_stand_200.png, 150 x 200. Sale del maestro de 1024 fijado a 200 de alto, muestreo al centro y limpieza del verde del borde. Es la única reducción permitida y está aprobada por el usuario: el maestro se conserva en newref/ref_stand.png.",
+    "error": "El fallo anterior fue leer 1022 como si fueran 1022 píxeles de sprite y bajarlos a 120. Eso es un remuestreo ×0,117: cada píxel del dibujo cae en una fracción de píxel y se pierde el detalle. Después se llegó a bajar por bloques a 95 × 126: menos malo, pero seguía siendo reducir el archivo. Prohibido.",
+    "engine": "Se dibuja 1:1: un píxel del archivo, un píxel de mundo. Sin escalar en el motor.",
+    "check": "Antes de dar un sprite por bueno se comprueba que el archivo del visor y el generado tienen el mismo tamaño en píxeles, y que el bloque mide lo mismo. Si no coinciden, se empieza otra vez.",
+    "target": "Altura de ring: 200 px de mundo. Con los pies en 426 de la placa, ocupa el 33% y deja 226 px sobre la cabeza.",
+    "ceiling": "Confirmado en cuatro tiradas más (bloques de 5, zoom x5 de un sprite de 200, figura pequeña a 1 px por píxel, y referencia ya con bloques de 5): el modelo devuelve SIEMPRE 1024 x 1024 con bloques de 8 y la figura de 1014 px, o sea 127 nativos. El techo es 127.",
+    "integer": "Para el ring se usa un múltiplo entero de 127: 254 (×2) o 381 (×3). A 300 son ×2,37: los bloques salen de 2 y de 3 px mezclados. 254 es el tamaño correcto de ring; 381 no cabe."
   },
-  {
-   "name": "navy sombra",
-   "rgb": [
-    16,
-    20,
-    54
-   ]
+  "floor": {
+    "value": 426,
+    "note": "El suelo baja de 408 a 426 para que los pies caigan en el centro del rombo dibujado en la placa (el rombo va de 405 a 445; el centro es 425-426). Se cambia por página con window.STAGE_FLOOR_Y, así el visor viejo sigue en 408.",
+    "why": "Con 408 la figura quedaba detrás del rombo: parecía flotar por encima del suelo pintado."
   },
-  {
-   "name": "navy",
-   "rgb": [
-    27,
-    34,
-    80
-   ]
+  "metric": {
+    "rule": "Regla de escala del proyecto: un personaje de 170 cm, con coleta, mide 200 píxeles de imagen.",
+    "ratio": "170 cm = 200 px, o sea 1,176 cm por píxel. Un personaje de 160 cm serán 188 px; uno de 190 cm, 224 px. El alto se cuenta siempre con el pelo o el accesorio incluido.",
+    "ring": "El suelo del escenario va en 426 px de la placa y la figura de 200 px ocupa el 33% del alto de la placa.",
+    "check": "Antes de aprobar: el archivo mide 200 px de alto con la coleta y se dibuja 1:1."
   },
-  {
-   "name": "traje sombra",
-   "rgb": [
-    16,
-    96,
-    104
-   ]
+  "gold": {
+    "title": "REGLA DE ORO: la escala",
+    "rule": "170 cm de personaje, con coleta incluida, son 200 píxeles de imagen.",
+    "blocks": "Se dibuja en bloques de 5: 200 píxeles x 5 = 1000 píxeles de lienzo. El bloque 5 es la unidad de trabajo, no el 8.",
+    "ratio": "1,176 cm por píxel. 160 cm = 188 px; 150 cm = 128 px; 190 cm = 224 px.",
+    "height": "El alto se mide con el pelo o el accesorio incluido, de la suela más baja a la punta del pelo.",
+    "deliver": "El sprite de juego mide 200 px de alto y se dibuja 1:1. El maestro a 1024 se conserva, no se entrega.",
+    "why": "Con bloques de 5 el recorte queda perfecto: 200 nativos y el escenario lo pinta sin deformar. Con bloques de 8, 200 px obligaban a un x1,57 y no cuadraba.",
+    "check": "Antes de aprobar un sprite: alto = 200 px con coleta y misma escala de píxel que el resto de la hoja."
   },
-  {
-   "name": "traje",
-   "rgb": [
-    23,
-    147,
-    141
-   ]
+  "anims": {
+    "stance": {
+      "title": "Stance",
+      "dir": "nueva/stance",
+      "count": 24,
+      "fps": 8,
+      "canvas": [
+        200,
+        240
+      ],
+      "note": "Respiracion y saltitos (00-10), palmadas de atusado 11-12 repetidas seguidas x3 (frames 11-16) y vuelta a la guardia (17-23). Centro por el eje de la cabeza, x=128.",
+      "frames": [
+        "00.png",
+        "01.png",
+        "02.png",
+        "03.png",
+        "04.png",
+        "05.png",
+        "06.png",
+        "07.png",
+        "08.png",
+        "09.png",
+        "10.png",
+        "11.png",
+        "12.png",
+        "13.png",
+        "14.png",
+        "15.png",
+        "16.png",
+        "17.png",
+        "18.png",
+        "19.png",
+        "20.png",
+        "21.png",
+        "22.png",
+        "23.png"
+      ],
+      "group": "animaciones"
+    },
+    "jump": {
+      "title": "Salto · prueba",
+      "dir": "nueva/jump",
+      "count": 20,
+      "fps": 10,
+      "canvas": [
+        200,
+        300
+      ],
+      "note": "Documento de prueba, no es una animacion del personaje: la hoja de 20 poses era un salto hacia adelante y no se usa como salto en el juego. Se conserva por si hace falta.",
+      "frames": [
+        "00.png",
+        "01.png",
+        "02.png",
+        "03.png",
+        "04.png",
+        "05.png",
+        "06.png",
+        "07.png",
+        "08.png",
+        "09.png",
+        "10.png",
+        "11.png",
+        "12.png",
+        "13.png",
+        "14.png",
+        "15.png",
+        "16.png",
+        "17.png",
+        "18.png",
+        "19.png"
+      ],
+      "group": "pruebas"
+    },
+    "walk": {
+      "title": "Walk · propuesta",
+      "dir": "nueva/walk",
+      "count": 4,
+      "fps": 8,
+      "canvas": [
+        200,
+        240
+      ],
+      "note": "Walk de 0, clonado pose a pose de la fila de walk de Cammy GBA (ref/cammy_walk_ref.png, poses 2, 3, 4 y 5, espejadas para mirar a la derecha). Cada frame es UNA imagen con UNA sola figura: no hay hoja que cortar y por tanto no hay cortes que partan la coleta ni cambien la escala. Normalizado con tools/build_pose.py (mascara 30 px exacta, eje x=128, suelo 238). Puertas: consistency.py 4/4 dentro (tinta +1,3 / -7,5 / +1,2 / -0,8 %; alto 200 px en 00, 01 y 02) y palette_report 16 colores, 0,00 % fuera de paleta, deriva maxima +2,3 (contorno). Pendiente: 03 mide 231 px (+15,5 %), hay que regenerar esa pose.",
+      "frames": [
+        "00.png",
+        "01.png",
+        "02.png",
+        "03.png"
+      ],
+      "group": "propuestas",
+      "status": "propuesta",
+      "pending": "03.png a 231 px de alto: regenerar con la altura bloqueada."
+    }
   },
-  {
-   "name": "traje luz",
-   "rgb": [
-    31,
-    177,
-    164
-   ]
+  "promptTemplate": "Copy this sprite EXACTLY. Same character, same colours, same 16 flat inks, same thick dark outline, same torso, head, arms, guard, mask, visor, mouth, belt, bolt, gloves and ponytail.\n\nSIZE IS LOCKED. The new drawing must be the same size as the reference and stand in the same place: the top of the ponytail at the same height, the chin at the same height, the belt at the same height, the soles on the same ground line, the left edge of the ponytail at the same distance from the left, and the SAME width across the shoulders and the chest. Keep the ponytail FULL LENGTH and FULL THICKNESS: its tip level with the middle of the thigh. Do not slim the body, do not narrow the hips, do not shorten the ponytail, do not make the figure smaller or taller. Everything except {WHAT MOVES} stays pixel for pixel as it is.\n\nCHANGE ONLY {WHAT MOVES}: {POSE}.\n\nOne single sprite, side view facing right, alone on flat bright green with plenty of green all around, no second figure, no floor, no shadow, no text, no border, no dithering, no gradients, no anti-aliasing.",
+  "goldenRules": {
+    "ponytail": "REGLA DE ORO: la coleta se mueve. Es parte de la animacion, no un adorno fijo. Andando hacia adelante se separa de la espalda y se abre hacia atras; andando hacia atras se pega al cuerpo y se comprime; al saltar sube retrasada al ascender y flota al caer, y cae despues del aterrizaje. Va uno o dos frames por detras del cuerpo. Nunca la misma silueta de coleta en todos los frames.",
+    "ponytailDetail": "La coleta conserva su dibujo: arco grande, cuatro o cinco lineas de mechon marcadas con el tono de sombra y punta definida. Si sale como una mancha lisa, se repite."
   },
-  {
-   "name": "coleta sombra",
-   "rgb": [
-    60,
-    15,
-    95
-   ]
+  "sheetWorkflow": {
+    "cap": "El generador devuelve siempre ~1,05 Mpx, pida lo que pida. Con sprite de 200 px eso da para 30 poses por imagen (~1 px generado por px de sprite) o una sola pose a 4,7-5,9 px por px.",
+    "prompt": "Imagen 1 = ref/cammy_gba_sheet.png (maquetacion). Imagen 2 = stance aprobada (personaje). 6 columnas x 5 filas, mismo tamano, mirando a la derecha, verde plano, sin texto.",
+    "cut": "build_sheet.py <hoja> <salida> 200 240 238 6 5 30 --per-cell. Escala por celda con mediana y limite +-8 %.",
+    "check": "27 de 30 cabezas a 30 px exactos; el resto solo donde la mascara no se puede medir (figura girada).",
+    "limit": "El modelo no compone ciclos: la fila de saltos trae guardias y una voltereta suelta. Los frames en el aire se quedan pegados al suelo porque el recorte alinea por los pies."
   },
-  {
-   "name": "coleta",
-   "rgb": [
-    85,
-    21,
-    124
-   ]
-  },
-  {
-   "name": "coleta luz",
-   "rgb": [
-    186,
-    104,
-    232
-   ]
-  },
-  {
-   "name": "mascara sombra",
-   "rgb": [
-    120,
-    16,
-    80
-   ]
-  },
-  {
-   "name": "mascara",
-   "rgb": [
-    190,
-    25,
-    130
-   ]
-  },
-  {
-   "name": "piel sombra",
-   "rgb": [
-    196,
-    120,
-    84
-   ]
-  },
-  {
-   "name": "piel",
-   "rgb": [
-    240,
-    176,
-    132
-   ]
-  },
-  {
-   "name": "cinturon",
-   "rgb": [
-    176,
-    112,
-    36
-   ]
-  },
-  {
-   "name": "rayo",
-   "rgb": [
-    250,
-    210,
-    50
-   ]
-  },
-  {
-   "name": "blanco ojo",
-   "rgb": [
-    255,
-    255,
-    255
-   ]
+  "cloneWorkflow": {
+    "what": "Clonar las poses de la hoja de Cammy: el modelo copia una a una las poses de la referencia y solo cambia el personaje. Es lo unico que ha dado variedad real (IoU maximo 0,51-0,65 entre poses, frente a 0,85+ de las hojas inventadas).",
+    "ref": "ref/cammy_walk_ref.png (fila Walk de Cammy ampliada x6) y ref/cammy_poses_ref.png (Idle + Walk).",
+    "prompt": "Tres bloques obligatorios: 1) CLONE THE POSES (misma fila, mismo orden, ninguna repetida); 2) SIZE IS LOCKED (los cinco anclajes + ancho de hombros, como en promptTemplate); 3) PALETTE con los 16 hex escritos. Sin el bloque de paleta el traje sale claro: desvio de 10,9 puntos; con el, 2,8.",
+    "cut": "build_sheet.py <img> <salida> 200 240 238 6 1 30 --per-cell",
+    "result": "Walk clonado de 6 frames en nueva/walk_clon: mascara 29-30, tinta a menos del 10 %, paleta a menos de 2,8 puntos y seis poses distintas."
   }
- ],
- "rules": [
-  "REGLA DE ORO: 170 cm con coleta = 200 píxeles. Bloques de 5. El sprite se dibuja 1:1.",
-  "Escala: 170 cm con coleta = 200 px de alto. Todos los personajes se miden así y se dibujan 1:1 en el escenario.",
-  "La altura de ring es 300 px de mundo. Si el dibujo nativo es 127, se llega con ×2 exacto (254) o se acepta el ×2,37 de 300. Nunca se genera un PNG derivado: se dibuja a esa escala.",
-  "Primero se aprueba UN sprite. Hasta que el usuario lo apruebe no se generan las demás poses del idle.",
-  "La escala se pide en el prompt (1024, bloques de 8, 120 bloques de alto), pero el archivo se guarda como sale: no se recorta a la caja, no se escala y no se cuantiza.",
-  "Prohibido reducir el archivo. Ni con LANCZOS, ni con NEAREST, ni dividiendo por el bloque. El zoom es cosa de la vista, no del PNG.",
-  "La resolución nativa del dibujo es su rejilla: 8 px por bloque. Se mide el bloque, no se supone por el tamaño del lienzo.",
-  "Antes de aprobar un sprite: el archivo del visor y el generado, mismo tamaño en píxeles y mismo bloque. Si no, se empieza de nuevo.",
-  "El dibujo es el de la hoja de Chun-Li de SF2: píxel gordo, contorno negro grueso, tonos planos, 16 colores, tres tonos por material.",
-  "El diseño es el de Voltia: traje teal entero hasta la bota, sin muslos desnudos. Muslos desnudos es el diseño de Chun-Li y es un fallo.",
-  "La máscara se queda entera, con visor y con boca: abertura oscura y labio de piel, bajo el visor, mirando a la derecha. Sin boca no entra.",
-  "El rayo amarillo va en el pecho, gordo y entero. No se tapa con un brazo.",
-  "Hay margen de fondo en los cuatro lados, mínimo 40 px reales. Si la coleta o la bota tocan el borde, la imagen no vale y se repite.",
-  "El fondo es un verde plano medido en el borde, nunca rosa ni magenta ni un tono del traje.",
-  "Al bajar, se quitan los píxeles verdes de borde: verde dominante sobre rojo y azul. El teal tiene verde igual a azul y no se toca.",
-  "No se cuantiza a ciegas: si la máscara pierde el magenta, el rayo pierde el amarillo o el cinturón pierde el oro, el resultado no entra.",
-  "Al quitar el fondo se toca el archivo lo mínimo: se vuelve transparente el verde medido en el borde. Nada más. Ni recorte, ni retoque de borde, ni cuantizado.",
-  "Un frame partido no se entrega. La pelea no cambia de hoja hasta que el ciclo se acepte.",
-  "Esta guía no reproduce animaciones. Los frames se miran en el visor del modelo nuevo."
- ],
- "prompt": "Image 1 (Chun-Li sheet) defines the RENDERING STYLE only. Image 2 defines Voltia's design. If a previous Voltia sprite is attached, it is image 3 and it defines the drawing to keep: do not change its pixels, colours or proportions, only the pose.\n\nDraw ONE full-body arcade sprite of Voltia in the exact visual language of the 1991 CPS-1 Street Fighter II sprites.\n\nFIXED PIXEL GRID, this is the most important part: the canvas is 1024 x 1024. Every sprite pixel is a SOLID 8 x 8 SCREEN-PIXEL BLOCK, aligned from the top-left corner. No colour edge, outline or highlight may be finer than 8 pixels. The character is EXACTLY 120 sprite pixels tall, which is 960 screen pixels from the sole of the lowest boot to the top of the hair. At least 24 screen pixels of clear green on all four sides, so nothing touches an edge.\n\nSTYLE: exactly 16 flat colours, thick 1-sprite-pixel near-black outline, three hard tones per material, chunky clusters, no gradients, no anti-aliasing, no soft shading, no glow, no anime or webcomic look, no smooth vector curves.\n\nCHARACTER: Voltia, slender masked luchadora, about 7.5 heads, natural athletic proportions. Full magenta wrestling mask; teal eye visor with dark eye slit; readable mouth below the visor, dark opening plus skin-tone lower lip, facing right. One huge thick violet ponytail tied high, flowing back and left. Teal bodysuit covering the legs down into the boots, no bare thighs, short teal trunks, thin gold belt with round buckle, LARGE FAT angular yellow lightning bolt on the chest, bare upper arms, long navy gauntlet gloves with dark cuffs, navy boots with knee pads and dark soles.\n\nPOSE: Street Fighter II standing guard, side view facing right, weight low, feet wide, knees bent, rear heel planted, both fists raised at chin height, elbows tucked, torso slightly turned.\n\nBACKGROUND: flat solid bright green #11EF06 edge to edge. No floor, no shadow, no text, no logo, no border, no second character, no green halo on the sprite.",
- "keys": [
-  {
-   "id": "stand",
-   "file": "nueva/00.png",
-   "use": "Guardia. Frame de referencia del idle."
-  },
-  {
-   "id": "sheet",
-   "file": "nueva/src/sheet20.png",
-   "use": "Hoja original de 20 poses (5x4). Es la fuente: se vuelve a cortar de aqui si hay que retocar."
-  },
-  {
-   "id": "groom",
-   "file": "nueva/11.png",
-   "use": "Atusandose el muslo. El gesto que define el idle."
-  }
- ],
- "lessons": [
-  "2026-10-19. Los frames se cortan de UNA SOLA HOJA de 5x4. Asi el tamano de celda, la escala y la linea de suelo son los mismos por construccion: no hay normalizacion por frame y no puede volver a descuadrarse. El aire se hace con lift, no escalando.",
-  "2026-10-19. El fallo de la coleta no era el dibujo: al normalizar CADA pose a 200 px de alto, cada frame cambiaba de escala. Ahora todas las poses se escalan con el mismo factor y el alto de cada pose es consecuencia de su postura. Se mide la proporcion de pixeles de coleta sobre el cuerpo, no el numero absoluto.",
-  "2026-10-19. La paleta se fija a 16 colores exactos y se aplica a todos los frames. Antes cada frame traia sus propios medios tonos y la sombra cambiaba.",
-  "2026-10-19. La regla de 5 bloques funciona: figura de 1000 px de lienzo partido por 5 son 200 nativos, y el recorte queda perfecto. Es la escala de trabajo para todos los personajes.",
-  "2026-10-19. Escala definitiva: 170 cm con coleta = 200 px. Cuatro intentos de sacar 200 nativos del generador (bloques de 5, zoom x5 declarado, figura pequeña a 1 px, referencia con bloques de 5) devuelven el mismo raster de 8. El sprite de juego se fija a 200 desde el maestro aprobado y se dibuja 1:1.",
-  "2026-10-19. El suelo de la placa (408) era el borde trasero del ring, no el centro del rombo. Bajado a 426, los pies pisan el rombo. Solo en el visor nuevo: window.STAGE_FLOOR_Y.",
-  "2026-10-19. Tres tiradas pidiendo 300 nativos (bloques de 3 en 960, lienzo pequeño de 320, y 300 px de alto explícito). Las tres devuelven 1024 con bloques de 8 y la figura de 1014: el techo nativo del modelo es ~127. Para el ring se dibuja a 254 (×2 exacto) o 300 si se acepta ×2,37.",
-  "2026-10-19. Error de método: se redujo el archivo generado dos veces (LANCZOS a 120 y luego ÷8 a 95 × 126). El archivo no se toca: se guarda a 1024 y se mira con zoom. La resolución nativa del dibujo es la de sus bloques, 8 px por bloque, es decir ~127 píxeles de sprite, que ya es escala de juego. Se comprueba midiendo el bloque, no el lienzo.",
-  "2026-10-19. Tirada 1. Dibujo de dibujos animados, no pixel art de SF2. Fallo: faltaba la hoja de Chun-Li como referencia de dibujo; solo había diseño. Desde aquí la hoja entra siempre como imagen 1.",
-  "2026-10-19. Tirada 2, con hoja. El pixelado ya es el bueno, pero la figura toca el borde y los puños no se leen. Se pide margen explícito en píxeles y puño con nudillos y línea del pulgar.",
-  "2026-10-19. Tirada 3. Copió el diseño de Chun-Li: muslos desnudos. Fallo: la referencia de diseño tiene que ir listada como imagen aparte y el prompt tiene que decir 'sin muslos desnudos'.",
-  "2026-10-19. Tirada 4. El modelo no hace zoom hacia atrás pidiéndolo en palabras. Se hace como edición de la propia imagen y aun así la reducción final se hace en código: recorte, reducción a 120 de alto, borde verdoso tapado con el contorno.",
-  "2026-10-19. Cuantizar a 20 colores mata el magenta de la máscara y el oro del cinturón. El sprite de referencia se guarda sin cuantizar; la reducción de paleta, cuando toque, se revisa color a color.",
-  "2026-10-19. Lo que funcionó: hoja como estilo, diseño aparte, 'un solo sprite', margen en píxeles, guardia SF2, y reducir en código en vez de pedirle al modelo que se aleje.",
-  "2026-10-19. La reducción a 120 con LANCZOS era el problema: se cargaba el detalle de un dibujo bueno. Probado el recorte nativo en el visor y en el escenario: mide 567 × 1022 y se sale de la placa, no cabe sin reescalar. Conclusión: no se puede usar el nativo sin escalar; hay que generar el sprite ya a tamaño de juego.",
-  "2026-10-19. Tirada con rejilla exigida en el prompt (1024, bloques de 8, 120 bloques de alto). El modelo NO obedece: no hay ningún escalón de 8, y la figura mide 1014 px de alto, no 960. Lo que sí acierta son bloques de ~8. Se corta dividiendo por 8 entero: 95 × 126, sin interpolar, y se limpian 122 píxeles verdes de borde. Ese es el sprite de referencia.",
-  "2026-10-19. Conclusión para el escenario: la figura que ya juega mide 153 y esta 126, así que entra sin escalar. Si algún día hay que igualarla a 120, se genera a 120 bloques de 8 = 960 y se corta ÷8 exacto.",
-  "2026-10-19. Medido: una pose generada de cero llega con ~105.000 colores distintos y la stance aprobada tiene 15. Al forzar la paleta ese ruido se reparte de otra forma y cambia la proporcion de tonos: eso es «algo ha pasado con la paleta». Hay que medirlo ANTES de cortar (tools/palette_report.py), no mirarlo.",
-  "2026-10-19. El contorno solo se cierra donde el traje toca el aire (seal_teal_edge): convierte en contorno los pixeles teal que ya estan en el borde, sin engordar la silueta. Asi el borde queda 71-82 % contorno como la stance. close_outline engorda la figura y sube el contorno al 14 %: no se usa.",
-  "2026-10-19. El walk de un juego de pelea NO es un paseo: se anda en guardia, con los puños arriba, pasos cortos y la linea de la cabeza casi fija. Brazos colgando y zancada larga es lo que hacia que se viera ridiculo. Referencia fija: guide/ref/walk_ref.png.",
-  "2026-10-19. La hoja de referencia se recorta a la fila que toca y se junta con un frame aprobado (ref/walk_ref.png). Con esa imagen sola como imagen 1 el generador ya dibuja la fila entera en guardia: es la mejor forma de pedir una animacion, mejor que describirla con palabras.",
-  "2026-10-19. El walk que se lee bien en lateral no separa las piernas: las mantiene juntas y cruza un pie por delante del otro (Cammy). Con zancada abierta la silueta se ensancha y el paso se ve tosco; con paso corto cruzado el ciclo aguanta con cuatro poses.",
-  "2026-10-19. Un frame no puede quedar 'achatado': si al cruzar las piernas la silueta se estrecha o el cuerpo se ensancha, ese frame se tira. Se pide explicitamente 'mismo ancho de cuerpo y misma coleta en todos los frames'.",
-  "2026-10-19. El fallo de 'el personaje cambia de tamano' era real y medible: los frames del walk anterior eran un 11 % mas estrechos de torso y un 12 % mas ligeros de tinta que la stance, aunque la cabeza midiera lo mismo. Ahora tools/consistency.py compara cabeza, alto total, coleta, tinta y ancho de torso contra la stance y bloquea lo que pase de +-5 %.",
-  "2026-10-19. El prompt que sostiene el tamano: imagen 1 = la stance aprobada; 'SIZE IS LOCKED' con los cinco anclajes (arriba de la coleta, barbilla, cinturon, suelas, borde izquierdo de la coleta) y el ancho de hombros; 'cambia SOLO las piernas'; y una frase aparte para la coleta, que es lo que el modelo acorta cuando se despista.",
-  "2026-10-19. La coleta es el 35 % de la tinta del personaje: si se queda tiesa en todos los frames, la animacion se lee como un recorte moviendose. Entra como regla de oro con el comportamiento por direccion (adelante se abre, atras se pega, salto con gravedad).",
-  "2026-10-19. La hoja completa de 30 poses SI se puede: con la escala por celda iterada, 29 de 30 cabezas quedan exactamente a 30 px y el recorte sale limpio. Lo que no controla el modelo son las POSES (la fila de saltos no trae el ciclo, trae tres poses de guardia y una voltereta suelta). Sirve para diseno y coherencia; para una animacion concreta sigue ganando una imagen por animacion.",
-  "2026-10-19. Clonar poses de la referencia es la unica forma que ha dado variedad: la hoja inventada repetia poses (IoU 0,85+) y la clonada da 0,51-0,65. Hay que unir los tres bloques en el prompt: clonar poses, candado de tamano y paleta con los 16 hex escritos."
- ],
- "changelog": [
-  "2026-10-19. El idle aprobado pasa a llamarse stance: carpeta nueva/stance, 24 frames, y se borra el bloque idle viejo de la primera pasada.",
-  "2026-10-19. Idle reconstruido: eje de cabeza fijo (x=128) y atusado x3; el salto anterior pasa al grupo de pruebas.",
-  "2026-10-19. Idle rehecho desde una hoja unica de 20 poses: mismo tamano, misma escala, mismo suelo, 16 colores.",
-  "2026-10-19. Idle rehecho: escala unica, paleta de 16, y las poses que no mantenian la coleta, regeneradas con la hoja de 4 poses como referencia.",
-  "2026-10-19. Regla de oro guardada: 170 cm = 200 px, bloques de 5. El zoom del escenario pasa a escala entera para no deformar el píxel. Primera pasada del idle de 20 frames.",
-  "2026-10-19. Regla de escala por altura real: 170 cm = 200 px. El sprite de juego queda en 150 × 200 y el escenario lo pinta 1:1.",
-  "2026-10-19. Altura de ring a 200. Suelo del visor nuevo a 426, en el centro del rombo. El escenario acepta STAGE_FLOOR_Y por página.",
-  "2026-10-19. Altura de ring a 300. Se mide el techo del generador: ~127 nativos. Se añaden los modos 254/300/381 en el escenario y la figura ya no puede tumbar la carga del ring.",
-  "2026-10-19. Se deja de reducir el archivo. El sprite de referencia es el PNG generado de 1024 × 1024, solo con el verde quitado. La resolución nativa se mide por bloques: ~127 de alto.",
-  "2026-10-19. La escala pasa a ser regla de primera: rejilla en el prompt y bajada por bloques enteros en código. Sprite de referencia nuevo, 95 × 126, sin escalar.",
-  "2026-10-19. Se tira el idle de 20 frames entero y su recorte. Queda un solo sprite de referencia, sin aprobar. El script que comía píxeles está borrado.",
-  "2026-10-19. La hoja de Chun-Li entra como referencia de dibujo. El prompt se reescribe con pixelado, 16 colores, encuadre y traje teal entero.",
-  "2026-10-19. Entra el walk: hoja de 20 poses nueva, recortada con el mismo lienzo 200 x 240, suelo 238 y eje de cabeza x=128. La hoja anterior se descarto.",
-  "2026-10-19. Se apunta la tecnica de la hoja 4 x 2 (1024, bloques de 6, figura de 660 px) en sheetMethod/sheetPrompt: es la que aguanta el recorte. El walk anterior de 20 poses se tira y se rehace con 8 poses reales.",
-  "2026-10-19. Walk de 6 poses: una hoja de 3 x 2 con figura grande (mascara de 30 px de alto ya escalada), segunda mitad por cambio de tonos (tools/opposite_half.py). Se tira el walk de 8 y el de 20.",
-  "2026-10-19. Se tira el walk entero (6 poses, hoja y scripts) y las herramientas de la segunda mitad. Solo quedan aprobadas la stance y la prueba del salto.",
-  "2026-10-19. Walk de cero con poses sueltas (tools/build_pose.py): 4 frames, 15 colores exactos y huella de paleta a menos de 2 puntos de la stance. Se descarta la rejilla para animaciones que el generador no sabe ordenar.",
-  "2026-10-19. Entra el walk lateral de 4 frames con la coleta animada, y la regla de oro de la coleta en la guia. build_pose.py itera la escala hasta que la mascara mide exactamente 30 px (antes el redondeo la dejaba en 28-29)."
- ],
- "scale": {
-  "rule": "El archivo NO se reduce nunca. Se guarda a la resolución a la que lo generó el modelo. Si hay que verlo más pequeño, se cambia el zoom de la vista, no el archivo.",
-  "native": "El sprite de juego es newref/ref_stand_200.png, 150 x 200. Sale del maestro de 1024 fijado a 200 de alto, muestreo al centro y limpieza del verde del borde. Es la única reducción permitida y está aprobada por el usuario: el maestro se conserva en newref/ref_stand.png.",
-  "error": "El fallo anterior fue leer 1022 como si fueran 1022 píxeles de sprite y bajarlos a 120. Eso es un remuestreo ×0,117: cada píxel del dibujo cae en una fracción de píxel y se pierde el detalle. Después se llegó a bajar por bloques a 95 × 126: menos malo, pero seguía siendo reducir el archivo. Prohibido.",
-  "engine": "Se dibuja 1:1: un píxel del archivo, un píxel de mundo. Sin escalar en el motor.",
-  "check": "Antes de dar un sprite por bueno se comprueba que el archivo del visor y el generado tienen el mismo tamaño en píxeles, y que el bloque mide lo mismo. Si no coinciden, se empieza otra vez.",
-  "target": "Altura de ring: 200 px de mundo. Con los pies en 426 de la placa, ocupa el 33% y deja 226 px sobre la cabeza.",
-  "ceiling": "Confirmado en cuatro tiradas más (bloques de 5, zoom x5 de un sprite de 200, figura pequeña a 1 px por píxel, y referencia ya con bloques de 5): el modelo devuelve SIEMPRE 1024 x 1024 con bloques de 8 y la figura de 1014 px, o sea 127 nativos. El techo es 127.",
-  "integer": "Para el ring se usa un múltiplo entero de 127: 254 (×2) o 381 (×3). A 300 son ×2,37: los bloques salen de 2 y de 3 px mezclados. 254 es el tamaño correcto de ring; 381 no cabe."
- },
- "floor": {
-  "value": 426,
-  "note": "El suelo baja de 408 a 426 para que los pies caigan en el centro del rombo dibujado en la placa (el rombo va de 405 a 445; el centro es 425-426). Se cambia por página con window.STAGE_FLOOR_Y, así el visor viejo sigue en 408.",
-  "why": "Con 408 la figura quedaba detrás del rombo: parecía flotar por encima del suelo pintado."
- },
- "metric": {
-  "rule": "Regla de escala del proyecto: un personaje de 170 cm, con coleta, mide 200 píxeles de imagen.",
-  "ratio": "170 cm = 200 px, o sea 1,176 cm por píxel. Un personaje de 160 cm serán 188 px; uno de 190 cm, 224 px. El alto se cuenta siempre con el pelo o el accesorio incluido.",
-  "ring": "El suelo del escenario va en 426 px de la placa y la figura de 200 px ocupa el 33% del alto de la placa.",
-  "check": "Antes de aprobar: el archivo mide 200 px de alto con la coleta y se dibuja 1:1."
- },
- "gold": {
-  "title": "REGLA DE ORO: la escala",
-  "rule": "170 cm de personaje, con coleta incluida, son 200 píxeles de imagen.",
-  "blocks": "Se dibuja en bloques de 5: 200 píxeles x 5 = 1000 píxeles de lienzo. El bloque 5 es la unidad de trabajo, no el 8.",
-  "ratio": "1,176 cm por píxel. 160 cm = 188 px; 150 cm = 128 px; 190 cm = 224 px.",
-  "height": "El alto se mide con el pelo o el accesorio incluido, de la suela más baja a la punta del pelo.",
-  "deliver": "El sprite de juego mide 200 px de alto y se dibuja 1:1. El maestro a 1024 se conserva, no se entrega.",
-  "why": "Con bloques de 5 el recorte queda perfecto: 200 nativos y el escenario lo pinta sin deformar. Con bloques de 8, 200 px obligaban a un x1,57 y no cuadraba.",
-  "check": "Antes de aprobar un sprite: alto = 200 px con coleta y misma escala de píxel que el resto de la hoja."
- },
- "anims": {
-  "stance": {
-   "title": "Stance",
-   "dir": "nueva/stance",
-   "count": 24,
-   "fps": 8,
-   "canvas": [
-    200,
-    240
-   ],
-   "note": "Respiracion y saltitos (00-10), palmadas de atusado 11-12 repetidas seguidas x3 (frames 11-16) y vuelta a la guardia (17-23). Centro por el eje de la cabeza, x=128.",
-   "frames": [
-    "00.png",
-    "01.png",
-    "02.png",
-    "03.png",
-    "04.png",
-    "05.png",
-    "06.png",
-    "07.png",
-    "08.png",
-    "09.png",
-    "10.png",
-    "11.png",
-    "12.png",
-    "13.png",
-    "14.png",
-    "15.png",
-    "16.png",
-    "17.png",
-    "18.png",
-    "19.png",
-    "20.png",
-    "21.png",
-    "22.png",
-    "23.png"
-   ],
-   "group": "animaciones"
-  },
-  "jump": {
-   "title": "Salto · prueba",
-   "dir": "nueva/jump",
-   "count": 20,
-   "fps": 10,
-   "canvas": [
-    200,
-    300
-   ],
-   "note": "Documento de prueba, no es una animacion del personaje: la hoja de 20 poses era un salto hacia adelante y no se usa como salto en el juego. Se conserva por si hace falta.",
-   "frames": [
-    "00.png",
-    "01.png",
-    "02.png",
-    "03.png",
-    "04.png",
-    "05.png",
-    "06.png",
-    "07.png",
-    "08.png",
-    "09.png",
-    "10.png",
-    "11.png",
-    "12.png",
-    "13.png",
-    "14.png",
-    "15.png",
-    "16.png",
-    "17.png",
-    "18.png",
-    "19.png"
-   ],
-   "group": "pruebas"
-  },
-  "walk": {
-   "title": "Walk · propuesta",
-   "dir": "nueva/walk",
-   "count": 4,
-   "fps": 8,
-   "canvas": [
-    200,
-    240
-   ],
-   "note": "Walk en guardia de paso corto cruzado, con la referencia de Cammy y Chun-Li (guide/ref/walk_ref.png). Cuatro poses sueltas, cada una generada con la plantilla promptTemplate y comprobadas con tools/consistency.py: cabeza, alto total, coleta, tinta y ancho de torso a menos del 5 % de la stance. Lienzo 200 x 240, suelo 238, mascara 30 px, eje de cabeza x=128, 15 colores y 0 fuera de paleta.",
-   "frames": [
-    "00.png",
-    "01.png",
-    "02.png",
-    "03.png"
-   ],
-   "group": "propuestas",
-   "status": "propuesta"
-  },
-  "walk_lateral": {
-   "title": "Walk lateral",
-   "dir": "nueva/walk_lateral",
-   "count": 4,
-   "fps": 8,
-   "canvas": [
-    200,
-    240
-   ],
-   "note": "Paso lateral: el cuerpo se desplaza de lado con la guardia mirando a la derecha. La coleta va un frame por detras: se abre al empujar (00), se recoge cuando el cuerpo la alcanza (01), vuelve a abrirse con el otro pie (02) y se asienta (03). Cuatro poses sueltas con promptTemplate, mascara 30 px en las cuatro, suelo 238, eje x=128, paleta a menos de 1,5 puntos de la stance.",
-   "frames": [
-    "00.png",
-    "01.png",
-    "02.png",
-    "03.png"
-   ],
-   "group": "propuestas"
-  },
-  "hoja_idle": {
-   "title": "Hoja · idle",
-   "dir": "nueva/hoja",
-   "count": 6,
-   "fps": 8,
-   "canvas": [
-    200,
-    240
-   ],
-   "note": "Fila 1 de la hoja completa: seis poses de guardia. El atusado y los saltitos no salieron, son guardia respirando.",
-   "frames": [
-    "00.png",
-    "01.png",
-    "02.png",
-    "03.png",
-    "04.png",
-    "05.png"
-   ],
-   "group": "hoja"
-  },
-  "hoja_walk": {
-   "title": "Hoja · walk",
-   "dir": "nueva/hoja",
-   "count": 6,
-   "fps": 8,
-   "canvas": [
-    200,
-    240
-   ],
-   "note": "Fila 2: seis pasos en guardia, paso corto cruzado, la coleta se mueve.",
-   "frames": [
-    "06.png",
-    "07.png",
-    "08.png",
-    "09.png",
-    "10.png",
-    "11.png"
-   ],
-   "group": "hoja"
-  },
-  "hoja_lateral": {
-   "title": "Hoja · lateral",
-   "dir": "nueva/hoja",
-   "count": 6,
-   "fps": 8,
-   "canvas": [
-    200,
-    240
-   ],
-   "note": "Fila 3: seis poses de paso lateral, muy parecidas entre si.",
-   "frames": [
-    "12.png",
-    "13.png",
-    "14.png",
-    "15.png",
-    "16.png",
-    "17.png"
-   ],
-   "group": "hoja"
-  },
-  "hoja_run": {
-   "title": "Hoja · run",
-   "dir": "nueva/hoja",
-   "count": 4,
-   "fps": 10,
-   "canvas": [
-    200,
-    240
-   ],
-   "note": "Fila 4, primeras cuatro: carrera con zancada larga y la coleta tendida.",
-   "frames": [
-    "18.png",
-    "19.png",
-    "20.png",
-    "21.png"
-   ],
-   "group": "hoja"
-  },
-  "hoja_dash": {
-   "title": "Hoja · dash",
-   "dir": "nueva/hoja",
-   "count": 2,
-   "fps": 10,
-   "canvas": [
-    200,
-    240
-   ],
-   "note": "Fila 4, ultimas dos: cuerpo inclinado hacia delante, sirve de dash.",
-   "frames": [
-    "22.png",
-    "23.png"
-   ],
-   "group": "hoja"
-  },
-  "hoja_jump": {
-   "title": "Hoja · saltos",
-   "dir": "nueva/hoja",
-   "count": 6,
-   "fps": 8,
-   "canvas": [
-    200,
-    240
-   ],
-   "note": "Fila 5: tres de salto en el sitio, una voltereta y dos poses inclinadas. La voltereta es un solo frame, no un ciclo.",
-   "frames": [
-    "24.png",
-    "25.png",
-    "26.png",
-    "27.png",
-    "28.png",
-    "29.png"
-   ],
-   "group": "hoja"
-  },
-  "walk_clon": {
-   "title": "Walk clonado de Cammy",
-   "dir": "nueva/walk_clon",
-   "count": 6,
-   "fps": 9,
-   "canvas": [
-    200,
-    240
-   ],
-   "note": "Seis poses clonadas una a una de la fila Walk de Cammy (ref/cammy_walk_ref.png) y repintadas como Voltia. Mascara 29-30 px, suelo 238, eje x=128, paleta a menos de 2,8 puntos de la stance y ninguna pose repetida (IoU maximo 0,51). La coleta cambia frame a frame.",
-   "frames": [
-    "00.png",
-    "01.png",
-    "02.png",
-    "03.png",
-    "04.png",
-    "05.png"
-   ],
-   "group": "propuestas"
-  }
- },
- "promptTemplate": "Copy this sprite EXACTLY. Same character, same colours, same 16 flat inks, same thick dark outline, same torso, head, arms, guard, mask, visor, mouth, belt, bolt, gloves and ponytail.\n\nSIZE IS LOCKED. The new drawing must be the same size as the reference and stand in the same place: the top of the ponytail at the same height, the chin at the same height, the belt at the same height, the soles on the same ground line, the left edge of the ponytail at the same distance from the left, and the SAME width across the shoulders and the chest. Keep the ponytail FULL LENGTH and FULL THICKNESS: its tip level with the middle of the thigh. Do not slim the body, do not narrow the hips, do not shorten the ponytail, do not make the figure smaller or taller. Everything except {WHAT MOVES} stays pixel for pixel as it is.\n\nCHANGE ONLY {WHAT MOVES}: {POSE}.\n\nOne single sprite, side view facing right, alone on flat bright green with plenty of green all around, no second figure, no floor, no shadow, no text, no border, no dithering, no gradients, no anti-aliasing.",
- "goldenRules": {
-  "ponytail": "REGLA DE ORO: la coleta se mueve. Es parte de la animacion, no un adorno fijo. Andando hacia adelante se separa de la espalda y se abre hacia atras; andando hacia atras se pega al cuerpo y se comprime; al saltar sube retrasada al ascender y flota al caer, y cae despues del aterrizaje. Va uno o dos frames por detras del cuerpo. Nunca la misma silueta de coleta en todos los frames.",
-  "ponytailDetail": "La coleta conserva su dibujo: arco grande, cuatro o cinco lineas de mechon marcadas con el tono de sombra y punta definida. Si sale como una mancha lisa, se repite."
- },
- "sheetWorkflow": {
-  "cap": "El generador devuelve siempre ~1,05 Mpx, pida lo que pida. Con sprite de 200 px eso da para 30 poses por imagen (~1 px generado por px de sprite) o una sola pose a 4,7-5,9 px por px.",
-  "prompt": "Imagen 1 = ref/cammy_gba_sheet.png (maquetacion). Imagen 2 = stance aprobada (personaje). 6 columnas x 5 filas, mismo tamano, mirando a la derecha, verde plano, sin texto.",
-  "cut": "build_sheet.py <hoja> <salida> 200 240 238 6 5 30 --per-cell. Escala por celda con mediana y limite +-8 %.",
-  "check": "27 de 30 cabezas a 30 px exactos; el resto solo donde la mascara no se puede medir (figura girada).",
-  "limit": "El modelo no compone ciclos: la fila de saltos trae guardias y una voltereta suelta. Los frames en el aire se quedan pegados al suelo porque el recorte alinea por los pies."
- },
- "cloneWorkflow": {
-  "what": "Clonar las poses de la hoja de Cammy: el modelo copia una a una las poses de la referencia y solo cambia el personaje. Es lo unico que ha dado variedad real (IoU maximo 0,51-0,65 entre poses, frente a 0,85+ de las hojas inventadas).",
-  "ref": "ref/cammy_walk_ref.png (fila Walk de Cammy ampliada x6) y ref/cammy_poses_ref.png (Idle + Walk).",
-  "prompt": "Tres bloques obligatorios: 1) CLONE THE POSES (misma fila, mismo orden, ninguna repetida); 2) SIZE IS LOCKED (los cinco anclajes + ancho de hombros, como en promptTemplate); 3) PALETTE con los 16 hex escritos. Sin el bloque de paleta el traje sale claro: desvio de 10,9 puntos; con el, 2,8.",
-  "cut": "build_sheet.py <img> <salida> 200 240 238 6 1 30 --per-cell",
-  "result": "Walk clonado de 6 frames en nueva/walk_clon: mascara 29-30, tinta a menos del 10 %, paleta a menos de 2,8 puntos y seis poses distintas."
- }
 }
