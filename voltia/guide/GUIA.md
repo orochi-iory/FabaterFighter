@@ -383,6 +383,35 @@ a 21-29 solo donde la máscara no se puede medir (la voltereta girada).
 - La coleta se mueve entre frames (regla de oro), así que el alto total y el
   área de pelo cambian a propósito: `consistency.py` no los bloquea.
 
+## Clonar las poses de la referencia (lo que sí da variedad)
+
+El generador inventa poses repetidas cuando se le pide «una animación». Lo que
+funciona es **darle las poses ya dibujadas y pedirle que las clone** cambiando
+solo el personaje: Cammy presta la animación, Voltia pone el diseño.
+
+Referencias recortadas de la hoja de GBA:
+
+- `ref/cammy_walk_ref.png` — fila Walk, seis poses, ampliada ×6.
+- `ref/cammy_poses_ref.png` — filas Idle y Walk para conjuntos mayores.
+
+El prompt lleva **tres bloques obligatorios**, en este orden:
+
+1. **CLONE THE POSES** — misma fila, mismo orden, ninguna repetida, ninguna
+   fundida. Cada pose conserva piernas, pies, brazos y manos.
+2. **SIZE IS LOCKED** — los cinco anclajes de la plantilla (arriba de la coleta,
+   barbilla, cinturón, suelas, borde izquierdo) más el ancho de hombros.
+3. **PALETTE** — los 16 colores escritos en hexadecimal. Sin este bloque el
+   traje sale claro: medido, 10,9 puntos de desvío en el pelo y 8,3 en el traje
+   claro. Con el bloque, el máximo baja a 2,8.
+
+Resultado del walk clonado (`nueva/walk_clon`, 6 frames): máscara 29-30 px,
+tinta a menos del 10 %, paleta a menos de 2,8 puntos y **ninguna pose repetida**
+(IoU máximo 0,51; las hojas inventadas daban 0,85+).
+
+Lo que el modelo sigue sin respetar: la **maquetación** exacta (pedí 5+6 y
+devolvió 3×4) y a veces convierte un paso en un gesto de carrera. Se corta por
+lo que hay, no por lo que se pidió.
+
 ## Comprobar el tamaño antes de mirarlo
 
 ```

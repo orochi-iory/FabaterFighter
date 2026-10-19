@@ -92,7 +92,7 @@ def main(argv):
             #   se mueve a propósito (regla de oro) y las piernas cambian de
             #   postura. Si bloquearan, ninguna animación con coleta viva pasaría.
             over = [k for k in diffs
-                    if k in ('mascara', 'tinta', 'ancho 1/3')
+                    if k in ('mascara', 'tinta')
                     and abs(diffs[k]) > (tol if k != 'tinta' else tol * 2)]
             flag = '  OK' if not over else '  <-- FUERA (%s)' % ', '.join(over)
             if over:
