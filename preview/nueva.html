@@ -36,6 +36,8 @@
   button:hover, select:hover { background:#454163; }
   button.active { background:#0e7c8c; border-color:#96ffeb; color:#fff; }
   .anims { display:grid; grid-template-columns:repeat(3, 1fr); gap:8px; width:100%; }
+  .anims .group { grid-column:1/-1; color:#96ffeb; font-size:12px; letter-spacing:1px;
+    text-transform:uppercase; margin-top:4px; }
   .info { color:#9d9ab5; font-size:14px; }
   .info b { color:#ffcb3d; }
   .note { min-height:1.2em; color:#ffcb3d; }
@@ -115,7 +117,7 @@
 (() => {
   // El archivo no se toca y el escenario no lo escala: 200 nativos, 1:1.
   // ?v= para que el navegador no sirva el PNG viejo de esta misma ruta.
-  window.STAGE_FIGHTER = '../voltia/nueva/idle/00.png?v=14';
+  window.STAGE_FIGHTER = '../voltia/nueva/idle/00.png?v=16';
   // Suelo en el centro del rombo dibujado (spec.floorY es 408, el borde trasero).
   window.STAGE_FLOOR_Y = 426;
   window.STAGE_FIGHTER_SCALE = 1;
@@ -200,7 +202,7 @@
     note.textContent = anim.note || '';
     for (const f of anim.frames) {
       const im = new Image();
-      im.src = '../voltia/' + anim.dir + '/' + f + '?v=14';
+      im.src = '../voltia/' + anim.dir + '/' + f + '?v=16';
       await im.decode();
       imgs.push(im);
     }
@@ -208,17 +210,29 @@
     draw();
   }
   try {
-    const guide = await (await fetch('../voltia/guide/style.json?v=14',
+    const guide = await (await fetch('../voltia/guide/style.json?v=16',
       { cache: 'no-store' })).json();
     window.__GUIDE = guide;
     const entries = Object.entries(guide.anims || {});
+    const groups = {};
     entries.forEach(([name, a]) => {
-      const b = document.createElement('button');
-      b.type = 'button';
-      b.dataset.name = name;
-      b.textContent = a.title + ' · ' + a.count + ' frames';
-      b.onclick = () => select(name);
-      tabs.appendChild(b);
+      const g = a.group || 'animaciones';
+      (groups[g] = groups[g] || []).push([name, a]);
+    });
+    Object.entries(groups).forEach(([gname, list]) => {
+      const h = document.createElement('div');
+      h.className = 'group';
+      h.textContent = gname === 'pruebas' ? 'Descartes y pruebas'
+        : gname.charAt(0).toUpperCase() + gname.slice(1);
+      tabs.appendChild(h);
+      list.forEach(([name, a]) => {
+        const b = document.createElement('button');
+        b.type = 'button';
+        b.dataset.name = name;
+        b.textContent = a.title + ' · ' + a.count + ' frames';
+        b.onclick = () => select(name);
+        tabs.appendChild(b);
+      });
     });
 
     const nframes = entries.reduce((n, [, a]) => n + a.count, 0);
@@ -258,7 +272,9 @@
       document.getElementById('play').textContent = '▶ Seguir';
       i = (i + 1) % imgs.length; draw();
     };
-    if (entries.length) select(entries[entries.length - 1][0]);
+    // Al abrir, la animación del grupo de animaciones (no las pruebas).
+    const first = entries.find(([, a]) => (a.group || '') !== 'pruebas') || entries[0];
+    if (first) select(first[0]);
   } catch (err) {
     warn.textContent = 'No pude cargar el visor: ' + (err && err.message ? err.message : err);
   }
