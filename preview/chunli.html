@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Chun-Li · animaciones separadas</title>
+<style>
+  :root { --bg:#101a22; --panel:#17242e; --line:#2c4152; --gold:#ffcb3d; --cyan:#8fd8ff; }
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--bg); color:#eee; font-family:system-ui,sans-serif; }
+  nav.models { position:sticky; top:0; z-index:9; display:flex; gap:8px; justify-content:center;
+    padding:10px; background:#0a1219ee; border-bottom:2px solid var(--line); flex-wrap:wrap; }
+  nav.models a { text-decoration:none; padding:9px 16px; border-radius:10px; font-weight:700;
+    letter-spacing:.5px; font-size:14px; border:2px solid var(--line); color:#c9d8e4; }
+  nav.models a:hover { border-color:var(--cyan); color:var(--cyan); }
+  nav.models a.on { background:#1b7fa8; border-color:#1b7fa8; color:#fff; }
+  header { padding:26px 18px 6px; max-width:1080px; margin:0 auto; }
+  header h1 { margin:0; color:#8fd8ff; letter-spacing:2px; }
+  header p { color:#a9bcc9; line-height:1.55; max-width:880px; }
+  header p b { color:var(--gold); }
+  .stats { display:flex; gap:12px; flex-wrap:wrap; margin:14px 0 0; }
+  .stat { background:var(--panel); border:2px solid var(--line); border-radius:12px; padding:10px 16px; }
+  .stat b { display:block; font-size:23px; color:var(--cyan); }
+  .stat span { font-size:12px; color:#8ba1b1; }
+  main { max-width:1080px; margin:0 auto; padding:12px 18px 50px; }
+  table { border-collapse:collapse; width:100%; font-size:13px; background:var(--panel); }
+  th, td { border-bottom:1px solid var(--line); padding:7px 9px; text-align:left; vertical-align:middle; }
+  th { background:#20323f; color:var(--cyan); position:sticky; top:52px; }
+  td.b { color:var(--gold); font-weight:700; }
+  td.n { font-weight:600; }
+  td.mono { font-variant-numeric:tabular-nums; white-space:nowrap; }
+  td.note { color:#8ba1b1; max-width:250px; }
+  .dim { color:#6d8496; }
+  img.mini { image-rendering:pixelated; height:64px; width:auto; display:block; background:#22333f; border-radius:6px; }
+  .box { background:var(--panel); border:2px solid var(--line); border-radius:14px; padding:16px 18px; margin:20px 0; }
+  .box h2 { margin:0 0 8px; font-size:16px; letter-spacing:1px; color:var(--gold); }
+  .box p, .box li { color:#b9cad6; line-height:1.6; font-size:14px; }
+  .box code { color:var(--cyan); }
+  table.fd { font-size:13px; }
+</style>
+</head>
+<body>
+<nav class="models">
+  <a href="index.html">① Modelo original</a>
+  <a href="nuevo.html">② Modelo nuevo</a>
+  <a href="chunli.html" class="on">③ Chun-Li</a>
+  <a href="fight.html">⚔ Pelea</a>
+</nav>
+
+<header>
+  <h1>Chun-Li · animaciones separadas</h1>
+  <p>Hoja de 700×2443 con fondo liso. Cada fila es una animación y los frames van
+     de izquierda a derecha, así que aquí sí se puede separar limpio: <b>23 filas,
+     200 frames</b>. Fuera del GIF queda el retrato de la primera fila, que es
+     un dibujo de presentación y no un frame.</p>
+  <p>Los nombres son mi lectura de los frames; la columna de confianza dice cuánto
+     se sostiene. Los <b>frames activos</b> no son una suposición: se localizan
+     midiendo el <b>alcance</b> (cuánto se separa la tinta del centro de los pies).
+     Un golpe existe mientras el brazo o la pierna están extendidos.</p>
+  <div class="stats">
+    <div class="stat"><b>23</b><span>animaciones</span></div>
+    <div class="stat"><b>200</b><span>frames</span></div>
+    <div class="stat"><b>11</b><span>de ataque</span></div>
+    <div class="stat"><b>12</b><span>de movimiento o reacción</span></div>
+  </div>
+</header>
+
+<main>
+  <table>
+    <tr><th>#</th><th>GIF</th><th>Animación</th><th>Frames</th><th>Tamaño</th>
+        <th>Activos</th><th>Confianza</th><th>Por qué</th></tr>
+      <tr>
+        <td class="b">00</td>
+        <td><img class="mini" src="../voltia/nuevo/chunli/gif/banda_00.gif" alt="banda 0"></td>
+        <td class="n">Retrato + guardia (idle)</td>
+        <td class="mono">17</td>
+        <td class="mono">57×26<br><span class="dim">hasta 143×64</span></td>
+        <td class="mono">—</td>
+        <td style="color:#ffcb3d;font-weight:700">media</td>
+        <td class="note">el frame 1 es un retrato, no un frame de animacion</td>
+      </tr>
+      <tr>
+        <td class="b">01</td>
+        <td><img class="mini" src="../voltia/nuevo/chunli/gif/banda_01.gif" alt="banda 1"></td>
+        <td class="n">Paso lateral / desplazamiento</td>
+        <td class="mono">7</td>
+        <td class="mono">55×31<br><span class="dim">hasta 63×46</span></td>
+        <td class="mono">#2</td>
+        <td style="color:#ff9a9a;font-weight:700">baja</td>
+        <td class="note">rodilla arriba y cuerpo girando; acaba en guardia</td>
+      </tr>
+      <tr>
+        <td class="b">02</td>
+        <td><img class="mini" src="../voltia/nuevo/chunli/gif/banda_02.gif" alt="banda 2"></td>
+        <td class="n">Caminar</td>
+        <td class="mono">12</td>
+        <td class="mono">56×35<br><span class="dim">hasta 58×41</span></td>
+        <td class="mono">—</td>
+        <td style="color:#ffcb3d;font-weight:700">media</td>
+        <td class="note">ciclo suave, piernas alternando, misma linea de pies</td>
+      </tr>
+      <tr>
+        <td class="b">03</td>
+        <td><img class="mini" src="../voltia/nuevo/chunli/gif/banda_03.gif" alt="banda 3"></td>
+        <td class="n">Caminar (ciclo espejo)</td>
+        <td class="mono">12</td>
+        <td class="mono">59×34<br><span class="dim">hasta 61×41</span></td>
+        <td class="mono">—</td>
+        <td style="color:#ff9a9a;font-weight:700">baja</td>
+        <td class="note">mismo patron que la banda 2</td>
+      </tr>
+      <tr>
+        <td class="b">04</td>
+        <td><img class="mini" src="../voltia/nuevo/chunli/gif/banda_04.gif" alt="banda 4"></td>
+        <td class="n">Patada alta</td>
+        <td class="mono">7</td>
+        <td class="mono">57×33<br><span class="dim">hasta 63×58</span></td>
+        <td class="mono">#3</td>
+        <td style="color:#8dffb4;font-weight:700">alta</td>
+        <td class="note">la pierna sube por encima de la cadera y vuelve</td>
+      </tr>
+      <tr>
+        <td class="b">05</td>
+        <td><img class="mini" src="../voltia/nuevo/chunli/gif/banda_05.gif" alt="banda 5"></td>
+        <td class="n">Punetazo</td>
+        <td class="mono">6</td>
+        <td class="mono">53×46<br><span class="dim">hasta 57×68</span></td>
+        <td class="mono">#3</td>
+        <td style="color:#8dffb4;font-weight:700">alta</td>
+        <td class="note">el puno sale al frente y se recoge</td>
+      </tr>
+      <tr>
+        <td class="b">06</td>
+        <td><img class="mini" src="../voltia/nuevo/chunli/gif/banda_06.gif" alt="banda 6"></td>
+        <td class="n">Punetazo largo</td>
+        <td class="mono">6</td>
+        <td class="mono">57×46<br><span class="dim">hasta 65×63</span></td>
+        <td class="mono">#2, #4</td>
+        <td style="color:#8dffb4;font-weight:700">alta</td>
+        <td class="note">brazo totalmente extendido, dos salidas</td>
+      </tr>
+      <tr>
+        <td class="b">07</td>
+        <td><img class="mini" src="../voltia/nuevo/chunli/gif/banda_07.gif" alt="banda 7"></td>
+        <td class="n">Patada media</td>
+        <td class="mono">5</td>
+        <td class="mono">61×32<br><span class="dim">hasta 64×58</span></td>
+        <td class="mono">#3</td>
+        <td style="color:#8dffb4;font-weight:700">alta</td>
+        <td class="note">rodilla, extension y recogida</td>
+      </tr>
+      <tr>
+        <td class="b">08</td>
+        <td><img class="mini" src="../voltia/nuevo/chunli/gif/banda_08.gif" alt="banda 8"></td>
+        <td class="n">Patada giratoria</td>
+        <td class="mono">7</td>
+        <td class="mono">45×29<br><span class="dim">hasta 76×46</span></td>
+        <td class="mono">#5, #7</td>
+        <td style="color:#8dffb4;font-weight:700">alta</td>
+        <td class="note">el cuerpo gira y la pierna barre</td>
+      </tr>
+      <tr>
+        <td class="b">09</td>
+        <td><img class="mini" src="../voltia/nuevo/chunli/gif/banda_09.gif" alt="banda 9"></td>
+        <td class="n">Bloqueo</td>
+        <td class="mono">3</td>
+        <td class="mono">54×54<br><span class="dim">hasta 56×58</span></td>
+        <td class="mono">—</td>
+        <td style="color:#ffcb3d;font-weight:700">media</td>
+        <td class="note">3 frames, brazo cruzado delante</td>
+      </tr>
+      <tr>
+        <td class="b">10</td>
+        <td><img class="mini" src="../voltia/nuevo/chunli/gif/banda_10.gif" alt="banda 10"></td>
+        <td class="n">Patada con energia</td>
+        <td class="mono">9</td>
+        <td class="mono">61×32<br><span class="dim">hasta 72×59</span></td>
+        <td class="mono">#3, #8</td>
+        <td style="color:#ffcb3d;font-weight:700">media</td>
+        <td class="note">efecto amarillo/azul en el pie</td>
+      </tr>
+      <tr>
+        <td class="b">11</td>
+        <td><img class="mini" src="../voltia/nuevo/chunli/gif/banda_11.gif" alt="banda 11"></td>
+        <td class="n">Agacharse y levantarse</td>
+        <td class="mono">10</td>
+        <td class="mono">36×20<br><span class="dim">hasta 70×46</span></td>
+        <td class="mono">—</td>
+        <td style="color:#ffcb3d;font-weight:700">media</td>
+        <td class="note">altura baja a la mitad</td>
+      </tr>
+      <tr>
+        <td class="b">12</td>
+        <td><img class="mini" src="../voltia/nuevo/chunli/gif/banda_12.gif" alt="banda 12"></td>
+        <td class="n">Salto mortal</td>
+        <td class="mono">11</td>
+        <td class="mono">32×20<br><span class="dim">hasta 70×57</span></td>
+        <td class="mono">—</td>
+        <td style="color:#8dffb4;font-weight:700">alta</td>
+        <td class="note">el cuerpo se pone del reves</td>
+      </tr>
+      <tr>
+        <td class="b">13</td>
+        <td><img class="mini" src="../voltia/nuevo/chunli/gif/banda_13.gif" alt="banda 13"></td>
+        <td class="n">Salto y caida</td>
+        <td class="mono">13</td>
+        <td class="mono">32×20<br><span class="dim">hasta 70×57</span></td>
+        <td class="mono">—</td>
+        <td style="color:#ffcb3d;font-weight:700">media</td>
+        <td class="note">vuelta en el aire y aterrizaje</td>
+      </tr>
+      <tr>
+        <td class="b">14</td>
+        <td><img class="mini" src="../voltia/nuevo/chunli/gif/banda_14.gif" alt="banda 14"></td>
+        <td class="n">Salto en cuclillas</td>
+        <td class="mono">11</td>
+        <td class="mono">38×20<br><span class="dim">hasta 70×46</span></td>
+        <td class="mono">—</td>
+        <td style="color:#ffcb3d;font-weight:700">media</td>
+        <td class="note">todo el ciclo por debajo de la altura de pie</td>
+      </tr>
+      <tr>
+        <td class="b">15</td>
+        <td><img class="mini" src="../voltia/nuevo/chunli/gif/banda_15.gif" alt="banda 15"></td>
+        <td class="n">Salto vertical</td>
+        <td class="mono">10</td>
+        <td class="mono">53×20<br><span class="dim">hasta 70×46</span></td>
+        <td class="mono">—</td>
+        <td style="color:#8dffb4;font-weight:700">alta</td>
+        <td class="note">los pies se separan del suelo y vuelven</td>
+      </tr>
+      <tr>
+        <td class="b">16</td>
+        <td><img class="mini" src="../voltia/nuevo/chunli/gif/banda_16.gif" alt="banda 16"></td>
+        <td class="n">Agachada y golpe bajo</td>
+        <td class="mono">12</td>
+        <td class="mono">46×46<br><span class="dim">hasta 57×78</span></td>
+        <td class="mono">—</td>
+        <td style="color:#ffcb3d;font-weight:700">media</td>
+        <td class="note">incluye un puno extendido</td>
+      </tr>
+      <tr>
+        <td class="b">17</td>
+        <td><img class="mini" src="../voltia/nuevo/chunli/gif/banda_17.gif" alt="banda 17"></td>
+        <td class="n">Patada desde agachada</td>
+        <td class="mono">6</td>
+        <td class="mono">43×37<br><span class="dim">hasta 47×68</span></td>
+        <td class="mono">#3</td>
+        <td style="color:#ffcb3d;font-weight:700">media</td>
+        <td class="note">sale bajo y la pierna se extiende</td>
+      </tr>
+      <tr>
+        <td class="b">18</td>
+        <td><img class="mini" src="../voltia/nuevo/chunli/gif/banda_18.gif" alt="banda 18"></td>
+        <td class="n">Barrido bajo</td>
+        <td class="mono">5</td>
+        <td class="mono">32×34<br><span class="dim">hasta 47×58</span></td>
+        <td class="mono">#2</td>
+        <td style="color:#8dffb4;font-weight:700">alta</td>
+        <td class="note">estela horizontal en el suelo</td>
+      </tr>
+      <tr>
+        <td class="b">19</td>
+        <td><img class="mini" src="../voltia/nuevo/chunli/gif/banda_19.gif" alt="banda 19"></td>
+        <td class="n">Golpe desde agachada</td>
+        <td class="mono">6</td>
+        <td class="mono">45×46<br><span class="dim">hasta 47×59</span></td>
+        <td class="mono">#3</td>
+        <td style="color:#ffcb3d;font-weight:700">media</td>
+        <td class="note">marca de golpe en el frame 3</td>
+      </tr>
+      <tr>
+        <td class="b">20</td>
+        <td><img class="mini" src="../voltia/nuevo/chunli/gif/banda_20.gif" alt="banda 20"></td>
+        <td class="n">Especial: energia azul</td>
+        <td class="mono">8</td>
+        <td class="mono">60×46<br><span class="dim">hasta 74×116</span></td>
+        <td class="mono">#8</td>
+        <td style="color:#8dffb4;font-weight:700">alta</td>
+        <td class="note">el remolino azul crece frame a frame</td>
+      </tr>
+      <tr>
+        <td class="b">21</td>
+        <td><img class="mini" src="../voltia/nuevo/chunli/gif/banda_21.gif" alt="banda 21"></td>
+        <td class="n">Final del especial</td>
+        <td class="mono">6</td>
+        <td class="mono">57×48<br><span class="dim">hasta 69×116</span></td>
+        <td class="mono">—</td>
+        <td style="color:#8dffb4;font-weight:700">alta</td>
+        <td class="note">sigue el remolino y se apaga</td>
+      </tr>
+      <tr>
+        <td class="b">22</td>
+        <td><img class="mini" src="../voltia/nuevo/chunli/gif/banda_22.gif" alt="banda 22"></td>
+        <td class="n">Derribo y levantarse</td>
+        <td class="mono">11</td>
+        <td class="mono">24×34<br><span class="dim">hasta 63×66</span></td>
+        <td class="mono">—</td>
+        <td style="color:#8dffb4;font-weight:700">alta</td>
+        <td class="note">cae de espaldas, queda en el suelo y se levanta</td>
+      </tr>
+  </table>
+
+  <div class="box">
+    <h2>Frame data que sale de la hoja</h2>
+    <p>Con el alcance medido se puede separar el golpe en sus tres tramos:
+       <b>arranque</b> (frames antes de que el miembro esté extendido),
+       <b>activo</b> (frames con el miembro extendido, los que golpean) y
+       <b>recuperación</b> (frames hasta volver a la guardia). A 12 fps.</p>
+    <table class="fd">
+      <tr><th>Animación</th><th>Frames</th><th>Arranque</th><th>Activo</th>
+          <th>Recuperación</th><th>Total</th><th>Extiende</th></tr>
+      <tr><td class="n">Paso lateral / desplazamiento</td><td class="mono">7</td>
+        <td class="mono">1</td><td class="mono">1</td><td class="mono">5</td>
+        <td class="mono">7 f · 583 ms</td>
+        <td class="mono">brazo</td></tr>
+      <tr><td class="n">Patada alta</td><td class="mono">7</td>
+        <td class="mono">2</td><td class="mono">1</td><td class="mono">4</td>
+        <td class="mono">7 f · 583 ms</td>
+        <td class="mono">brazo</td></tr>
+      <tr><td class="n">Punetazo</td><td class="mono">6</td>
+        <td class="mono">2</td><td class="mono">1</td><td class="mono">3</td>
+        <td class="mono">6 f · 500 ms</td>
+        <td class="mono">brazo</td></tr>
+      <tr><td class="n">Punetazo largo</td><td class="mono">6</td>
+        <td class="mono">1</td><td class="mono">2</td><td class="mono">3</td>
+        <td class="mono">6 f · 500 ms</td>
+        <td class="mono">brazo</td></tr>
+      <tr><td class="n">Patada media</td><td class="mono">5</td>
+        <td class="mono">2</td><td class="mono">1</td><td class="mono">2</td>
+        <td class="mono">5 f · 417 ms</td>
+        <td class="mono">brazo</td></tr>
+      <tr><td class="n">Patada giratoria</td><td class="mono">7</td>
+        <td class="mono">4</td><td class="mono">2</td><td class="mono">1</td>
+        <td class="mono">7 f · 583 ms</td>
+        <td class="mono">pierna</td></tr>
+      <tr><td class="n">Patada con energia</td><td class="mono">9</td>
+        <td class="mono">2</td><td class="mono">2</td><td class="mono">5</td>
+        <td class="mono">9 f · 750 ms</td>
+        <td class="mono">brazo</td></tr>
+      <tr><td class="n">Patada desde agachada</td><td class="mono">6</td>
+        <td class="mono">2</td><td class="mono">1</td><td class="mono">3</td>
+        <td class="mono">6 f · 500 ms</td>
+        <td class="mono">brazo</td></tr>
+      <tr><td class="n">Barrido bajo</td><td class="mono">5</td>
+        <td class="mono">1</td><td class="mono">1</td><td class="mono">3</td>
+        <td class="mono">5 f · 417 ms</td>
+        <td class="mono">brazo</td></tr>
+      <tr><td class="n">Golpe desde agachada</td><td class="mono">6</td>
+        <td class="mono">2</td><td class="mono">1</td><td class="mono">3</td>
+        <td class="mono">6 f · 500 ms</td>
+        <td class="mono">brazo</td></tr>
+      <tr><td class="n">Especial: energia azul</td><td class="mono">8</td>
+        <td class="mono">7</td><td class="mono">1</td><td class="mono">0</td>
+        <td class="mono">8 f · 667 ms</td>
+        <td class="mono">brazo</td></tr>
+    </table>
+    <p><b>Aviso</b>: esto es lo que se puede deducir del dibujo. Los frames activos
+       reales los decide el juego, no el sprite; y un golpe puede tener 1 frame
+       activo aunque el miembro se vea extendido en dos. La hoja tampoco dice a
+       qué velocidad va: 12 fps es la velocidad de revisión del GIF, nada más.</p>
+  </div>
+
+  <div class="box">
+    <h2>Cómo está cortado</h2>
+    <ul>
+      <li><b>Fondo</b>: se toma el color de la esquina (144,200,232) y se vuelve
+          transparente con tolerancia 24. Nada de reescalar.</li>
+      <li><b>Filas</b>: franjas de píxeles totalmente fondo marcan el corte. Salen 23.</li>
+      <li><b>Figuras</b>: componentes conexas; un trozo pequeño (sombra, mechón,
+          efecto) se pega a su figura si está a menos de 8 px.</li>
+      <li><b>Falla</b>: si una fila llevara dos animaciones seguidas, saldrían
+          juntas. En esta hoja no he visto ninguna, salvo la fila 0, que empieza
+          con el retrato.</li>
+    </ul>
+    <p>Los frames sueltos están en <code>voltia/nuevo/chunli/banda_NN/</code>, con
+       el fondo ya transparente y a tamaño nativo.</p>
+  </div>
+</main>
+</body>
+</html>

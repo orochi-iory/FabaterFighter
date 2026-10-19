@@ -23,6 +23,7 @@ def main():
     ap.add_argument('--zoom', type=int, default=4)
     ap.add_argument('--bg', default='FFFFFF')
     ap.add_argument('--once', action='store_true')
+    ap.add_argument('--pad', type=int, default=0)
     a = ap.parse_args()
 
     files = sorted(f for f in os.listdir(a.srcdir) if f.endswith('.png'))
@@ -32,17 +33,20 @@ def main():
     ims = [Image.open(os.path.join(a.srcdir, f)).convert('RGBA') for f in files]
     # lienzo comun: el mayor ancho y alto, y cada figura alineada por los PIES
     # en el centro. Si no, el personaje sube y baja entre frames y el GIF baila.
-    CW = max(i.size[0] for i in ims) + 2
+    CW = max(i.size[0] for i in ims) + 2 + 2 * a.pad
     CH = max(i.size[1] for i in ims) + 2
 
     frames = []
     for im in ims:
         w, h = im.size
+        # el lienzo es SIEMPRE CW x CH: si se crea del tamano del frame, cada
+        # figura se recorta contra su propio borde (bug visto con frames de
+        # anchos distintos).
         if a.bg.lower() == 'transparent':
-            canvas = Image.new('RGBA', (w, h), (0, 0, 0, 0))
+            canvas = Image.new('RGBA', (CW, CH), (0, 0, 0, 0))
         else:
             bg = tuple(int(a.bg[i:i + 2], 16) for i in (0, 2, 4)) + (255,)
-            canvas = Image.new('RGBA', (w, h), bg)
+            canvas = Image.new('RGBA', (CW, CH), bg)
         canvas.alpha_composite(im, ((CW - w) // 2, CH - h - 1))
         w, h = CW, CH
         if a.zoom > 1:

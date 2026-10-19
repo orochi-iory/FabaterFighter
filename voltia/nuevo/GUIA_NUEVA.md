@@ -14,12 +14,34 @@
 
 ## Referencias
 
-- `ref/rmika_pose_ref.png` — pose de guardia de R. Mika, 85×112 px, 17 colores.
-  Se usa **solo** para las **botas** (caña alta, vuelta en el borde, panel
-  delantero más claro, banda en el empeine, suela blanca) y la **coleta**
-  (una sola, gruesa, en arco largo que pasa de la cadera).
-- `ref/rmika_sheet.png` — hoja completa de R. Mika (1910×3887, fondo magenta
-  puro). Tiene dos coletas: la pequeña se ignora.
+- `ref/chunli_sheet.png` — hoja de Chun-Li, 700×2443, fondo liso (144,200,232).
+  Es la referencia viva del proyecto y está separada por animaciones en
+  `chunli/` (23 filas, 485 frames). Ver `preview/chunli.html`.
+
+## Separar una hoja por animaciones (`tools/sheet_cut.py`)
+
+1. **Fondo**: color de la esquina → transparente con tolerancia 24. Nunca se
+   reescala nada.
+2. **Filas**: franjas totalmente fondo marcan el corte entre animaciones.
+3. **Figuras**: componentes conexas por tramos. Un trozo pequeño (sombra,
+   mechón, efecto) se pega a su figura si es < 35 % del área y está a < 8 px.
+4. **Frames**: se guardan recortados y en orden izquierda → derecha.
+5. **GIF** con `tools/make_gif.py` a 12 fps, lienzo común alineado por pies.
+
+`tools/anim_data.py` mide cada frame (alto, ancho, base de apoyo, alcance del
+brazo y de la pierna), localiza los **frames activos** de un golpe por alcance y
+genera el GIF.
+
+### Trampas ya pagadas
+
+- **El lienzo del GIF debe ser CW×CH**, no el tamaño del frame. Si se crea del
+  tamaño de cada frame, las figuras se recortan contra su propio borde y parece
+  que el sprite está cortado. Solo se nota cuando los frames tienen anchos
+  distintos.
+- No reutilizar el nombre `d` para una distancia dentro de una función cuyo
+  parámetro se llama `d`: el bucle revienta en la segunda vuelta.
+- Un retrato dentro de una fila de animación hay que sacarlo del GIF
+  (se detecta por altura > 1,8 × la mediana de la fila).
 
 ## Medidas que manda el objetivo
 

@@ -1,0 +1,2356 @@
+[
+ {
+  "banda": 0,
+  "n": 17,
+  "extension": null,
+  "ataque": false,
+  "nombre": "Retrato + guardia (idle)",
+  "confianza": "media",
+  "nota": "el frame 1 es un retrato, no un frame de animacion",
+  "gif": "gif/banda_00.gif",
+  "alto": [
+   57,
+   143
+  ],
+  "ancho": [
+   26,
+   64
+  ],
+  "activos": [],
+  "alcance": [
+   32,
+   23,
+   13,
+   13,
+   23,
+   13,
+   23,
+   16,
+   23,
+   15,
+   16,
+   23,
+   15,
+   23,
+   22,
+   23,
+   23
+  ],
+  "frames": [
+   {
+    "f": "00.png",
+    "w": 64,
+    "h": 143,
+    "arriba": 32,
+    "abajo": 32,
+    "base": 384
+   },
+   {
+    "f": "01.png",
+    "w": 46,
+    "h": 57,
+    "arriba": 14,
+    "abajo": 23,
+    "base": 250
+   },
+   {
+    "f": "02.png",
+    "w": 26,
+    "h": 63,
+    "arriba": 11,
+    "abajo": 13,
+    "base": 110
+   },
+   {
+    "f": "03.png",
+    "w": 26,
+    "h": 63,
+    "arriba": 11,
+    "abajo": 13,
+    "base": 110
+   },
+   {
+    "f": "04.png",
+    "w": 46,
+    "h": 58,
+    "arriba": 13,
+    "abajo": 23,
+    "base": 249
+   },
+   {
+    "f": "05.png",
+    "w": 26,
+    "h": 63,
+    "arriba": 11,
+    "abajo": 13,
+    "base": 110
+   },
+   {
+    "f": "06.png",
+    "w": 46,
+    "h": 57,
+    "arriba": 14,
+    "abajo": 23,
+    "base": 250
+   },
+   {
+    "f": "07.png",
+    "w": 30,
+    "h": 66,
+    "arriba": 9,
+    "abajo": 16,
+    "base": 141
+   },
+   {
+    "f": "08.png",
+    "w": 46,
+    "h": 58,
+    "arriba": 13,
+    "abajo": 23,
+    "base": 249
+   },
+   {
+    "f": "09.png",
+    "w": 30,
+    "h": 66,
+    "arriba": 8,
+    "abajo": 15,
+    "base": 143
+   },
+   {
+    "f": "10.png",
+    "w": 30,
+    "h": 66,
+    "arriba": 9,
+    "abajo": 16,
+    "base": 141
+   },
+   {
+    "f": "11.png",
+    "w": 46,
+    "h": 59,
+    "arriba": 14,
+    "abajo": 23,
+    "base": 252
+   },
+   {
+    "f": "12.png",
+    "w": 30,
+    "h": 66,
+    "arriba": 8,
+    "abajo": 15,
+    "base": 143
+   },
+   {
+    "f": "13.png",
+    "w": 46,
+    "h": 58,
+    "arriba": 13,
+    "abajo": 23,
+    "base": 249
+   },
+   {
+    "f": "14.png",
+    "w": 44,
+    "h": 62,
+    "arriba": 10,
+    "abajo": 22,
+    "base": 235
+   },
+   {
+    "f": "15.png",
+    "w": 46,
+    "h": 60,
+    "arriba": 12,
+    "abajo": 23,
+    "base": 250
+   },
+   {
+    "f": "16.png",
+    "w": 46,
+    "h": 57,
+    "arriba": 14,
+    "abajo": 23,
+    "base": 250
+   }
+  ]
+ },
+ {
+  "banda": 1,
+  "n": 7,
+  "extension": "brazo",
+  "ataque": true,
+  "nombre": "Paso lateral / desplazamiento",
+  "confianza": "baja",
+  "nota": "rodilla arriba y cuerpo girando; acaba en guardia",
+  "gif": "gif/banda_01.gif",
+  "alto": [
+   55,
+   63
+  ],
+  "ancho": [
+   31,
+   46
+  ],
+  "activos": [
+   "01.png"
+  ],
+  "alcance": [
+   23,
+   25,
+   19,
+   22,
+   23,
+   23,
+   23
+  ],
+  "frames": [
+   {
+    "f": "00.png",
+    "w": 46,
+    "h": 63,
+    "arriba": 11,
+    "abajo": 23,
+    "base": 252
+   },
+   {
+    "f": "01.png",
+    "w": 31,
+    "h": 55,
+    "arriba": 25,
+    "abajo": 18,
+    "base": 25
+   },
+   {
+    "f": "02.png",
+    "w": 37,
+    "h": 60,
+    "arriba": 19,
+    "abajo": 17,
+    "base": 134
+   },
+   {
+    "f": "03.png",
+    "w": 38,
+    "h": 60,
+    "arriba": 22,
+    "abajo": 15,
+    "base": 140
+   },
+   {
+    "f": "04.png",
+    "w": 46,
+    "h": 63,
+    "arriba": 11,
+    "abajo": 23,
+    "base": 252
+   },
+   {
+    "f": "05.png",
+    "w": 46,
+    "h": 62,
+    "arriba": 10,
+    "abajo": 23,
+    "base": 250
+   },
+   {
+    "f": "06.png",
+    "w": 46,
+    "h": 57,
+    "arriba": 14,
+    "abajo": 23,
+    "base": 250
+   }
+  ]
+ },
+ {
+  "banda": 2,
+  "n": 12,
+  "extension": null,
+  "ataque": false,
+  "nombre": "Caminar",
+  "confianza": "media",
+  "nota": "ciclo suave, piernas alternando, misma linea de pies",
+  "gif": "gif/banda_02.gif",
+  "alto": [
+   56,
+   58
+  ],
+  "ancho": [
+   35,
+   41
+  ],
+  "activos": [],
+  "alcance": [
+   21,
+   17,
+   18,
+   20,
+   21,
+   21,
+   21,
+   21,
+   21,
+   20,
+   18,
+   17
+  ],
+  "frames": [
+   {
+    "f": "00.png",
+    "w": 41,
+    "h": 56,
+    "arriba": 16,
+    "abajo": 21,
+    "base": 189
+   },
+   {
+    "f": "01.png",
+    "w": 35,
+    "h": 57,
+    "arriba": 17,
+    "abajo": 17,
+    "base": 180
+   },
+   {
+    "f": "02.png",
+    "w": 36,
+    "h": 58,
+    "arriba": 18,
+    "abajo": 17,
+    "base": 169
+   },
+   {
+    "f": "03.png",
+    "w": 38,
+    "h": 58,
+    "arriba": 20,
+    "abajo": 17,
+    "base": 156
+   },
+   {
+    "f": "04.png",
+    "w": 38,
+    "h": 58,
+    "arriba": 21,
+    "abajo": 17,
+    "base": 158
+   },
+   {
+    "f": "05.png",
+    "w": 39,
+    "h": 57,
+    "arriba": 21,
+    "abajo": 17,
+    "base": 161
+   },
+   {
+    "f": "06.png",
+    "w": 39,
+    "h": 56,
+    "arriba": 21,
+    "abajo": 17,
+    "base": 177
+   },
+   {
+    "f": "07.png",
+    "w": 39,
+    "h": 57,
+    "arriba": 21,
+    "abajo": 17,
+    "base": 161
+   },
+   {
+    "f": "08.png",
+    "w": 38,
+    "h": 58,
+    "arriba": 21,
+    "abajo": 17,
+    "base": 158
+   },
+   {
+    "f": "09.png",
+    "w": 38,
+    "h": 58,
+    "arriba": 20,
+    "abajo": 17,
+    "base": 156
+   },
+   {
+    "f": "10.png",
+    "w": 36,
+    "h": 58,
+    "arriba": 18,
+    "abajo": 17,
+    "base": 169
+   },
+   {
+    "f": "11.png",
+    "w": 35,
+    "h": 57,
+    "arriba": 17,
+    "abajo": 17,
+    "base": 180
+   }
+  ]
+ },
+ {
+  "banda": 3,
+  "n": 12,
+  "extension": null,
+  "ataque": false,
+  "nombre": "Caminar (ciclo espejo)",
+  "confianza": "baja",
+  "nota": "mismo patron que la banda 2",
+  "gif": "gif/banda_03.gif",
+  "alto": [
+   59,
+   61
+  ],
+  "ancho": [
+   34,
+   41
+  ],
+  "activos": [],
+  "alcance": [
+   20,
+   17,
+   17,
+   17,
+   17,
+   17,
+   17,
+   17,
+   17,
+   17,
+   17,
+   17
+  ],
+  "frames": [
+   {
+    "f": "00.png",
+    "w": 41,
+    "h": 60,
+    "arriba": 14,
+    "abajo": 20,
+    "base": 184
+   },
+   {
+    "f": "01.png",
+    "w": 34,
+    "h": 60,
+    "arriba": 14,
+    "abajo": 17,
+    "base": 179
+   },
+   {
+    "f": "02.png",
+    "w": 34,
+    "h": 61,
+    "arriba": 15,
+    "abajo": 17,
+    "base": 168
+   },
+   {
+    "f": "03.png",
+    "w": 34,
+    "h": 61,
+    "arriba": 16,
+    "abajo": 17,
+    "base": 156
+   },
+   {
+    "f": "04.png",
+    "w": 35,
+    "h": 61,
+    "arriba": 17,
+    "abajo": 17,
+    "base": 154
+   },
+   {
+    "f": "05.png",
+    "w": 35,
+    "h": 60,
+    "arriba": 17,
+    "abajo": 17,
+    "base": 162
+   },
+   {
+    "f": "06.png",
+    "w": 35,
+    "h": 59,
+    "arriba": 17,
+    "abajo": 17,
+    "base": 177
+   },
+   {
+    "f": "07.png",
+    "w": 35,
+    "h": 60,
+    "arriba": 17,
+    "abajo": 17,
+    "base": 162
+   },
+   {
+    "f": "08.png",
+    "w": 35,
+    "h": 61,
+    "arriba": 17,
+    "abajo": 17,
+    "base": 154
+   },
+   {
+    "f": "09.png",
+    "w": 34,
+    "h": 61,
+    "arriba": 16,
+    "abajo": 17,
+    "base": 156
+   },
+   {
+    "f": "10.png",
+    "w": 34,
+    "h": 61,
+    "arriba": 15,
+    "abajo": 17,
+    "base": 168
+   },
+   {
+    "f": "11.png",
+    "w": 34,
+    "h": 60,
+    "arriba": 14,
+    "abajo": 17,
+    "base": 179
+   }
+  ]
+ },
+ {
+  "banda": 4,
+  "n": 7,
+  "extension": "brazo",
+  "ataque": true,
+  "nombre": "Patada alta",
+  "confianza": "alta",
+  "nota": "la pierna sube por encima de la cadera y vuelve",
+  "gif": "gif/banda_04.gif",
+  "alto": [
+   57,
+   63
+  ],
+  "ancho": [
+   33,
+   58
+  ],
+  "activos": [
+   "02.png"
+  ],
+  "alcance": [
+   19,
+   18,
+   40,
+   34,
+   27,
+   18,
+   23
+  ],
+  "frames": [
+   {
+    "f": "00.png",
+    "w": 38,
+    "h": 59,
+    "arriba": 14,
+    "abajo": 19,
+    "base": 193
+   },
+   {
+    "f": "01.png",
+    "w": 33,
+    "h": 61,
+    "arriba": 18,
+    "abajo": 15,
+    "base": 136
+   },
+   {
+    "f": "02.png",
+    "w": 58,
+    "h": 61,
+    "arriba": 40,
+    "abajo": 17,
+    "base": 155
+   },
+   {
+    "f": "03.png",
+    "w": 55,
+    "h": 62,
+    "arriba": 34,
+    "abajo": 17,
+    "base": 155
+   },
+   {
+    "f": "04.png",
+    "w": 45,
+    "h": 62,
+    "arriba": 27,
+    "abajo": 17,
+    "base": 154
+   },
+   {
+    "f": "05.png",
+    "w": 34,
+    "h": 63,
+    "arriba": 11,
+    "abajo": 18,
+    "base": 171
+   },
+   {
+    "f": "06.png",
+    "w": 46,
+    "h": 57,
+    "arriba": 14,
+    "abajo": 23,
+    "base": 250
+   }
+  ]
+ },
+ {
+  "banda": 5,
+  "n": 6,
+  "extension": "brazo",
+  "ataque": true,
+  "nombre": "Punetazo",
+  "confianza": "alta",
+  "nota": "el puno sale al frente y se recoge",
+  "gif": "gif/banda_05.gif",
+  "alto": [
+   53,
+   57
+  ],
+  "ancho": [
+   46,
+   68
+  ],
+  "activos": [
+   "02.png"
+  ],
+  "alcance": [
+   29,
+   31,
+   36,
+   31,
+   29,
+   23
+  ],
+  "frames": [
+   {
+    "f": "00.png",
+    "w": 58,
+    "h": 54,
+    "arriba": 17,
+    "abajo": 29,
+    "base": 312
+   },
+   {
+    "f": "01.png",
+    "w": 62,
+    "h": 53,
+    "arriba": 18,
+    "abajo": 31,
+    "base": 344
+   },
+   {
+    "f": "02.png",
+    "w": 68,
+    "h": 53,
+    "arriba": 36,
+    "abajo": 31,
+    "base": 342
+   },
+   {
+    "f": "03.png",
+    "w": 62,
+    "h": 53,
+    "arriba": 18,
+    "abajo": 31,
+    "base": 344
+   },
+   {
+    "f": "04.png",
+    "w": 58,
+    "h": 54,
+    "arriba": 17,
+    "abajo": 29,
+    "base": 312
+   },
+   {
+    "f": "05.png",
+    "w": 46,
+    "h": 57,
+    "arriba": 14,
+    "abajo": 23,
+    "base": 250
+   }
+  ]
+ },
+ {
+  "banda": 6,
+  "n": 6,
+  "extension": "brazo",
+  "ataque": true,
+  "nombre": "Punetazo largo",
+  "confianza": "alta",
+  "nota": "brazo totalmente extendido, dos salidas",
+  "gif": "gif/banda_06.gif",
+  "alto": [
+   57,
+   65
+  ],
+  "ancho": [
+   46,
+   63
+  ],
+  "activos": [
+   "01.png",
+   "03.png"
+  ],
+  "alcance": [
+   25,
+   36,
+   27,
+   36,
+   25,
+   23
+  ],
+  "frames": [
+   {
+    "f": "00.png",
+    "w": 50,
+    "h": 59,
+    "arriba": 14,
+    "abajo": 25,
+    "base": 274
+   },
+   {
+    "f": "01.png",
+    "w": 63,
+    "h": 60,
+    "arriba": 36,
+    "abajo": 27,
+    "base": 297
+   },
+   {
+    "f": "02.png",
+    "w": 54,
+    "h": 65,
+    "arriba": 18,
+    "abajo": 27,
+    "base": 299
+   },
+   {
+    "f": "03.png",
+    "w": 63,
+    "h": 60,
+    "arriba": 36,
+    "abajo": 27,
+    "base": 297
+   },
+   {
+    "f": "04.png",
+    "w": 50,
+    "h": 59,
+    "arriba": 14,
+    "abajo": 25,
+    "base": 274
+   },
+   {
+    "f": "05.png",
+    "w": 46,
+    "h": 57,
+    "arriba": 14,
+    "abajo": 23,
+    "base": 250
+   }
+  ]
+ },
+ {
+  "banda": 7,
+  "n": 5,
+  "extension": "brazo",
+  "ataque": true,
+  "nombre": "Patada media",
+  "confianza": "alta",
+  "nota": "rodilla, extension y recogida",
+  "gif": "gif/banda_07.gif",
+  "alto": [
+   61,
+   64
+  ],
+  "ancho": [
+   32,
+   58
+  ],
+  "activos": [
+   "02.png"
+  ],
+  "alcance": [
+   18,
+   16,
+   41,
+   16,
+   18
+  ],
+  "frames": [
+   {
+    "f": "00.png",
+    "w": 33,
+    "h": 61,
+    "arriba": 18,
+    "abajo": 15,
+    "base": 133
+   },
+   {
+    "f": "01.png",
+    "w": 32,
+    "h": 61,
+    "arriba": 15,
+    "abajo": 16,
+    "base": 139
+   },
+   {
+    "f": "02.png",
+    "w": 58,
+    "h": 64,
+    "arriba": 41,
+    "abajo": 17,
+    "base": 167
+   },
+   {
+    "f": "03.png",
+    "w": 32,
+    "h": 61,
+    "arriba": 15,
+    "abajo": 16,
+    "base": 139
+   },
+   {
+    "f": "04.png",
+    "w": 33,
+    "h": 61,
+    "arriba": 18,
+    "abajo": 15,
+    "base": 133
+   }
+  ]
+ },
+ {
+  "banda": 8,
+  "n": 7,
+  "extension": "pierna",
+  "ataque": true,
+  "nombre": "Patada giratoria",
+  "confianza": "alta",
+  "nota": "el cuerpo gira y la pierna barre",
+  "gif": "gif/banda_08.gif",
+  "alto": [
+   45,
+   76
+  ],
+  "ancho": [
+   29,
+   46
+  ],
+  "activos": [
+   "04.png",
+   "06.png"
+  ],
+  "alcance": [
+   20,
+   18,
+   19,
+   25,
+   22,
+   15,
+   23
+  ],
+  "frames": [
+   {
+    "f": "00.png",
+    "w": 41,
+    "h": 60,
+    "arriba": 14,
+    "abajo": 20,
+    "base": 184
+   },
+   {
+    "f": "01.png",
+    "w": 34,
+    "h": 74,
+    "arriba": 18,
+    "abajo": 15,
+    "base": 130
+   },
+   {
+    "f": "02.png",
+    "w": 29,
+    "h": 55,
+    "arriba": 19,
+    "abajo": 12,
+    "base": 55
+   },
+   {
+    "f": "03.png",
+    "w": 32,
+    "h": 45,
+    "arriba": 25,
+    "abajo": 13,
+    "base": 25
+   },
+   {
+    "f": "04.png",
+    "w": 37,
+    "h": 76,
+    "arriba": 22,
+    "abajo": 22,
+    "base": 131
+   },
+   {
+    "f": "05.png",
+    "w": 31,
+    "h": 55,
+    "arriba": 15,
+    "abajo": 12,
+    "base": 26
+   },
+   {
+    "f": "06.png",
+    "w": 46,
+    "h": 57,
+    "arriba": 14,
+    "abajo": 23,
+    "base": 250
+   }
+  ]
+ },
+ {
+  "banda": 9,
+  "n": 3,
+  "extension": null,
+  "ataque": false,
+  "nombre": "Bloqueo",
+  "confianza": "media",
+  "nota": "3 frames, brazo cruzado delante",
+  "gif": "gif/banda_09.gif",
+  "alto": [
+   54,
+   56
+  ],
+  "ancho": [
+   54,
+   58
+  ],
+  "activos": [],
+  "alcance": [
+   27,
+   30,
+   27
+  ],
+  "frames": [
+   {
+    "f": "00.png",
+    "w": 54,
+    "h": 56,
+    "arriba": 15,
+    "abajo": 27,
+    "base": 287
+   },
+   {
+    "f": "01.png",
+    "w": 58,
+    "h": 54,
+    "arriba": 25,
+    "abajo": 30,
+    "base": 314
+   },
+   {
+    "f": "02.png",
+    "w": 54,
+    "h": 56,
+    "arriba": 15,
+    "abajo": 27,
+    "base": 287
+   }
+  ]
+ },
+ {
+  "banda": 10,
+  "n": 9,
+  "extension": "brazo",
+  "ataque": true,
+  "nombre": "Patada con energia",
+  "confianza": "media",
+  "nota": "efecto amarillo/azul en el pie",
+  "gif": "gif/banda_10.gif",
+  "alto": [
+   61,
+   72
+  ],
+  "ancho": [
+   32,
+   59
+  ],
+  "activos": [
+   "02.png",
+   "07.png"
+  ],
+  "alcance": [
+   16,
+   25,
+   33,
+   25,
+   25,
+   26,
+   25,
+   31,
+   25
+  ],
+  "frames": [
+   {
+    "f": "00.png",
+    "w": 32,
+    "h": 61,
+    "arriba": 15,
+    "abajo": 16,
+    "base": 139
+   },
+   {
+    "f": "01.png",
+    "w": 43,
+    "h": 62,
+    "arriba": 25,
+    "abajo": 17,
+    "base": 161
+   },
+   {
+    "f": "02.png",
+    "w": 59,
+    "h": 62,
+    "arriba": 33,
+    "abajo": 32,
+    "base": 161
+   },
+   {
+    "f": "03.png",
+    "w": 43,
+    "h": 62,
+    "arriba": 25,
+    "abajo": 17,
+    "base": 161
+   },
+   {
+    "f": "04.png",
+    "w": 43,
+    "h": 62,
+    "arriba": 25,
+    "abajo": 17,
+    "base": 161
+   },
+   {
+    "f": "05.png",
+    "w": 53,
+    "h": 61,
+    "arriba": 26,
+    "abajo": 26,
+    "base": 161
+   },
+   {
+    "f": "06.png",
+    "w": 43,
+    "h": 62,
+    "arriba": 25,
+    "abajo": 17,
+    "base": 161
+   },
+   {
+    "f": "07.png",
+    "w": 57,
+    "h": 72,
+    "arriba": 31,
+    "abajo": 17,
+    "base": 161
+   },
+   {
+    "f": "08.png",
+    "w": 43,
+    "h": 62,
+    "arriba": 25,
+    "abajo": 17,
+    "base": 161
+   }
+  ]
+ },
+ {
+  "banda": 11,
+  "n": 10,
+  "extension": null,
+  "ataque": false,
+  "nombre": "Agacharse y levantarse",
+  "confianza": "media",
+  "nota": "altura baja a la mitad",
+  "gif": "gif/banda_11.gif",
+  "alto": [
+   36,
+   70
+  ],
+  "ancho": [
+   20,
+   46
+  ],
+  "activos": [],
+  "alcance": [
+   23,
+   15,
+   15,
+   17,
+   20,
+   20,
+   20,
+   17,
+   15,
+   23
+  ],
+  "frames": [
+   {
+    "f": "00.png",
+    "w": 46,
+    "h": 53,
+    "arriba": 14,
+    "abajo": 23,
+    "base": 248
+   },
+   {
+    "f": "01.png",
+    "w": 30,
+    "h": 70,
+    "arriba": 11,
+    "abajo": 15,
+    "base": 132
+   },
+   {
+    "f": "02.png",
+    "w": 20,
+    "h": 70,
+    "arriba": 15,
+    "abajo": 15,
+    "base": 26
+   },
+   {
+    "f": "03.png",
+    "w": 22,
+    "h": 58,
+    "arriba": 16,
+    "abajo": 17,
+    "base": 32
+   },
+   {
+    "f": "04.png",
+    "w": 24,
+    "h": 48,
+    "arriba": 19,
+    "abajo": 20,
+    "base": 37
+   },
+   {
+    "f": "05.png",
+    "w": 24,
+    "h": 36,
+    "arriba": 20,
+    "abajo": 20,
+    "base": 38
+   },
+   {
+    "f": "06.png",
+    "w": 24,
+    "h": 48,
+    "arriba": 19,
+    "abajo": 20,
+    "base": 37
+   },
+   {
+    "f": "07.png",
+    "w": 22,
+    "h": 58,
+    "arriba": 16,
+    "abajo": 17,
+    "base": 32
+   },
+   {
+    "f": "08.png",
+    "w": 20,
+    "h": 70,
+    "arriba": 15,
+    "abajo": 15,
+    "base": 26
+   },
+   {
+    "f": "09.png",
+    "w": 46,
+    "h": 53,
+    "arriba": 14,
+    "abajo": 23,
+    "base": 248
+   }
+  ]
+ },
+ {
+  "banda": 12,
+  "n": 11,
+  "extension": null,
+  "ataque": false,
+  "nombre": "Salto mortal",
+  "confianza": "alta",
+  "nota": "el cuerpo se pone del reves",
+  "gif": "gif/banda_12.gif",
+  "alto": [
+   32,
+   70
+  ],
+  "ancho": [
+   20,
+   57
+  ],
+  "activos": [],
+  "alcance": [
+   23,
+   15,
+   30,
+   48,
+   41,
+   11,
+   42,
+   47,
+   42,
+   15,
+   23
+  ],
+  "frames": [
+   {
+    "f": "00.png",
+    "w": 46,
+    "h": 53,
+    "arriba": 14,
+    "abajo": 23,
+    "base": 248
+   },
+   {
+    "f": "01.png",
+    "w": 30,
+    "h": 70,
+    "arriba": 11,
+    "abajo": 15,
+    "base": 132
+   },
+   {
+    "f": "02.png",
+    "w": 36,
+    "h": 50,
+    "arriba": 30,
+    "abajo": 14,
+    "base": 53
+   },
+   {
+    "f": "03.png",
+    "w": 56,
+    "h": 32,
+    "arriba": 48,
+    "abajo": 48,
+    "base": 25
+   },
+   {
+    "f": "04.png",
+    "w": 52,
+    "h": 59,
+    "arriba": 41,
+    "abajo": 41,
+    "base": 86
+   },
+   {
+    "f": "05.png",
+    "w": 20,
+    "h": 63,
+    "arriba": 8,
+    "abajo": 11,
+    "base": 59
+   },
+   {
+    "f": "06.png",
+    "w": 52,
+    "h": 50,
+    "arriba": 42,
+    "abajo": 42,
+    "base": 71
+   },
+   {
+    "f": "07.png",
+    "w": 57,
+    "h": 33,
+    "arriba": 47,
+    "abajo": 47,
+    "base": 24
+   },
+   {
+    "f": "08.png",
+    "w": 47,
+    "h": 46,
+    "arriba": 42,
+    "abajo": 12,
+    "base": 41
+   },
+   {
+    "f": "09.png",
+    "w": 20,
+    "h": 70,
+    "arriba": 15,
+    "abajo": 15,
+    "base": 26
+   },
+   {
+    "f": "10.png",
+    "w": 46,
+    "h": 53,
+    "arriba": 14,
+    "abajo": 23,
+    "base": 248
+   }
+  ]
+ },
+ {
+  "banda": 13,
+  "n": 13,
+  "extension": null,
+  "ataque": false,
+  "nombre": "Salto y caida",
+  "confianza": "media",
+  "nota": "vuelta en el aire y aterrizaje",
+  "gif": "gif/banda_13.gif",
+  "alto": [
+   32,
+   70
+  ],
+  "ancho": [
+   20,
+   57
+  ],
+  "activos": [],
+  "alcance": [
+   23,
+   15,
+   15,
+   20,
+   19,
+   30,
+   27,
+   50,
+   45,
+   46,
+   30,
+   15,
+   23
+  ],
+  "frames": [
+   {
+    "f": "00.png",
+    "w": 46,
+    "h": 53,
+    "arriba": 14,
+    "abajo": 23,
+    "base": 248
+   },
+   {
+    "f": "01.png",
+    "w": 30,
+    "h": 70,
+    "arriba": 11,
+    "abajo": 15,
+    "base": 132
+   },
+   {
+    "f": "02.png",
+    "w": 20,
+    "h": 70,
+    "arriba": 15,
+    "abajo": 15,
+    "base": 26
+   },
+   {
+    "f": "03.png",
+    "w": 39,
+    "h": 65,
+    "arriba": 18,
+    "abajo": 20,
+    "base": 55
+   },
+   {
+    "f": "04.png",
+    "w": 37,
+    "h": 64,
+    "arriba": 17,
+    "abajo": 19,
+    "base": 67
+   },
+   {
+    "f": "05.png",
+    "w": 39,
+    "h": 64,
+    "arriba": 30,
+    "abajo": 6,
+    "base": 43
+   },
+   {
+    "f": "06.png",
+    "w": 42,
+    "h": 46,
+    "arriba": 27,
+    "abajo": 26,
+    "base": 33
+   },
+   {
+    "f": "07.png",
+    "w": 57,
+    "h": 54,
+    "arriba": 42,
+    "abajo": 50,
+    "base": 63
+   },
+   {
+    "f": "08.png",
+    "w": 51,
+    "h": 62,
+    "arriba": 45,
+    "abajo": 31,
+    "base": 41
+   },
+   {
+    "f": "09.png",
+    "w": 55,
+    "h": 32,
+    "arriba": 46,
+    "abajo": 40,
+    "base": 44
+   },
+   {
+    "f": "10.png",
+    "w": 36,
+    "h": 50,
+    "arriba": 30,
+    "abajo": 14,
+    "base": 53
+   },
+   {
+    "f": "11.png",
+    "w": 20,
+    "h": 70,
+    "arriba": 15,
+    "abajo": 15,
+    "base": 26
+   },
+   {
+    "f": "12.png",
+    "w": 46,
+    "h": 53,
+    "arriba": 14,
+    "abajo": 23,
+    "base": 248
+   }
+  ]
+ },
+ {
+  "banda": 14,
+  "n": 11,
+  "extension": null,
+  "ataque": false,
+  "nombre": "Salto en cuclillas",
+  "confianza": "media",
+  "nota": "todo el ciclo por debajo de la altura de pie",
+  "gif": "gif/banda_14.gif",
+  "alto": [
+   38,
+   70
+  ],
+  "ancho": [
+   20,
+   46
+  ],
+  "activos": [],
+  "alcance": [
+   23,
+   15,
+   15,
+   18,
+   20,
+   33,
+   20,
+   20,
+   17,
+   15,
+   23
+  ],
+  "frames": [
+   {
+    "f": "00.png",
+    "w": 46,
+    "h": 53,
+    "arriba": 14,
+    "abajo": 23,
+    "base": 248
+   },
+   {
+    "f": "01.png",
+    "w": 30,
+    "h": 70,
+    "arriba": 11,
+    "abajo": 15,
+    "base": 132
+   },
+   {
+    "f": "02.png",
+    "w": 20,
+    "h": 70,
+    "arriba": 15,
+    "abajo": 15,
+    "base": 26
+   },
+   {
+    "f": "03.png",
+    "w": 30,
+    "h": 38,
+    "arriba": 18,
+    "abajo": 12,
+    "base": 60
+   },
+   {
+    "f": "04.png",
+    "w": 32,
+    "h": 44,
+    "arriba": 20,
+    "abajo": 11,
+    "base": 39
+   },
+   {
+    "f": "05.png",
+    "w": 43,
+    "h": 51,
+    "arriba": 28,
+    "abajo": 33,
+    "base": 28
+   },
+   {
+    "f": "06.png",
+    "w": 32,
+    "h": 44,
+    "arriba": 20,
+    "abajo": 11,
+    "base": 39
+   },
+   {
+    "f": "07.png",
+    "w": 24,
+    "h": 48,
+    "arriba": 19,
+    "abajo": 20,
+    "base": 37
+   },
+   {
+    "f": "08.png",
+    "w": 22,
+    "h": 58,
+    "arriba": 16,
+    "abajo": 17,
+    "base": 32
+   },
+   {
+    "f": "09.png",
+    "w": 20,
+    "h": 70,
+    "arriba": 15,
+    "abajo": 15,
+    "base": 26
+   },
+   {
+    "f": "10.png",
+    "w": 46,
+    "h": 53,
+    "arriba": 14,
+    "abajo": 23,
+    "base": 248
+   }
+  ]
+ },
+ {
+  "banda": 15,
+  "n": 10,
+  "extension": null,
+  "ataque": false,
+  "nombre": "Salto vertical",
+  "confianza": "alta",
+  "nota": "los pies se separan del suelo y vuelven",
+  "gif": "gif/banda_15.gif",
+  "alto": [
+   53,
+   70
+  ],
+  "ancho": [
+   20,
+   46
+  ],
+  "activos": [],
+  "alcance": [
+   23,
+   15,
+   15,
+   13,
+   13,
+   20,
+   34,
+   13,
+   15,
+   23
+  ],
+  "frames": [
+   {
+    "f": "00.png",
+    "w": 46,
+    "h": 53,
+    "arriba": 14,
+    "abajo": 23,
+    "base": 248
+   },
+   {
+    "f": "01.png",
+    "w": 30,
+    "h": 70,
+    "arriba": 11,
+    "abajo": 15,
+    "base": 132
+   },
+   {
+    "f": "02.png",
+    "w": 20,
+    "h": 70,
+    "arriba": 15,
+    "abajo": 15,
+    "base": 26
+   },
+   {
+    "f": "03.png",
+    "w": 23,
+    "h": 62,
+    "arriba": 13,
+    "abajo": 12,
+    "base": 26
+   },
+   {
+    "f": "04.png",
+    "w": 23,
+    "h": 62,
+    "arriba": 13,
+    "abajo": 12,
+    "base": 26
+   },
+   {
+    "f": "05.png",
+    "w": 28,
+    "h": 67,
+    "arriba": 20,
+    "abajo": 13,
+    "base": 22
+   },
+   {
+    "f": "06.png",
+    "w": 41,
+    "h": 61,
+    "arriba": 34,
+    "abajo": 32,
+    "base": 23
+   },
+   {
+    "f": "07.png",
+    "w": 23,
+    "h": 62,
+    "arriba": 13,
+    "abajo": 12,
+    "base": 26
+   },
+   {
+    "f": "08.png",
+    "w": 20,
+    "h": 70,
+    "arriba": 15,
+    "abajo": 15,
+    "base": 26
+   },
+   {
+    "f": "09.png",
+    "w": 46,
+    "h": 53,
+    "arriba": 14,
+    "abajo": 23,
+    "base": 248
+   }
+  ]
+ },
+ {
+  "banda": 16,
+  "n": 12,
+  "extension": null,
+  "ataque": false,
+  "nombre": "Agachada y golpe bajo",
+  "confianza": "media",
+  "nota": "incluye un puno extendido",
+  "gif": "gif/banda_16.gif",
+  "alto": [
+   46,
+   57
+  ],
+  "ancho": [
+   46,
+   78
+  ],
+  "activos": [],
+  "alcance": [
+   23,
+   23,
+   23,
+   25,
+   31,
+   50,
+   31,
+   25,
+   23,
+   23,
+   23,
+   23
+  ],
+  "frames": [
+   {
+    "f": "00.png",
+    "w": 46,
+    "h": 53,
+    "arriba": 14,
+    "abajo": 23,
+    "base": 248
+   },
+   {
+    "f": "01.png",
+    "w": 46,
+    "h": 49,
+    "arriba": 16,
+    "abajo": 23,
+    "base": 247
+   },
+   {
+    "f": "02.png",
+    "w": 46,
+    "h": 47,
+    "arriba": 16,
+    "abajo": 23,
+    "base": 253
+   },
+   {
+    "f": "03.png",
+    "w": 50,
+    "h": 48,
+    "arriba": 21,
+    "abajo": 25,
+    "base": 271
+   },
+   {
+    "f": "04.png",
+    "w": 59,
+    "h": 46,
+    "arriba": 31,
+    "abajo": 27,
+    "base": 293
+   },
+   {
+    "f": "05.png",
+    "w": 78,
+    "h": 46,
+    "arriba": 50,
+    "abajo": 50,
+    "base": 291
+   },
+   {
+    "f": "06.png",
+    "w": 59,
+    "h": 46,
+    "arriba": 31,
+    "abajo": 27,
+    "base": 293
+   },
+   {
+    "f": "07.png",
+    "w": 50,
+    "h": 48,
+    "arriba": 21,
+    "abajo": 25,
+    "base": 271
+   },
+   {
+    "f": "08.png",
+    "w": 46,
+    "h": 47,
+    "arriba": 16,
+    "abajo": 23,
+    "base": 253
+   },
+   {
+    "f": "09.png",
+    "w": 46,
+    "h": 49,
+    "arriba": 16,
+    "abajo": 23,
+    "base": 247
+   },
+   {
+    "f": "10.png",
+    "w": 46,
+    "h": 53,
+    "arriba": 14,
+    "abajo": 23,
+    "base": 248
+   },
+   {
+    "f": "11.png",
+    "w": 46,
+    "h": 57,
+    "arriba": 14,
+    "abajo": 23,
+    "base": 250
+   }
+  ]
+ },
+ {
+  "banda": 17,
+  "n": 6,
+  "extension": "brazo",
+  "ataque": true,
+  "nombre": "Patada desde agachada",
+  "confianza": "media",
+  "nota": "sale bajo y la pierna se extiende",
+  "gif": "gif/banda_17.gif",
+  "alto": [
+   43,
+   47
+  ],
+  "ancho": [
+   37,
+   68
+  ],
+  "activos": [
+   "02.png"
+  ],
+  "alcance": [
+   20,
+   24,
+   39,
+   24,
+   20,
+   23
+  ],
+  "frames": [
+   {
+    "f": "00.png",
+    "w": 37,
+    "h": 45,
+    "arriba": 20,
+    "abajo": 17,
+    "base": 158
+   },
+   {
+    "f": "01.png",
+    "w": 41,
+    "h": 43,
+    "arriba": 24,
+    "abajo": 17,
+    "base": 164
+   },
+   {
+    "f": "02.png",
+    "w": 68,
+    "h": 44,
+    "arriba": 39,
+    "abajo": 29,
+    "base": 305
+   },
+   {
+    "f": "03.png",
+    "w": 41,
+    "h": 43,
+    "arriba": 24,
+    "abajo": 17,
+    "base": 164
+   },
+   {
+    "f": "04.png",
+    "w": 37,
+    "h": 45,
+    "arriba": 20,
+    "abajo": 17,
+    "base": 158
+   },
+   {
+    "f": "05.png",
+    "w": 46,
+    "h": 47,
+    "arriba": 16,
+    "abajo": 23,
+    "base": 253
+   }
+  ]
+ },
+ {
+  "banda": 18,
+  "n": 5,
+  "extension": "brazo",
+  "ataque": true,
+  "nombre": "Barrido bajo",
+  "confianza": "alta",
+  "nota": "estela horizontal en el suelo",
+  "gif": "gif/banda_18.gif",
+  "alto": [
+   32,
+   47
+  ],
+  "ancho": [
+   34,
+   58
+  ],
+  "activos": [
+   "01.png"
+  ],
+  "alcance": [
+   19,
+   29,
+   17,
+   19,
+   23
+  ],
+  "frames": [
+   {
+    "f": "00.png",
+    "w": 38,
+    "h": 42,
+    "arriba": 14,
+    "abajo": 19,
+    "base": 202
+   },
+   {
+    "f": "01.png",
+    "w": 58,
+    "h": 32,
+    "arriba": 26,
+    "abajo": 29,
+    "base": 323
+   },
+   {
+    "f": "02.png",
+    "w": 34,
+    "h": 37,
+    "arriba": 13,
+    "abajo": 17,
+    "base": 179
+   },
+   {
+    "f": "03.png",
+    "w": 38,
+    "h": 42,
+    "arriba": 14,
+    "abajo": 19,
+    "base": 202
+   },
+   {
+    "f": "04.png",
+    "w": 46,
+    "h": 47,
+    "arriba": 16,
+    "abajo": 23,
+    "base": 253
+   }
+  ]
+ },
+ {
+  "banda": 19,
+  "n": 6,
+  "extension": "brazo",
+  "ataque": true,
+  "nombre": "Golpe desde agachada",
+  "confianza": "media",
+  "nota": "marca de golpe en el frame 3",
+  "gif": "gif/banda_19.gif",
+  "alto": [
+   45,
+   47
+  ],
+  "ancho": [
+   46,
+   59
+  ],
+  "activos": [
+   "02.png"
+  ],
+  "alcance": [
+   23,
+   23,
+   36,
+   23,
+   23,
+   23
+  ],
+  "frames": [
+   {
+    "f": "00.png",
+    "w": 46,
+    "h": 47,
+    "arriba": 17,
+    "abajo": 23,
+    "base": 250
+   },
+   {
+    "f": "01.png",
+    "w": 46,
+    "h": 46,
+    "arriba": 22,
+    "abajo": 23,
+    "base": 248
+   },
+   {
+    "f": "02.png",
+    "w": 59,
+    "h": 45,
+    "arriba": 36,
+    "abajo": 36,
+    "base": 248
+   },
+   {
+    "f": "03.png",
+    "w": 46,
+    "h": 46,
+    "arriba": 23,
+    "abajo": 23,
+    "base": 248
+   },
+   {
+    "f": "04.png",
+    "w": 46,
+    "h": 47,
+    "arriba": 17,
+    "abajo": 23,
+    "base": 250
+   },
+   {
+    "f": "05.png",
+    "w": 46,
+    "h": 47,
+    "arriba": 16,
+    "abajo": 23,
+    "base": 253
+   }
+  ]
+ },
+ {
+  "banda": 20,
+  "n": 8,
+  "extension": "brazo",
+  "ataque": true,
+  "nombre": "Especial: energia azul",
+  "confianza": "alta",
+  "nota": "el remolino azul crece frame a frame",
+  "gif": "gif/banda_20.gif",
+  "alto": [
+   60,
+   74
+  ],
+  "ancho": [
+   46,
+   116
+  ],
+  "activos": [
+   "07.png"
+  ],
+  "alcance": [
+   23,
+   23,
+   23,
+   23,
+   24,
+   24,
+   51,
+   59
+  ],
+  "frames": [
+   {
+    "f": "00.png",
+    "w": 46,
+    "h": 60,
+    "arriba": 12,
+    "abajo": 23,
+    "base": 250
+   },
+   {
+    "f": "01.png",
+    "w": 46,
+    "h": 62,
+    "arriba": 10,
+    "abajo": 23,
+    "base": 250
+   },
+   {
+    "f": "02.png",
+    "w": 46,
+    "h": 62,
+    "arriba": 23,
+    "abajo": 23,
+    "base": 250
+   },
+   {
+    "f": "03.png",
+    "w": 46,
+    "h": 62,
+    "arriba": 23,
+    "abajo": 23,
+    "base": 250
+   },
+   {
+    "f": "04.png",
+    "w": 47,
+    "h": 63,
+    "arriba": 24,
+    "abajo": 24,
+    "base": 226
+   },
+   {
+    "f": "05.png",
+    "w": 46,
+    "h": 68,
+    "arriba": 24,
+    "abajo": 24,
+    "base": 119
+   },
+   {
+    "f": "06.png",
+    "w": 80,
+    "h": 69,
+    "arriba": 20,
+    "abajo": 51,
+    "base": 215
+   },
+   {
+    "f": "07.png",
+    "w": 116,
+    "h": 74,
+    "arriba": 48,
+    "abajo": 59,
+    "base": 164
+   }
+  ]
+ },
+ {
+  "banda": 21,
+  "n": 6,
+  "extension": null,
+  "ataque": false,
+  "nombre": "Final del especial",
+  "confianza": "alta",
+  "nota": "sigue el remolino y se apaga",
+  "gif": "gif/banda_21.gif",
+  "alto": [
+   57,
+   69
+  ],
+  "ancho": [
+   48,
+   116
+  ],
+  "activos": [],
+  "alcance": [
+   59,
+   54,
+   46,
+   36,
+   25,
+   25
+  ],
+  "frames": [
+   {
+    "f": "00.png",
+    "w": 116,
+    "h": 69,
+    "arriba": 56,
+    "abajo": 59,
+    "base": 158
+   },
+   {
+    "f": "01.png",
+    "w": 105,
+    "h": 69,
+    "arriba": 54,
+    "abajo": 54,
+    "base": 178
+   },
+   {
+    "f": "02.png",
+    "w": 86,
+    "h": 69,
+    "arriba": 39,
+    "abajo": 46,
+    "base": 157
+   },
+   {
+    "f": "03.png",
+    "w": 71,
+    "h": 65,
+    "arriba": 30,
+    "abajo": 36,
+    "base": 253
+   },
+   {
+    "f": "04.png",
+    "w": 48,
+    "h": 62,
+    "arriba": 10,
+    "abajo": 25,
+    "base": 250
+   },
+   {
+    "f": "05.png",
+    "w": 48,
+    "h": 57,
+    "arriba": 14,
+    "abajo": 25,
+    "base": 250
+   }
+  ]
+ },
+ {
+  "banda": 22,
+  "n": 11,
+  "extension": null,
+  "ataque": false,
+  "nombre": "Derribo y levantarse",
+  "confianza": "alta",
+  "nota": "cae de espaldas, queda en el suelo y se levanta",
+  "gif": "gif/banda_22.gif",
+  "alto": [
+   24,
+   63
+  ],
+  "ancho": [
+   34,
+   66
+  ],
+  "activos": [],
+  "alcance": [
+   21,
+   44,
+   53,
+   45,
+   30,
+   26,
+   46,
+   51,
+   44,
+   34,
+   23
+  ],
+  "frames": [
+   {
+    "f": "00.png",
+    "w": 34,
+    "h": 63,
+    "arriba": 21,
+    "abajo": 12,
+    "base": 26
+   },
+   {
+    "f": "01.png",
+    "w": 58,
+    "h": 46,
+    "arriba": 44,
+    "abajo": 13,
+    "base": 37
+   },
+   {
+    "f": "02.png",
+    "w": 64,
+    "h": 36,
+    "arriba": 53,
+    "abajo": 51,
+    "base": 59
+   },
+   {
+    "f": "03.png",
+    "w": 63,
+    "h": 24,
+    "arriba": 45,
+    "abajo": 40,
+    "base": 171
+   },
+   {
+    "f": "04.png",
+    "w": 37,
+    "h": 61,
+    "arriba": 30,
+    "abajo": 15,
+    "base": 49
+   },
+   {
+    "f": "05.png",
+    "w": 48,
+    "h": 45,
+    "arriba": 26,
+    "abajo": 21,
+    "base": 167
+   },
+   {
+    "f": "06.png",
+    "w": 59,
+    "h": 31,
+    "arriba": 46,
+    "abajo": 30,
+    "base": 77
+   },
+   {
+    "f": "07.png",
+    "w": 66,
+    "h": 24,
+    "arriba": 51,
+    "abajo": 50,
+    "base": 48
+   },
+   {
+    "f": "08.png",
+    "w": 60,
+    "h": 32,
+    "arriba": 32,
+    "abajo": 44,
+    "base": 83
+   },
+   {
+    "f": "09.png",
+    "w": 50,
+    "h": 40,
+    "arriba": 23,
+    "abajo": 34,
+    "base": 121
+   },
+   {
+    "f": "10.png",
+    "w": 46,
+    "h": 53,
+    "arriba": 14,
+    "abajo": 23,
+    "base": 248
+   }
+  ]
+ }
+]
