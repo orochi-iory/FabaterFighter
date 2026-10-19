@@ -344,7 +344,7 @@ def clean_far_arm(im):
     return stats
 
 
-def fix_dir(path, anim='idle'):
+def fix_dir(path, anim='stance'):
     names = sorted(n for n in os.listdir(path) if n.endswith('.png'))
     for name in names:
         full = os.path.join(path, name)
@@ -353,12 +353,12 @@ def fix_dir(path, anim='idle'):
         # repintaba el morado de la máscara (la boca) y agrandaba el guante
         # del brazo que queda al fondo. Se deja solo como herramienta suelta.
         gloves = close_glove(im) if name in GLOVE_FRAMES else []
-        if anim == 'idle' and name in FAR_ARM_FRAMES:
+        if anim == 'stance' and name in FAR_ARM_FRAMES:
             # brazo del fondo: marrón del cinturón dentro del guante
             far = clean_far_arm(im)
         else:
             far = None
-        if anim == 'idle' and name == '09.png':
+        if anim == 'stance' and name == '09.png':
             # la mano de la cadera venía pintada con el verde del traje
             gloves.append(('caja', glove_box(im, (80, 122, 95, 155))))
         if gloves or far:
@@ -369,10 +369,10 @@ def fix_dir(path, anim='idle'):
 if __name__ == '__main__':
     args = [a for a in sys.argv[1:] if not a.startswith('-')]
     force = '--force' in sys.argv
-    target = args[0] if args else 'voltia/nueva/idle'
+    target = args[0] if args else 'voltia/nueva/stance'
     anim = args[1] if len(args) > 1 else os.path.basename(os.path.abspath(target))
-    if anim not in ('idle', 'jump'):
-        anim = 'idle'
+    if anim not in ('stance', 'jump'):
+        anim = 'stance'
     marker = os.path.join(target, '.fix_gloves')
     if os.path.exists(marker) and not force:
         print('%s ya está limpio (marca %s). Usa --force solo si has vuelto a'

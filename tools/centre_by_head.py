@@ -72,7 +72,7 @@ def shift(im, dx):
 
 def main(argv):
     args = [a for a in argv if not a.startswith('--')]
-    folder = args[0] if args else 'voltia/nueva/idle'
+    folder = args[0] if args else 'voltia/nueva/stance'
     dry = '--dry-run' in argv
     target = None
     for i, a in enumerate(argv):

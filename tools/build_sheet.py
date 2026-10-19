@@ -10,7 +10,7 @@ No se recorta pose a pose ni se reescala cada frame por separado.
 
 Uso:
     PYTHONPATH=tools/pylibs python3 tools/build_sheet.py \
-        voltia/nueva/idle/src/sheet_idle.png voltia/nueva/idle 200 240 238
+        voltia/nueva/stance/src/sheet_stance.png voltia/nueva/stance 200 240 238
 
     argumentos: <hoja> <carpeta_salida> <ancho> <alto> <fila_del_suelo>
 

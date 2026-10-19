@@ -3,8 +3,8 @@
   "updated": "2026-10-19",
   "character": "Voltia",
   "status": "Un sprite, 150 × 200 nativos. Sin idle todavía.",
-  "anchor": "nueva/idle/00.png",
-  "anchorNote": "Guardia del idle, 200 px de alto, lienzo de 200 x 240. Todos los frames del idle comparten lienzo, escala y suelo.",
+  "anchor": "nueva/stance/00.png",
+  "anchorNote": "Stance (ida y vuelta de la respiracion), 200 px de alto, lienzo de 200 x 240. Los 24 frames comparten lienzo, escala, suelo (238) y eje de cabeza (x=128).",
   "styleRef": {
     "file": "ref/chunli_sf2_sheet.png",
     "what": "Hoja de Chun-Li de Street Fighter II. Es la referencia de DIBUJO, no de personaje: se copia el pixelado, el grosor de línea, los tonos planos y la postura. No se copia su ropa ni su anatomía.",
@@ -214,119 +214,6 @@
       "use": "Atusandose el muslo. El gesto que define el idle."
     }
   ],
-  "idle": {
-    "status": "primera pasada, sin aprobar",
-    "fps": 8,
-    "count": 20,
-    "canvas": [
-      200,
-      300
-    ],
-    "height": 200,
-    "note": "Los 20 frames salen de UNA sola hoja de 5x4: mismo lienzo de 200 x 300, misma escala y mismo suelo por construccion. El aire ya viene subido dentro del lienzo.",
-    "frames": [
-      {
-        "file": "00.png",
-        "caption": "guardia",
-        "lift": 0
-      },
-      {
-        "file": "01.png",
-        "caption": "guardia baja",
-        "lift": 0
-      },
-      {
-        "file": "02.png",
-        "caption": "agachada",
-        "lift": 0
-      },
-      {
-        "file": "03.png",
-        "caption": "despega",
-        "lift": 0
-      },
-      {
-        "file": "04.png",
-        "caption": "rodilla arriba",
-        "lift": 0
-      },
-      {
-        "file": "05.png",
-        "caption": "bajando",
-        "lift": 0
-      },
-      {
-        "file": "06.png",
-        "caption": "aterriza",
-        "lift": 0
-      },
-      {
-        "file": "07.png",
-        "caption": "de pie",
-        "lift": 0
-      },
-      {
-        "file": "08.png",
-        "caption": "baja la guardia",
-        "lift": 0
-      },
-      {
-        "file": "09.png",
-        "caption": "manos a las caderas",
-        "lift": 0
-      },
-      {
-        "file": "10.png",
-        "caption": "a los muslos",
-        "lift": 0
-      },
-      {
-        "file": "11.png",
-        "caption": "se atusa el muslo",
-        "lift": 0
-      },
-      {
-        "file": "12.png",
-        "caption": "baja a la caña",
-        "lift": 0
-      },
-      {
-        "file": "13.png",
-        "caption": "en la caña",
-        "lift": 0
-      },
-      {
-        "file": "14.png",
-        "caption": "sube la mano",
-        "lift": 0
-      },
-      {
-        "file": "15.png",
-        "caption": "otra vez al muslo",
-        "lift": 0
-      },
-      {
-        "file": "16.png",
-        "caption": "se incorpora",
-        "lift": 0
-      },
-      {
-        "file": "17.png",
-        "caption": "sube la guardia",
-        "lift": 0
-      },
-      {
-        "file": "18.png",
-        "caption": "casi cerrada",
-        "lift": 0
-      },
-      {
-        "file": "19.png",
-        "caption": "guardia",
-        "lift": 0
-      }
-    ]
-  },
   "lessons": [
     "2026-10-19. Los frames se cortan de UNA SOLA HOJA de 5x4. Asi el tamano de celda, la escala y la linea de suelo son los mismos por construccion: no hay normalizacion por frame y no puede volver a descuadrarse. El aire se hace con lift, no escalando.",
     "2026-10-19. El fallo de la coleta no era el dibujo: al normalizar CADA pose a 200 px de alto, cada frame cambiaba de escala. Ahora todas las poses se escalan con el mismo factor y el alto de cada pose es consecuencia de su postura. Se mide la proporcion de pixeles de coleta sobre el cuerpo, no el numero absoluto.",
@@ -347,6 +234,7 @@
     "2026-10-19. Conclusión para el escenario: la figura que ya juega mide 153 y esta 126, así que entra sin escalar. Si algún día hay que igualarla a 120, se genera a 120 bloques de 8 = 960 y se corta ÷8 exacto."
   ],
   "changelog": [
+    "2026-10-19. El idle aprobado pasa a llamarse stance: carpeta nueva/stance, 24 frames, y se borra el bloque idle viejo de la primera pasada.",
     "2026-10-19. Idle reconstruido: eje de cabeza fijo (x=128) y atusado x3; el salto anterior pasa al grupo de pruebas.",
     "2026-10-19. Idle rehecho desde una hoja unica de 20 poses: mismo tamano, misma escala, mismo suelo, 16 colores.",
     "2026-10-19. Idle rehecho: escala unica, paleta de 16, y las poses que no mantenian la coleta, regeneradas con la hoja de 4 poses como referencia.",
@@ -391,43 +279,9 @@
     "check": "Antes de aprobar un sprite: alto = 200 px con coleta y misma escala de píxel que el resto de la hoja."
   },
   "anims": {
-    "jump": {
-      "title": "Salto · prueba",
-      "dir": "nueva/jump",
-      "count": 20,
-      "fps": 10,
-      "canvas": [
-        200,
-        300
-      ],
-      "note": "Documento de prueba, no es una animacion del personaje: la hoja de 20 poses era un salto hacia adelante y no se usa como salto en el juego. Se conserva por si hace falta.",
-      "frames": [
-        "00.png",
-        "01.png",
-        "02.png",
-        "03.png",
-        "04.png",
-        "05.png",
-        "06.png",
-        "07.png",
-        "08.png",
-        "09.png",
-        "10.png",
-        "11.png",
-        "12.png",
-        "13.png",
-        "14.png",
-        "15.png",
-        "16.png",
-        "17.png",
-        "18.png",
-        "19.png"
-      ],
-      "group": "pruebas"
-    },
-    "idle": {
-      "title": "Idle",
-      "dir": "nueva/idle",
+    "stance": {
+      "title": "Stance",
+      "dir": "nueva/stance",
       "count": 24,
       "fps": 8,
       "canvas": [
@@ -462,6 +316,40 @@
         "23.png"
       ],
       "group": "animaciones"
+    },
+    "jump": {
+      "title": "Salto · prueba",
+      "dir": "nueva/jump",
+      "count": 20,
+      "fps": 10,
+      "canvas": [
+        200,
+        300
+      ],
+      "note": "Documento de prueba, no es una animacion del personaje: la hoja de 20 poses era un salto hacia adelante y no se usa como salto en el juego. Se conserva por si hace falta.",
+      "frames": [
+        "00.png",
+        "01.png",
+        "02.png",
+        "03.png",
+        "04.png",
+        "05.png",
+        "06.png",
+        "07.png",
+        "08.png",
+        "09.png",
+        "10.png",
+        "11.png",
+        "12.png",
+        "13.png",
+        "14.png",
+        "15.png",
+        "16.png",
+        "17.png",
+        "18.png",
+        "19.png"
+      ],
+      "group": "pruebas"
     }
   }
 }
