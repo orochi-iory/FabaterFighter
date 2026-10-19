@@ -316,6 +316,33 @@ con frames agachados o en el aire **la falla por diseno** (un frame de 127 px
 agachada es correcto). Para esos sets la puerta util es la uniformidad entre
 frames equivalentes, no el alto absoluto.
 
+## Explicarle a la IA qué es una hoja (2026-10-19)
+
+El fallo de repetir poses no es de la IA: es del encargo. «Atusarse las piernas
+tres veces» produce tres veces el gesto dibujado, y esos frames sobran. El ciclo
+se repite **en el motor**, no en la hoja.
+
+Lo que hay que decir, literal:
+
+1. **Qué es una celda**: «cada celda es un dibujo distinto del flipbook de un
+   animador; las 18 celdas son 18 momentos distintos».
+2. **Qué invalida la hoja**: «si dos celdas se parecen, la hoja está mal».
+3. **De dónde sale la variedad**: no de gestos nuevos sino de las causas del
+   movimiento — respiración, cambio de peso, coletazo, manos, rodillas.
+4. **Qué NO dibujar**: gestos que se repiten en la secuencia (el motor los
+   repite con el mismo frame).
+
+Y para el diseño de la cabeza, que salía como casco de moto, hay que dar un
+recorte ampliado y enumerar los rasgos:
+
+- máscara magenta **solo hasta los pómulos** (frente y sienes), nunca toda la cabeza;
+- **mejilla, boca y mentón de piel** a la vista;
+- **visor ovalado teal con ribete oscuro y un píxel de brillo**;
+- **mechón de pelo sobre la sien**, y coleta saliendo de detrás.
+
+Medido: en la stance buena la cabeza tiene 6 % de piel y visor; en la que salía
+como casco, 0 % de piel.
+
 ## Cómo camina un personaje (referencia fija)
 
 La referencia de animación está en el repo y no se toca:

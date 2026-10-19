@@ -136,6 +136,31 @@ def rows_of_cells(im, ncol=5, nrows=4):
             for (a, b) in bands]
 
 
+
+def scrub_grid_lines(fig, dark_ratio=0.92, long_ratio=0.75):
+    """Borra las lineas de rejilla que el modelo dibuja entre celdas.
+
+    Se detectan como filas o columnas casi enteras de color oscuro. Si no se
+    quitan, cada frame sale con un marco de un pixel, que en el juego se ve como
+    un cuadro alrededor del personaje.
+    """
+    w, h = fig.size
+    px = fig.load()
+    def is_dark(p):
+        return p[3] and sum(p[:3]) < 150
+    # columnas y filas oscuras
+    for x in range(w):
+        n = sum(1 for y in range(h) if is_dark(px[x, y]))
+        if n >= h * long_ratio:
+            for y in range(h):
+                px[x, y] = (0, 0, 0, 0)
+    for y in range(h):
+        n = sum(1 for x in range(w) if is_dark(px[x, y]))
+        if n >= w * long_ratio:
+            for x in range(w):
+                px[x, y] = (0, 0, 0, 0)
+    return fig
+
 def cut_figure_centre(cell, tol=70):
     """Recorta la figura de una celda de rejilla fija.
 
@@ -562,7 +587,10 @@ def build(sheet, outdir, cw, ch, ground, ncol=5, nrows=4, write=True, head=0,
     for j in range(nrows):
         for i in range(ncol):
             cell = grid[j][i]
-            figs.append(cut(cell))
+            f = cut(cell)
+            if grid_mode:
+                f = scrub_grid_lines(f)
+            figs.append(f)
     for f in figs:
         strip_fringe(f)
     figs = [f for f in figs if f.width > 4 and f.height > 4]   # celdas vacías
