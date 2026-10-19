@@ -1,15 +1,5 @@
 {
-  "hardware": "CPS-1 no rota ni escala. El volteo horizontal es gratis, asi que todo se dibuja mirando a la derecha. Una voltereta no se puede sacar girando un frame.",
-  "source": "https://fabiensanglard.net/sf2_sheets/",
-  "land": "idle_0",
-  "flip_fwd": [
-    "flip_fwd_0",
-    "flip_fwd_1",
-    "flip_fwd_2",
-    "flip_fwd_3",
-    "flip_fwd_4",
-    "idle_0"
-  ],
+  "hardware": "CPS-1 no rota. Todo se dibuja mirando a la derecha. El aterrizaje reutiliza idle_0.",
   "flip_back": [
     "flip_back_0",
     "flip_back_1",
@@ -18,5 +8,12 @@
     "flip_back_4",
     "idle_0"
   ],
-  "not_shared": "El despegue y el giro no se comparten: adelante se encoge hacia la cara, atras echa la cabeza al lado contrario. La coleta delata el sentido, asi que el frame boca abajo tampoco se voltea."
+  "flip_fwd_progress": [
+    "flip_fwd_0",
+    "flip_fwd_1",
+    "flip_fwd_3",
+    "idle_0"
+  ],
+  "not_yet": "flip_fwd_2 sigue siendo el ovillo imposible. No se entrega hasta que las rodillas salgan del pecho y el muslo toque la cadera.",
+  "how": "El despegue es el idle echado adelante. Boca abajo es el frame horizontal de la voltereta atras, dado la vuelta. La invertida es ese mismo cuerpo con la coleta al otro lado."
 }
