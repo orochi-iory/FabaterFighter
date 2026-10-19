@@ -64,3 +64,24 @@ Del frame de referencia de Voltia (30×64 px, 21 colores):
   Medido: alto 79–91, ancho 59–77, tinta 2 535–2 820, contorno 18 %, pelo 18–26 %.
   **Fuera de banda en todo menos la paleta.** Ancho y contorno son el doble del
   objetivo: el dibujo es demasiado «carne» y el traje demasiado corto.
+
+## Separar animaciones de una hoja sin rejilla (R. Mika)
+
+La hoja de R. Mika (1910×3887) no tiene celdas: las figuras están empaquetadas a
+mano. Método que funciona, en `tools/sheet_bands.py`:
+
+1. **Bandas**: filas 100 % magenta separan secuencias. Salen 30.
+2. **Trozos**: componentes conexas por tramos (sin numpy, union-find sobre
+   run-length). 525 trozos → 327 figuras.
+3. **Unir**: un trozo solo se pega a una figura si es **pequeño** (< 35 % de su
+   área) y está a menos de **6 px**. Con 10 px o sin el límite de tamaño se
+   fusionan dos frames vecinos y sale uno de 180 px de ancho que rompe el lienzo
+   común del GIF.
+4. **Orden**: izquierda → derecha.
+5. **Recorte**: fondo magenta → transparente; nunca se reescala.
+6. **GIF** por banda con `tools/make_gif.py --zoom 2 --fps 12`, que alinea por
+   los pies en un lienzo común.
+
+Límite conocido: si una banda lleva dos animaciones seguidas, salen juntas; y
+una coleta muy separada puede contarse como frame. Los nombres no están en la
+hoja: se ponen mirando la postura y con columna de confianza.
