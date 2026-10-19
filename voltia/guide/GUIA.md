@@ -1,130 +1,58 @@
 # Guía de estilo — Voltia
 
-Se corrige desde el visor, apartado **Guía de estilo**.
-Este archivo es la copia de trabajo. Si una generación sale mal, la regla nueva
-se anota aquí y en `style.json` antes de seguir. No se añade una regla que no
-hayamos visto fallar.
+Apartado **Guía de estilo** del visor. Si un frame sale mal, la regla se anota
+aquí antes de seguir.
 
-La pelea no usa estos frames. La hoja vieja sigue donde estaba.
+La pelea no usa estos frames.
 
-## Ancla
+## Qué se borró
 
-`voltia/sf2/idle_0.png`. Primer frame de la última tirada. 89×120, 18 tintas.
-Todo el ciclo nuevo sale de ese dibujo. No se regenera el personaje para
-hacer otro frame si el ancla se puede mover.
+La versión nueva anterior no sirve. El recorte inicial era rosa, el mismo tono
+de la máscara: se comía un trozo de la cara y dejaba rosa pegado al personaje.
+Recortar un brazo del frame y pegarlo no es reutilizar. Eso también se borró.
 
-Mira a la derecha. El juego espeja. Altura de pie del ancla: 120 px de arte.
-No se reescala a otro alto hasta que esta guía lo cambie.
+Reutilizar es el dibujo completo, en otro momento. El saltito reutiliza el de
+pie entero, colocado más alto.
 
 ## Recorte
 
-Fondo de las tiras: **#00FF00** exacto, plano, de borde a borde. PNG. Sin JPEG,
-sin sombra, sin línea de suelo.
+El fondo de las tiras es verde brillante, nunca rosa ni magenta.
 
-Se midió la distancia de las 18 tintas a los recortes de siempre. El verde
-puro es el más lejos.
+En cada imagen se mide el verde del borde. En esta tirada salió `#11EF06`
+(17, 239, 6). No hace falta que sea `#00FF00` exacto: el modelo no lo clava.
+Lo que no puede ser es un tono de la máscara.
 
-| Recorte | Tinta más cercana | Distancia |
+Un píxel es fondo solo si está más cerca de ese verde que de la paleta.
+No se recorta por «canal verde alto» ni por rosa.
+
+| Tinta | RGB | Al verde |
 |---|---|---|
-| #00FF00 | teal claro (14, 108, 108), 20 px | 183 |
-| #0000FF | coleta | 164 |
-| #FF00FF | coleta | 173 |
-| #FF0000 | máscara | 143 |
-| #00FFFF | visor | 113 |
-| #FFFF00 | rayo | 72 |
+| máscara | 152, 40, 104 | 260 |
+| máscara sombra | 112, 24, 80 | 246 |
+| visor | 40, 168, 168 | 178 |
+| traje sombra | 16, 72, 80 | 183 |
 
-El visor (40, 176, 184) está a 204 del verde. No está cerca.
+La más cercana es el visor, a 178. La máscara está a 260. No se sacrifica.
+Se sacrifica el rosa como color de fondo.
 
-El fallo anterior no era que el verde estuviera en la paleta. Era recortar
-por «canal verde alto», que se come el teal, y dejar el borde verde del
-antialias. La regla nueva no mira el canal:
-
-1. Si el píxel está a 60 o menos de #00FF00, es fondo.
-2. Si está más cerca del recorte que de cualquier tinta, es fondo.
-3. Lo que queda se encaja en la tinta más cercana.
-4. Una mota de menos de 8 px se borra.
-
-Lo hace `voltia/guide/extract.py`. No se recorta a mano.
-
-### Si hay que sacrificar una tinta
-
-Bola de exclusión: 100 alrededor de #00FF00. Ninguna tinta de Voltia entra.
-No se sacrifica ninguna.
-
-Si un personaje nuevo necesita un color dentro de esa bola, se mueve el color
-del personaje y se anota en el historial. No se mueve el recorte, y no se
-cambia el visor de Voltia para ampliar el hueco: no hace falta.
-
-## Tintas
-
-Solo estas. Un frame con un color nuevo no entra.
-
-| Tinta | RGB | Al recorte |
-|---|---|---|
-| perfil | 0, 0, 0 | 255 |
-| coleta sombra | 76, 36, 114 | 258 |
-| navy sombra | 16, 18, 46 | 242 |
-| coleta | 128, 70, 160 | 276 |
-| navy | 30, 34, 78 | 236 |
-| visor y teal | 40, 176, 184 | 204 |
-| traje sombra | 8, 72, 80 | 200 |
-| sombra morada | 42, 18, 70 | 251 |
-| máscara | 156, 28, 100 | 293 |
-| traje profundo | 6, 44, 54 | 218 |
-| máscara sombra | 96, 14, 68 | 268 |
-| piel | 236, 184, 142 | 284 |
-| piel media | 200, 132, 92 | 252 |
-| piel sombra | 148, 88, 60 | 231 |
-| cinturón | 188, 140, 28 | 222 |
-| rayo | 250, 210, 56 | 260 |
-| rayo sombra | 228, 184, 52 | 244 |
-| teal claro | 14, 108, 108 | 183 |
-
-La sombra morada es pelo y también sombra del traje. No se usa sola para
-localizar la coleta.
-
-## Cómo se hace un frame
-
-1. Si sale del ancla moviendo partes, se mueve. No se regenera.
-2. Si hay que generar, una figura sola, con el ancla de referencia y el
-   bloque de abajo, sobre #00FF00. Margen de 16 px. Nada toca el borde.
-3. `python3 voltia/guide/extract.py entrada.png salida.png`
-4. Tiene que quedar en una sola pieza. Si se parte, no se entrega.
-5. Se mira al lado del ancla, a tamaño de juego, antes de hacer la tira.
-6. Una tira solo cuando el frame suelto ya coincide. Hueco verde de medio
-   cuerpo entre figuras. El mismo recorte. Varias tiras si no caben.
-
-Bloque de prompt, literal:
-
-> One fighting-game pixel sprite of the reference character, full body, facing right. Match the reference exactly: same chunky pixels, same magenta mask, same teal visor, same long violet ponytail, same fat yellow lightning bolt, same proportions, same flat colors. No anti-aliasing, no gradients, no soft shadows. Background is exactly flat pure green #00FF00 edge to edge. No floor, no shadow, no green on the character. Keep the teal visor teal. At least 16 pixels of pure #00FF00 margin on every side. Nothing touches the edge. No text, no numbers, no border.
-
-## Sprites clave
-
-Se reutilizan. No se redibujan para cada animación.
-
-| Id | Frame | Sirve para |
-|---|---|---|
-| stand | `canon/00_stand.png` | Aterrizaje, contacto del paso, fin de los golpes, inicio del bloqueo |
-| squash | `canon/04_squash.png` | Anticipación del salto, entrada al agachado |
-| hop | `canon/06_hop1_peak.png` | Saltito en el aire, salto corto atrás |
-| thighs | `canon/14_thighs.png` | Manos en los muslos. Calentamiento, y un taunt si aguanta |
-
-El de pie es el ancla colocado en el lienzo común. El ovillo del salto y el
-resto de ataques todavía no son clave: no se marcan hasta que existan.
+Si una tinta nueva cae a menos de 120 del verde medido, se mueve esa tinta.
+No se mueve el recorte y no se toca la máscara.
 
 ## Idle
 
-19 dibujos, 8 fps. El de pie cierra el bucle, así que se ven 20 pasos.
+20 pasos, 8 fps. En `voltia/nueva/`.
 
-1. De pie, respira (el torso sube 3 px, los pies no).
-2. Saltito doble: se agacha, sube 12 px, cae, y lo repite un poco más bajo.
-3. Baja las manos y se sacude los muslos dos veces.
-4. Vuelve a la guardia.
+1. De pie.
+2. Saltito: el mismo de pie, más alto.
+3. Pico: rodilla arriba.
+4. Cae y pisa.
+5. Segundo saltito, igual de forma, un poco más bajo.
+6. Baja las manos y se atusa las piernas, del muslo a la caña, y vuelve.
 
-Los brazos del calentamiento son la primera construcción a partir del puño
-del ancla. No están dados por buenos. Se corrigen desde el visor.
+Sprites clave: `00_stand` (de pie), `02_hop1_peak` (rodilla arriba),
+`13_stroke_low` (manos en la caña).
 
 ## Historial
 
-- 2026-10-19. Primera guía. Recorte medido. Idle nuevo desde el ancla.
-  La pelea no se toca. El calentamiento de muslos queda pendiente de corrección.
+- 2026-10-19. Borrada la versión nueva anterior. Idle de 20 desde cero.
+  Recorte verde medido en el borde. Máscara entera.

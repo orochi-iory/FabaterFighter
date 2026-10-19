@@ -13,32 +13,26 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT.parent / 'tools' / 'pylibs'))
 from PIL import Image
 
-KEY = (0, 255, 0)
-# Radio duro: el antialias del recorte cae aquí y se borra.
-HARD = 60
-# Ninguna tinta puede vivir dentro de esta bola. Voltia está a 183.
-EXCLUDE = 100
+# Verde medido en el borde de la tira. Nunca rosa: el rosa es la máscara.
+KEY = (17, 239, 6)
+HARD = 70
+EXCLUDE = 120
 SPECK = 8
 
 PALETTE = [
     (0, 0, 0),
-    (76, 36, 114),
-    (16, 18, 46),
-    (128, 70, 160),
-    (30, 34, 78),
-    (40, 176, 184),
-    (8, 72, 80),
-    (42, 18, 70),
-    (156, 28, 100),
-    (6, 44, 54),
-    (96, 14, 68),
-    (236, 184, 142),
-    (200, 132, 92),
-    (148, 88, 60),
-    (188, 140, 28),
-    (250, 210, 56),
-    (228, 184, 52),
-    (14, 108, 108),
+    (72, 32, 104),
+    (16, 16, 48),
+    (32, 40, 80),
+    (128, 64, 160),
+    (16, 72, 80),
+    (40, 168, 168),
+    (192, 120, 80),
+    (232, 176, 128),
+    (152, 40, 104),
+    (112, 24, 80),
+    (248, 208, 40),
+    (176, 112, 40),
 ]
 
 

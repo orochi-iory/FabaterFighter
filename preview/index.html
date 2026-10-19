@@ -100,7 +100,6 @@
   <p id="ver">cargando…</p>
   <a class="play" href="fight.html">Probar pelea · Voltia vs Voltia</a>
   <a class="play alt" href="#guia">Guía de estilo</a>
-  <a class="play alt" href="#nueva">Ver versión nueva</a>
   <p class="notes" id="notes"></p>
   <p id="syncwarn"></p>
 </header>
@@ -141,7 +140,7 @@
     <h3>Paleta</h3>
     <div class="swatches" id="guidePal"></div>
     <h3>Idle nuevo</h3>
-    <canvas id="guidecv" width="112" height="150"></canvas>
+    <canvas id="guidecv" width="128" height="156"></canvas>
     <div class="controls" id="guideBtns"></div>
     <p id="guideIdleNote"></p>
     <canvas id="guidestrip" width="240" height="36"></canvas>
@@ -153,16 +152,6 @@
     <pre id="guidePrompt"></pre>
     <h3>Historial</h3>
     <ul id="guideLog"></ul>
-  </div>
-</section>
-<section class="nueva" id="nueva">
-  <h2>Versión nueva · no está en la pelea</h2>
-  <div class="box">
-    <p class="warn">Esto no sustituye la hoja de la pelea. Voltia vs Voltia sigue con el personaje viejo.</p>
-    <canvas id="newcv" width="240" height="170"></canvas>
-    <div class="controls" id="newAnims"></div>
-    <p class="note" id="newNote">Cargando los frames nuevos…</p>
-    <canvas id="newstrip" width="240" height="40"></canvas>
   </div>
 </section>
 <section class="arena" id="escenario">
@@ -203,120 +192,6 @@
   </div>
 </section>
 <footer id="foot">FabaterFighter</footer>
-<script>
-/* Visor del remake. Lee voltia/sf2/ y no toca la hoja de la pelea. */
-(async () => {
-  const QB = '?v=' + Date.now();
-  const root = '../voltia/sf2/';
-  const note = document.getElementById('newNote');
-  const buttons = document.getElementById('newAnims');
-  const cv = document.getElementById('newcv');
-  const strip = document.getElementById('newstrip');
-  const cx = cv.getContext('2d');
-  const sx = strip.getContext('2d');
-  cx.imageSmoothingEnabled = false;
-  sx.imageSmoothingEnabled = false;
-  let pack;
-  try {
-    pack = await (await fetch(root + 'viewer.json' + QB, { cache: 'no-store' })).json();
-  } catch (err) {
-    note.textContent = 'No pude cargar la versión nueva.';
-    return;
-  }
-  const cache = {};
-  async function frame(name) {
-    if (cache[name]) return cache[name];
-    const img = new Image();
-    img.src = root + name + QB;
-    await img.decode();
-    cache[name] = img;
-    return img;
-  }
-  await Promise.all(pack.anims.flatMap(a => a.frames).filter((n, i, all) => all.indexOf(n) === i).map(frame));
-  let anim = pack.anims[0];
-  let tick = 0;
-  let playing = true;
-  function draw() {
-    const imgs = anim.frames.map(n => cache[n]);
-    const i = Math.floor(tick) % imgs.length;
-    const img = imgs[i];
-    cx.clearRect(0, 0, cv.width, cv.height);
-    cx.fillStyle = '#101018';
-    cx.fillRect(0, 0, cv.width, cv.height);
-    cx.strokeStyle = '#3a3752';
-    cx.beginPath();
-    cx.moveTo(8, cv.height - 10);
-    cx.lineTo(cv.width - 8, cv.height - 10);
-    cx.stroke();
-    const x = Math.round((cv.width - img.width) / 2);
-    const y = cv.height - 12 - img.height;
-    cx.drawImage(img, x, y);
-    const caps = anim.captions || anim.frames.map((_, n) => String(n + 1));
-    const gap = 8;
-    const scale = 2;
-    const sw = imgs.reduce((n, im) => n + im.width * scale, 0) + gap * (imgs.length + 1);
-    const sh = Math.max(...imgs.map(im => im.height)) * scale + 22;
-    if (strip.width !== sw || strip.height !== sh) {
-      strip.width = sw;
-      strip.height = sh;
-      sx.imageSmoothingEnabled = false;
-    }
-    sx.fillStyle = '#101018';
-    sx.fillRect(0, 0, sw, sh);
-    let px = gap;
-    imgs.forEach((im, k) => {
-      const dw = im.width * scale;
-      const dh = im.height * scale;
-      const py = sh - 4 - dh;
-      if (k === i) {
-        sx.fillStyle = '#2a2410';
-        sx.fillRect(px - 3, py - 14, dw + 6, dh + 18);
-      }
-      sx.drawImage(im, px, py, dw, dh);
-      sx.fillStyle = k === i ? '#ffcb3d' : '#9d9ab5';
-      sx.font = '11px sans-serif';
-      sx.fillText(caps[k] || '', px, 12);
-      px += dw + gap;
-    });
-    note.textContent = anim.note + '  ·  frame ' + (i + 1) + ' de ' + imgs.length +
-      (caps[i] ? ' · ' + caps[i] : '');
-  }
-  function select(a, btn) {
-    anim = a;
-    tick = 0;
-    [...buttons.querySelectorAll('button')].forEach(b => b.classList.remove('active'));
-    btn.classList.add('active');
-    draw();
-  }
-  pack.anims.forEach((a, n) => {
-    const b = document.createElement('button');
-    b.type = 'button';
-    b.textContent = a.label;
-    if (n === 0) b.classList.add('active');
-    b.addEventListener('click', () => select(a, b));
-    buttons.appendChild(b);
-  });
-  const pause = document.createElement('button');
-  pause.type = 'button';
-  pause.textContent = '⏸ Pausar';
-  pause.addEventListener('click', () => {
-    playing = !playing;
-    pause.textContent = playing ? '⏸ Pausar' : '▶ Seguir';
-  });
-  buttons.appendChild(pause);
-  draw();
-  let last = 0;
-  function loop(t) {
-    if (playing && t - last > 1000 / (anim.fps || 6)) {
-      tick += 1;
-      last = t;
-      draw();
-    }
-    requestAnimationFrame(loop);
-  }
-  requestAnimationFrame(loop);
-})();
-</script>
 <script>
 (async () => {
   // Anti-caché: hoja y datos siempre frescos y emparejados (evita el "carrusel").
@@ -820,7 +695,7 @@
 })();
 </script>
 <script>
-/* Guía de estilo. Lee voltia/guide/ y voltia/canon/. No toca la pelea. */
+/* Guía de estilo. Lee voltia/guide/ y el idle nuevo. No toca la pelea. */
 (async () => {
   const QB = '?v=' + Date.now();
   const lead = document.getElementById('guideLead');
@@ -874,7 +749,7 @@
   });
   document.getElementById('guideProof').src = '../voltia/guide/key_proof.png' + QB;
 
-  const root = '../voltia/canon/';
+  const root = '../voltia/nueva/';
   const cache = {};
   async function frame(name) {
     if (cache[name]) return cache[name];
@@ -939,13 +814,13 @@
     cx.fillRect(0, 0, cv.width, cv.height);
     cx.drawImage(img, 0, 0);
     cx.fillStyle = '#5a5040';
-    cx.fillRect(0, 139, cv.width, 1);
+    cx.fillRect(0, 147, cv.width, 1);
     const cap = guide.idle.captions[i] || '';
     note.textContent = (i + 1) + '/' + frames.length + ' · ' + cap + ' — ' + guide.idle.note;
     const gap = 4;
     const scale = 2;
     const sw = frames.reduce((n, name) => n + cache[name].width * scale + gap, gap);
-    const sh = 150 * scale + 16;
+    const sh = 156 * scale + 16;
     if (strip.width !== sw) strip.width = sw;
     if (strip.height !== sh) strip.height = sh;
     sx.imageSmoothingEnabled = false;

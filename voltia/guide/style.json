@@ -2,82 +2,74 @@
   "title": "Guía de estilo",
   "updated": "2026-10-19",
   "character": "Voltia",
-  "anchor": "sf2/idle_0.png",
-  "anchorNote": "El primer frame de la última tirada. Todo lo demás sale de aquí. No se regenera el diseño.",
+  "anchor": "nueva/00_stand.png",
+  "anchorNote": "Idle nuevo, dibujado desde cero. La versión anterior se borró: el recorte rosa se comía la máscara y el arreglo a mano dejaba rosa suelto.",
   "facing": "derecha",
   "standHeight": 120,
   "key": {
-    "hex": "#00FF00",
-    "rgb": [0, 255, 0],
-    "hard": 60,
-    "exclude": 100,
-    "why": "Es el recorte más lejos de la paleta. El cian está a 113 del visor, el amarillo a 72 del rayo, el rojo a 143 de la máscara. El verde puro está a 183 de la tinta más cercana."
+    "hex": "#11EF06",
+    "rgb": [17, 239, 6],
+    "hard": 70,
+    "exclude": 120,
+    "why": "El recorte no es rosa. El rosa era el tono de la máscara, y por eso se la comía y a la vez dejaba rosa pegado. El fondo se mide en el borde de cada tira: verde brillante, lejos de la máscara."
   },
   "nearest": {
-    "name": "teal claro",
-    "rgb": [14, 108, 108],
-    "pixels": 20,
-    "distance": 183
+    "name": "visor",
+    "rgb": [40, 168, 168],
+    "pixels": 293,
+    "distance": 178
   },
-  "visorDistance": 204,
-  "sacrifice": "Voltia no sacrifica ninguna tinta: ninguna entra en la bola de 100 alrededor del recorte. Si un personaje nuevo necesita un color dentro de esa bola, se mueve el color del personaje y se anota aquí. No se mueve el recorte.",
-  "clip": "No se recorta por canal verde alto. Un píxel es fondo si está a 60 o menos del #00FF00, o si está más cerca del recorte que de cualquier tinta. Lo que queda se encaja en la tinta más cercana. Así el visor no se come y el borde verde del antialias sí.",
+  "visorDistance": 178,
+  "sacrifice": "No se sacrifica la máscara. Se sacrifica el rosa como color de fondo, para siempre. Si una tinta nueva cae a menos de 120 del verde medido, se mueve esa tinta, no el recorte y no la máscara.",
+  "clip": "No se recorta por canal verde ni por rosa. Se mide el verde del borde. Un píxel es fondo solo si está más cerca de ese verde que de la paleta. La máscara (152, 40, 104) está a 260: no se toca. Reutilizar es el frame entero, no recortar un brazo y pegarlo.",
   "palette": [
-    {"name": "perfil", "rgb": [0, 0, 0], "distance": 255},
-    {"name": "coleta sombra", "rgb": [76, 36, 114], "distance": 258},
-    {"name": "navy sombra", "rgb": [16, 18, 46], "distance": 242},
-    {"name": "coleta", "rgb": [128, 70, 160], "distance": 276},
-    {"name": "navy", "rgb": [30, 34, 78], "distance": 236},
-    {"name": "visor y teal", "rgb": [40, 176, 184], "distance": 204},
-    {"name": "traje sombra", "rgb": [8, 72, 80], "distance": 200},
-    {"name": "sombra morada", "rgb": [42, 18, 70], "distance": 251},
-    {"name": "máscara", "rgb": [156, 28, 100], "distance": 293},
-    {"name": "traje profundo", "rgb": [6, 44, 54], "distance": 218},
-    {"name": "máscara sombra", "rgb": [96, 14, 68], "distance": 268},
-    {"name": "piel", "rgb": [236, 184, 142], "distance": 284},
-    {"name": "piel media", "rgb": [200, 132, 92], "distance": 252},
-    {"name": "piel sombra", "rgb": [148, 88, 60], "distance": 231},
-    {"name": "cinturón", "rgb": [188, 140, 28], "distance": 222},
-    {"name": "rayo", "rgb": [250, 210, 56], "distance": 260},
-    {"name": "rayo sombra", "rgb": [228, 184, 52], "distance": 244},
-    {"name": "teal claro", "rgb": [14, 108, 108], "distance": 183}
+    {"name": "perfil", "rgb": [0, 0, 0], "distance": 240},
+    {"name": "coleta sombra", "rgb": [72, 32, 104], "distance": 236},
+    {"name": "navy sombra", "rgb": [16, 16, 48], "distance": 227},
+    {"name": "navy", "rgb": [32, 40, 80], "distance": 213},
+    {"name": "coleta", "rgb": [128, 64, 160], "distance": 258},
+    {"name": "traje sombra", "rgb": [16, 72, 80], "distance": 183},
+    {"name": "visor y teal", "rgb": [40, 168, 168], "distance": 178},
+    {"name": "piel sombra", "rgb": [192, 120, 80], "distance": 224},
+    {"name": "piel", "rgb": [232, 176, 128], "distance": 255},
+    {"name": "máscara", "rgb": [152, 40, 104], "distance": 260},
+    {"name": "máscara sombra", "rgb": [112, 24, 80], "distance": 246},
+    {"name": "rayo", "rgb": [248, 208, 40], "distance": 236},
+    {"name": "cinturón", "rgb": [176, 112, 40], "distance": 206}
   ],
   "rules": [
-    "Una sola ancla. El frame de pie. No se promedia con el arte conceptual ni con la hoja vieja.",
-    "Se mira a la derecha. El juego ya espeja.",
-    "Tintas planas de esta paleta. Sin degradados, sin antialias, sin un verde nuevo.",
-    "Si el frame se puede sacar moviendo el ancla, no se regenera.",
-    "Una figura nueva, si hace falta generarla, va sola sobre #00FF00 plano, en PNG, con margen. Luego extract.py. Nada de JPEG.",
-    "No se hace una tira hasta que un frame suelto recortado coincida con el ancla.",
-    "Un frame partido en dos piezas no se entrega.",
-    "La pelea no cambia de hoja hasta que el ciclo sea coherente."
+    "El recorte no es rosa, magenta ni un tono de la máscara.",
+    "Se mide el verde del borde. No se recorta por canal.",
+    "La máscara se queda entera. Si el recorte se la come, el frame no entra.",
+    "Reutilizar es el dibujo completo en otro momento. No se recorta un brazo ni un trozo de máscara para pegarlo.",
+    "Un frame partido no se entrega.",
+    "La pelea no cambia de hoja hasta que este ciclo se acepte."
   ],
-  "prompt": "One fighting-game pixel sprite of the reference character, full body, facing right. Match the reference exactly: same chunky pixels, same magenta mask, same teal visor, same long violet ponytail, same fat yellow lightning bolt, same proportions, same flat colors. No anti-aliasing, no gradients, no soft shadows. Background is exactly flat pure green #00FF00 edge to edge. No floor, no shadow, no green on the character. Keep the teal visor teal. At least 16 pixels of pure #00FF00 margin on every side. Nothing touches the edge. No text, no numbers, no border.",
+  "prompt": "One fighting-game pixel sprite of the reference character, full body, facing right. Match the reference exactly: complete unbroken magenta mask, teal visor, huge violet ponytail, teal suit, fat yellow lightning, gold belt, navy gloves and boots. Flat colors, black outlines, no anti-aliasing. Background is flat pure green edge to edge, never pink. No floor, no shadow, no text. At least 24 pixels of green margin. The mask must stay intact.",
   "keys": [
-    {"id": "stand", "file": "00_stand.png", "use": "Aterrizaje, contacto del paso, fin de los golpes, inicio del bloqueo."},
-    {"id": "squash", "file": "04_squash.png", "use": "Anticipación del salto y entrada al agachado."},
-    {"id": "hop", "file": "06_hop1_peak.png", "use": "Saltito en el aire. Sirve para el salto corto atrás."},
-    {"id": "thighs", "file": "14_thighs.png", "use": "Manos en los muslos. Calentamiento, y luego un taunt si aguanta."}
+    {"id": "stand", "file": "00_stand.png", "use": "De pie. Aterrizaje y cierre del idle. Se reutiliza entero, más alto, en el saltito."},
+    {"id": "hop", "file": "02_hop1_peak.png", "use": "Rodilla arriba, en el aire. Pico del saltito."},
+    {"id": "groom", "file": "13_stroke_low.png", "use": "Manos en la caña, atusándose las piernas. El trazo baja del muslo a la bota y vuelve."}
   ],
   "idle": {
     "fps": 8,
-    "note": "Saltito doble, se queda respirando y al final se sacude los muslos. 19 dibujos, el de pie cierra el bucle. Los brazos del calentamiento son la primera construcción: se corrigen desde aquí.",
+    "note": "Veinte pasos. Saltito doble: el de pie sube entero y en el pico levanta la rodilla. Luego se atusa las piernas, de los muslos a la caña, y vuelve. La máscara no se recorta.",
     "frames": [
-      "00_stand.png", "01_breath_in.png", "02_breath_hold.png", "03_breath_out.png",
-      "04_squash.png", "05_hop1.png", "06_hop1_peak.png", "07_hop1_down.png",
-      "08_land.png", "09_squash2.png", "10_hop2.png", "11_hop2_land.png",
-      "12_arms_mid.png", "13_arms_low.png", "14_thighs.png", "15_slap.png",
-      "16_rebound.png", "17_slap2.png", "18_arms_back.png", "00_stand.png"
+      "00_stand.png", "01_hop1.png", "02_hop1_peak.png", "03_hop1_down.png",
+      "04_land.png", "05_hop2.png", "06_hop2_peak.png", "07_hop2_down.png",
+      "08_land2.png", "09_hands_down.png", "10_to_thigh.png", "11_stroke_high.png",
+      "12_stroke_mid.png", "13_stroke_low.png", "14_stroke_hold.png", "15_stroke_up.png",
+      "16_stroke_2.png", "17_stroke_mid2.png", "18_return.png", "19_stand.png"
     ],
     "captions": [
-      "de pie", "inspira", "aguanta", "suelta",
-      "se agacha", "saltito", "arriba", "cae",
-      "pisa", "otra vez", "segundo", "pisa",
-      "baja las manos", "hacia los muslos", "en los muslos", "se sacude",
-      "rebotan", "otra sacudida", "vuelve", "de pie"
+      "de pie", "saltito", "arriba", "cae",
+      "pisa", "segundo", "arriba", "cae",
+      "pisa", "baja las manos", "a los muslos", "se atusa",
+      "baja por la pierna", "hasta la caña", "sigue", "sube la mano",
+      "otra pasada", "baja otra vez", "vuelve", "de pie"
     ]
   },
   "changelog": [
-    "2026-10-19. Primera guía. El verde #00FF00 no estaba cerca: el fallo era recortar por canal verde y dejar el borde. Recorte por distancia, bola de exclusión 100, radio duro 60. Idle de 19 frames desde el ancla, sin tocar la pelea."
+    "2026-10-19. Se borra la versión nueva anterior. El recorte rosa se comía la máscara y el arreglo a mano dejaba rosa suelto. Idle de 20 frames desde cero, fondo verde medido en el borde, máscara a 260 de ese verde."
   ]
 }
