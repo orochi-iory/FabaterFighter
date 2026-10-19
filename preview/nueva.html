@@ -73,6 +73,7 @@
       <li>Bloque de píxel medido: <b>8</b>. El dibujo mide <b>1014</b> de alto, o sea <b>126,8 bloques</b>.</li>
       <li>Resolución nativa del sprite: <b>~127 píxeles</b> de alto. La figura del escenario mide 153 y la de la pelea 120.</li>
       <li>Eso es lo que antes se estropeaba: en vez de leer 127 como resolución nativa, se tomaba 1022 como si fueran 1022 píxeles de sprite y se bajaba a 120.</li>
+      <li>Altura de ring: <b>200 px</b> de mundo. Suelo en <b>426</b>, el centro del rombo pintado; antes 408, que era el borde trasero del ring.</li>
     </ul>
   </div>
 </section>
@@ -83,6 +84,7 @@
     <div class="controls">
       <button id="mBlocks" type="button">127 · un bloque = 1 píxel</button>
       <button id="mFit153" type="button">153 · la figura vieja</button>
+      <button id="mFit200" type="button">200 · lo que pediste</button>
       <button id="mFit254" type="button">254 · 2× exacto</button>
       <button id="mFit300" type="button">300 · lo que pediste</button>
       <button id="mFit381" type="button">381 · 3× exacto</button>
@@ -91,7 +93,7 @@
     <div class="controls">
       <label>Desplazamiento <input id="stageScroll" type="range" min="0" max="1000" value="500"></label>
       <label>Zoom <input id="stageZoom" type="range" min="8" max="140" value="80"></label>
-      <label>Voltia de alto <input id="heroScale" type="range" min="64" max="1024" value="300"></label>
+      <label>Voltia de alto <input id="heroScale" type="range" min="64" max="1024" value="200"></label>
       <button id="stageJump" type="button">Simular salto</button>
       <button id="stageMusic" type="button" title="Puerto Voltaje. No suena solo.">▶ Música</button>
       <label>Volumen <input id="musicVol" type="range" min="0" max="100" value="75"></label>
@@ -110,18 +112,21 @@
 <footer>FabaterFighter · modelo nuevo, aparte de la pelea</footer>
 <script>
 (() => {
-  const q = new URLSearchParams(location.search).get('mode') || 'fit300';
+  const q = new URLSearchParams(location.search).get('mode') || 'fit200';
   const H = 1024;
   // ?v= para que el navegador no sirva el PNG viejo de esta misma ruta
   window.STAGE_FIGHTER = '../voltia/newref/ref_stand.png?v=4';
+  // Suelo en el centro del rombo dibujado (spec.floorY es 408, el borde trasero).
+  window.STAGE_FLOOR_Y = 426;
   // El archivo no se toca. El escenario lo dibuja a la escala que se elija.
   window.STAGE_FIGHTER_SCALE =
     q === 'fit254' ? 254 / H : q === 'fit381' ? 381 / H :
-    q === 'fit153' ? 153 / H : q === 'blocks' ? 1 / 8 : 300 / H;
+    q === 'fit200' ? 200 / H : q === 'fit153' ? 153 / H :
+    q === 'blocks' ? 1 / 8 : 300 / H;
   window.__MODE = q;
 })();
 </script>
-<script src="stage.js?v=4"></script>
+<script src="stage.js?v=5"></script>
 <script>
 (() => {
   const note = document.getElementById('modeNote');
@@ -131,6 +136,8 @@
       'resolución nativa del archivo, y en el ring se ve pequeño.' },
     fit153: { scale: 153 / H, text: '153 de alto, la figura vieja. ×1,2 sobre los 127 ' +
       'nativos: los bloques no caen justos y se ve blando.' },
+    fit200: { scale: 200 / H, text: '200 de alto: el tamaño que pediste para el ring. ' +
+      'Sobre 127 nativos es ×1,57, así que los bloques no caen justos.' },
     fit254: { scale: 254 / H, text: '254 de alto: ×2 exacto sobre los 127 nativos. Cada ' +
       'bloque se convierte en 4 píxeles iguales, sin inventar nada. Es el tamaño de ring ' +
       'más cercano a 300 que se puede hacer sin deformar.' },
@@ -139,8 +146,8 @@
     fit381: { scale: 381 / H, text: '381 de alto: ×3 exacto. Perfecto de píxel, pero ocupa ' +
       'dos tercios de la placa: demasiado grande para el ring.' }
   };
-  const map = { mBlocks: 'blocks', mFit153: 'fit153', mFit254: 'fit254',
-    mFit300: 'fit300', mFit381: 'fit381' };
+  const map = { mBlocks: 'blocks', mFit153: 'fit153', mFit200: 'fit200',
+    mFit254: 'fit254', mFit300: 'fit300', mFit381: 'fit381' };
   function apply(name) {
     const p = presets[name];
     if (!p) return;
@@ -168,7 +175,7 @@
       if (b) b.classList.remove('active');
     });
   };
-  apply(presets[window.__MODE] ? window.__MODE : 'fit300');
+  apply(presets[window.__MODE] ? window.__MODE : 'fit200');
 })();
 </script>
 <script>

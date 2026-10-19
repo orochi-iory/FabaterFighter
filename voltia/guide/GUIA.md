@@ -35,9 +35,14 @@ bajarlos a 120. Eso es un remuestreo por 0,117: cada píxel del dibujo cae en un
 fracción de píxel, y el detalle se muere. Después se llegó a bajar por bloques a
 95 × 126: menos malo, pero seguía siendo reducir el archivo. Prohibido.
 
-**Altura de ring: 300 px.** En la placa de 604 px de alto, 300 ocupa el 49,7% y
-deja 108 px sobre la cabeza. Es la proporción de SF2. 127 ocupa solo el 21%: por
-eso se veía pequeño.
+**Altura de ring: 200 px.** Elegida por el usuario después de probar 254 y 300.
+Ocupa el 33% de la placa de 604 y deja 226 px sobre la cabeza. 127 ocupaba el
+21% y se veía pequeño.
+
+**Suelo: 426, no 408.** El 408 era el borde trasero del ring y la figura parecía
+quedar detrás del rombo. El rombo pintado va de 405 a 445; su centro es 426, y
+ahí pisan los pies. Se cambia por página con `window.STAGE_FLOOR_Y`, así el
+visor viejo se queda como estaba.
 
 **El techo del generador es ~127 nativos.** Tres tiradas pidiendo 300 (bloques de
 3 en lienzo de 960, lienzo pequeño de 320, y «300 px de alto» explícito)

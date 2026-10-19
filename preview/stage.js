@@ -24,6 +24,9 @@
     const v = spec.view;
     return { w: v.w / zoom, h: v.h / zoom };
   }
+  // El suelo se puede bajar por página sin tocar la placa ni el visor viejo.
+  function floor() { return window.STAGE_FLOOR_Y || spec.floorY; }
+
   function cam() {
     const w = world();
     const vw = Math.max(1, Math.round(w.w));
@@ -31,7 +34,7 @@
     const maxX = Math.max(0, bg.width - vw);
     const x = Math.round(scroll * maxX);
     // la línea de suelo queda hacia el centro del encuadre, con ring por debajo
-    let y = spec.floorY - vh * 0.62 - jump;
+    let y = floor() - vh * 0.62 - jump;
     y = Math.round(Math.max(0, Math.min(Math.max(0, bg.height - vh), y)));
     return { x, y, w: Math.min(vw, bg.width - x), h: Math.min(vh, bg.height - y) };
   }
@@ -193,7 +196,7 @@
       }
     }
     if (document.getElementById('togGirl').checked && stance) {
-      const feet = spec.floorY - jump;
+      const feet = floor() - jump;
       const fs = window.STAGE_FIGHTER_SCALE || 1;
       const fw = stance.width * fs;
       const fh = stance.height * fs;
@@ -203,7 +206,7 @@
       paintSpots(c);
     }
     if (document.getElementById('togFloor').checked) {
-      const y = (spec.floorY - c.y) * sy;
+      const y = (floor() - c.y) * sy;
       cx.strokeStyle = '#ffcb3d';
       cx.setLineDash([6, 4]);
       cx.beginPath(); cx.moveTo(0, y); cx.lineTo(cv.width, y); cx.stroke();
@@ -257,7 +260,7 @@
     note.innerHTML =
       `<b>${spec.name}</b> · ${bg.width}×${bg.height} px. ` +
       `Voltia ${stance.width}×${stance.height}, dibujada a ${fs}× (1 = pixel de la imagen). ` +
-      `Ocupa ${Math.round(stance.height * fs)} px de mundo, con ${spec.floorY} px de suelo. ` +
+      `Ocupa ${Math.round(stance.height * fs)} px de mundo, con ${floor()} px de suelo. ` +
       `Zoom 100 = el pixel real.<br>` +
       `${spec.note} ` +
       `Orden: fondo, neón, pantallas, público, ring, humo, Voltia, focos. ` +
