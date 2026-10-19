@@ -123,7 +123,7 @@
   const H = 1024;
   // ?v= para que el navegador no sirva el PNG viejo de esta misma ruta
   // El sprite de juego: 150 x 200, la altura nativa del ring. Se dibuja 1:1.
-  window.STAGE_FIGHTER = '../voltia/nueva/idle/00.png?v=11';
+  window.STAGE_FIGHTER = '../voltia/nueva/idle/00.png?v=12';
   // Suelo en el centro del rombo dibujado (spec.floorY es 408, el borde trasero).
   window.STAGE_FLOOR_Y = 426;
   // El archivo no se toca. El escenario lo dibuja a la escala que se elija.
@@ -269,7 +269,7 @@
     note.textContent = anim.note;
     for (const f of anim.frames) {
       const im = new Image();
-      im.src = '../voltia/' + anim.dir + '/' + f + "?v=11";
+      im.src = '../voltia/' + anim.dir + '/' + f + "?v=12";
       await im.decode();
       imgs.push(im);
     }
@@ -277,7 +277,7 @@
     applyZoom();
   }
   try {
-    const guide = await (await fetch('../voltia/guide/style.json?v=11',
+    const guide = await (await fetch('../voltia/guide/style.json?v=12',
       { cache: 'no-store' })).json();
     window.__GUIDE = guide;
     const entries = Object.entries(guide.anims || {});

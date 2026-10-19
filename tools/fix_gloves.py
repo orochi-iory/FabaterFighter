@@ -39,6 +39,8 @@ HAIR = {(85, 21, 124), (186, 104, 232), (60, 15, 95), (190, 25, 130)}
 SKIN = {(240, 176, 132), (196, 120, 84)}
 # Colores que nunca son legítimos sobre un brazo o un guante.
 JUNK = {(120, 16, 80), (176, 112, 36)}
+# Frames donde la mano venía abierta (piel dentro del guante), revisados a mano.
+GLOVE_FRAMES = {'09.png', '10.png', '12.png', '14.png', '16.png'}
 NAVY = {GLOVE, GLOVE_SHADOW}
 
 
@@ -221,8 +223,11 @@ def fix_dir(path):
         full = os.path.join(path, name)
         im = Image.open(full).convert('RGBA')
         junk = decontaminate(im)
-        gloves = close_glove(im)
-        if name == '09.png' and os.path.basename(path.rstrip('/')) == 'idle':
+        # El cierre de guante automático acertaba en las manos, pero en los
+        # frames 01, 02, 05 y 17 tomaba el ribete del pecho por un guante y
+        # pintaba de marino el escote. Solo se aplica donde está comprobado.
+        gloves = close_glove(im) if name in GLOVE_FRAMES else []
+        if name == '09.png' and 'idle' in path.lower():
             # la mano de la cadera venía pintada con el verde del traje
             gloves.append(('caja', glove_box(im, (80, 122, 95, 155))))
         if junk or gloves:
