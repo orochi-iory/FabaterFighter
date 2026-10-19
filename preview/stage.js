@@ -230,7 +230,14 @@
     spec = await (await fetch('../voltia/stage/stage.json', { cache: 'no-store' })).json();
     bg = await load('../voltia/stage/' + spec.active);
     ring = spec.ring ? await load('../voltia/stage/' + spec.ring) : null;
-    stance = await load(window.STAGE_FIGHTER || ('../voltia/stage/' + (spec.fighter || 'fighter.png')));
+    // La figura no puede tumbar el escenario entero: si falla, se sigue sin ella.
+    try {
+      stance = await load(window.STAGE_FIGHTER || ('../voltia/stage/' + (spec.fighter || 'fighter.png')));
+    } catch (err) {
+      stance = null;
+      if (note) note.textContent = 'La figura no cargó (' +
+        (window.STAGE_FIGHTER || spec.fighter) + '). El escenario sigue sin ella: ' + err;
+    }
     for (let i = 0; i < 4; i++) {
       led.push(await load('../voltia/stage/led/f' + i + '.png'));
       crowd.push(await load('../voltia/stage/crowd/f' + i + '.png'));

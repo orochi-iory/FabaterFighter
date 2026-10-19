@@ -35,6 +35,20 @@ bajarlos a 120. Eso es un remuestreo por 0,117: cada píxel del dibujo cae en un
 fracción de píxel, y el detalle se muere. Después se llegó a bajar por bloques a
 95 × 126: menos malo, pero seguía siendo reducir el archivo. Prohibido.
 
+**Altura de ring: 300 px.** En la placa de 604 px de alto, 300 ocupa el 49,7% y
+deja 108 px sobre la cabeza. Es la proporción de SF2. 127 ocupa solo el 21%: por
+eso se veía pequeño.
+
+**El techo del generador es ~127 nativos.** Tres tiradas pidiendo 300 (bloques de
+3 en lienzo de 960, lienzo pequeño de 320, y «300 px de alto» explícito)
+devolvieron lo mismo: 1024 × 1024, bloques de 8, figura de 1014. No se puede
+sacar 300 nativos de este modelo.
+
+Así que la altura del ring se consigue con un **múltiplo entero** de los 127
+nativos: **254 (×2)** o 381 (×3). A 300 son ×2,37 y los bloques salen de 2 y de 3
+píxeles mezclados. En el escenario están los cinco modos para comparar: 127, 153,
+254, 300 y 381.
+
 **Comprobación antes de aprobar un sprite:** el archivo del visor y el generado
 tienen que tener el mismo tamaño en píxeles, y el bloque tiene que medir lo
 mismo. Si no coinciden, se empieza otra vez.

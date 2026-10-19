@@ -128,6 +128,7 @@
     }
   ],
   "rules": [
+    "La altura de ring es 300 px de mundo. Si el dibujo nativo es 127, se llega con ×2 exacto (254) o se acepta el ×2,37 de 300. Nunca se genera un PNG derivado: se dibuja a esa escala.",
     "Primero se aprueba UN sprite. Hasta que el usuario lo apruebe no se generan las demás poses del idle.",
     "La escala se pide en el prompt (1024, bloques de 8, 120 bloques de alto), pero el archivo se guarda como sale: no se recorta a la caja, no se escala y no se cuantiza.",
     "Prohibido reducir el archivo. Ni con LANCZOS, ni con NEAREST, ni dividiendo por el bloque. El zoom es cosa de la vista, no del PNG.",
@@ -162,6 +163,7 @@
     "captions": []
   },
   "lessons": [
+    "2026-10-19. Tres tiradas pidiendo 300 nativos (bloques de 3 en 960, lienzo pequeño de 320, y 300 px de alto explícito). Las tres devuelven 1024 con bloques de 8 y la figura de 1014: el techo nativo del modelo es ~127. Para el ring se dibuja a 254 (×2 exacto) o 300 si se acepta ×2,37.",
     "2026-10-19. Error de método: se redujo el archivo generado dos veces (LANCZOS a 120 y luego ÷8 a 95 × 126). El archivo no se toca: se guarda a 1024 y se mira con zoom. La resolución nativa del dibujo es la de sus bloques, 8 px por bloque, es decir ~127 píxeles de sprite, que ya es escala de juego. Se comprueba midiendo el bloque, no el lienzo.",
     "2026-10-19. Tirada 1. Dibujo de dibujos animados, no pixel art de SF2. Fallo: faltaba la hoja de Chun-Li como referencia de dibujo; solo había diseño. Desde aquí la hoja entra siempre como imagen 1.",
     "2026-10-19. Tirada 2, con hoja. El pixelado ya es el bueno, pero la figura toca el borde y los puños no se leen. Se pide margen explícito en píxeles y puño con nudillos y línea del pulgar.",
@@ -174,6 +176,7 @@
     "2026-10-19. Conclusión para el escenario: la figura que ya juega mide 153 y esta 126, así que entra sin escalar. Si algún día hay que igualarla a 120, se genera a 120 bloques de 8 = 960 y se corta ÷8 exacto."
   ],
   "changelog": [
+    "2026-10-19. Altura de ring a 300. Se mide el techo del generador: ~127 nativos. Se añaden los modos 254/300/381 en el escenario y la figura ya no puede tumbar la carga del ring.",
     "2026-10-19. Se deja de reducir el archivo. El sprite de referencia es el PNG generado de 1024 × 1024, solo con el verde quitado. La resolución nativa se mide por bloques: ~127 de alto.",
     "2026-10-19. La escala pasa a ser regla de primera: rejilla en el prompt y bajada por bloques enteros en código. Sprite de referencia nuevo, 95 × 126, sin escalar.",
     "2026-10-19. Se tira el idle de 20 frames entero y su recorte. Queda un solo sprite de referencia, sin aprobar. El script que comía píxeles está borrado.",
@@ -183,7 +186,10 @@
     "rule": "El archivo NO se reduce nunca. Se guarda a la resolución a la que lo generó el modelo. Si hay que verlo más pequeño, se cambia el zoom de la vista, no el archivo.",
     "native": "La resolución nativa del dibujo es su rejilla de bloques: 8 píxeles por bloque. El dibujo mide 1014 px de alto, o sea 126,8 bloques ≈ 127 píxeles de sprite. Eso ya está en la escala de juego (pelea 120, escenario 153).",
     "error": "El fallo anterior fue leer 1022 como si fueran 1022 píxeles de sprite y bajarlos a 120. Eso es un remuestreo ×0,117: cada píxel del dibujo cae en una fracción de píxel y se pierde el detalle. Después se llegó a bajar por bloques a 95 × 126: menos malo, pero seguía siendo reducir el archivo. Prohibido.",
-    "engine": "Si el motor necesita 127 píxeles de alto, dibuja el archivo a un píxel por bloque, con el suavizado apagado. Eso no cambia el archivo ni inventa colores: cada bloque se convierte en un píxel.",
-    "check": "Antes de dar un sprite por bueno se comprueba que el archivo del visor y el generado tienen el mismo tamaño en píxeles, y que el bloque mide lo mismo. Si no coinciden, se empieza otra vez."
+    "engine": "El archivo sigue a 1024 y se dibuja a 254/1024 con el suavizado apagado: cada bloque de 8 pasa a 2 px. No se crea ningún PNG derivado.",
+    "check": "Antes de dar un sprite por bueno se comprueba que el archivo del visor y el generado tienen el mismo tamaño en píxeles, y que el bloque mide lo mismo. Si no coinciden, se empieza otra vez.",
+    "target": "Altura de ring: 300 px. En la placa de 604 px de alto, 300 ocupa el 49,7% y deja 108 px sobre la cabeza. Es la proporción de SF2. 127 ocupa el 21% y se ve pequeño: ese era el problema.",
+    "ceiling": "El generador no pasa de ~127 píxeles nativos. Tres tiradas pidiendo 300 (bloques de 3, lienzo 960, lienzo pequeño 320) devuelven lo mismo: 1024 × 1024, bloques de 8, figura de 1014 px. No hay forma de sacar 300 nativos de este modelo.",
+    "integer": "Para el ring se usa un múltiplo entero de 127: 254 (×2) o 381 (×3). A 300 son ×2,37: los bloques salen de 2 y de 3 px mezclados. 254 es el tamaño correcto de ring; 381 no cabe."
   }
 }
