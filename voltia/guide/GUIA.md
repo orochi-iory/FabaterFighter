@@ -271,6 +271,55 @@ Lo que dicen esas tres filas, y lo que hay que copiar (sin plagiar el dibujo):
 Con esto, la alternancia ya no se pide como un truco de tonos: se pide como una
 pose más, con la pierna contraria delante y el mismo puño arriba.
 
+## La plantilla de prompt (rocosa)
+
+Todas las poses se piden con la misma plantilla; solo cambia `{POSE}`. Está
+guardada tal cual en `style.json` → `promptTemplate`.
+
+```
+Copy this sprite EXACTLY. Same character, same colours, same 16 flat inks, same
+thick dark outline, same torso, head, arms, guard, mask, visor, mouth, belt,
+bolt, gloves and ponytail.
+
+SIZE IS LOCKED. The new drawing must be the same size as the reference and stand
+in the same place: the top of the ponytail at the same height, the chin at the
+same height, the belt at the same height, the soles on the same ground line, the
+left edge of the ponytail at the same distance from the left, and the SAME width
+across the shoulders and the chest. Keep the ponytail FULL LENGTH and FULL
+THICKNESS: its tip level with the middle of the thigh. Do not slim the body, do
+not narrow the hips, do not shorten the ponytail, do not make the figure smaller
+or taller. Everything except {WHAT MOVES} stays pixel for pixel as it is.
+
+CHANGE ONLY {WHAT MOVES}: {POSE}.
+
+One single sprite, side view facing right, alone on flat bright green with
+plenty of green all around, no second figure, no floor, no shadow, no text, no
+border, no dithering, no gradients, no anti-aliasing.
+```
+
+Los cinco anclajes (arriba de la coleta, barbilla, cinturón, suelas, borde
+izquierdo de la coleta) son lo que impide que el personaje cambie de tamaño
+aunque la cabeza mida igual. La frase de la coleta va aparte porque es lo
+primero que el modelo acorta cuando se despista.
+
+**Una pose por imagen.** `{POSE}` describe solo las piernas y, si toca, los
+brazos; el resto lo arrastra la referencia.
+
+## Comprobar el tamaño antes de mirarlo
+
+```
+PYTHONPATH=tools/pylibs python3 tools/consistency.py voltia/nueva/walk
+```
+
+Compara cada frame con `stance/00.png`: máscara, alto total, coleta, tinta y
+ancho del torso a ±5 %; el ancho de las piernas (2/3) solo se informa, porque en
+un paso cambia de verdad. Si algún frame se sale, se regenera ESA pose, no se
+reescala: reescalar por frame es justo lo que descuadraba el idle.
+
+Fallo real que cazó esto: el walk anterior tenía la cabeza a 29 px (bien) pero el
+torso un 11 % más estrecho y un 12 % menos de tinta que la stance. El personaje
+parecía más pequeño sin cambiar la cabeza.
+
 ## Recorte y reducción
 
 El verde se mide en el borde de la imagen. Esta tirada dio `(28, 221, 8)`.
