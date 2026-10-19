@@ -2,78 +2,89 @@
   "title": "Guía de estilo",
   "updated": "2026-10-19",
   "character": "Voltia",
-  "anchor": "nueva/00_stand.png",
-  "anchorNote": "Idle nuevo, dibujado desde cero. El cuerpo se queda. La máscara lleva boca: abertura y labio, bajo el visor. Los píxeles que se comió el recorte están cerrados. El lazo de la coleta no.",
+  "status": "Un solo sprite de referencia. Sin aprobar. No hay idle.",
+  "anchor": "newref/ref_stand.png",
+  "anchorNote": "Sprite de referencia, 67 × 120. De pie, guardia de Street Fighter II. Este es el dibujo que hay que copiar en todo lo que venga después. Si se rechaza, se borra y se empieza otra vez; no se arregla encima.",
+  "styleRef": {
+    "file": "ref/chunli_sf2_sheet.png",
+    "what": "Hoja de Chun-Li de Street Fighter II. Es la referencia de DIBUJO, no de personaje: se copia el pixelado, el grosor de línea, los tonos planos y la postura. No se copia su ropa ni su anatomía.",
+    "note": "La hoja está fuera del repo (no se versiona). Es local, para mirarla al generar."
+  },
+  "designRef": {
+    "file": "ref_stance.png",
+    "what": "Diseño de Voltia: máscara magenta entera, visor teal, boca bajo el visor, coleta violeta, traje teal, rayo gordo amarillo, cinturón dorado, guantes y botas navy.",
+    "forbidden": "assets/voltia_concept.png no se usa para generar. Es un póster, no un sprite."
+  },
+  "consistency": "Siempre que haya un sprite bueno, ese es la referencia. Cuando ya existe, TODO prompt lo nombra como imagen 1 y pide no cambiar ni el dibujo ni los colores, solo la pose. Cuando se empieza de cero no hay referencia buena: se dice en la guía y se aprueba un solo sprite antes de seguir. Si el resultado no se parece a la guía, se para la generación y se vuelve al punto de partida con aprobación del usuario.",
   "facing": "derecha",
   "standHeight": 120,
   "key": {
     "hex": "#11EF06",
     "rgb": [17, 239, 6],
-    "hard": 70,
+    "measured": [28, 221, 8],
+    "hard": 60,
     "exclude": 120,
-    "why": "El recorte no es rosa. El rosa era el tono de la máscara, y por eso se la comía y a la vez dejaba rosa pegado. El fondo se mide en el borde de cada tira: verde brillante, lejos de la máscara."
+    "why": "El fondo se mide en el borde de cada imagen. Nunca rosa ni magenta: ese era el color de la máscara y el recorte se la comía. El verde del borde de esta tirada salió (28, 221, 8)."
   },
   "nearest": {
-    "name": "visor",
-    "rgb": [40, 168, 168],
-    "pixels": 293,
-    "distance": 178
+    "name": "visor y teal",
+    "rgb": [16, 144, 144],
+    "distance": 157
   },
-  "visorDistance": 178,
-  "sacrifice": "No se sacrifica la máscara. Se sacrifica el rosa como color de fondo, para siempre. Si una tinta nueva cae a menos de 120 del verde medido, se mueve esa tinta, no el recorte y no la máscara.",
-  "clip": "No se recorta por canal verde ni por rosa. Se mide el verde del borde. Un píxel es fondo solo si está más cerca de ese verde que de la paleta. La máscara (152, 40, 104) está a 260: no se toca. Reutilizar es el frame entero, no recortar un brazo y pegarlo.",
+  "sacrifice": "Si una tinta nueva cae a menos de 120 del verde medido, se mueve esa tinta. No se mueve el recorte y no se toca la máscara. Se sacrifica el rosa como color de fondo, para siempre.",
+  "clip": "Un píxel es fondo solo si está más cerca del verde medido que de la paleta, con umbral 60 sobre la imagen grande. Después se reduce a 120 de alto con muestreo al centro (NEAREST), nunca LANCZOS, y se tapa con el contorno cualquier píxel de borde que salga verdoso. No hay halo.",
   "palette": [
-    {"name": "perfil", "rgb": [0, 0, 0], "distance": 240},
-    {"name": "coleta sombra", "rgb": [72, 32, 104], "distance": 236},
-    {"name": "navy sombra", "rgb": [16, 16, 48], "distance": 227},
-    {"name": "navy", "rgb": [32, 40, 80], "distance": 213},
-    {"name": "coleta", "rgb": [128, 64, 160], "distance": 258},
-    {"name": "traje sombra", "rgb": [16, 72, 80], "distance": 183},
-    {"name": "visor y teal", "rgb": [40, 168, 168], "distance": 178},
-    {"name": "piel sombra", "rgb": [192, 120, 80], "distance": 224},
-    {"name": "piel", "rgb": [232, 176, 128], "distance": 255},
-    {"name": "máscara", "rgb": [152, 40, 104], "distance": 260},
-    {"name": "máscara sombra", "rgb": [112, 24, 80], "distance": 246},
-    {"name": "rayo", "rgb": [248, 208, 40], "distance": 236},
-    {"name": "cinturón", "rgb": [176, 112, 40], "distance": 206}
+    { "name": "perfil", "rgb": [0, 0, 0] },
+    { "name": "navy", "rgb": [24, 24, 80] },
+    { "name": "traje sombra", "rgb": [16, 96, 104] },
+    { "name": "traje y visor", "rgb": [16, 144, 144] },
+    { "name": "coleta sombra", "rgb": [88, 8, 136] },
+    { "name": "coleta", "rgb": [136, 64, 184] },
+    { "name": "piel", "rgb": [248, 176, 128] },
+    { "name": "rayo", "rgb": [248, 208, 40] },
+    { "name": "máscara", "rgb": [200, 20, 130] },
+    { "name": "cinturón", "rgb": [224, 176, 32] }
   ],
   "rules": [
-    "El recorte no es rosa, magenta ni un tono de la máscara.",
-    "Se mide el verde del borde. No se recorta por canal.",
-    "La máscara se queda entera. Si el recorte se la come, el frame no entra.",
-    "La máscara lleva boca: abertura oscura y labio de piel, bajo el visor. Sin boca no entra.",
-    "Un hueco encerrado de hasta 40 px se cierra. El lazo de la coleta no. El hueco entre brazo y pecho no.",
-    "Reutilizar es el dibujo completo en otro momento. No se recorta un brazo ni un trozo de máscara para pegarlo.",
-    "Un frame partido no se entrega.",
-    "La pelea no cambia de hoja hasta que este ciclo se acepte.",
+    "Primero se aprueba UN sprite. Hasta que el usuario lo apruebe no se generan las demás poses del idle.",
+    "El dibujo es el de la hoja de Chun-Li de SF2: píxel gordo, contorno negro grueso, tonos planos, 16 colores, tres tonos por material.",
+    "El diseño es el de Voltia: traje teal entero hasta la bota, sin muslos desnudos. Muslos desnudos es el diseño de Chun-Li y es un fallo.",
+    "La máscara se queda entera, con visor y con boca: abertura oscura y labio de piel, bajo el visor, mirando a la derecha. Sin boca no entra.",
+    "El rayo amarillo va en el pecho, gordo y entero. No se tapa con un brazo.",
+    "Hay margen de fondo en los cuatro lados, mínimo 40 px reales. Si la coleta o la bota tocan el borde, la imagen no vale y se repite.",
+    "El fondo es un verde plano medido en el borde, nunca rosa ni magenta ni un tono del traje.",
+    "El recorte se hace sobre la imagen grande y se reduce a 120 de alto con NEAREST. LANCZOS emborrona y saca 3000 tonos.",
+    "No se cuantiza a ciegas: si la máscara pierde el magenta, el rayo pierde el amarillo o el cinturón pierde el oro, el resultado no entra.",
+    "Reutilizar es el frame entero en otro momento. No se recorta un brazo ni un trozo de máscara para pegarlo.",
+    "Un frame partido no se entrega. La pelea no cambia de hoja hasta que el ciclo se acepte.",
     "Esta guía no reproduce animaciones. Los frames se miran en el visor del modelo nuevo."
   ],
-  "prompt": "One fighting-game pixel sprite of Voltia, a single full-body frame, side view, facing right. Match the reference frame exactly: same person, same proportions, same 13 inks.\n\nComplete magenta mask, unbroken. A readable mouth on the front of the mask, under the teal visor: dark opening and a skin-colored lower lip. Teal visor with a dark eye slit. Huge violet ponytail. Teal suit, fat yellow lightning on the chest, gold belt, bare arms, navy gloves, navy boots. Black outlines. Flat colors only. No anti-aliasing, no gradients, no green fringe.\n\nBackground is one flat green, #11EF06, edge to edge. Never pink, never magenta, never a mask color and never a suit color. At least 24 pixels of that green on every side. No floor, no shadow, no text, no second figure.\n\nDo not cut the mask. Do not leave missing pixels inside the body. The loop of the ponytail may stay open. If any ink is close to the green, change the ink. Do not change the background and do not change the mask.",
+  "prompt": "Image 1 (Chun-Li sheet) defines the RENDERING STYLE only. Image 2 defines Voltia's design. If a previous Voltia sprite is attached, it is image 3 and it defines the drawing to keep: do not change its pixels, colours or proportions, only the pose.\n\nDraw ONE full-body arcade sprite of Voltia in the exact visual language of the 1991 CPS-1 Street Fighter II sprites.\n\nPIXELS: sprite pixel blocks about 6 screen pixels wide, hard square steps, thick 1-to-2 pixel near-black outline around the silhouette and between overlapping limbs, exactly 16 flat colours, every material in three hard tones (base, darker shadow, small highlight), chunky pixel clusters, tiny dithering only at tone boundaries. No gradients, no anti-aliasing, no glow, no soft shading, no anime or webcomic look, no smooth vector curves.\n\nFRAMING: the whole figure centred with at least 80 screen pixels of clear green on all four sides, ponytail tip and both boots well inside the border. The figure fills about 60 to 75% of the frame height. Never crop.\n\nCHARACTER: Voltia, slender masked luchadora, about 7.5 heads, natural athletic proportions. Full magenta wrestling mask; teal eye visor with dark eye slit; readable mouth below the visor, dark opening plus skin-tone lower lip, facing right. One huge thick violet ponytail tied high, flowing back and left, dark inner shadow. Teal bodysuit covering the whole body down into the boots, no bare thighs, short teal trunks, thin gold belt with round buckle, LARGE FAT angular yellow lightning bolt on the chest, bare upper arms, long navy gauntlet gloves with dark cuffs, navy boots with knee pads and dark soles.\n\nPOSE: Street Fighter II standing guard, side view facing right, weight low, feet wide, knees bent, rear heel planted, both fists raised at chin height, elbows tucked, torso slightly turned.\n\nBACKGROUND: flat solid bright green #11EF06 edge to edge. No floor, no shadow, no text, no logo, no border, no second character, no green halo on the sprite.",
   "keys": [
-    {"id": "stand", "file": "00_stand.png", "use": "De pie. Aterrizaje y cierre del idle. Se reutiliza entero, más alto, en el saltito."},
-    {"id": "hop", "file": "02_hop1_peak.png", "use": "Rodilla arriba, en el aire. Pico del saltito."},
-    {"id": "groom", "file": "13_stroke_low.png", "use": "Manos en la caña, atusándose las piernas. El trazo baja del muslo a la bota y vuelve."}
+    {
+      "id": "stand",
+      "file": "newref/ref_stand.png",
+      "use": "De pie. Referencia única. Todo lo demás sale de aquí, entero o cambiando solo la pose."
+    }
   ],
   "idle": {
+    "status": "pendiente",
     "fps": 8,
-    "note": "Veinte pasos. Saltito doble: el de pie sube entero y en el pico levanta la rodilla. Luego se atusa las piernas, de los muslos a la caña, y vuelve. La máscara no se recorta. Lleva boca: abertura y labio, bajo el visor.",
-    "frames": [
-      "00_stand.png", "01_hop1.png", "02_hop1_peak.png", "03_hop1_down.png",
-      "04_land.png", "05_hop2.png", "06_hop2_peak.png", "07_hop2_down.png",
-      "08_land2.png", "09_hands_down.png", "10_to_thigh.png", "11_stroke_high.png",
-      "12_stroke_mid.png", "13_stroke_low.png", "14_stroke_hold.png", "15_stroke_up.png",
-      "16_stroke_2.png", "17_stroke_mid2.png", "18_return.png", "19_stand.png"
-    ],
-    "captions": [
-      "de pie", "saltito", "arriba", "cae",
-      "pisa", "segundo", "arriba", "cae",
-      "pisa", "baja las manos", "a los muslos", "se atusa",
-      "baja por la pierna", "hasta la caña", "sigue", "sube la mano",
-      "otra pasada", "baja otra vez", "vuelve", "de pie"
-    ]
+    "count": 20,
+    "note": "Veinte pasos: saltito doble y luego se atusa las piernas. No se genera nada hasta que el sprite de referencia esté aprobado.",
+    "frames": [],
+    "captions": []
   },
+  "lessons": [
+    "2026-10-19. Tirada 1. Dibujo de dibujos animados, no pixel art de SF2. Fallo: faltaba la hoja de Chun-Li como referencia de dibujo; solo había diseño. Desde aquí la hoja entra siempre como imagen 1.",
+    "2026-10-19. Tirada 2, con hoja. El pixelado ya es el bueno, pero la figura toca el borde y los puños no se leen. Se pide margen explícito en píxeles y puño con nudillos y línea del pulgar.",
+    "2026-10-19. Tirada 3. Copió el diseño de Chun-Li: muslos desnudos. Fallo: la referencia de diseño tiene que ir listada como imagen aparte y el prompt tiene que decir 'sin muslos desnudos'.",
+    "2026-10-19. Tirada 4. El modelo no hace zoom hacia atrás pidiéndolo en palabras. Se hace como edición de la propia imagen y aun así la reducción final se hace en código: recorte, reducción a 120 de alto, borde verdoso tapado con el contorno.",
+    "2026-10-19. Cuantizar a 20 colores mata el magenta de la máscara y el oro del cinturón. El sprite de referencia se guarda sin cuantizar; la reducción de paleta, cuando toque, se revisa color a color.",
+    "2026-10-19. Lo que funcionó: hoja como estilo, diseño aparte, 'un solo sprite', margen en píxeles, guardia SF2, y reducir en código en vez de pedirle al modelo que se aleje."
+  ],
   "changelog": [
-    "2026-10-19. Se borra la versión nueva anterior. El recorte rosa se comía la máscara y el arreglo a mano dejaba rosa suelto. Idle de 20 frames desde cero, fondo verde medido en el borde, máscara a 260 de ese verde.",
-    "2026-10-19. El cuerpo no se redibuja. Se cierran los huecos que se comió el recorte, salvo el lazo de la coleta y el hueco entre brazo y pecho. Vuelve la boca en los 20 frames: abertura oscura y labio de piel, bajo el visor."
+    "2026-10-19. Se tira el idle de 20 frames entero y su recorte. Queda un solo sprite de referencia, sin aprobar. El script que comía píxeles está borrado.",
+    "2026-10-19. La hoja de Chun-Li entra como referencia de dibujo. El prompt se reescribe con pixelado, 16 colores, encuadre y traje teal entero."
   ]
 }

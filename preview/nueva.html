@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>VOLTIA · modelo nuevo</title>
+<title>VOLTIA · sprite de referencia</title>
 <style>
   * { box-sizing: border-box; }
   body { margin:0; font-family: system-ui, sans-serif; background:#181624; color:#eee;
@@ -16,17 +16,18 @@
     text-decoration:none; font-weight:700; padding:8px 14px; border-radius:8px; }
   a.play.alt { background:transparent; color:#ffcb3d; border:2px solid #ffcb3d; }
   .box { background:#222033; border:2px solid #ffcb3d; border-radius:12px; padding:16px; }
-  canvas#idle { image-rendering:pixelated; image-rendering:crisp-edges; display:block;
-    margin:12px auto; background:#101018; border:1px solid #3a3752; border-radius:8px;
-    width:min(100%, 512px); height:auto; }
-  canvas#idle.magenta { background:#c0c; }
-  canvas#idle.green { background:#11ef06; }
-  canvas#strip { image-rendering:pixelated; image-rendering:crisp-edges; display:block;
-    max-width:100%; height:auto; margin-top:12px; background:#101018; border-radius:8px; }
+  .plate { display:flex; flex-wrap:wrap; gap:18px; justify-content:center; align-items:flex-end;
+    margin:12px 0; }
+  .plate figure { margin:0; text-align:center; }
+  .plate canvas { image-rendering:pixelated; image-rendering:crisp-edges; display:block;
+    background:#101018; border:1px solid #3a3752; border-radius:8px; }
+  .plate figcaption { color:#9d9ab5; font-size:12px; margin-top:6px; }
+  .plate canvas.magenta { background:#c0c; }
+  .plate canvas.green { background:#11ef06; }
+  .plate canvas.light { background:#e9e6f5; }
   .controls { display:flex; gap:8px; flex-wrap:wrap; justify-content:center; align-items:center; }
   button, select { background:#35324e; color:#eee; border:1px solid #4a4767; border-radius:8px;
     padding:8px 12px; cursor:pointer; font-size:14px; }
-  button.active { background:#0e7c8c; border-color:#96ffeb; }
   .note { min-height:1.4em; color:#ffcb3d; }
   .warn { color:#9d9ab5; font-size:14px; }
   canvas#stagecv { image-rendering:pixelated; width:100%; max-width:960px; height:auto;
@@ -39,38 +40,32 @@
 </head>
 <body>
 <header>
-  <h1>Modelo nuevo</h1>
-  <p>Idle de veinte frames. No es la hoja de la pelea y no es el visor del personaje que ya juega.</p>
+  <h1>Sprite de referencia</h1>
+  <p>Uno solo, de pie. Todavía no hay idle: primero se aprueba este dibujo y después
+    salen las demás poses copiándolo. No es la hoja de la pelea y no es el visor del
+    personaje que ya juega.</p>
   <a class="play" href="guia.html">Guía de este modelo</a>
   <a class="play alt" href="index.html">Visor del personaje actual</a>
   <a class="play alt" href="guia-vieja.html">Guía del personaje actual</a>
 </header>
 <section>
   <div class="box">
-    <p class="warn" id="warn">Cargando frames…</p>
-    <canvas id="idle" width="128" height="156"></canvas>
+    <p class="warn" id="warn">Cargando el sprite…</p>
+    <div class="plate" id="plate"></div>
     <div class="controls">
-      <button id="play" type="button">Pausa</button>
-      <button id="step" type="button">Frame</button>
-      <select id="scale">
-        <option value="2">2×</option>
-        <option value="4" selected>4×</option>
-        <option value="6">6×</option>
-      </select>
-      <select id="bg">
-        <option value="">Fondo oscuro</option>
-        <option value="magenta">Magenta</option>
-        <option value="green">Verde de recorte</option>
-      </select>
+      <button id="bg" type="button">Fondo magenta</button>
+      <button id="bg2" type="button">Fondo claro</button>
     </div>
     <p class="note" id="note"></p>
-    <canvas id="strip" width="8" height="8"></canvas>
+    <p class="warn">67 × 120 píxeles. Los frames de la pelea miden 120 de alto, así que
+      este dibujo entra a la misma escala. La pelea no lo usa.</p>
   </div>
 </section>
 <section class="arena" id="escenario">
   <h2>Escenario · el mismo de siempre</h2>
   <div class="box">
-    <p class="warn">El ring, el público y los focos son los que ya estaban. La figura de pie es el modelo nuevo, no la de la pelea.</p>
+    <p class="warn">El ring, el público y los focos son los que ya estaban. La figura es
+      el sprite de referencia, no la de la pelea.</p>
     <canvas id="stagecv" width="960" height="540"></canvas>
     <div class="controls">
       <label>Desplazamiento <input id="stageScroll" type="range" min="0" max="1000" value="500"></label>
@@ -90,9 +85,9 @@
     <p class="layers" id="stageNote"></p>
   </div>
 </section>
-<footer>FabaterFighter · modelo nuevo, aparte de la pelea</footer>
+<footer>FabaterFighter · sprite de referencia, aparte de la pelea</footer>
 <script>
-window.STAGE_FIGHTER = '../voltia/nueva/00_stand.png';
+window.STAGE_FIGHTER = '../voltia/newref/ref_stand.png';
 </script>
 <script src="stage.js"></script>
 <script>
@@ -147,80 +142,46 @@ window.STAGE_FIGHTER = '../voltia/nueva/00_stand.png';
 (async () => {
   const warn = document.getElementById('warn');
   const note = document.getElementById('note');
-  const cv = document.getElementById('idle');
-  const strip = document.getElementById('strip');
-  const cx = cv.getContext('2d');
-  const sx = strip.getContext('2d');
-  cx.imageSmoothingEnabled = false;
+  const plate = document.getElementById('plate');
+  const SRC = '../voltia/newref/ref_stand.png';
   try {
-    const guide = await (await fetch('../voltia/guide/style.json?v=' + Date.now(), { cache: 'no-store' })).json();
-    const frames = guide.idle.frames;
-    const captions = guide.idle.captions || [];
-    const cache = {};
-    for (const name of frames) {
-      if (cache[name]) continue;
-      const img = new Image();
-      img.src = '../voltia/nueva/' + name + '?v=' + Date.now();
-      await img.decode();
-      cache[name] = img;
-    }
-    warn.textContent = 'La pelea no usa estos frames. El cuerpo es el que ya estaba. Mira la boca, bajo el visor.';
-    const scaleEl = document.getElementById('scale');
-    function applyScale() {
-      const s = +scaleEl.value;
-      cv.style.width = (128 * s) + 'px';
-      cv.style.height = (156 * s) + 'px';
-    }
-    scaleEl.onchange = applyScale;
-    applyScale();
-    document.getElementById('bg').onchange = e => { cv.className = e.target.value; };
-    let tick = 0;
-    let playing = true;
-    let shown = -1;
-    const playBtn = document.getElementById('play');
-    playBtn.onclick = () => {
-      playing = !playing;
-      playBtn.textContent = playing ? 'Pausa' : 'Seguir';
-    };
-    document.getElementById('step').onclick = () => {
-      playing = false;
-      playBtn.textContent = 'Seguir';
-      tick = Math.floor(tick) + 1;
-      draw();
-    };
-    function draw() {
-      const i = ((Math.floor(tick) % frames.length) + frames.length) % frames.length;
-      if (i === shown) return;
-      shown = i;
-      const img = cache[frames[i]];
+    const img = new Image();
+    img.src = SRC + '?v=' + Date.now();
+    await img.decode();
+    const scales = [1, 4, 8];
+    const canvases = [];
+    for (const s of scales) {
+      const fig = document.createElement('figure');
+      const cv = document.createElement('canvas');
+      cv.width = img.naturalWidth * s;
+      cv.height = img.naturalHeight * s;
+      const cx = cv.getContext('2d');
       cx.imageSmoothingEnabled = false;
-      cx.clearRect(0, 0, cv.width, cv.height);
-      cx.drawImage(img, 0, 0);
-      note.textContent = (i + 1) + '/' + frames.length + ' · ' + (captions[i] || frames[i]);
-      const gap = 2;
-      const sc = 1;
-      strip.width = frames.length * (128 * sc + gap) + gap;
-      strip.height = 156 * sc + 8;
-      sx.imageSmoothingEnabled = false;
-      sx.fillStyle = '#101018';
-      sx.fillRect(0, 0, strip.width, strip.height);
-      frames.forEach((name, fi) => {
-        const x = gap + fi * (128 * sc + gap);
-        sx.drawImage(cache[name], x, 4, 128 * sc, 156 * sc);
-        if (fi === i) {
-          sx.strokeStyle = '#ffcb3d';
-          sx.strokeRect(x - 1, 3, 128 * sc + 2, 156 * sc + 2);
-        }
-      });
+      cx.drawImage(img, 0, 0, cv.width, cv.height);
+      canvases.push(cv);
+      const cap = document.createElement('figcaption');
+      cap.textContent = s + '× · ' + img.naturalWidth + ' × ' + img.naturalHeight;
+      fig.appendChild(cv);
+      fig.appendChild(cap);
+      plate.appendChild(fig);
     }
-    draw();
-    setInterval(() => {
-      if (!playing) return;
-      tick += (guide.idle.fps || 8) / 30;
-      draw();
-    }, 1000 / 30);
+    warn.textContent = 'Mira la máscara, el visor, la boca y el rayo. Si algo no cuadra, ' +
+      'este dibujo no vale y no salen las demás poses.';
+    note.textContent = 'Sin halo verde en el borde. Fondo transparente de verdad.';
+    let alt = false;
+    document.getElementById('bg').onclick = () => {
+      alt = !alt;
+      canvases.forEach(cv => { cv.className = alt ? 'magenta' : ''; });
+      document.getElementById('bg').textContent = alt ? 'Fondo oscuro' : 'Fondo magenta';
+    };
+    let light = false;
+    document.getElementById('bg2').onclick = () => {
+      light = !light;
+      canvases.forEach(cv => { cv.className = light ? 'light' : (alt ? 'magenta' : ''); });
+      document.getElementById('bg2').textContent = light ? 'Fondo oscuro' : 'Fondo claro';
+    };
   } catch (err) {
-    warn.textContent = 'No pude cargar el modelo nuevo: ' + (err && err.message ? err.message : err);
+    warn.textContent = 'No pude cargar el sprite: ' + (err && err.message ? err.message : err);
   }
 })();
 </script>

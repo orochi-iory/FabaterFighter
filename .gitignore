@@ -1,2 +1,6 @@
 __pycache__/
 *.pyc
+
+# local style references, not shipped
+voltia/ref/
+image-search/

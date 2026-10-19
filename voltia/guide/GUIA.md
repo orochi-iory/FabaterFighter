@@ -1,79 +1,94 @@
 # Guía de estilo — modelo nuevo
 
 Página `preview/guia.html`. Solo información para generar, y el prompt.
-No reproduce frames. Los frames se miran en `preview/nueva.html`.
+No reproduce frames. El sprite se mira en `preview/nueva.html`.
 
 El personaje de la pelea tiene su propia guía, `preview/guia-vieja.html`,
 por si este estilismo no sobrevive al recorte.
 
-La pelea no usa estos frames.
+La pelea no usa estos sprites.
 
-## Qué se borró
+## Dónde está
 
-La versión nueva anterior no sirve. El recorte inicial era rosa, el mismo tono
-de la máscara: se comía un trozo de la cara y dejaba rosa pegado al personaje.
-Recortar un brazo del frame y pegarlo no es reutilizar. Eso también se borró.
+Un solo sprite de referencia, todavía sin aprobar: `voltia/newref/ref_stand.png`,
+67 × 120 píxeles. De pie, guardia de Street Fighter II.
 
-Reutilizar es el dibujo completo, en otro momento. El saltito reutiliza el de
-pie entero, colocado más alto.
+No hay idle. El idle de veinte frames anterior está borrado, con su recorte.
 
-## Recorte
+## Las dos referencias
 
-El fondo de las tiras es verde brillante, nunca rosa ni magenta.
+Siempre van las dos, y cada una para lo suyo:
 
-En cada imagen se mide el verde del borde. En esta tirada salió `#11EF06`
-(17, 239, 6). No hace falta que sea `#00FF00` exacto: el modelo no lo clava.
-Lo que no puede ser es un tono de la máscara.
-
-Un píxel es fondo solo si está más cerca de ese verde que de la paleta.
-No se recorta por «canal verde alto» ni por rosa.
-
-| Tinta | RGB | Al verde |
+| Imagen | Para qué | Qué no se copia |
 |---|---|---|
-| máscara | 152, 40, 104 | 260 |
-| máscara sombra | 112, 24, 80 | 246 |
-| visor | 40, 168, 168 | 178 |
-| traje sombra | 16, 72, 80 | 183 |
+| Hoja de Chun-Li de SF2 (`voltia/ref/chunli_sf2_sheet.png`) | Dibujo: píxel gordo, contorno grueso, tonos planos, 16 colores | Su ropa, sus muslos desnudos, su anatomía |
+| `voltia/ref_stance.png` | Diseño: máscara, visor, boca, coleta, traje teal, rayo, cinturón, botas | Su factura: está a 324 × 560 y no es SF2 |
 
-La más cercana es el visor, a 178. La máscara está a 260. No se sacrifica.
-Se sacrifica el rosa como color de fondo.
+`assets/voltia_concept.png` no se usa para generar.
 
-Si una tinta nueva cae a menos de 120 del verde medido, se mueve esa tinta.
-No se mueve el recorte y no se toca la máscara.
+La hoja de Chun-Li no se versiona: es local, para mirarla al generar.
 
-## Idle
+## Consistencia
 
-20 pasos, 8 fps. En `voltia/nueva/`.
+Siempre que haya un sprite bueno, ese es la referencia. En cuanto exista uno
+aprobado, cada prompt lo nombra como imagen 1 y pide no cambiar ni los píxeles
+ni los colores, solo la pose. Mientras empecemos de cero no hay referencia
+buena, y se dice así.
 
-1. De pie.
-2. Saltito: el mismo de pie, más alto.
-3. Pico: rodilla arriba.
-4. Cae y pisa.
-5. Segundo saltito, igual de forma, un poco más bajo.
-6. Baja las manos y se atusa las piernas, del muslo a la caña, y vuelve.
+Si el resultado no se parece a esta guía, se para la generación y se vuelve al
+punto de partida con aprobación. No se sigue tirando imágenes a ver si una sale.
 
-Sprites clave: `00_stand` (de pie), `02_hop1_peak` (rodilla arriba),
-`13_stroke_low` (manos en la caña).
+## Orden de trabajo
 
-## Boca
+1. Un sprite de referencia, de pie. Se aprueba o se tira.
+2. Solo con el sprite aprobado se generan las demás poses, una a una.
+3. El idle de veinte: saltito doble y, después, atusarse las piernas.
+4. Nada de esto entra en la pelea hasta que el ciclo entero se acepte.
 
-La máscara lleva boca. Abertura oscura y labio de piel, bajo el visor,
-mirando a la derecha. Está en los 20 frames, también con la cabeza inclinada.
-Sin boca el frame no entra. No se redibuja el cuerpo para ponerla.
+## Prompt
 
-## Huecos del recorte
+Está en `voltia/guide/style.json`, campo `prompt`, y es el que funcionó en la
+cuarta tirada: hoja como estilo, diseño aparte, un solo sprite, margen de
+fondo en píxeles, guardia SF2.
 
-El recorte por mayoría se comió píxeles de dentro. Se cierran los huecos
-encerrados de hasta 40 px, con el color de alrededor. El lazo de la coleta
-no se cierra: es hueco de verdad, no un mordisco.
+Tres cosas que el prompt arregla y que hay que mantener:
 
-En el pico del saltito el visor tenía un bocado de 42 px. Ese sí se cierra,
-creciendo desde el borde, para no tapar el ojo con un solo tono. El hueco
-entre el brazo y el pecho no se toca.
+- **Sin muslos desnudos.** El traje teal cubre hasta la bota. Los muslos
+  desnudos son el diseño de Chun-Li y fue el fallo de la tercera tirada.
+- **Margen de fondo**, mínimo 80 px de verde en los cuatro lados. El modelo no
+  obedece «hazte más pequeño»; la reducción se hace en código.
+- **Puños con nudillos** y línea del pulgar. Si no, son manchas.
+
+## Recorte y reducción
+
+El verde se mide en el borde de la imagen. Esta tirada dio `(28, 221, 8)`.
+Un píxel es fondo solo si está más cerca de ese verde que de la paleta, con
+umbral 60 sobre la imagen grande. Nada de rosa: era el color de la máscara.
+
+Después se recorta a la caja del dibujo y se reduce a 120 de alto con NEAREST.
+Nunca LANCZOS: emborrona y saca tres mil tonos.
+
+Los píxeles de borde que salen verdosos se tapan con el contorno. Cero halo.
+
+No se cuantiza a ciegas. Probado: 20 colores matan el magenta de la máscara y
+el oro del cinturón. El sprite de referencia se guarda sin cuantizar; la
+reducción de paleta, cuando toque, se revisa color a color.
+
+## Lo que ya se sabe
+
+- El modelo no hace zoom hacia atrás si se le pide con palabras. La imagen
+  tiene que salir con margen, o se reduce en código.
+- El recorte por mayoría de ocho comía píxeles de dentro. Más nunca.
+- Reutilizar es el frame entero en otro momento, no recortar un brazo.
+- La máscara lleva boca: abertura oscura y labio de piel, bajo el visor.
+  Sin boca el frame no entra.
 
 ## Historial
 
-- 2026-10-19. Borrada la versión nueva anterior. Idle de 20 desde cero.
-  Recorte verde medido en el borde. Máscara entera.
-- 2026-10-19. El cuerpo se queda. Se cierran los píxeles que se comió el
-  recorte y vuelve la boca: abertura y labio, bajo el visor.
+- 2026-10-19. Cuarta tirada. El pixelado es el de la hoja, el traje es teal
+  entero y hay margen. Se corta y se reduce en código a 67 × 120. Queda como
+  sprite de referencia, sin aprobar.
+- 2026-10-19. Se borra el idle de veinte y su recorte. Se borra el script que
+  comía píxeles. Se empieza por un solo sprite.
+- 2026-10-19. La hoja de Chun-Li entra como referencia de dibujo, separada de
+  la referencia de diseño.
