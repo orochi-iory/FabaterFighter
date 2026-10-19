@@ -55,7 +55,7 @@
   <div class="box">
     <p class="warn" id="warn">Cargando…</p>
     <div class="scroller" id="scroller">
-      <canvas id="sprite" width="190" height="212"></canvas>
+      <canvas id="sprite" width="200" height="300"></canvas>
     </div>
     <p class="cap" id="cap"></p>
     <div class="controls">
@@ -121,7 +121,7 @@
   const H = 1024;
   // ?v= para que el navegador no sirva el PNG viejo de esta misma ruta
   // El sprite de juego: 150 x 200, la altura nativa del ring. Se dibuja 1:1.
-  window.STAGE_FIGHTER = '../voltia/nueva/00_stand.png?v=1';
+  window.STAGE_FIGHTER = '../voltia/nueva/00.png?v=7';
   // Suelo en el centro del rombo dibujado (spec.floorY es 408, el borde trasero).
   window.STAGE_FLOOR_Y = 426;
   // El archivo no se toca. El escenario lo dibuja a la escala que se elija.
@@ -129,7 +129,7 @@
   window.__MODE = q;
 })();
 </script>
-<script src="stage.js?v=6"></script>
+<script src="stage.js?v=7"></script>
 <script>
 (() => {
   const note = document.getElementById('modeNote');
@@ -253,7 +253,7 @@
     FRAMES = guide.idle.frames;
     for (let k = 0; k < FRAMES.length; k++) {
       const im = new Image();
-      im.src = '../voltia/nueva/' + FRAMES[k].file + '?v=1';
+      im.src = '../voltia/nueva/' + FRAMES[k].file + '?v=7';
       await im.decode();
       imgs.push(im);
     }

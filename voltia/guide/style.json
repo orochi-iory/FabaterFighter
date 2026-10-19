@@ -3,8 +3,8 @@
   "updated": "2026-10-19",
   "character": "Voltia",
   "status": "Un sprite, 150 × 200 nativos. Sin idle todavía.",
-  "anchor": "newref/ref_stand_200.png",
-  "anchorNote": "Sprite de juego, 150 × 200. Altura nativa de ring. El escenario lo dibuja 1:1. Sale del maestro de 1024 (newref/ref_stand.png) fijado a 200 de alto por muestreo al centro, porque el generador no da más resolución nativa.",
+  "anchor": "nueva/00.png",
+  "anchorNote": "Guardia, 200 px de alto, en un lienzo de 200 x 240 con el suelo comun. Sale de la hoja de 20 poses y de ahi salen todos los frames.",
   "styleRef": {
     "file": "ref/chunli_sf2_sheet.png",
     "what": "Hoja de Chun-Li de Street Fighter II. Es la referencia de DIBUJO, no de personaje: se copia el pixelado, el grosor de línea, los tonos planos y la postura. No se copia su ropa ni su anatomía.",
@@ -200,154 +200,135 @@
   "keys": [
     {
       "id": "stand",
-      "file": "newref/ref_stand.png",
-      "use": "Maestro de pie, 1024, del que sale todo."
+      "file": "nueva/00.png",
+      "use": "Guardia. Frame de referencia del idle."
     },
     {
-      "id": "stand200",
-      "file": "nueva/00_stand.png",
-      "use": "De pie a 200, 1:1. Es el frame de referencia del idle."
+      "id": "sheet",
+      "file": "nueva/src/sheet20.png",
+      "use": "Hoja original de 20 poses (5x4). Es la fuente: se vuelve a cortar de aqui si hay que retocar."
     },
     {
       "id": "groom",
-      "file": "nueva/11_stroke_low.png",
-      "use": "Manos en la caña. El gesto que define el idle."
+      "file": "nueva/11.png",
+      "use": "Atusandose el muslo. El gesto que define el idle."
     }
   ],
   "idle": {
-    "status": "segunda pasada, sin aprobar",
+    "status": "tercera pasada, sin aprobar",
     "fps": 8,
     "count": 20,
     "canvas": [
-      195,
-      215
+      200,
+      300
     ],
     "height": 200,
-    "note": "Una sola escala para todas las poses: mismo factor, mismas proporciones. Las poses agachadas son mas bajas a proposito. El saltito sube el frame entero.",
+    "note": "Los 20 frames salen de UNA sola hoja de 5x4: mismo lienzo de 200 x 300, misma escala y mismo suelo por construccion. El aire ya viene subido dentro del lienzo.",
     "frames": [
       {
-        "file": "00_stand.png",
-        "pose": "stand",
-        "lift": 0,
-        "caption": "de pie"
+        "file": "00.png",
+        "caption": "guardia",
+        "lift": 0
       },
       {
-        "file": "01_crouch.png",
-        "pose": "crouch",
-        "lift": 0,
-        "caption": "se agacha"
+        "file": "01.png",
+        "caption": "guardia baja",
+        "lift": 0
       },
       {
-        "file": "02_takeoff.png",
-        "pose": "takeoff",
-        "lift": 12,
-        "caption": "despega"
+        "file": "02.png",
+        "caption": "agachada",
+        "lift": 0
       },
       {
-        "file": "03_peak.png",
-        "pose": "peak",
-        "lift": 38,
-        "caption": "arriba"
+        "file": "03.png",
+        "caption": "despega",
+        "lift": 0
       },
       {
-        "file": "04_land.png",
-        "pose": "land",
-        "lift": 0,
-        "caption": "pisa"
+        "file": "04.png",
+        "caption": "rodilla arriba",
+        "lift": 0
       },
       {
-        "file": "05_stand.png",
-        "pose": "stand",
-        "lift": 0,
-        "caption": "de pie"
+        "file": "05.png",
+        "caption": "bajando",
+        "lift": 0
       },
       {
-        "file": "06_hands.png",
-        "pose": "hands",
-        "lift": 0,
-        "caption": "baja las manos"
+        "file": "06.png",
+        "caption": "aterriza",
+        "lift": 0
       },
       {
-        "file": "07_chest.png",
-        "pose": "chest",
-        "lift": 0,
-        "caption": "las sube al pecho"
+        "file": "07.png",
+        "caption": "de pie",
+        "lift": 0
       },
       {
-        "file": "08_thigh.png",
-        "pose": "thigh",
-        "lift": 0,
-        "caption": "a los muslos"
+        "file": "08.png",
+        "caption": "baja la guardia",
+        "lift": 0
       },
       {
-        "file": "09_shin.png",
-        "pose": "shin",
-        "lift": 0,
-        "caption": "se atusa"
+        "file": "09.png",
+        "caption": "manos a las caderas",
+        "lift": 0
       },
       {
-        "file": "10_shin.png",
-        "pose": "shin",
-        "lift": 0,
-        "caption": "baja"
+        "file": "10.png",
+        "caption": "a los muslos",
+        "lift": 0
       },
       {
-        "file": "11_thigh.png",
-        "pose": "thigh",
-        "lift": 0,
-        "caption": "a la caña"
+        "file": "11.png",
+        "caption": "se atusa el muslo",
+        "lift": 0
       },
       {
-        "file": "12_shin.png",
-        "pose": "shin",
-        "lift": 0,
-        "caption": "otra pasada"
+        "file": "12.png",
+        "caption": "baja a la caña",
+        "lift": 0
       },
       {
-        "file": "13_thigh.png",
-        "pose": "thigh",
-        "lift": 0,
-        "caption": "sube"
+        "file": "13.png",
+        "caption": "en la caña",
+        "lift": 0
       },
       {
-        "file": "14_chest.png",
-        "pose": "chest",
-        "lift": 0,
-        "caption": "al pecho"
+        "file": "14.png",
+        "caption": "sube la mano",
+        "lift": 0
       },
       {
-        "file": "15_hands.png",
-        "pose": "hands",
-        "lift": 0,
-        "caption": "baja las manos"
+        "file": "15.png",
+        "caption": "otra vez al muslo",
+        "lift": 0
       },
       {
-        "file": "16_stand.png",
-        "pose": "stand",
-        "lift": 0,
-        "caption": "de pie"
+        "file": "16.png",
+        "caption": "se incorpora",
+        "lift": 0
       },
       {
-        "file": "17_stand.png",
-        "pose": "stand",
-        "lift": 0,
-        "caption": "de pie"
+        "file": "17.png",
+        "caption": "sube la guardia",
+        "lift": 0
       },
       {
-        "file": "18_stand.png",
-        "pose": "stand",
-        "lift": 0,
-        "caption": "de pie"
+        "file": "18.png",
+        "caption": "casi cerrada",
+        "lift": 0
       },
       {
-        "file": "19_stand.png",
-        "pose": "stand",
-        "lift": 0,
-        "caption": "de pie"
+        "file": "19.png",
+        "caption": "guardia",
+        "lift": 0
       }
     ]
   },
   "lessons": [
+    "2026-10-19. Los frames se cortan de UNA SOLA HOJA de 5x4. Asi el tamano de celda, la escala y la linea de suelo son los mismos por construccion: no hay normalizacion por frame y no puede volver a descuadrarse. El aire se hace con lift, no escalando.",
     "2026-10-19. El fallo de la coleta no era el dibujo: al normalizar CADA pose a 200 px de alto, cada frame cambiaba de escala. Ahora todas las poses se escalan con el mismo factor y el alto de cada pose es consecuencia de su postura. Se mide la proporcion de pixeles de coleta sobre el cuerpo, no el numero absoluto.",
     "2026-10-19. La paleta se fija a 16 colores exactos y se aplica a todos los frames. Antes cada frame traia sus propios medios tonos y la sombra cambiaba.",
     "2026-10-19. La regla de 5 bloques funciona: figura de 1000 px de lienzo partido por 5 son 200 nativos, y el recorte queda perfecto. Es la escala de trabajo para todos los personajes.",
@@ -366,6 +347,7 @@
     "2026-10-19. Conclusión para el escenario: la figura que ya juega mide 153 y esta 126, así que entra sin escalar. Si algún día hay que igualarla a 120, se genera a 120 bloques de 8 = 960 y se corta ÷8 exacto."
   ],
   "changelog": [
+    "2026-10-19. Idle rehecho desde una hoja unica de 20 poses: mismo tamano, misma escala, mismo suelo, 16 colores.",
     "2026-10-19. Idle rehecho: escala unica, paleta de 16, y las poses que no mantenian la coleta, regeneradas con la hoja de 4 poses como referencia.",
     "2026-10-19. Regla de oro guardada: 170 cm = 200 px, bloques de 5. El zoom del escenario pasa a escala entera para no deformar el píxel. Primera pasada del idle de 20 frames.",
     "2026-10-19. Regla de escala por altura real: 170 cm = 200 px. El sprite de juego queda en 150 × 200 y el escenario lo pinta 1:1.",
