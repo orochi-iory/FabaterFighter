@@ -194,6 +194,27 @@ def close_glove(im, max_region=420):
     return changed_frames
 
 
+def glove_box(im, box):
+    """Repinta como guante el verde del traje dentro de una caja.
+
+    Hace falta porque en el frame 09 (el «10/20» del visor) la mano que
+    cuelga junto a la cadera se dibujó con el color del traje: a 1:1 se lee
+    como mano sin guante. La caja es (x0, y0, x1, y1) en píxeles del frame.
+    """
+    px = im.load()
+    x0, y0, x1, y1 = box
+    mask = [(x, y) for y in range(y0, y1 + 1) for x in range(x0, x1 + 1)
+            if px[x, y][3] and px[x, y][:3] in SUIT]
+    for (x, y) in mask:
+        px[x, y] = GLOVE + (255,)
+    if mask:
+        bottom = max(y for (_, y) in mask)
+        for (x, y) in mask:
+            if y >= bottom - 1:
+                px[x, y] = GLOVE_SHADOW + (255,)
+    return len(mask)
+
+
 def fix_dir(path):
     names = sorted(n for n in os.listdir(path) if n.endswith('.png'))
     for name in names:
@@ -201,6 +222,9 @@ def fix_dir(path):
         im = Image.open(full).convert('RGBA')
         junk = decontaminate(im)
         gloves = close_glove(im)
+        if name == '09.png' and os.path.basename(path.rstrip('/')) == 'idle':
+            # la mano de la cadera venía pintada con el verde del traje
+            gloves.append(('caja', glove_box(im, (80, 122, 95, 155))))
         if junk or gloves:
             im.save(full)
         print('%s  suciedad=%3d  guantes=%s' % (name, junk, gloves))
