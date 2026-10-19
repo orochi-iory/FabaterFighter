@@ -78,7 +78,19 @@
   let zoomPunch = 0;
   let flashScreen = 0;
   let timer = ROUND_TIME;
+  // Cajas de golpe: se encienden con el boton "Cajas" de la pausa o con la H.
+  // El ajuste se recuerda entre partidas (localStorage), y si el navegador lo
+  // bloquea el juego sigue funcionando sin recordarlo.
   let showBoxes = false;
+  const BOX_KEY = 'fabater_cajas';
+  function setBoxes(on, save) {
+    showBoxes = !!on;
+    const b = document.getElementById('pause-boxes');
+    if (b) b.classList.toggle('on', showBoxes);
+    if (save !== false) {
+      try { localStorage.setItem(BOX_KEY, showBoxes ? '1' : '0'); } catch (err) { /* sin permiso */ }
+    }
+  }
   let wins = [0, 0];
   let impacts = [];
   let bolts = [];
@@ -105,6 +117,7 @@
     down.add(e.code);
     if (holdKeys.has(e.code)) e.preventDefault();
     resumeAudio();
+    if (e.code === 'KeyH') { setBoxes(!showBoxes); return; }
     if (phase === 'menu') { onMenuKey(e.code); return; }
     if (e.code === 'Escape') {
       if (phase === 'end') toMenu();
@@ -1459,22 +1472,63 @@
       ctx.fillStyle = 'rgba(255,246,220,' + Math.min(0.16, flashScreen * 2.2) + ')';
       ctx.fillRect(0, 0, cv.width, cv.height);
     }
-    if (showBoxes) {
-      ctx.strokeStyle = '#7dff7d';
-      for (let i = 0; i < 2; i++) {
-        const h = hurtbox(P[i]);
-        const [sx, sy, kx, ky] = worldToScreen(h.x, h.y);
-        ctx.strokeRect(sx, sy, h.w * kx, h.h * ky);
-        const ab = attackBox(P[i]);
-        if (ab) {
-          ctx.strokeStyle = '#ff5b6a';
-          const [ax, ay, akx, aky] = worldToScreen(ab.x, ab.y);
-          ctx.strokeRect(ax, ay, ab.w * akx, ab.h * aky);
-          ctx.strokeStyle = '#7dff7d';
-        }
-      }
-    }
+    if (showBoxes) drawBoxes();
     drawCombo();
+  }
+
+
+  // Cajas de golpe. Verde = lo que le pueden tocar (hurtbox), rojo = el golpe
+  // activo de este frame (solo mientras dura el frame activo), amarillo = el
+  // proyectil en el aire, y la rayita blanca es el pivote (los pies) del
+  // personaje, que es lo que da la altura de verdad.
+  function drawBoxes() {
+    ctx.save();
+    ctx.lineWidth = 2;
+    for (let i = 0; i < 2; i++) {
+      const f = P[i];
+      if (!f) continue;
+      const h = hurtbox(f);
+      const [sx, sy, kx, ky] = worldToScreen(h.x, h.y);
+      ctx.fillStyle = 'rgba(110,255,140,0.13)';
+      ctx.strokeStyle = 'rgba(110,255,140,0.95)';
+      ctx.fillRect(sx, sy, h.w * kx, h.h * ky);
+      ctx.strokeRect(sx, sy, h.w * kx, h.h * ky);
+      const ab = attackBox(f);
+      if (ab) {
+        const [ax, ay, akx, aky] = worldToScreen(ab.x, ab.y);
+        ctx.fillStyle = 'rgba(255,70,90,0.2)';
+        ctx.strokeStyle = 'rgba(255,70,90,0.98)';
+        ctx.fillRect(ax, ay, ab.w * akx, ab.h * aky);
+        ctx.strokeRect(ax, ay, ab.w * akx, ab.h * aky);
+      }
+      const [pxw, pyw] = worldToScreen(f.x, f.y);
+      ctx.strokeStyle = 'rgba(255,255,255,0.85)';
+      ctx.beginPath();
+      ctx.moveTo(pxw - 7, pyw);
+      ctx.lineTo(pxw + 7, pyw);
+      ctx.moveTo(pxw, pyw - 4);
+      ctx.lineTo(pxw, pyw + 4);
+      ctx.stroke();
+    }
+    for (let i = 0; i < bolts.length; i++) {
+      const b = bolts[i];
+      if (!b.def || !b.def.box) continue;
+      const box = { x: b.x + b.def.box.x, y: b.y + b.def.box.y, w: b.def.box.w, h: b.def.box.h };
+      const [bx, by, bkx, bky] = worldToScreen(box.x, box.y);
+      ctx.fillStyle = 'rgba(255,220,70,0.16)';
+      ctx.strokeStyle = 'rgba(255,220,70,0.95)';
+      ctx.fillRect(bx, by, box.w * bkx, box.h * bky);
+      ctx.strokeRect(bx, by, box.w * bkx, box.h * bky);
+    }
+    ctx.font = 'bold 11px system-ui, sans-serif';
+    ctx.textAlign = 'left';
+    ctx.fillStyle = 'rgba(0,0,0,0.55)';
+    ctx.fillRect(8, 8, 246, 20);
+    ctx.fillStyle = '#8dffa4';
+    ctx.fillText('verde: te pueden dar', 14, 22);
+    ctx.fillStyle = '#ff8497';
+    ctx.fillText('rojo: golpe activo', 148, 22);
+    ctx.restore();
   }
 
   function drawHud() {
@@ -1510,7 +1564,8 @@
     }
     const pauseLine = document.getElementById('pause-line');
     if (pauseLine) pauseLine.textContent = trainOn() ? 'Entrenamiento' : (cpuOn() ? 'Pelea · ' + aiLevel().name : 'Versus');
-    paintMenu();
+    try { if (localStorage.getItem(BOX_KEY) === '1') setBoxes(true, false); } catch (err) { /* sin permiso */ }
+  paintMenu();
     paintMusic();
     paintPicks();
   }
@@ -1578,7 +1633,8 @@
       levelId = LEVEL_ORDER[(i + (code === 'ArrowRight' ? 1 : -1) + LEVEL_ORDER.length) % LEVEL_ORDER.length];
     } else if (code === 'Enter') { activateMenu(); return; }
     else return;
-    paintMenu();
+    try { if (localStorage.getItem(BOX_KEY) === '1') setBoxes(true, false); } catch (err) { /* sin permiso */ }
+  paintMenu();
   }
 
   function activateMenu() {
@@ -1725,8 +1781,10 @@
   document.getElementById('resume').onclick = () => togglePause();
   document.getElementById('pause-menu').onclick = () => toMenu();
   document.getElementById('pause-music').onclick = () => toggleMusic();
+  document.getElementById('pause-boxes').onclick = (e) => { e.currentTarget.blur(); setBoxes(!showBoxes); };
   document.getElementById('rematch').onclick = () => again();
   document.getElementById('to-menu').onclick = () => toMenu();
+  try { if (localStorage.getItem(BOX_KEY) === '1') setBoxes(true, false); } catch (err) { /* sin permiso */ }
   paintMenu();
 
   async function loadChar(id) {

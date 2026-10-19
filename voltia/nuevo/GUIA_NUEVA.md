@@ -152,21 +152,25 @@ filas 1, 2 y 3, unidas en una única animación.
 No son tres animaciones ni tres partes: es **un bucle** que la hoja reparte en
 tres franjas. En el entregable **nunca** salen separadas: un directorio
 (`rows/01_stance`), un GIF (`gif/01_stance.gif`) y una animación en el juego
-(`stance`). El orden que se reproduce es **1 → 2 → 1 → 3**: la fila 1 vuelve en
-medio a propósito, porque con 1 → 2 → 3 el bucle se hacía repetitivo.
+(`stance`). El orden que se reproduce es **2 → 1 → 2 → 2 → 3 → 2** y vuelta a
+empezar (escrito seguido: 2-1-2-2-3-2-2-1-2-2…). La fila 2 hace de respiración
+entre la 1 y la 3 y va dos veces en la unión.
 
-| fila | figuras | x en la hoja | y en la hoja |
+| tramo del bucle | figuras | x en la hoja | y en la hoja |
 |---|---|---|---|
-| 1 (primera vuelta) | 10 | 97–545 | 7–76 |
-| 2 | 6 | 82–404 | 85–145 |
-| 1 (segunda vuelta) | 10 | 97–545 | 7–76 |
-| 3 | 7 | 12–347 | 152–219 |
-| **total publicado** | **33 figuras** (23 distintas) | | |
+| fila 2 | 6 | 82–404 | 85–145 |
+| fila 1 | 10 | 97–545 | 7–76 |
+| fila 2 | 6 | 82–404 | 85–145 |
+| fila 2 (otra vez) | 6 | 82–404 | 85–145 |
+| fila 3 | 7 | 12–347 | 152–219 |
+| fila 2 | 6 | 82–404 | 85–145 |
+| **total** | **41 figuras** (23 distintas) | | |
 
-De esas 33 figuras salen **32 frames a 10 fps** (3,2 s por vuelta). Se descarta
-**una** y no por criterio propio: la figura 1 de la fila 2 es **idéntica píxel a
-píxel** a la figura 10 de la fila 1 (mismo md5, `3ee56306`) — es la costura entre
-las dos franjas. Si se dejan las dos, el bucle se para dos ticks.
+De esas 41 figuras salen **39 frames a 10 fps** (3,9 s por vuelta). Se descartan
+**dos**, y no por criterio propio: la figura 1 de la fila 2 es **idéntica píxel a
+píxel** a la figura 10 de la fila 1 (mismo md5, `3ee56306`), y la primera figura
+de la fila 2 tras la fila 3 también. Son las dos costuras. Si se dejan, el bucle
+se para dos ticks en cada unión.
 
 El resto de repeticiones **se quedan**, porque son del dibujo original y están
 separadas en el bucle, no pegadas: `8d17596f` en 4 y 6 · `ba6e66c1` en 5 y 7 ·
@@ -344,3 +348,52 @@ en `preview/fight.html`). Antes eran 60.
 **Nombres del HUD:** `placeFighters()` escribe en `#n1` / `#n2` el `def.name` del
 personaje elegido y los carteles de fin de ronda usan también ese nombre; antes
 ponían VOLTIA aunque jugaras con Chun-Li.
+
+## Saltos de Chun-Li: el arco ya estaba dibujado (y por eso saltaba bajo)
+
+**El fallo.** En las cuatro filas de salto (13, 14, 16 y 17) el dibujo **ya trae
+el arco**: el cuerpo sube hasta **85 px** sobre el suelo de su franja (medido en
+`bandas.json`: fondo 0 → 47 → 72 → 80 → 84 → 85 → 79 → 60 → 37 → 0). Al anclar
+cada frame por los pies, ese arco se aplastaba contra el suelo y el sprite pegaba
+tirones: en una voltereta el «pie» de un frame es la cabeza del siguiente.
+
+**El arreglo.** Esas filas se anclan por el **centro del cuerpo** (`ancla =
+'centro'` en `tools/chunli_sheet_game.py`): el centro cae siempre a la altura que
+tiene en el frame de despegue (26,5 px), así la voltereta gira sobre sí misma y
+la altura la manda el motor con `p.y`, que es lo que mueve también la hurtbox.
+
+**Altura.** Con el arco fuera del sprite, la altura es sólo física:
+
+| | jumpV | gravity | subida (v²/2g) | aire |
+|---|---|---|---|---|
+| Voltia (sin tocar) | 9,3 | 0,42 | 103 px | 44 frames |
+| Chun-Li antes | 9,4 | 0,42 | 105 px | 45 frames |
+| Chun-Li ahora | 12,3 | 0,44 | **172 px** | 56 frames |
+
+Medido en el arnés: altura máxima real **165,8 px** y **53 frames** en el aire
+(el pico teórico no llega entero porque `pullDown` acota la caída).
+
+**Dos cosas más que se veían mal en la imagen:**
+
+1. **Trozos de la figura vecina.** El corte de esas filas va por columnas, así que
+   un frame se traía una mano o una cabeza flotando al lado. Ahora se quitan los
+   trozos sueltos que miden menos del 18 % del mayor (`quitar_fragmentos`), sólo
+   en las filas de salto y en la voltereta: en el speed kick los trozos pequeños
+   son las estelas y ahí no se toca.
+2. **Sombra pegada al pie.** La sombra que toca el zapato se funde con el
+   contorno negro del dibujo y no la detecta el filtro por forma. Se quita por
+   **distancia**: el contorno siempre está a 1 px de un píxel con color, la
+   sombra no. Se borra el negro que está a 2 px o más de cualquier color (en las
+   205 figuras quedan 306 px negros sueltos, todos de 1-3 px y dentro del dibujo).
+
+## Cajas de golpe (tecla H o botón «Cajas» en la pausa)
+
+`showBoxes` existía en el motor pero no había forma de encenderlo. Ahora:
+
+- botón **Cajas** en el cartel de pausa (se queda encendido y se recuerda en
+  `localStorage`, clave `fabater_cajas`) y tecla **H** en cualquier momento;
+- verde = hurtbox (lo que le pueden tocar), rojo = caja del golpe activo en ese
+  frame, amarillo = proyectil en el aire, y una cruz blanca en el **pivote**
+  (los pies), que es el punto que da la altura real;
+- se dibuja en las mismas coordenadas que las colisiones (`hurtbox`, `attackBox`,
+  `b.def.box`), no en una capa aparte: lo que se ve es lo que pega.

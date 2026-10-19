@@ -3,8 +3,9 @@
    de su hoja (rows/) sin repintar nada.
 
    Altura: medida, no supuesta. Voltia mide 294 px de tinta en su hoja x 0.5 de
-   scale = 147 px de mundo. Chun-Li mide 60 px de tinta de stance (sin la sombra
-   del suelo) y va horneada a 2.45x = 147 px de mundo. Misma altura que Voltia.
+   scale = 147 px de mundo. Chun-Li mide 58 px de tinta de stance (mediana de sus
+   39 frames, sin la sombra del suelo) y va horneada a 2.53x = 147 px de mundo.
+   Misma altura que Voltia. Celda 294x223, pivote (146, 203), scale 1.
 
    Los frames activos y los alcances de las cajas salen de medirlos en la hoja
    (tools/chunli_hitboxes.py y rows.json), no de copiarlos de Voltia.
@@ -16,16 +17,18 @@
     name: 'CHUN-LI',
     sheet: '../voltia/nuevo/chunli/game/sheet.json',
     scale: 1,
-    pivot: [141, 196],
+    pivot: [146, 203],   // pivote de la celda 294x223 (los pies)
     maxHp: 680,
     physics: {
       walkF: 3.3,
       walkB: 2.5,
       dash: 6.6,
       run: 5.4,
-      jumpV: -9.4,
+      // salto mas alto que Voltia: 12.3^2 / (2*0.44) = 172 px de subida
+      // (Voltia sube 105 con 9.3^2 / (2*0.42)), y 56 frames de aire
+      jumpV: -12.3,
       jumpX: 2.4,
-      gravity: 0.42,
+      gravity: 0.44,
       airAccel: 0.06,
       airMax: 3.2,
       backHopV: -5.2,
@@ -130,7 +133,7 @@
           anim: 'rayo_proj',
           // el mismo pivote (pies) que la celda de la hoja: la chispa queda a la
           // altura del pecho con offset.y = -84
-          pivot: [141, 196],
+          pivot: [146, 203],   // pivote de la celda 294x223 (los pies)
           scale: 1,
           offset: { x: 46, y: -84 },
           speeds: { weak: 2.6, strong: 4.9 },

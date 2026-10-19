@@ -131,11 +131,12 @@ def main():
     a('<td class="n">Stance<br><span class="dim">un solo bucle, filas 1 + 2 + 3</span></td>')
     a('<td class="mono">%d figuras<br>→ %d frames</td>' % (stance['crudo'], stance['n']))
     a('<td class="mono">7–219</td>')
-    a('<td class="note">Un solo bucle con las tres franjas: fila 1 (10 figuras) → fila 2 (6) '
-      '→ <b>fila 1 otra vez</b> (10) → fila 3 (7) = 33 figuras. Se descarta 1, la figura 1 de '
-      'la fila 2, que es idéntica píxel a píxel a la figura 10 de la fila 1 (la costura) → '
-      '<b>32 frames</b>. La fila 1 vuelve en medio a propósito, para que el bucle no se '
-      'repita igual. En ningún sitio sale partido: es una entrada, un GIF y una animación.</td>')
+    a('<td class="note">Un solo bucle con las tres franjas, en el orden <b>2 1 2 2 3 2</b> y '
+      'vuelta a empezar: 6 + 10 + 6 + 6 + 7 + 6 = <b>41 figuras</b>. Se descartan 2, las que '
+      'están repetidas píxel a píxel justo en las costuras (la primera de la fila 2 tras la '
+      'fila 1, y la primera de la fila 2 tras el final de la fila 3) → <b>%d frames</b>. La '
+      'fila 2 hace de respiración entre la 1 y la 3 y va dos veces en la unión. En ningún '
+      'sitio sale partido: es una entrada, un GIF y una animación.</td>' % stance['n'])
     a('</tr>')
 
     # ---- filas 4-24: crudas, como estaban, salvo la 12 y la 22-23 ----
@@ -185,12 +186,13 @@ def main():
     a('</table>')
 
     a('<div class="box"><h2>El stance, con los números</h2>')
-    a('<p>El stance es <b>una sola animación</b> hecha con las filas 1, 2 y 3: 10 + 6 + 10 + 7 '
-      '= <b>33 figuras</b> (la fila 1 va dos veces), <b>%d frames</b> publicados a <b>10 fps</b> '
-      '= <b>3,2 s</b> por vuelta. Se descarta <b>%d</b> frame: el primero de la fila 2 es '
-      'idéntico píxel a píxel (mismo md5, <code>3ee56306</code>) al último de la fila 1, y con '
-      'los dos el bucle se para dos ticks en la costura. El resto de repeticiones se quedan: '
-      'son del dibujo.</p>' % (stance['n'], stance['descartados']))
+    a('<p>El stance es <b>una sola animación</b> hecha con las filas 1, 2 y 3 en el orden '
+      '<b>2 → 1 → 2 → 2 → 3 → 2</b> y vuelta a empezar: 6 + 10 + 6 + 6 + 7 + 6 = <b>41 '
+      'figuras</b>, <b>%d frames</b> publicados a <b>10 fps</b> = <b>3,9 s</b> por vuelta. Se '
+      'descartan <b>%d</b>: son las figuras que quedan repetidas píxel a píxel en las dos '
+      'costuras (mismo md5, <code>3ee56306</code>), y con las dos puestas el bucle se para dos '
+      'ticks. El resto de repeticiones se quedan: son del dibujo.</p>'
+      % (stance['n'], stance['descartados']))
     a('<p>Los %d frames van en un lienzo único de <b>%d×%d px</b>: pies en la misma línea y eje '
       'de la cabeza al centro, para que el bucle no bote ni se vaya de lado.</p>'
       % (stance['n'], stance['lienzo'][0], stance['lienzo'][1]))
@@ -207,14 +209,14 @@ def main():
       '<b>P1</b> y <b>P2</b>, Voltia o Chun-Li. En Versus la llevan los dos mandos; en Pelea '
       'y Entrenamiento la controla la CPU si la eliges para P2.</p>')
     a('<p><b>Altura, medida antes de tocar nada:</b> Voltia mide 294 px de tinta en su hoja '
-      '(× 0,5 de scale) = <b>147 px de mundo</b>. Chun-Li mide 60 px de tinta de stance '
-      '(sin la sombra del suelo) → horneada a <b>×2,45</b> = <b>147 px de mundo</b>. No son '
+      '(× 0,5 de scale) = <b>147 px de mundo</b>. Chun-Li mide 58 px de tinta de stance '
+      '(mediana de sus 39 frames, sin la sombra del suelo) → horneada a <b>×2,53</b> = <b>147 px de mundo</b>. No son '
       '200 px: son 147, los que mide Voltia de verdad.</p>')
-    a('<p>Su hoja de juego son <b>29 animaciones</b> en celdas de 284×198, pivote (141, 196), '
+    a('<p>Su hoja de juego son <b>29 animaciones</b> en celdas de 294×223, pivote (146, 203), '
       'scale 1: la escala va horneada en el PNG con NEAREST, así el navegador no reescala nada.</p>')
-    a('<p class="dim">Aviso honesto: sus píxeles son 2,45 veces los del dibujo original, así que '
+    a('<p class="dim">Aviso honesto: sus píxeles son 2,53 veces los del dibujo original, así que '
       'se ve más gruesa que Voltia. No es un fallo del montaje: Voltia viene de una hoja de 294 px '
-      'reducida a la mitad y Chun-Li de una de 60 px subida 2,45 veces. A la misma altura, la '
+      'reducida a la mitad y Chun-Li de una de 58 px subida 2,53 veces. A la misma altura, la '
       'resolución de origen no da para más.</p>')
     a('<p class="dim">Lo que la hoja no trae y se ha reutilizado, dicho: no hay animación de daño '
       '(hit y crouch_hit usan la guardia), ni de victoria propia (victoria1 usa la aurora del super '

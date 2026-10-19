@@ -35,8 +35,12 @@ ANIMS = [
     ('walk', '04_walk_fwd', None, 12, True),
     ('walk_back', '05_walk_back', None, 12, True),
     ('dash', '04_walk_fwd', [0, 1, 2], 16, True),
-    ('jump', '13_jump_place', None, 12, False),
-    ('fwdjump', '14_jump_fwd', None, 12, False),
+    # En estas cuatro filas el dibujo ya trae el arco del salto (el cuerpo sube
+    # hasta 85 px sobre el suelo de la franja). Si se ancla cada frame por los
+    # pies, la voltereta se aplasta contra el suelo y el sprite pega saltos: se
+    # ancla por el CENTRO del cuerpo, y la altura la pone el motor con p.y.
+    ('jump', '13_jump_place', None, 12, False, 'centro'),
+    ('fwdjump', '14_jump_fwd', None, 12, False, 'centro'),
     ('crouch', '18_crouch_punch_strong', [2, 3, 4], 8, True),
     ('block', '22_block_super', [0, 1, 2, 3, 4, 5], 10, True),
     ('punch_weak', '08_punch_weak', None, 14, False),
@@ -47,8 +51,8 @@ ANIMS = [
     ('crouch_punch_strong', '18_crouch_punch_strong', None, 11, False),
     ('crouch_kick_weak', '20_crouch_kick_weak', None, 13, False),
     ('crouch_kick_strong', '19_crouch_kick_strong', None, 12, False),
-    ('jump_punch', '16_jump_punch', None, 16, False),
-    ('jump_kick', '17_jump_kick', None, 16, False),
+    ('jump_punch', '16_jump_punch', None, 16, False, 'centro'),
+    ('jump_kick', '17_jump_kick', None, 16, False, 'centro'),
     # la voltereta lleva su propia altura dentro de la hoja: aqui NO se aplana
     # al suelo, se deja subir y bajar como esta dibujada
     ('kick_fwd_down', '15_kick_fwd_down', None, 18, False, 'sombra'),
@@ -62,6 +66,9 @@ ANIMS = [
     ('victory1', '22_block_super', [6, 7, 8, 9, 10, 11, 12, 13], 8, True),
     ('victory2', '10_special_dd_k', None, 8, True),
 ]
+
+# filas donde el corte por columnas trae trozos de la figura vecina
+FRAGMENTOS = {'jump', 'fwdjump', 'jump_punch', 'jump_kick', 'kick_fwd_down'}
 
 NEGRO = (0, 0, 0, 255)
 
@@ -105,6 +112,42 @@ def quitar_sombra(im):
                 suelo = max(ys) if suelo is None else max(suelo, max(ys))
     for (x, y) in fuera:
         px[x, y] = (0, 0, 0, 0)
+
+    # Resto de sombra: cuando la sombra toca el pie, el componente negro se pega
+    # al contorno del dibujo y no pasa el filtro de forma. Lo que queda es negro
+    # puro por DEBAJO de la ultima fila con color del sprite: eso no puede ser
+    # dibujo, es la sombra. Se quita solo si son 6 px o mas, para no comerse un
+    # borde suelto.
+    # Las sombras que tocan el pie no se pueden quitar por forma, porque el
+    # componente negro se pega al contorno del dibujo. Se quitan por DISTANCIA:
+    # el contorno del sprite siempre esta a 1 px de un pixel con color, la
+    # sombra no. Solo se mira la franja de abajo, que es donde va esa sombra.
+    if any(px[x, y] == NEGRO for y in range(h) for x in range(w)):
+        color = [(x, y) for y in range(h) for x in range(w)
+                 if px[x, y][3] > 0 and not (px[x, y][0] < 25 and px[x, y][1] < 25
+                                             and px[x, y][2] < 25)]
+        if color:
+            dist = {}
+            cola = []
+            for (x, y) in color:
+                dist[(x, y)] = 0
+                cola.append((x, y))
+            i = 0
+            while i < len(cola):
+                cx, cy = cola[i]
+                i += 1
+                if dist[(cx, cy)] >= 2:
+                    continue
+                for dx in (-1, 0, 1):
+                    for dy in (-1, 0, 1):
+                        nx, ny = cx + dx, cy + dy
+                        if 0 <= nx < w and 0 <= ny < h and (nx, ny) not in dist:
+                            dist[(nx, ny)] = dist[(cx, cy)] + 1
+                            cola.append((nx, ny))
+            for y in range(h):
+                for x in range(w):
+                    if px[x, y] == NEGRO and dist.get((x, y), 9) >= 2:
+                        px[x, y] = (0, 0, 0, 0)
     return suelo
 
 
@@ -158,6 +201,48 @@ def spark_voltia(k):
                       max(1, int(round(i.size[1] * k)))), Image.NEAREST) for i in celdas]
 
 
+
+def quitar_fragmentos(im, frac=0.18):
+    """Borra los trozos sueltos que en la hoja son de la figura vecina.
+
+    El corte de estas filas va por columnas, asi que un frame se trae a veces
+    una mano o una cabeza de la figura de al lado flotando en el aire. Es un
+    trozo pequeno comparado con el cuerpo: se queda solo lo que mide al menos el
+    18 % del trozo mayor y se recorta el frame a lo que queda.
+    """
+    px = im.load()
+    w, h = im.size
+    visto = [[False] * w for _ in range(h)]
+    comps = []
+    for y0 in range(h):
+        for x0 in range(w):
+            if visto[y0][x0] or px[x0, y0][3] == 0:
+                continue
+            pila = [(x0, y0)]
+            visto[y0][x0] = True
+            pts = []
+            while pila:
+                cx, cy = pila.pop()
+                pts.append((cx, cy))
+                for dx in (-1, 0, 1):
+                    for dy in (-1, 0, 1):
+                        nx, ny = cx + dx, cy + dy
+                        if 0 <= nx < w and 0 <= ny < h and not visto[ny][nx] \
+                                and px[nx, ny][3] > 0:
+                            visto[ny][nx] = True
+                            pila.append((nx, ny))
+            comps.append(pts)
+    if len(comps) < 2:
+        return im
+    mayor = max(len(c) for c in comps)
+    for pts in comps:
+        if len(pts) < max(10, frac * mayor):
+            for (x, y) in pts:
+                px[x, y] = (0, 0, 0, 0)
+    bb = im.getbbox()
+    return im.crop(bb) if bb else im
+
+
 def main():
     os.makedirs(SALIDA, exist_ok=True)
     alto_voltia = 147.0      # medido: 294 px de tinta x 0.5 de scale
@@ -196,12 +281,26 @@ def main():
     geo = []
     for anim_id, carpeta, ims, fps, bucle, ancla in piezas:
         lista = []
-        for im in ims:
+        # 'centro': el punto que se clava en el pivote no son los pies del frame
+        # sino el centro del cuerpo, a la altura que tiene en el primer frame (el
+        # de despegue, con los pies en el suelo). Asi la voltereta gira sobre si
+        # misma en vez de dar tirones, y el motor sigue mandando la altura.
+        centro_h = None
+        for k, im in enumerate(ims):
             if anim_id == 'rayo_proj':
                 bb = im.getbbox()
                 lista.append((im, (bb[0] + bb[2]) / 2.0, bb[3]))
                 continue
+            if anim_id in FRAGMENTOS:
+                im = quitar_fragmentos(im)
             suelo_sombra = quitar_sombra(im)   # fuera la sombra del suelo
+            if ancla == 'centro':
+                bb = im.getbbox()
+                if centro_h is None:
+                    centro_h = (bb[3] - bb[1]) / 2.0
+                eje = (bb[0] + bb[2]) / 2.0
+                lista.append((im, eje, bb[1] + (bb[3] - bb[1]) / 2.0 + centro_h))
+                continue
             # anclaje por los pies, no por la sombra ni por la caja del dibujo:
             # la altura del salto y del derribo la mueve el motor con p.y, asi
             # que el sprite tiene que ir con los pies en el pivote. Si los frames

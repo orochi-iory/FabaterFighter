@@ -1,22 +1,22 @@
 {
  "sprite": "sheet.png",
  "cell": {
-  "w": 284,
-  "h": 198
+  "w": 294,
+  "h": 223
  },
  "pivot": [
-  141,
-  196
+  146,
+  203
  ],
  "scale": 1,
  "height_world": 147,
- "notes": "Chun-Li a la altura de Voltia. Escala 2.450 sobre frames nativos.",
+ "notes": "Chun-Li a la altura de Voltia. Escala 2.534 sobre frames nativos.",
  "animations": [
   {
    "id": "stance",
    "label": "stance",
    "row": 0,
-   "frames": 32,
+   "frames": 39,
    "fps": 10,
    "loop": true
   },

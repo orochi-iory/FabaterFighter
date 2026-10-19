@@ -33,26 +33,32 @@
             text-shadow:0 2px 0 #181624, 0 0 12px #000; }
   .banner small { display:block; font-size:16px; color:var(--cyan); letter-spacing:1px; font-weight:600; }
   .overlay { position:absolute; inset:0; z-index:5; display:flex; flex-direction:column; align-items:center;
-             justify-content:center; text-align:center; padding:22px 16px 18px; overflow:auto;
+             justify-content:flex-start; text-align:center; padding:22px 16px 18px; overflow:auto;
              background:radial-gradient(ellipse at 50% 38%, rgba(14,12,24,0.9), rgba(14,12,24,0.62) 62%, rgba(14,12,24,0.38)); }
   .overlay[hidden] { display:none; }
+  /* con justify-content:center y overflow:auto se corta el principio del menu en
+     pantallas bajas; con margenes automaticos se puede desplazar entero */
+  .overlay > :first-child { margin-top:auto; }
+  .overlay > :last-child { margin-bottom:auto; }
   .brand { margin:0; color:var(--cyan); letter-spacing:0.42em; font-size:12px; font-weight:700; }
-  .logo { margin:6px 0 0; color:var(--gold); font-size:clamp(40px, 8vw, 68px); line-height:0.9;
+  .logo { margin:4px 0 0; color:var(--gold); font-size:clamp(30px, 6vw, 52px); line-height:0.9;
           letter-spacing:0.08em; font-weight:900;
           text-shadow:0 3px 0 #181624, 0 0 18px rgba(255,203,61,0.28); }
-  .champ { margin:8px 0 0; color:var(--pink); letter-spacing:0.34em; font-size:12px; font-weight:700; }
-  .rule { width:120px; height:2px; margin:14px auto 8px; background:linear-gradient(90deg, transparent, var(--gold), var(--cyan), transparent); border:0; }
+  .champ { margin:5px 0 0; color:var(--pink); letter-spacing:0.34em; font-size:12px; font-weight:700; }
+  .rule { width:120px; height:2px; margin:9px auto 4px; background:linear-gradient(90deg, transparent, var(--gold), var(--cyan), transparent); border:0; }
   .menu { width:min(360px, 100%); display:flex; flex-direction:column; gap:4px; }
   button.item { background:transparent; color:#e6e4f4; border:1px solid transparent; border-radius:8px;
-                font-size:22px; font-weight:800; letter-spacing:0.16em; text-transform:uppercase;
-                padding:8px 14px; cursor:pointer; }
+                font-size:19px; font-weight:800; letter-spacing:0.16em; text-transform:uppercase;
+                padding:5px 14px; cursor:pointer; }
   button.item.on, button.item:hover { background:var(--gold); color:#181624; border-color:var(--gold); }
   .levels { display:flex; gap:8px; justify-content:center; margin:2px 0 4px; }
   .levels.dim { opacity:0.45; }
   .levels button { background:#2a2740; color:#d8d6ea; border:1px solid #4a4767; border-radius:999px;
                    padding:6px 12px; cursor:pointer; font-size:13px; letter-spacing:0.04em; }
   .levels button.pick, .levels button:hover { background:#0e7c8c; border-color:var(--cyan); color:#fff; }
-  .picks { display:flex; flex-direction:column; gap:4px; margin:8px 0 2px; }
+  .picks { display:flex; flex-direction:column; gap:3px; margin:2px 0 6px; }
+  .pickhead { margin:0 0 2px; color:var(--gold); font-size:11px; font-weight:800;
+              letter-spacing:0.3em; text-transform:uppercase; }
   .pickrow { display:flex; align-items:center; gap:6px; justify-content:center; }
   .pickrow .pl { color:#9d9ab5; font-size:12px; font-weight:800; letter-spacing:0.14em; width:22px; text-align:right; }
   button.pbtn { background:#2a2740; color:#d8d6ea; border:1px solid #4a4767; border-radius:999px;
@@ -60,8 +66,8 @@
   button.pbtn:hover { border-color:var(--cyan); color:#fff; }
   button.pbtn.pick { background:#7c2e9e; border-color:#ff8ad4; color:#fff; }
   .vsline { margin:2px 0 0; color:#8d8aa4; font-size:11px; letter-spacing:0.16em; }
-  .line { min-height:2.6em; margin:4px 0 0; color:#9d9ab5; font-size:13px; line-height:1.4; }
-  .foot { margin:14px 0 0; color:#8d8aa4; font-size:12px; letter-spacing:0.04em; }
+  .line { min-height:2.4em; margin:2px 0 0; color:#9d9ab5; font-size:13px; line-height:1.4; }
+  .foot { margin:8px 0 0; color:#8d8aa4; font-size:12px; letter-spacing:0.04em; }
   .foot a { color:var(--cyan); }
   .card { position:absolute; left:50%; top:46%; transform:translate(-50%, -50%); z-index:6;
           background:rgba(16,14,28,0.94); border:2px solid var(--gold); border-radius:12px;
@@ -119,18 +125,8 @@
       <h1 class="logo">CYBER FIST</h1>
       <p class="champ">CHAMPIONSHIP</p>
       <hr class="rule">
-      <nav class="menu" id="menu-nav">
-        <button class="item on" type="button" data-act="fight">Pelea</button>
-        <div class="levels" id="levels">
-          <button type="button" data-level="facil">Fácil</button>
-          <button type="button" data-level="normal" class="pick">Normal</button>
-          <button type="button" data-level="dificil">Difícil</button>
-        </div>
-        <button class="item" type="button" data-act="train">Entrenamiento</button>
-        <button class="item" type="button" data-act="versus">Versus</button>
-        <button class="item" type="button" data-act="music" data-music>Música</button>
-      </nav>
       <div class="picks" id="picks">
+        <p class="pickhead">Personajes</p>
         <div class="pickrow">
           <span class="pl">P1</span>
           <button type="button" class="pbtn pick" data-p1="voltia">Voltia</button>
@@ -143,6 +139,17 @@
         </div>
         <p class="vsline" id="pick-line"></p>
       </div>
+      <nav class="menu" id="menu-nav">
+        <button class="item on" type="button" data-act="fight">Pelea</button>
+        <div class="levels" id="levels">
+          <button type="button" data-level="facil">Fácil</button>
+          <button type="button" data-level="normal" class="pick">Normal</button>
+          <button type="button" data-level="dificil">Difícil</button>
+        </div>
+        <button class="item" type="button" data-act="train">Entrenamiento</button>
+        <button class="item" type="button" data-act="versus">Versus</button>
+        <button class="item" type="button" data-act="music" data-music>Música</button>
+      </nav>
       <p class="line" id="ai-line"></p>
       <p class="foot">↑↓ elige · ←→ nivel · Enter empieza · <a href="index.html">Visor</a> · <a href="guia-vieja.html">Guía</a></p>
     </div>
@@ -153,6 +160,7 @@
         <button class="act gold" type="button" id="resume">Continuar</button>
         <button class="act" type="button" id="pause-menu">Menú</button>
         <button class="act" type="button" id="pause-music" data-music>Música</button>
+        <button class="act" type="button" id="pause-boxes" title="Ver las cajas de golpe (H)">Cajas</button>
       </div>
     </div>
     <div class="endbar" id="endcard" hidden>
@@ -167,12 +175,12 @@
     Rayo: ↓↘→ + puño. El leve va más lento. Solo uno en pantalla y se apaga a media pista: desde el fondo no llega.
     Gancho: →↓↘ o →↓→ + puño. Si el movimiento lleva el gancho, sale el gancho y no el rayo. Giratoria: ↓↙← + patada. Los dos pegan dos veces y derriban si entran ambos.
     <b>Chun-Li</b> ↓↘→ + puño kikoken · ↓↘→ + patada speed kick · ↓↙← + patada giratoria.
-    Doble adelante: dash corto. Si mantienes el segundo adelante, corres hasta soltar. Doble atrás: salto corto atrás. ↓↘ + patada fuerte: voltereta (fila 15). Esc pausa. El reloj son 99 segundos reales, como el original.
+    Doble adelante: dash corto. Si mantienes el segundo adelante, corres hasta soltar. Doble atrás: salto corto atrás. ↓↘ + patada fuerte: voltereta (fila 15). H o el botón «Cajas» de la pausa enseña las cajas de golpe. Esc pausa. El reloj son 99 segundos reales, como el original.
   </p>
   <p id="status"></p>
 </div>
 <script src="chars/voltia.js?v=4"></script>
-<script src="chars/chunli.js?v=2"></script>
-<script src="fight.js?v=11"></script>
+<script src="chars/chunli.js?v=3"></script>
+<script src="fight.js?v=12"></script>
 </body>
 </html>
