@@ -397,3 +397,34 @@ Medido en el arnés: altura máxima real **165,8 px** y **53 frames** en el aire
   (los pies), que es el punto que da la altura real;
 - se dibuja en las mismas coordenadas que las colisiones (`hurtbox`, `attackBox`,
   `b.def.box`), no en una capa aparte: lo que se ve es lo que pega.
+
+## La hoja servida de cache (por qué se rompió Chun-Li en Pelea)
+
+**Síntoma:** en Pelea, un personaje sale a trozos: medio cuerpo, una pierna
+suelta, pedazos de la celda de al lado. Sólo a algunos frames y sólo a veces.
+
+**Causa:** la hoja se pedía con `sheet.png?v=6`, un número **fijo**. El
+`sheet.json` sí se pedía sin cache. Al cambiar la celda de 284×216 a 294×223, el
+navegador siguió sirviendo el PNG viejo y el motor cortó un PNG de 284×216 con
+una rejilla de 294×223:
+
+| | PNG viejo | rejilla nueva |
+|---|---|---|
+| celda | 284×216 | 294×223 |
+| deriva por columna | +10 px | |
+| deriva por fila | +7 px | |
+
+En la fila 0 casi no se nota (10 px de deriva por frame); en la fila 24
+(derribo) la deriva ya es de **168 px** y el sprite sale de otra fila entera.
+
+**Arreglo, en dos capas:**
+
+1. `tools/chunli_sheet_game.py` escribe en `sheet.json` un campo `rev` con el
+   **md5 del PNG** (y `cols`/`rows`). El motor pide la imagen con
+   `?v=<rev>`: si la hoja cambia, cambia la URL y no hay cache vieja posible.
+2. Aunque un proxy cachee de más, `loadChar` comprueba la medida al cargar
+   (`cell.w × cols`, `cell.h × rows`). Si no cuadra, avisa por consola y vuelve a
+   pedir la hoja saltándose la cache (`&r=<ms>`).
+
+**Regla para la próxima:** nunca poner una versión fija en la URL de una imagen
+generada. O sale del propio fichero (rev/hash), o se comprueba la medida.

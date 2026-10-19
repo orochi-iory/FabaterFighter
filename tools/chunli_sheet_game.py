@@ -18,6 +18,7 @@ Lo que hace, en orden:
 
 Escribe voltia/nuevo/chunli/game/sheet.png y sheet.json.
 """
+import hashlib
 import json
 import os
 
@@ -356,9 +357,18 @@ def main():
     print('altura horneada del stance: %d-%d, mediana %d px (Voltia %d)'
           % (celdas[0], celdas[-1], celdas[len(celdas) // 2], int(alto_voltia)))
 
+    # revision del PNG: el motor la usa como ?v= al pedir la hoja. Sin esto el
+    # navegador se queda con la hoja vieja en cache y, como el sheet.json si se
+    # pide sin cache, acaba cortando un PNG de otra medida con la celda nueva:
+    # salen trozos de la celda vecina.
+    with open(os.path.join(SALIDA, 'sheet.png'), 'rb') as fh:
+        rev = hashlib.md5(fh.read()).hexdigest()[:10]
     meta = {
         'sprite': 'sheet.png',
+        'rev': rev,
         'cell': {'w': cw, 'h': ch},
+        'cols': cols,
+        'rows': rows,
         'pivot': [pivx, pivy],
         'scale': 1,
         'height_world': round(celdas[len(celdas) // 2], 1),
@@ -366,6 +376,7 @@ def main():
         'animations': salida,
     }
     json.dump(meta, open(os.path.join(SALIDA, 'sheet.json'), 'w'), indent=1)
+    print('rev de la hoja: %s' % rev)
     print('%s: %d filas x %d columnas, celda %dx%d, %.1f MB'
           % (os.path.join(SALIDA, 'sheet.png'), rows, cols, cw, ch,
              os.path.getsize(os.path.join(SALIDA, 'sheet.png')) / 1048576.0))

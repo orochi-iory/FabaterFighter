@@ -1,9 +1,12 @@
 {
  "sprite": "sheet.png",
+ "rev": "92b4b35a5f",
  "cell": {
   "w": 294,
   "h": 223
  },
+ "cols": 39,
+ "rows": 29,
  "pivot": [
   146,
   203

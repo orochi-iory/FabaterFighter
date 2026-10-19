@@ -1796,8 +1796,26 @@
       const sheetUrl = new URL(raw.sheet, location.href);
       const meta = await (await fetch(sheetUrl.href, { cache: 'no-store' })).json();
       const imgUrl = new URL(meta.sprite, sheetUrl);
-      imgUrl.searchParams.set('v', '6');
-      const img = await loadImage(imgUrl.href);
+      // la version sale del propio sheet.json: si cambia la hoja cambia la URL,
+      // y si no, el navegador la sigue teniendo en cache. Un ?v fijo hacia que
+      // se sirviera una hoja vieja con la celda nueva y el personaje saliera
+      // cortado en trozos de la celda vecina.
+      const rev = meta.rev ||
+        ('c' + meta.cell.w + 'x' + meta.cell.h + '-n' + meta.animations.length +
+         '-h' + Math.round(meta.height_world || 0));
+      imgUrl.searchParams.set('v', rev);
+      let img = await loadImage(imgUrl.href);
+      // El JSON se pide sin cache pero la imagen puede venir de cache. Si la
+      // medida no cuadra con la celda x columnas x filas, la hoja es vieja: se
+      // vuelve a pedir saltandose la cache en vez de dibujar trozos cortados.
+      const cols = meta.cols || Math.max.apply(null, meta.animations.map((a) => a.frames));
+      const filas = meta.rows || (Math.max.apply(null, meta.animations.map((a) => a.row)) + 1);
+      if (img.width !== meta.cell.w * cols || img.height !== meta.cell.h * filas) {
+        console.warn('hoja de ' + id + ' con medida inesperada, se recarga:',
+          img.width + 'x' + img.height, 'frente a', (meta.cell.w * cols) + 'x' + (meta.cell.h * filas));
+        imgUrl.searchParams.set('r', String(Date.now()));
+        img = await loadImage(imgUrl.href);
+      }
       const anims = {};
       for (let i = 0; i < meta.animations.length; i++) anims[meta.animations[i].id] = meta.animations[i];
       artCache[raw.sheet] = { img, anims, cell: [meta.cell.w, meta.cell.h] };
