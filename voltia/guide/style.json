@@ -219,6 +219,10 @@
     }
   ],
   "lessons": [
+    "2026-10-19. EL PIXEL LIMPIO GANA: la hoja de Cammy tiene 72 colores y pixeles nativos 1:1. El repintado con IA la subio a 864x1209 y metio 138.850 colores: eso era el emborronado. Recolorear por tabla, sin IA, deja el pixel exacto y la pose clavada.",
+    "2026-10-19. Recolorear por color no basta: Cammy lleva leotardo y botas del MISMO rojo y las piernas desnudas. Hay que separar por zonas verticales de la caja de la figura (pies abajo = bota) y por tabla explicita de colores; adivinar el material por matiz confunde la sombra de la piel con el pelo y saca las piernas moradas.",
+    "2026-10-19. EL PIXEL LIMPIO GANA: la hoja de Cammy tiene 72 colores y pixeles nativos 1:1. El repintado con IA la subio a 864x1209 y metio 138.850 colores: eso era el emborronado. Recolorear por tabla, sin IA, deja el pixel exacto y la pose clavada.",
+    "2026-10-19. Recolorear por color no basta: Cammy lleva leotardo y botas del MISMO rojo y las piernas desnudas. Hay que separar por zonas verticales de la caja de la figura (pies abajo = bota) y por tabla explicita de colores; adivinar el material por matiz confunde la sombra de la piel con el pelo y saca las piernas moradas.",
     "2026-10-19. LA HOJA UNICA NO SE PUEDE CORTAR, y esta medido: en la hoja generada no hay NI UNA columna de verde entre figuras (0 columnas vacias de 863), porque las coletas tocan al vecino. Cinco cortes probados —pasillo, rejilla fija, bultos por conectividad, proyeccion de filas/columnas y valles de densidad— y los cinco parten figuras o arrastran restos. Conclusion: una hoja sirve para LEER poses, no para producir frames. El frame se genera de una en una, una figura por imagen.",
     "2026-10-19. Medido en la hoja de 12 poses: la figura crece segun baja en la hoja (mascara 30 px arriba, 34 abajo; tinta +33 %), asi que 11 de 12 frames se salian de la puerta. Escalar por celda arregla la mascara pero no la tinta ni el torso. Generar por separado es mas lento pero es lo unico que pasa la puerta.",
     "2026-10-19. Los frames se cortan de UNA SOLA HOJA de 5x4. Asi el tamano de celda, la escala y la linea de suelo son los mismos por construccion: no hay normalizacion por frame y no puede volver a descuadrarse. El aire se hace con lift, no escalando.",
@@ -408,10 +412,16 @@
     "limit": "El modelo no compone ciclos: la fila de saltos trae guardias y una voltereta suelta. Los frames en el aire se quedan pegados al suelo porque el recorte alinea por los pies."
   },
   "cloneWorkflow": {
-    "what": "Clonar las poses de la hoja de Cammy: el modelo copia una a una las poses de la referencia y solo cambia el personaje. Es lo unico que ha dado variedad real (IoU maximo 0,51-0,65 entre poses, frente a 0,85+ de las hojas inventadas).",
-    "ref": "ref/cammy_walk_ref.png (fila Walk de Cammy ampliada x6) y ref/cammy_poses_ref.png (Idle + Walk).",
-    "prompt": "Tres bloques obligatorios: 1) CLONE THE POSES (misma fila, mismo orden, ninguna repetida); 2) SIZE IS LOCKED (los cinco anclajes + ancho de hombros, como en promptTemplate); 3) PALETTE con los 16 hex escritos. Sin el bloque de paleta el traje sale claro: desvio de 10,9 puntos; con el, 2,8.",
-    "cut": "build_sheet.py <img> <salida> 200 240 238 6 1 30 --per-cell",
-    "result": "Walk clonado de 6 frames en nueva/walk_clon: mascara 29-30, tinta a menos del 10 %, paleta a menos de 2,8 puntos y seis poses distintas."
+    "what": "Clonado frame a frame de la hoja de Cammy (GBA/Alpha) por recoloreo determinista, sin IA.",
+    "input": "guide/ref/cammy_alpha_input_q1.png (711x890, recorte de la hoja original 711x3399)",
+    "tool": "tools/clone_row.py <hoja> <salida> --y y0 y1 --x0 px [--bolt]",
+    "why": "La hoja original tiene 72 colores y pixeles nativos 1:1 (no es un upscale). Recolorear ahi conserva el dibujo exacto: la pose no puede moverse porque no se redibuja nada.",
+    "how": "Tabla explicita color->material->escalon de rampa (72 entradas) + reglas de vestuario por zonas (cabeza/torso/piernas/pies) + visor dibujado sobre la masa de mascara + rayo limitado a los pixeles del traje del torso.",
+    "result": "Idle de 9 poses: identicas a Cammy en pose, tamano y posicion. consistency.py no aplica (sprites nativos de 24x72, no el lienzo 200x240).",
+    "pending": [
+      "coleta larga de Voltia (dibujada en tools, arco + mechones)",
+      "filas 2-N de la hoja",
+      "normalizacion a 200x240 si el motor lo pide (NO reescalar: usar el sprite nativo como base)"
+    ]
   }
 }
