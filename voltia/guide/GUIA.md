@@ -241,16 +241,21 @@ La referencia de animación está en el repo y no se toca:
 
 - `ref/chunli_sf2_sheet.png` — hoja de Chun-Li de SF2 (dibujo y animación).
 - `ref/blue_mary_sheet.png` — hoja de Blue Mary de KOF (misma lectura, otro juego).
-- `ref/walk_ref.png` — la fila **Walking** de SF2 recortada, al lado de la stance
-  aprobada de Voltia. Esta es la que se mira antes de generar un walk.
+- `ref/cammy_sf2_sheet.png` — hoja de Cammy de SF2. Su fila Walking es la que
+  mejor resuelve el paso: **corto, cruzado y con las piernas juntas**.
+- `ref/walk_ref.png` — las filas Walking de Cammy y de Chun-Li recortadas, al
+  lado de la stance aprobada de Voltia. Esta es la que se mira antes de generar
+  un walk.
 
 Lo que dicen esas tres filas, y lo que hay que copiar (sin plagiar el dibujo):
 
 1. **Se anda en guardia.** Los puños siguen arriba, a la altura de la barbilla,
    los codos recogidos. Nunca los brazos colgando: eso convierte el walk en un
    paseo de pasarela, que es justo el desastre de la primera prueba.
-2. **Pasos cortos.** Los pies se separan poco, la zancada es pequeña y rápida;
-   el talón de atrás se levanta y el de delante apoya plano.
+2. **Pasos cortos y cruzados.** Las piernas se quedan juntas y un pie pasa por
+   delante del otro; el talón de atrás se levanta y el de delante apoya plano.
+   Con la zancada abierta la silueta se ensancha y el paso se ve tosco; con el
+   paso cruzado el ciclo aguanta con cuatro poses.
 3. **Ningún pie se levanta más que su propia bota.** Nada de rodilla al pecho.
 4. **La cabeza no sube ni baja.** El torso va erguido y la línea del pelo se
    mantiene: si la cabeza baila, parece que salta, no que anda.
@@ -259,6 +264,9 @@ Lo que dicen esas tres filas, y lo que hay que copiar (sin plagiar el dibujo):
    cambio de pierna y la que aguanta un ciclo corto.
 6. **Cuatro poses por ciclo** (las cuatro de la fila de SF2): contacto, paso,
    contacto contrario, paso. La coleta va un pelo por detrás del cuerpo.
+7. **Nada de frames achatados ni ensanchados.** Todos los frames tienen que
+   conservar el mismo ancho de cuerpo y la misma silueta de coleta; si al cruzar
+   las piernas uno se estrecha, se tira.
 
 Con esto, la alternancia ya no se pide como un truco de tonos: se pide como una
 pose más, con la pierna contraria delante y el mismo puño arriba.

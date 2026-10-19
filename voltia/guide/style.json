@@ -8,10 +8,11 @@
  "styleRef": {
   "files": [
    "ref/chunli_sf2_sheet.png",
-   "ref/blue_mary_sheet.png"
+   "ref/blue_mary_sheet.png",
+   "ref/cammy_sf2_sheet.png"
   ],
   "what": "Hojas fijas de referencia, dentro del repo y siempre a mano: Chun-Li (Street Fighter II) y Blue Mary (KOF). Definen el DIBUJO y la ANIMACION: pixel gordo, contorno grueso, tonos planos, y como se mueve un luchador de estos. No se copia su ropa ni su anatomia.",
-  "walk": "ref/walk_ref.png junta la fila Walking de SF2 con la stance aprobada de Voltia: es la referencia de la que se saca el walk."
+  "walk": "ref/walk_ref.png junta la fila Walking de CAMMY (paso corto cruzado) y la de Chun-Li con la stance aprobada de Voltia. Es la referencia del walk: piernas juntas, pies casi en linea, paso que se cruza."
  },
  "designRef": {
   "file": "ref_stance.png",
@@ -238,7 +239,9 @@
   "2026-10-19. Medido: una pose generada de cero llega con ~105.000 colores distintos y la stance aprobada tiene 15. Al forzar la paleta ese ruido se reparte de otra forma y cambia la proporcion de tonos: eso es «algo ha pasado con la paleta». Hay que medirlo ANTES de cortar (tools/palette_report.py), no mirarlo.",
   "2026-10-19. El contorno solo se cierra donde el traje toca el aire (seal_teal_edge): convierte en contorno los pixeles teal que ya estan en el borde, sin engordar la silueta. Asi el borde queda 71-82 % contorno como la stance. close_outline engorda la figura y sube el contorno al 14 %: no se usa.",
   "2026-10-19. El walk de un juego de pelea NO es un paseo: se anda en guardia, con los puños arriba, pasos cortos y la linea de la cabeza casi fija. Brazos colgando y zancada larga es lo que hacia que se viera ridiculo. Referencia fija: guide/ref/walk_ref.png.",
-  "2026-10-19. La hoja de referencia se recorta a la fila que toca y se junta con un frame aprobado (ref/walk_ref.png). Con esa imagen sola como imagen 1 el generador ya dibuja la fila entera en guardia: es la mejor forma de pedir una animacion, mejor que describirla con palabras."
+  "2026-10-19. La hoja de referencia se recorta a la fila que toca y se junta con un frame aprobado (ref/walk_ref.png). Con esa imagen sola como imagen 1 el generador ya dibuja la fila entera en guardia: es la mejor forma de pedir una animacion, mejor que describirla con palabras.",
+  "2026-10-19. El walk que se lee bien en lateral no separa las piernas: las mantiene juntas y cruza un pie por delante del otro (Cammy). Con zancada abierta la silueta se ensancha y el paso se ve tosco; con paso corto cruzado el ciclo aguanta con cuatro poses.",
+  "2026-10-19. Un frame no puede quedar 'achatado': si al cruzar las piernas la silueta se estrecha o el cuerpo se ensancha, ese frame se tira. Se pide explicitamente 'mismo ancho de cuerpo y misma coleta en todos los frames'."
  ],
  "changelog": [
   "2026-10-19. El idle aprobado pasa a llamarse stance: carpeta nueva/stance, 24 frames, y se borra el bloque idle viejo de la primera pasada.",
@@ -372,7 +375,7 @@
     200,
     240
    ],
-   "note": "Walk en guardia, copiado de la fila Walking de SF2 (guide/ref/walk_ref.png): pasos cortos, pies bajos, torso erguido, puños arriba y vista lateral. Cuatro frames recortados de una sola tira con el mismo lienzo 200 x 240, suelo 238, mascara 30 px y eje de cabeza x=128. Paleta a menos de 2 puntos de la stance. PENDIENTE: la pierna que abre sigue siendo la misma en los cuatro y la bota de atras apunta hacia atras en algun frame; la referencia esta guardada para corregirlo.",
+   "note": "Walk en guardia con paso corto cruzado, copiado de la fila Walking de Cammy (guide/ref/walk_ref.png): piernas juntas, un pie pasa por delante del otro, solo se levanta el talon, puños arriba y vista lateral. Cuatro frames de una sola tira, mismo lienzo 200 x 240, suelo 238, mascara 29-30 px y eje de cabeza x=128. Paleta de 15 colores, 0 fuera, tonos a menos de 2 puntos de la stance (el contorno sale algo mas fino que la stance: 5,8 % contra 9,0 %).",
    "frames": [
     "00.png",
     "01.png",
