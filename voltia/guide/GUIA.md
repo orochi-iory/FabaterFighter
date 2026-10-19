@@ -52,7 +52,25 @@ No se mueve el recorte y no se toca la máscara.
 Sprites clave: `00_stand` (de pie), `02_hop1_peak` (rodilla arriba),
 `13_stroke_low` (manos en la caña).
 
+## Boca
+
+La máscara lleva boca. Abertura oscura y labio de piel, bajo el visor,
+mirando a la derecha. Está en los 20 frames, también con la cabeza inclinada.
+Sin boca el frame no entra. No se redibuja el cuerpo para ponerla.
+
+## Huecos del recorte
+
+El recorte por mayoría se comió píxeles de dentro. Se cierran los huecos
+encerrados de hasta 40 px, con el color de alrededor. El lazo de la coleta
+no se cierra: es hueco de verdad, no un mordisco.
+
+En el pico del saltito el visor tenía un bocado de 42 px. Ese sí se cierra,
+creciendo desde el borde, para no tapar el ojo con un solo tono. El hueco
+entre el brazo y el pecho no se toca.
+
 ## Historial
 
 - 2026-10-19. Borrada la versión nueva anterior. Idle de 20 desde cero.
   Recorte verde medido en el borde. Máscara entera.
+- 2026-10-19. El cuerpo se queda. Se cierran los píxeles que se comió el
+  recorte y vuelve la boca: abertura y labio, bajo el visor.

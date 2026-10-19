@@ -3,7 +3,7 @@
   "updated": "2026-10-19",
   "character": "Voltia",
   "anchor": "nueva/00_stand.png",
-  "anchorNote": "Idle nuevo, dibujado desde cero. La versión anterior se borró: el recorte rosa se comía la máscara y el arreglo a mano dejaba rosa suelto.",
+  "anchorNote": "Idle nuevo, dibujado desde cero. El cuerpo se queda. La máscara lleva boca: abertura y labio, bajo el visor. Los píxeles que se comió el recorte están cerrados. El lazo de la coleta no.",
   "facing": "derecha",
   "standHeight": 120,
   "key": {
@@ -41,11 +41,13 @@
     "El recorte no es rosa, magenta ni un tono de la máscara.",
     "Se mide el verde del borde. No se recorta por canal.",
     "La máscara se queda entera. Si el recorte se la come, el frame no entra.",
+    "La máscara lleva boca: abertura oscura y labio de piel, bajo el visor. Sin boca no entra.",
+    "Un hueco encerrado de hasta 40 px se cierra. El lazo de la coleta no. El hueco entre brazo y pecho no.",
     "Reutilizar es el dibujo completo en otro momento. No se recorta un brazo ni un trozo de máscara para pegarlo.",
     "Un frame partido no se entrega.",
     "La pelea no cambia de hoja hasta que este ciclo se acepte."
   ],
-  "prompt": "One fighting-game pixel sprite of the reference character, full body, facing right. Match the reference exactly: complete unbroken magenta mask, teal visor, huge violet ponytail, teal suit, fat yellow lightning, gold belt, navy gloves and boots. Flat colors, black outlines, no anti-aliasing. Background is flat pure green edge to edge, never pink. No floor, no shadow, no text. At least 24 pixels of green margin. The mask must stay intact.",
+  "prompt": "One fighting-game pixel sprite of the reference character, full body, facing right. Match the reference exactly: complete unbroken magenta mask with a visible mouth (dark opening and a skin-colored lip under the teal visor), teal visor, huge violet ponytail, teal suit, fat yellow lightning, gold belt, navy gloves and boots. Flat colors, black outlines, no anti-aliasing. Background is flat pure green edge to edge, never pink. No floor, no shadow, no text. At least 24 pixels of green margin. The mask must stay intact, mouth included.",
   "keys": [
     {"id": "stand", "file": "00_stand.png", "use": "De pie. Aterrizaje y cierre del idle. Se reutiliza entero, más alto, en el saltito."},
     {"id": "hop", "file": "02_hop1_peak.png", "use": "Rodilla arriba, en el aire. Pico del saltito."},
@@ -53,7 +55,7 @@
   ],
   "idle": {
     "fps": 8,
-    "note": "Veinte pasos. Saltito doble: el de pie sube entero y en el pico levanta la rodilla. Luego se atusa las piernas, de los muslos a la caña, y vuelve. La máscara no se recorta.",
+    "note": "Veinte pasos. Saltito doble: el de pie sube entero y en el pico levanta la rodilla. Luego se atusa las piernas, de los muslos a la caña, y vuelve. La máscara no se recorta. Lleva boca: abertura y labio, bajo el visor.",
     "frames": [
       "00_stand.png", "01_hop1.png", "02_hop1_peak.png", "03_hop1_down.png",
       "04_land.png", "05_hop2.png", "06_hop2_peak.png", "07_hop2_down.png",
@@ -70,6 +72,7 @@
     ]
   },
   "changelog": [
-    "2026-10-19. Se borra la versión nueva anterior. El recorte rosa se comía la máscara y el arreglo a mano dejaba rosa suelto. Idle de 20 frames desde cero, fondo verde medido en el borde, máscara a 260 de ese verde."
+    "2026-10-19. Se borra la versión nueva anterior. El recorte rosa se comía la máscara y el arreglo a mano dejaba rosa suelto. Idle de 20 frames desde cero, fondo verde medido en el borde, máscara a 260 de ese verde.",
+    "2026-10-19. El cuerpo no se redibuja. Se cierran los huecos que se comió el recorte, salvo el lazo de la coleta y el hueco entre brazo y pecho. Vuelve la boca en los 20 frames: abertura oscura y labio de piel, bajo el visor."
   ]
 }
