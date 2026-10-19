@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Chun-Li · las 24 animaciones</title>
+<title>Chun-Li · animaciones</title>
 <style>
   :root { --bg:#0f1a21; --panel:#16242e; --line:#2b4150; --gold:#ffcb3d; --cyan:#8fd8ff; --pink:#ff9ecb; }
   * { box-sizing:border-box; }
@@ -20,7 +20,7 @@
   header p b { color:var(--gold); }
   .hero { display:flex; gap:20px; align-items:center; flex-wrap:wrap; background:var(--panel);
     border:2px solid var(--line); border-radius:16px; padding:16px; margin:18px 0 0; }
-  .hero img { image-rendering:pixelated; height:190px; width:auto; background:#22333f; border-radius:10px; }
+  .hero img { image-rendering:pixelated; height:200px; width:auto; background:#22333f; border-radius:10px; }
   .hero .txt { flex:1; min-width:240px; }
   .hero h2 { margin:0 0 6px; font-size:17px; color:var(--gold); }
   .hero p { margin:0; color:#a9bcc9; font-size:14px; line-height:1.5; }
@@ -36,7 +36,7 @@
   td.b { color:var(--gold); font-weight:700; }
   td.n { font-weight:600; }
   td.mono { font-variant-numeric:tabular-nums; white-space:nowrap; }
-  td.note { color:#8ba1b1; max-width:270px; }
+  td.note { color:#8ba1b1; max-width:280px; }
   .dim { color:#6d8496; font-size:12px; }
   img.mini { image-rendering:pixelated; height:66px; width:auto; display:block; background:#22333f; border-radius:6px; }
   .box { background:var(--panel); border:2px solid var(--line); border-radius:14px; padding:16px 18px; margin:20px 0; }
@@ -56,25 +56,24 @@
 </nav>
 
 <header>
-  <h1>Chun-Li · las 24 animaciones</h1>
-  <p>Nombres y orden <b>según tu mapa de filas</b>, no según mi lectura: ahora cada
-     fila tiene su nombre real y su función en el juego. Los frames salen de la
-     hoja tal cual, recortados y con el fondo transparente.</p>
+  <h1>Chun-Li · animaciones corregidas</h1>
+  <p>Ahora con las filas leídas bien: <b>24 filas</b> en la hoja, pero el stance
+     son las filas 1, 2 y 3 unidas en <b>una sola animación</b> de 22 frames.
+     Caminar adelante y caminar atrás son filas distintas, no una partida en dos.</p>
   <div class="hero">
-    <img src="../voltia/nuevo/chunli/gif/00_stance_full.gif" alt="Stance completo">
+    <img src="../voltia/nuevo/chunli/gif/01_stance.gif" alt="Stance">
     <div class="txt">
-      <h2>Stance completo · 35 frames · filas 1, 2 y 3</h2>
-      <p>Las tres primeras filas son un solo bucle, como dijiste. Aquí están
-         unidas en orden: si arranca bien, cierra bien. Es la base de
-         comparación para todo lo demás: si un golpe no encaja con este stance,
-         el golpe está mal.</p>
+      <h2>Stance · 22 frames · filas 1, 2 y 3</h2>
+      <p>Las tres filas se concatenan y se quita el frame repetido de cada costura,
+         así no hay pausa al empalmar. Ya no lleva ni un frame de caminar: esos
+         están en las filas 4 y 5, aparte.</p>
     </div>
   </div>
   <div class="stats">
-    <div class="stat"><b>24</b><span>filas</span></div>
-    <div class="stat"><b>199</b><span>frames de animación</span></div>
-    <div class="stat"><b>35</b><span>frames de stance</span></div>
-    <div class="stat"><b>2</b><span>filas partidas de una banda</span></div>
+    <div class="stat"><b>24</b><span>filas en la hoja</span></div>
+    <div class="stat"><b>22</b><span>animaciones</span></div>
+    <div class="stat"><b>198</b><span>frames</span></div>
+    <div class="stat"><b>9</b><span>poses de speed kick</span></div>
   </div>
 </header>
 
@@ -83,70 +82,37 @@
     <tr><th>Fila</th><th>GIF</th><th>Animación</th><th>Frames</th><th>Bucle</th>
         <th>Activos</th><th>En el aire</th><th>Tamaño</th><th>Nota de uso</th></tr>
       <tr class="hi">
-        <td class="b">—</td>
-        <td><img class="mini" src="../voltia/nuevo/chunli/gif/00_stance_full.gif" alt="Stance completo (filas 1-3)"></td>
-        <td class="n">Stance completo (filas 1-3)</td>
-        <td class="mono">35</td>
-        <td class="mono">🔁 sí</td>
+        <td class="b">1-3</td>
+        <td><img class="mini" src="../voltia/nuevo/chunli/gif/01_stance.gif" alt="Stance"></td>
+        <td class="n">Stance</td>
+        <td class="mono">22</td>
+        <td class="mono">sí</td>
         <td class="mono">—</td>
         <td class="mono">—</td>
         <td class="mono">55×26</td>
-        <td class="note">Las tres filas seguidas: 35 frames de bucle.</td>
-      </tr>
-      <tr>
-        <td class="b">01</td>
-        <td><img class="mini" src="../voltia/nuevo/chunli/gif/01_stance_1.gif" alt="Stance · parte 1"></td>
-        <td class="n">Stance · parte 1</td>
-        <td class="mono">16</td>
-        <td class="mono">🔁 sí</td>
-        <td class="mono">—</td>
-        <td class="mono">—</td>
-        <td class="mono">57×26</td>
-        <td class="note">Con las filas 2 y 3 forma el bucle completo del stance.</td>
-      </tr>
-      <tr>
-        <td class="b">02</td>
-        <td><img class="mini" src="../voltia/nuevo/chunli/gif/02_stance_2.gif" alt="Stance · parte 2"></td>
-        <td class="n">Stance · parte 2</td>
-        <td class="mono">7</td>
-        <td class="mono">🔁 sí</td>
-        <td class="mono">—</td>
-        <td class="mono">#2</td>
-        <td class="mono">55×31</td>
-        <td class="note">Segunda parte del mismo bucle.</td>
-      </tr>
-      <tr>
-        <td class="b">03</td>
-        <td><img class="mini" src="../voltia/nuevo/chunli/gif/03_stance_3.gif" alt="Stance · parte 3"></td>
-        <td class="n">Stance · parte 3</td>
-        <td class="mono">12</td>
-        <td class="mono">🔁 sí</td>
-        <td class="mono">—</td>
-        <td class="mono">—</td>
-        <td class="mono">56×35</td>
-        <td class="note">Tercera parte; al acabar vuelve a la fila 1.</td>
+        <td class="note">Filas 1, 2 y 3 son el mismo bucle: van juntas, sin repetir el frame de costura.</td>
       </tr>
       <tr>
         <td class="b">04</td>
         <td><img class="mini" src="../voltia/nuevo/chunli/gif/04_walk_fwd.gif" alt="Caminar adelante"></td>
         <td class="n">Caminar adelante</td>
-        <td class="mono">6</td>
-        <td class="mono">🔁 sí</td>
+        <td class="mono">12</td>
+        <td class="mono">sí</td>
         <td class="mono">—</td>
         <td class="mono">—</td>
-        <td class="mono">60×34</td>
-        <td class="note">Ciclo de 6 frames.</td>
+        <td class="mono">56×35</td>
+        <td class="note">Ciclo de 12 frames.</td>
       </tr>
       <tr>
         <td class="b">05</td>
         <td><img class="mini" src="../voltia/nuevo/chunli/gif/05_walk_back.gif" alt="Caminar atras"></td>
         <td class="n">Caminar atras</td>
-        <td class="mono">6</td>
-        <td class="mono">🔁 sí</td>
+        <td class="mono">12</td>
+        <td class="mono">sí</td>
         <td class="mono">—</td>
         <td class="mono">—</td>
         <td class="mono">59×34</td>
-        <td class="note">Mismo patron dibujado al reves en la hoja; 6 frames.</td>
+        <td class="note">Fila propia, 12 frames.</td>
       </tr>
       <tr>
         <td class="b">06</td>
@@ -179,7 +145,7 @@
         <td class="mono">#2, #4</td>
         <td class="mono">—</td>
         <td class="mono">57×46</td>
-        <td class="note">Misma idea que el fuerte pero mas corto.</td>
+        <td class="note">Mas corto que el fuerte.</td>
       </tr>
       <tr>
         <td class="b">09</td>
@@ -201,7 +167,7 @@
         <td class="mono">#5, #7</td>
         <td class="mono">#6</td>
         <td class="mono">45×29</td>
-        <td class="note">La patada girada con el efecto en el pie.</td>
+        <td class="note">Patada girada con efecto en el pie.</td>
       </tr>
       <tr>
         <td class="b">11</td>
@@ -212,7 +178,7 @@
         <td class="mono">—</td>
         <td class="mono">—</td>
         <td class="mono">54×54</td>
-        <td class="note">El proyectil NO esta dibujado: hay que completarlo con la chispa de Voltia.</td>
+        <td class="note">El proyectil no esta dibujado: se completa con la chispa de Voltia.</td>
       </tr>
       <tr>
         <td class="b">12</td>
@@ -220,10 +186,10 @@
         <td class="n">Speed kick</td>
         <td class="mono">9</td>
         <td class="mono">no</td>
-        <td class="mono">#3, #8</td>
+        <td class="mono">#4, #5</td>
         <td class="mono">—</td>
         <td class="mono">61×32</td>
-        <td class="note">Patada rapida repetida (machaque de boton).</td>
+        <td class="note">Poses rapidas repetidas; las estelas van dibujadas aparte en la hoja.</td>
       </tr>
       <tr>
         <td class="b">13</td>
@@ -234,7 +200,7 @@
         <td class="mono">—</td>
         <td class="mono">#4, #5, #6, #7, #8</td>
         <td class="mono">36×20</td>
-        <td class="note">Los pies se separan del suelo y vuelven.</td>
+        <td class="note">Pies fuera del suelo y vuelta.</td>
       </tr>
       <tr>
         <td class="b">14</td>
@@ -256,7 +222,7 @@
         <td class="mono">#8, #9, #10</td>
         <td class="mono">#6, #7, #8, #9, #10</td>
         <td class="mono">32×20</td>
-        <td class="note">Sube caminando por el pecho del rival y cae con voltereta.</td>
+        <td class="note">Sube por el pecho del rival y cae con voltereta.</td>
       </tr>
       <tr>
         <td class="b">16</td>
@@ -267,7 +233,7 @@
         <td class="mono">#6</td>
         <td class="mono">#4, #5, #6, #7, #8</td>
         <td class="mono">38×20</td>
-        <td class="note">Misma animacion para los dos botones; cambia el impacto y el dano.</td>
+        <td class="note">Misma animacion para los dos botones; cambia el dano.</td>
       </tr>
       <tr>
         <td class="b">17</td>
@@ -278,7 +244,7 @@
         <td class="mono">#7</td>
         <td class="mono">#4, #5, #6, #7</td>
         <td class="mono">53×20</td>
-        <td class="note">Misma animacion para los dos botones; cambia el impacto y el dano.</td>
+        <td class="note">Misma animacion para los dos botones; cambia el dano.</td>
       </tr>
       <tr>
         <td class="b">18</td>
@@ -289,7 +255,7 @@
         <td class="mono">#6</td>
         <td class="mono">—</td>
         <td class="mono">46×46</td>
-        <td class="note">Los frames de levantarse se reutilizan para pasar de stance a agachada y al reves.</td>
+        <td class="note">Los frames de pie sirven de transicion stance &lt;-&gt; agachada.</td>
       </tr>
       <tr>
         <td class="b">19</td>
@@ -329,11 +295,11 @@
         <td><img class="mini" src="../voltia/nuevo/chunli/gif/22_block.gif" alt="Defensa / onda de choque"></td>
         <td class="n">Defensa / onda de choque</td>
         <td class="mono">8</td>
-        <td class="mono">🔁 sí</td>
+        <td class="mono">sí</td>
         <td class="mono">—</td>
         <td class="mono">—</td>
         <td class="mono">60×46</td>
-        <td class="note">Guarda normal; con impactos grandes genera la onda. Tambien arranca el super.</td>
+        <td class="note">Guarda normal; con impactos grandes genera la onda. Arranca el super.</td>
       </tr>
       <tr>
         <td class="b">23</td>
@@ -344,7 +310,7 @@
         <td class="mono">—</td>
         <td class="mono">—</td>
         <td class="mono">57×48</td>
-        <td class="note">La esfera no esta dibujada; los frames son el arranque del super.</td>
+        <td class="note">La esfera no esta dibujada; son los frames de arranque.</td>
       </tr>
       <tr>
         <td class="b">24</td>
@@ -355,15 +321,15 @@
         <td class="mono">—</td>
         <td class="mono">#1, #2, #3, #4, #5</td>
         <td class="mono">24×34</td>
-        <td class="note">Se usan frames distintos segun la altura de la caida.</td>
+        <td class="note">Se escogen frames segun la altura de la caida.</td>
       </tr>
   </table>
 
   <div class="box">
     <h2>Frame data de los golpes</h2>
-    <p>Los frames activos salen de medir el alcance del brazo o de la pierna, no
-       de mirar la foto. Arranque = frames antes de la extensión; activo = frames
-       con el miembro extendido; recuperación = frames hasta volver a la guardia.</p>
+    <p>Arranque = frames antes de la extensión; activo = frames con el brazo o la
+       pierna extendidos; recuperación = frames hasta la guardia. Sale de medir el
+       alcance de cada frame, no de mirar la foto.</p>
     <table>
       <tr><th>Fila</th><th>Animación</th><th>Frames</th><th>Arranque</th>
           <th>Activo</th><th>Recuperación</th><th>Total a 12 fps</th><th>Extiende</th></tr>
@@ -388,8 +354,8 @@
         <td class="mono">1</td><td class="mono">583 ms</td>
         <td class="mono">pierna</td></tr>
       <tr><td class="b">12</td><td class="n">Speed kick</td>
-        <td class="mono">9</td><td class="mono">2</td><td class="mono">2</td>
-        <td class="mono">5</td><td class="mono">750 ms</td>
+        <td class="mono">9</td><td class="mono">3</td><td class="mono">2</td>
+        <td class="mono">4</td><td class="mono">750 ms</td>
         <td class="mono">brazo</td></tr>
       <tr><td class="b">15</td><td class="n">Patada adelante-abajo + voltereta atras</td>
         <td class="mono">13</td><td class="mono">7</td><td class="mono">3</td>
@@ -420,51 +386,46 @@
         <td class="mono">3</td><td class="mono">500 ms</td>
         <td class="mono">brazo</td></tr>
     </table>
-    <p><b>Ojo</b>: los 12 fps son la velocidad del GIF de revisión, no la del juego.
-       Lo que sí es del dibujo: cuántos frames hay y en cuál se extiende.</p>
   </div>
 
   <div class="box warn">
-    <h2>Lo que la hoja no trae y hay que completar</h2>
+    <h2>Lo que la hoja no trae</h2>
     <ul>
-      <li><b>Fila 11, proyectil</b>: el proyectil no está dibujado. La animación son
-          solo 3 frames (guardia, palmas al frente, guardia). Se completa con la
-          chispa de Voltia.</li>
-      <li><b>Fila 23, super</b>: la esfera que envuelve al personaje tampoco está
-          dibujada; estos frames son el arranque.</li>
-      <li><b>Fila 22, defensa</b>: la onda de choque de los golpes grandes va aparte;
-          aquí solo está la guarda.</li>
-      <li><b>Filas 16 y 17</b>: una sola animación para débil y fuerte. El daño y el
-          impacto se diferencian por código, no por frames.</li>
+      <li><b>Fila 11, proyectil</b>: son 3 frames (guardia, palmas al frente,
+          guardia). El proyectil no está dibujado; se completa con la chispa de Voltia.</li>
+      <li><b>Fila 23, super</b>: la esfera que envuelve al personaje tampoco está;
+          estos frames son el arranque.</li>
+      <li><b>Fila 22</b>: la onda de choque de los golpes grandes va aparte.</li>
+      <li><b>Filas 16 y 17</b>: una sola animación para débil y fuerte; el daño se
+          diferencia por código.</li>
     </ul>
   </div>
 
   <div class="box">
-    <h2>Frames reutilizables (lo que dijiste)</h2>
-    <ul>
-      <li><b>Fila 18</b>: los frames de pie (<code>#1, #11, #12</code>) son el
-          levantarse, y sirven para pasar de stance a agachada y al revés. No hay
-          que dibujar una transición aparte.</li>
-      <li><b>Fila 14</b>: el salto adelante, invertido, es el salto atrás.</li>
-      <li><b>Fila 24</b>: el derribo se monta escogiendo frames según la altura de
-          la que venga la caída; no es una animación única.</li>
-      <li><b>Filas 1-3</b>: el bucle del stance se corta en tres trozos de hoja,
-          pero es una sola animación de 35 frames.</li>
-    </ul>
+    <h2>Speed kick: las estelas sí están</h2>
+    <p>La fila tiene <b>9 poses</b> y, entre ellas, estelas amarillas dibujadas
+       como trozos sueltos. Se distinguen por cantidad de tinta (una estela tiene
+       menos de un tercio que una pose) y se pegan a la pose que acompañan si están
+       a menos de 16 px. Así el golpe se ve con su rastro en vez de aparecer
+       cortado.</p>
   </div>
 
   <div class="box">
-    <h2>Cómo está cortado (y por qué antes fallaba)</h2>
-    <p>Mi corte anterior separaba por huecos de fondo y daba 23 filas: no
-       cuadraba con tus 24. El motivo es que <b>la banda 3 llevaba dos
-       animaciones</b> (caminar adelante y caminar atrás, 6 + 6 frames). Ahora la
-       banda 3 se parte en dos y el resto va una fila por banda, lo que da las 24
-       exactas.</p>
-    <p>El retrato de la primera fila se descarta: es más alto que cualquier frame
-       y no es animación. Los frames en el aire se detectan porque su borde
-       inferior queda por encima de la línea de suelo de la fila.</p>
-    <p>Frames sueltos en <code>voltia/nuevo/chunli/rows/NN_nombre/</code>, GIF en
-       <code>gif/</code> y todos los datos en <code>rows.json</code>.</p>
+    <h2>Por qué antes salía mal</h2>
+    <ul>
+      <li><b>La banda 0 de mi corte llevaba dos filas superpuestas</b> (figuras con
+          el borde inferior a y≈76 y a y≈145) más el retrato. Al no separarlas,
+          todo lo de abajo se desplazaba una fila.</li>
+      <li><b>Las filas se identifican por la línea de suelo</b> (borde inferior de
+          la figura), no por el borde superior: un salto cambia el alto del dibujo
+          pero no la fila a la que pertenece.</li>
+      <li><b>El «stance completo» anterior incluía la fila 4</b>, que es caminar
+          adelante. De ahí que se colara el caminar.</li>
+      <li><b>Caminar adelante y atrás son filas distintas</b> (12 frames cada una);
+          antes partí una sola fila en dos mitades y no valía.</li>
+    </ul>
+    <p>Los frames están en <code>voltia/nuevo/chunli/rows/NN_nombre/</code>, los GIF
+       en <code>gif/</code> y los datos en <code>rows.json</code>.</p>
   </div>
 </main>
 </body>

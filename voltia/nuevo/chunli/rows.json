@@ -1,40 +1,14 @@
 [
  {
-  "fila": 0,
-  "slug": "stance_full",
-  "nombre": "Stance completo (filas 1-3)",
-  "bucle": true,
-  "nota": "Las tres filas seguidas: 35 frames de bucle.",
-  "banda": null,
-  "n": 35,
-  "fps": 12,
-  "gif": "gif/00_stance_full.gif",
-  "alto": [
-   55,
-   66
-  ],
-  "ancho": [
-   26,
-   46
-  ],
-  "activos": [],
-  "extension": null,
-  "de_pie": [],
-  "aire": [],
-  "frames": []
- },
- {
   "fila": 1,
-  "slug": "stance_1",
-  "nombre": "Stance \u00b7 parte 1",
+  "slug": "stance",
+  "nombre": "Stance",
   "bucle": true,
-  "nota": "Con las filas 2 y 3 forma el bucle completo del stance.",
-  "banda": 0,
-  "n": 16,
-  "fps": 12,
-  "gif": "gif/01_stance_1.gif",
+  "nota": "Filas 1, 2 y 3 son el mismo bucle: van juntas, sin repetir el frame de costura.",
+  "n": 22,
+  "gif": "gif/01_stance.gif",
   "alto": [
-   57,
+   55,
    66
   ],
   "ancho": [
@@ -43,249 +17,31 @@
   ],
   "activos": [],
   "extension": null,
-  "de_pie": [
-   2,
-   3,
-   5,
-   7,
-   9,
-   10,
-   12,
-   14
-  ],
   "aire": [],
-  "ataque": false,
-  "frames": [
-   {
-    "f": "00.png",
-    "w": 46,
-    "h": 57,
-    "arriba": 14,
-    "abajo": 23,
-    "base": 250
-   },
-   {
-    "f": "01.png",
-    "w": 26,
-    "h": 63,
-    "arriba": 11,
-    "abajo": 13,
-    "base": 110
-   },
-   {
-    "f": "02.png",
-    "w": 26,
-    "h": 63,
-    "arriba": 11,
-    "abajo": 13,
-    "base": 110
-   },
-   {
-    "f": "03.png",
-    "w": 46,
-    "h": 58,
-    "arriba": 13,
-    "abajo": 23,
-    "base": 249
-   },
-   {
-    "f": "04.png",
-    "w": 26,
-    "h": 63,
-    "arriba": 11,
-    "abajo": 13,
-    "base": 110
-   },
-   {
-    "f": "05.png",
-    "w": 46,
-    "h": 57,
-    "arriba": 14,
-    "abajo": 23,
-    "base": 250
-   },
-   {
-    "f": "06.png",
-    "w": 30,
-    "h": 66,
-    "arriba": 9,
-    "abajo": 16,
-    "base": 141
-   },
-   {
-    "f": "07.png",
-    "w": 46,
-    "h": 58,
-    "arriba": 13,
-    "abajo": 23,
-    "base": 249
-   },
-   {
-    "f": "08.png",
-    "w": 30,
-    "h": 66,
-    "arriba": 8,
-    "abajo": 15,
-    "base": 143
-   },
-   {
-    "f": "09.png",
-    "w": 30,
-    "h": 66,
-    "arriba": 9,
-    "abajo": 16,
-    "base": 141
-   },
-   {
-    "f": "10.png",
-    "w": 46,
-    "h": 59,
-    "arriba": 14,
-    "abajo": 23,
-    "base": 252
-   },
-   {
-    "f": "11.png",
-    "w": 30,
-    "h": 66,
-    "arriba": 8,
-    "abajo": 15,
-    "base": 143
-   },
-   {
-    "f": "12.png",
-    "w": 46,
-    "h": 58,
-    "arriba": 13,
-    "abajo": 23,
-    "base": 249
-   },
-   {
-    "f": "13.png",
-    "w": 44,
-    "h": 62,
-    "arriba": 10,
-    "abajo": 22,
-    "base": 235
-   },
-   {
-    "f": "14.png",
-    "w": 46,
-    "h": 60,
-    "arriba": 12,
-    "abajo": 23,
-    "base": 250
-   },
-   {
-    "f": "15.png",
-    "w": 46,
-    "h": 57,
-    "arriba": 14,
-    "abajo": 23,
-    "base": 250
-   }
-  ]
- },
- {
-  "fila": 2,
-  "slug": "stance_2",
-  "nombre": "Stance \u00b7 parte 2",
-  "bucle": true,
-  "nota": "Segunda parte del mismo bucle.",
-  "banda": 1,
-  "n": 7,
-  "fps": 12,
-  "gif": "gif/02_stance_2.gif",
-  "alto": [
-   55,
-   63
-  ],
-  "ancho": [
-   31,
-   46
-  ],
-  "activos": [],
-  "extension": null,
   "de_pie": [
    1,
+   2,
    3,
    4,
    5,
-   6
-  ],
-  "aire": [
-   2
+   6,
+   7,
+   8,
+   16,
+   20,
+   21
   ],
   "ataque": false,
-  "frames": [
-   {
-    "f": "00.png",
-    "w": 46,
-    "h": 63,
-    "arriba": 11,
-    "abajo": 23,
-    "base": 252
-   },
-   {
-    "f": "01.png",
-    "w": 31,
-    "h": 55,
-    "arriba": 25,
-    "abajo": 18,
-    "base": 25
-   },
-   {
-    "f": "02.png",
-    "w": 37,
-    "h": 60,
-    "arriba": 19,
-    "abajo": 17,
-    "base": 134
-   },
-   {
-    "f": "03.png",
-    "w": 38,
-    "h": 60,
-    "arriba": 22,
-    "abajo": 15,
-    "base": 140
-   },
-   {
-    "f": "04.png",
-    "w": 46,
-    "h": 63,
-    "arriba": 11,
-    "abajo": 23,
-    "base": 252
-   },
-   {
-    "f": "05.png",
-    "w": 46,
-    "h": 62,
-    "arriba": 10,
-    "abajo": 23,
-    "base": 250
-   },
-   {
-    "f": "06.png",
-    "w": 46,
-    "h": 57,
-    "arriba": 14,
-    "abajo": 23,
-    "base": 250
-   }
-  ]
+  "filas": "1-3"
  },
  {
-  "fila": 3,
-  "slug": "stance_3",
-  "nombre": "Stance \u00b7 parte 3",
+  "fila": 4,
+  "slug": "walk_fwd",
+  "nombre": "Caminar adelante",
   "bucle": true,
-  "nota": "Tercera parte; al acabar vuelve a la fila 1.",
-  "banda": 2,
+  "nota": "Ciclo de 12 frames.",
   "n": 12,
-  "fps": 12,
-  "gif": "gif/03_stance_3.gif",
+  "gif": "gif/04_walk_fwd.gif",
   "alto": [
    56,
    58
@@ -296,6 +52,7 @@
   ],
   "activos": [],
   "extension": null,
+  "aire": [],
   "de_pie": [
    1,
    2,
@@ -310,119 +67,18 @@
    11,
    12
   ],
-  "aire": [],
-  "ataque": false,
-  "frames": [
-   {
-    "f": "00.png",
-    "w": 41,
-    "h": 56,
-    "arriba": 16,
-    "abajo": 21,
-    "base": 189
-   },
-   {
-    "f": "01.png",
-    "w": 35,
-    "h": 57,
-    "arriba": 17,
-    "abajo": 17,
-    "base": 180
-   },
-   {
-    "f": "02.png",
-    "w": 36,
-    "h": 58,
-    "arriba": 18,
-    "abajo": 17,
-    "base": 169
-   },
-   {
-    "f": "03.png",
-    "w": 38,
-    "h": 58,
-    "arriba": 20,
-    "abajo": 17,
-    "base": 156
-   },
-   {
-    "f": "04.png",
-    "w": 38,
-    "h": 58,
-    "arriba": 21,
-    "abajo": 17,
-    "base": 158
-   },
-   {
-    "f": "05.png",
-    "w": 39,
-    "h": 57,
-    "arriba": 21,
-    "abajo": 17,
-    "base": 161
-   },
-   {
-    "f": "06.png",
-    "w": 39,
-    "h": 56,
-    "arriba": 21,
-    "abajo": 17,
-    "base": 177
-   },
-   {
-    "f": "07.png",
-    "w": 39,
-    "h": 57,
-    "arriba": 21,
-    "abajo": 17,
-    "base": 161
-   },
-   {
-    "f": "08.png",
-    "w": 38,
-    "h": 58,
-    "arriba": 21,
-    "abajo": 17,
-    "base": 158
-   },
-   {
-    "f": "09.png",
-    "w": 38,
-    "h": 58,
-    "arriba": 20,
-    "abajo": 17,
-    "base": 156
-   },
-   {
-    "f": "10.png",
-    "w": 36,
-    "h": 58,
-    "arriba": 18,
-    "abajo": 17,
-    "base": 169
-   },
-   {
-    "f": "11.png",
-    "w": 35,
-    "h": 57,
-    "arriba": 17,
-    "abajo": 17,
-    "base": 180
-   }
-  ]
+  "ataque": false
  },
  {
-  "fila": 4,
-  "slug": "walk_fwd",
-  "nombre": "Caminar adelante",
+  "fila": 5,
+  "slug": "walk_back",
+  "nombre": "Caminar atras",
   "bucle": true,
-  "nota": "Ciclo de 6 frames.",
-  "banda": 3,
-  "n": 6,
-  "fps": 12,
-  "gif": "gif/04_walk_fwd.gif",
+  "nota": "Fila propia, 12 frames.",
+  "n": 12,
+  "gif": "gif/05_walk_back.gif",
   "alto": [
-   60,
+   59,
    61
   ],
   "ancho": [
@@ -431,147 +87,22 @@
   ],
   "activos": [],
   "extension": null,
+  "aire": [],
   "de_pie": [
    1,
    2,
    3,
    4,
    5,
-   6
+   6,
+   7,
+   8,
+   9,
+   10,
+   11,
+   12
   ],
-  "aire": [],
-  "ataque": false,
-  "frames": [
-   {
-    "f": "00.png",
-    "w": 41,
-    "h": 60,
-    "arriba": 14,
-    "abajo": 20,
-    "base": 184
-   },
-   {
-    "f": "01.png",
-    "w": 34,
-    "h": 60,
-    "arriba": 14,
-    "abajo": 17,
-    "base": 179
-   },
-   {
-    "f": "02.png",
-    "w": 34,
-    "h": 61,
-    "arriba": 15,
-    "abajo": 17,
-    "base": 168
-   },
-   {
-    "f": "03.png",
-    "w": 34,
-    "h": 61,
-    "arriba": 16,
-    "abajo": 17,
-    "base": 156
-   },
-   {
-    "f": "04.png",
-    "w": 35,
-    "h": 61,
-    "arriba": 17,
-    "abajo": 17,
-    "base": 154
-   },
-   {
-    "f": "05.png",
-    "w": 35,
-    "h": 60,
-    "arriba": 17,
-    "abajo": 17,
-    "base": 162
-   }
-  ]
- },
- {
-  "fila": 5,
-  "slug": "walk_back",
-  "nombre": "Caminar atras",
-  "bucle": true,
-  "nota": "Mismo patron dibujado al reves en la hoja; 6 frames.",
-  "banda": 3,
-  "n": 6,
-  "fps": 12,
-  "gif": "gif/05_walk_back.gif",
-  "alto": [
-   59,
-   61
-  ],
-  "ancho": [
-   34,
-   35
-  ],
-  "activos": [],
-  "extension": null,
-  "de_pie": [
-   1,
-   2,
-   3,
-   4,
-   5,
-   6
-  ],
-  "aire": [],
-  "ataque": false,
-  "frames": [
-   {
-    "f": "00.png",
-    "w": 35,
-    "h": 59,
-    "arriba": 17,
-    "abajo": 17,
-    "base": 177
-   },
-   {
-    "f": "01.png",
-    "w": 35,
-    "h": 60,
-    "arriba": 17,
-    "abajo": 17,
-    "base": 162
-   },
-   {
-    "f": "02.png",
-    "w": 35,
-    "h": 61,
-    "arriba": 17,
-    "abajo": 17,
-    "base": 154
-   },
-   {
-    "f": "03.png",
-    "w": 34,
-    "h": 61,
-    "arriba": 16,
-    "abajo": 17,
-    "base": 156
-   },
-   {
-    "f": "04.png",
-    "w": 34,
-    "h": 61,
-    "arriba": 15,
-    "abajo": 17,
-    "base": 168
-   },
-   {
-    "f": "05.png",
-    "w": 34,
-    "h": 60,
-    "arriba": 14,
-    "abajo": 17,
-    "base": 179
-   }
-  ]
+  "ataque": false
  },
  {
   "fila": 6,
@@ -579,9 +110,7 @@
   "nombre": "Patada fuerte (de pie)",
   "bucle": false,
   "nota": "La pierna sube por encima de la cadera.",
-  "banda": 4,
   "n": 7,
-  "fps": 12,
   "gif": "gif/06_kick_strong.gif",
   "alto": [
    57,
@@ -595,6 +124,7 @@
    3
   ],
   "extension": "brazo",
+  "aire": [],
   "de_pie": [
    1,
    2,
@@ -603,66 +133,7 @@
    5,
    6
   ],
-  "aire": [],
-  "ataque": true,
-  "frames": [
-   {
-    "f": "00.png",
-    "w": 38,
-    "h": 59,
-    "arriba": 14,
-    "abajo": 19,
-    "base": 193
-   },
-   {
-    "f": "01.png",
-    "w": 33,
-    "h": 61,
-    "arriba": 18,
-    "abajo": 15,
-    "base": 136
-   },
-   {
-    "f": "02.png",
-    "w": 58,
-    "h": 61,
-    "arriba": 40,
-    "abajo": 17,
-    "base": 155
-   },
-   {
-    "f": "03.png",
-    "w": 55,
-    "h": 62,
-    "arriba": 34,
-    "abajo": 17,
-    "base": 155
-   },
-   {
-    "f": "04.png",
-    "w": 45,
-    "h": 62,
-    "arriba": 27,
-    "abajo": 17,
-    "base": 154
-   },
-   {
-    "f": "05.png",
-    "w": 34,
-    "h": 63,
-    "arriba": 11,
-    "abajo": 18,
-    "base": 171
-   },
-   {
-    "f": "06.png",
-    "w": 46,
-    "h": 57,
-    "arriba": 14,
-    "abajo": 23,
-    "base": 250
-   }
-  ]
+  "ataque": true
  },
  {
   "fila": 7,
@@ -670,9 +141,7 @@
   "nombre": "Puno fuerte (de pie)",
   "bucle": false,
   "nota": "Brazo extendido al frente.",
-  "banda": 5,
   "n": 6,
-  "fps": 12,
   "gif": "gif/07_punch_strong.gif",
   "alto": [
    53,
@@ -686,6 +155,7 @@
    3
   ],
   "extension": "brazo",
+  "aire": [],
   "de_pie": [
    1,
    2,
@@ -694,68 +164,15 @@
    5,
    6
   ],
-  "aire": [],
-  "ataque": true,
-  "frames": [
-   {
-    "f": "00.png",
-    "w": 58,
-    "h": 54,
-    "arriba": 17,
-    "abajo": 29,
-    "base": 312
-   },
-   {
-    "f": "01.png",
-    "w": 62,
-    "h": 53,
-    "arriba": 18,
-    "abajo": 31,
-    "base": 344
-   },
-   {
-    "f": "02.png",
-    "w": 68,
-    "h": 53,
-    "arriba": 36,
-    "abajo": 31,
-    "base": 342
-   },
-   {
-    "f": "03.png",
-    "w": 62,
-    "h": 53,
-    "arriba": 18,
-    "abajo": 31,
-    "base": 344
-   },
-   {
-    "f": "04.png",
-    "w": 58,
-    "h": 54,
-    "arriba": 17,
-    "abajo": 29,
-    "base": 312
-   },
-   {
-    "f": "05.png",
-    "w": 46,
-    "h": 57,
-    "arriba": 14,
-    "abajo": 23,
-    "base": 250
-   }
-  ]
+  "ataque": true
  },
  {
   "fila": 8,
   "slug": "punch_weak",
   "nombre": "Puno debil (de pie)",
   "bucle": false,
-  "nota": "Misma idea que el fuerte pero mas corto.",
-  "banda": 6,
+  "nota": "Mas corto que el fuerte.",
   "n": 6,
-  "fps": 12,
   "gif": "gif/08_punch_weak.gif",
   "alto": [
    57,
@@ -770,63 +187,13 @@
    4
   ],
   "extension": "brazo",
+  "aire": [],
   "de_pie": [
    2,
    3,
    4
   ],
-  "aire": [],
-  "ataque": true,
-  "frames": [
-   {
-    "f": "00.png",
-    "w": 50,
-    "h": 59,
-    "arriba": 14,
-    "abajo": 25,
-    "base": 274
-   },
-   {
-    "f": "01.png",
-    "w": 63,
-    "h": 60,
-    "arriba": 36,
-    "abajo": 27,
-    "base": 297
-   },
-   {
-    "f": "02.png",
-    "w": 54,
-    "h": 65,
-    "arriba": 18,
-    "abajo": 27,
-    "base": 299
-   },
-   {
-    "f": "03.png",
-    "w": 63,
-    "h": 60,
-    "arriba": 36,
-    "abajo": 27,
-    "base": 297
-   },
-   {
-    "f": "04.png",
-    "w": 50,
-    "h": 59,
-    "arriba": 14,
-    "abajo": 25,
-    "base": 274
-   },
-   {
-    "f": "05.png",
-    "w": 46,
-    "h": 57,
-    "arriba": 14,
-    "abajo": 23,
-    "base": 250
-   }
-  ]
+  "ataque": true
  },
  {
   "fila": 9,
@@ -834,9 +201,7 @@
   "nombre": "Patada debil (de pie)",
   "bucle": false,
   "nota": "Rodilla y extension corta.",
-  "banda": 7,
   "n": 5,
-  "fps": 12,
   "gif": "gif/09_kick_weak.gif",
   "alto": [
    61,
@@ -850,6 +215,7 @@
    3
   ],
   "extension": "brazo",
+  "aire": [],
   "de_pie": [
    1,
    2,
@@ -857,60 +223,15 @@
    4,
    5
   ],
-  "aire": [],
-  "ataque": true,
-  "frames": [
-   {
-    "f": "00.png",
-    "w": 33,
-    "h": 61,
-    "arriba": 18,
-    "abajo": 15,
-    "base": 133
-   },
-   {
-    "f": "01.png",
-    "w": 32,
-    "h": 61,
-    "arriba": 15,
-    "abajo": 16,
-    "base": 139
-   },
-   {
-    "f": "02.png",
-    "w": 58,
-    "h": 64,
-    "arriba": 41,
-    "abajo": 17,
-    "base": 167
-   },
-   {
-    "f": "03.png",
-    "w": 32,
-    "h": 61,
-    "arriba": 15,
-    "abajo": 16,
-    "base": 139
-   },
-   {
-    "f": "04.png",
-    "w": 33,
-    "h": 61,
-    "arriba": 18,
-    "abajo": 15,
-    "base": 133
-   }
-  ]
+  "ataque": true
  },
  {
   "fila": 10,
   "slug": "special_dd_k",
   "nombre": "Especial \u2193 \u2193\u2198 \u2192 + patada",
   "bucle": false,
-  "nota": "La patada girada con el efecto en el pie.",
-  "banda": 8,
+  "nota": "Patada girada con efecto en el pie.",
   "n": 7,
-  "fps": 12,
   "gif": "gif/10_special_dd_k.gif",
   "alto": [
    45,
@@ -925,82 +246,22 @@
    7
   ],
   "extension": "pierna",
+  "aire": [
+   6
+  ],
   "de_pie": [
    2,
    5
   ],
-  "aire": [
-   6
-  ],
-  "ataque": true,
-  "frames": [
-   {
-    "f": "00.png",
-    "w": 41,
-    "h": 60,
-    "arriba": 14,
-    "abajo": 20,
-    "base": 184
-   },
-   {
-    "f": "01.png",
-    "w": 34,
-    "h": 74,
-    "arriba": 18,
-    "abajo": 15,
-    "base": 130
-   },
-   {
-    "f": "02.png",
-    "w": 29,
-    "h": 55,
-    "arriba": 19,
-    "abajo": 12,
-    "base": 55
-   },
-   {
-    "f": "03.png",
-    "w": 32,
-    "h": 45,
-    "arriba": 25,
-    "abajo": 13,
-    "base": 25
-   },
-   {
-    "f": "04.png",
-    "w": 37,
-    "h": 76,
-    "arriba": 22,
-    "abajo": 22,
-    "base": 131
-   },
-   {
-    "f": "05.png",
-    "w": 31,
-    "h": 55,
-    "arriba": 15,
-    "abajo": 12,
-    "base": 26
-   },
-   {
-    "f": "06.png",
-    "w": 46,
-    "h": 57,
-    "arriba": 14,
-    "abajo": 23,
-    "base": 250
-   }
-  ]
+  "ataque": true
  },
  {
   "fila": 11,
   "slug": "special_projectile",
   "nombre": "Especial proyectil",
   "bucle": false,
-  "nota": "El proyectil NO esta dibujado: hay que completarlo con la chispa de Voltia.",
-  "banda": 9,
+  "nota": "El proyectil no esta dibujado: se completa con la chispa de Voltia.",
   "n": 3,
-  "fps": 12,
   "gif": "gif/11_special_projectile.gif",
   "alto": [
    54,
@@ -1012,152 +273,49 @@
   ],
   "activos": [],
   "extension": null,
+  "aire": [],
   "de_pie": [
    1,
    2,
    3
   ],
-  "aire": [],
-  "ataque": false,
-  "frames": [
-   {
-    "f": "00.png",
-    "w": 54,
-    "h": 56,
-    "arriba": 15,
-    "abajo": 27,
-    "base": 287
-   },
-   {
-    "f": "01.png",
-    "w": 58,
-    "h": 54,
-    "arriba": 25,
-    "abajo": 30,
-    "base": 314
-   },
-   {
-    "f": "02.png",
-    "w": 54,
-    "h": 56,
-    "arriba": 15,
-    "abajo": 27,
-    "base": 287
-   }
-  ]
+  "ataque": false
  },
  {
   "fila": 12,
   "slug": "speed_kick",
   "nombre": "Speed kick",
   "bucle": false,
-  "nota": "Patada rapida repetida (machaque de boton).",
-  "banda": 10,
+  "nota": "Poses rapidas repetidas; las estelas van dibujadas aparte en la hoja.",
   "n": 9,
-  "fps": 12,
   "gif": "gif/12_speed_kick.gif",
   "alto": [
    61,
-   72
+   81
   ],
   "ancho": [
    32,
-   59
+   74
   ],
   "activos": [
-   3,
-   8
+   4,
+   5
   ],
   "extension": "brazo",
-  "de_pie": [
-   8
-  ],
   "aire": [],
-  "ataque": true,
-  "frames": [
-   {
-    "f": "00.png",
-    "w": 32,
-    "h": 61,
-    "arriba": 15,
-    "abajo": 16,
-    "base": 139
-   },
-   {
-    "f": "01.png",
-    "w": 43,
-    "h": 62,
-    "arriba": 25,
-    "abajo": 17,
-    "base": 161
-   },
-   {
-    "f": "02.png",
-    "w": 59,
-    "h": 62,
-    "arriba": 33,
-    "abajo": 32,
-    "base": 161
-   },
-   {
-    "f": "03.png",
-    "w": 43,
-    "h": 62,
-    "arriba": 25,
-    "abajo": 17,
-    "base": 161
-   },
-   {
-    "f": "04.png",
-    "w": 43,
-    "h": 62,
-    "arriba": 25,
-    "abajo": 17,
-    "base": 161
-   },
-   {
-    "f": "05.png",
-    "w": 53,
-    "h": 61,
-    "arriba": 26,
-    "abajo": 26,
-    "base": 161
-   },
-   {
-    "f": "06.png",
-    "w": 43,
-    "h": 62,
-    "arriba": 25,
-    "abajo": 17,
-    "base": 161
-   },
-   {
-    "f": "07.png",
-    "w": 57,
-    "h": 72,
-    "arriba": 31,
-    "abajo": 17,
-    "base": 161
-   },
-   {
-    "f": "08.png",
-    "w": 43,
-    "h": 62,
-    "arriba": 25,
-    "abajo": 17,
-    "base": 161
-   }
-  ]
+  "de_pie": [
+   2,
+   9
+  ],
+  "ataque": true
  },
  {
   "fila": 13,
   "slug": "jump_place",
   "nombre": "Salto en el sitio",
   "bucle": false,
-  "nota": "Los pies se separan del suelo y vuelven.",
-  "banda": 11,
+  "nota": "Pies fuera del suelo y vuelta.",
   "n": 10,
-  "fps": 12,
   "gif": "gif/13_jump_place.gif",
   "alto": [
    36,
@@ -1169,11 +327,6 @@
   ],
   "activos": [],
   "extension": null,
-  "de_pie": [
-   2,
-   3,
-   9
-  ],
   "aire": [
    4,
    5,
@@ -1181,89 +334,12 @@
    7,
    8
   ],
-  "ataque": false,
-  "frames": [
-   {
-    "f": "00.png",
-    "w": 46,
-    "h": 53,
-    "arriba": 14,
-    "abajo": 23,
-    "base": 248
-   },
-   {
-    "f": "01.png",
-    "w": 30,
-    "h": 70,
-    "arriba": 11,
-    "abajo": 15,
-    "base": 132
-   },
-   {
-    "f": "02.png",
-    "w": 20,
-    "h": 70,
-    "arriba": 15,
-    "abajo": 15,
-    "base": 26
-   },
-   {
-    "f": "03.png",
-    "w": 22,
-    "h": 58,
-    "arriba": 16,
-    "abajo": 17,
-    "base": 32
-   },
-   {
-    "f": "04.png",
-    "w": 24,
-    "h": 48,
-    "arriba": 19,
-    "abajo": 20,
-    "base": 37
-   },
-   {
-    "f": "05.png",
-    "w": 24,
-    "h": 36,
-    "arriba": 20,
-    "abajo": 20,
-    "base": 38
-   },
-   {
-    "f": "06.png",
-    "w": 24,
-    "h": 48,
-    "arriba": 19,
-    "abajo": 20,
-    "base": 37
-   },
-   {
-    "f": "07.png",
-    "w": 22,
-    "h": 58,
-    "arriba": 16,
-    "abajo": 17,
-    "base": 32
-   },
-   {
-    "f": "08.png",
-    "w": 20,
-    "h": 70,
-    "arriba": 15,
-    "abajo": 15,
-    "base": 26
-   },
-   {
-    "f": "09.png",
-    "w": 46,
-    "h": 53,
-    "arriba": 14,
-    "abajo": 23,
-    "base": 248
-   }
-  ]
+  "de_pie": [
+   2,
+   3,
+   9
+  ],
+  "ataque": false
  },
  {
   "fila": 14,
@@ -1271,9 +347,7 @@
   "nombre": "Salto adelante",
   "bucle": false,
   "nota": "Invertido sirve de salto atras.",
-  "banda": 12,
   "n": 11,
-  "fps": 12,
   "gif": "gif/14_jump_fwd.gif",
   "alto": [
    32,
@@ -1285,10 +359,6 @@
   ],
   "activos": [],
   "extension": null,
-  "de_pie": [
-   2,
-   10
-  ],
   "aire": [
    4,
    5,
@@ -1296,107 +366,19 @@
    7,
    8
   ],
-  "ataque": false,
-  "frames": [
-   {
-    "f": "00.png",
-    "w": 46,
-    "h": 53,
-    "arriba": 14,
-    "abajo": 23,
-    "base": 248
-   },
-   {
-    "f": "01.png",
-    "w": 30,
-    "h": 70,
-    "arriba": 11,
-    "abajo": 15,
-    "base": 132
-   },
-   {
-    "f": "02.png",
-    "w": 36,
-    "h": 50,
-    "arriba": 30,
-    "abajo": 14,
-    "base": 53
-   },
-   {
-    "f": "03.png",
-    "w": 56,
-    "h": 32,
-    "arriba": 48,
-    "abajo": 48,
-    "base": 25
-   },
-   {
-    "f": "04.png",
-    "w": 52,
-    "h": 59,
-    "arriba": 41,
-    "abajo": 41,
-    "base": 86
-   },
-   {
-    "f": "05.png",
-    "w": 20,
-    "h": 63,
-    "arriba": 8,
-    "abajo": 11,
-    "base": 59
-   },
-   {
-    "f": "06.png",
-    "w": 52,
-    "h": 50,
-    "arriba": 42,
-    "abajo": 42,
-    "base": 71
-   },
-   {
-    "f": "07.png",
-    "w": 57,
-    "h": 33,
-    "arriba": 47,
-    "abajo": 47,
-    "base": 24
-   },
-   {
-    "f": "08.png",
-    "w": 47,
-    "h": 46,
-    "arriba": 42,
-    "abajo": 12,
-    "base": 41
-   },
-   {
-    "f": "09.png",
-    "w": 20,
-    "h": 70,
-    "arriba": 15,
-    "abajo": 15,
-    "base": 26
-   },
-   {
-    "f": "10.png",
-    "w": 46,
-    "h": 53,
-    "arriba": 14,
-    "abajo": 23,
-    "base": 248
-   }
-  ]
+  "de_pie": [
+   2,
+   10
+  ],
+  "ataque": false
  },
  {
   "fila": 15,
   "slug": "kick_fwd_down",
   "nombre": "Patada adelante-abajo + voltereta atras",
   "bucle": false,
-  "nota": "Sube caminando por el pecho del rival y cae con voltereta.",
-  "banda": 13,
+  "nota": "Sube por el pecho del rival y cae con voltereta.",
   "n": 13,
-  "fps": 12,
   "gif": "gif/15_kick_fwd_down.gif",
   "alto": [
    32,
@@ -1412,12 +394,6 @@
    10
   ],
   "extension": "brazo",
-  "de_pie": [
-   2,
-   3,
-   4,
-   12
-  ],
   "aire": [
    6,
    7,
@@ -1425,123 +401,21 @@
    9,
    10
   ],
-  "ataque": true,
-  "frames": [
-   {
-    "f": "00.png",
-    "w": 46,
-    "h": 53,
-    "arriba": 14,
-    "abajo": 23,
-    "base": 248
-   },
-   {
-    "f": "01.png",
-    "w": 30,
-    "h": 70,
-    "arriba": 11,
-    "abajo": 15,
-    "base": 132
-   },
-   {
-    "f": "02.png",
-    "w": 20,
-    "h": 70,
-    "arriba": 15,
-    "abajo": 15,
-    "base": 26
-   },
-   {
-    "f": "03.png",
-    "w": 39,
-    "h": 65,
-    "arriba": 18,
-    "abajo": 20,
-    "base": 55
-   },
-   {
-    "f": "04.png",
-    "w": 37,
-    "h": 64,
-    "arriba": 17,
-    "abajo": 19,
-    "base": 67
-   },
-   {
-    "f": "05.png",
-    "w": 39,
-    "h": 64,
-    "arriba": 30,
-    "abajo": 6,
-    "base": 43
-   },
-   {
-    "f": "06.png",
-    "w": 42,
-    "h": 46,
-    "arriba": 27,
-    "abajo": 26,
-    "base": 33
-   },
-   {
-    "f": "07.png",
-    "w": 57,
-    "h": 54,
-    "arriba": 42,
-    "abajo": 50,
-    "base": 63
-   },
-   {
-    "f": "08.png",
-    "w": 51,
-    "h": 62,
-    "arriba": 45,
-    "abajo": 31,
-    "base": 41
-   },
-   {
-    "f": "09.png",
-    "w": 55,
-    "h": 32,
-    "arriba": 46,
-    "abajo": 40,
-    "base": 44
-   },
-   {
-    "f": "10.png",
-    "w": 36,
-    "h": 50,
-    "arriba": 30,
-    "abajo": 14,
-    "base": 53
-   },
-   {
-    "f": "11.png",
-    "w": 20,
-    "h": 70,
-    "arriba": 15,
-    "abajo": 15,
-    "base": 26
-   },
-   {
-    "f": "12.png",
-    "w": 46,
-    "h": 53,
-    "arriba": 14,
-    "abajo": 23,
-    "base": 248
-   }
-  ]
+  "de_pie": [
+   2,
+   3,
+   4,
+   12
+  ],
+  "ataque": true
  },
  {
   "fila": 16,
   "slug": "jump_punch",
   "nombre": "Salto + puno (debil o fuerte)",
   "bucle": false,
-  "nota": "Misma animacion para los dos botones; cambia el impacto y el dano.",
-  "banda": 14,
+  "nota": "Misma animacion para los dos botones; cambia el dano.",
   "n": 11,
-  "fps": 12,
   "gif": "gif/16_jump_punch.gif",
   "alto": [
    38,
@@ -1555,11 +429,6 @@
    6
   ],
   "extension": "brazo",
-  "de_pie": [
-   2,
-   3,
-   10
-  ],
   "aire": [
    4,
    5,
@@ -1567,107 +436,20 @@
    7,
    8
   ],
-  "ataque": true,
-  "frames": [
-   {
-    "f": "00.png",
-    "w": 46,
-    "h": 53,
-    "arriba": 14,
-    "abajo": 23,
-    "base": 248
-   },
-   {
-    "f": "01.png",
-    "w": 30,
-    "h": 70,
-    "arriba": 11,
-    "abajo": 15,
-    "base": 132
-   },
-   {
-    "f": "02.png",
-    "w": 20,
-    "h": 70,
-    "arriba": 15,
-    "abajo": 15,
-    "base": 26
-   },
-   {
-    "f": "03.png",
-    "w": 30,
-    "h": 38,
-    "arriba": 18,
-    "abajo": 12,
-    "base": 60
-   },
-   {
-    "f": "04.png",
-    "w": 32,
-    "h": 44,
-    "arriba": 20,
-    "abajo": 11,
-    "base": 39
-   },
-   {
-    "f": "05.png",
-    "w": 43,
-    "h": 51,
-    "arriba": 28,
-    "abajo": 33,
-    "base": 28
-   },
-   {
-    "f": "06.png",
-    "w": 32,
-    "h": 44,
-    "arriba": 20,
-    "abajo": 11,
-    "base": 39
-   },
-   {
-    "f": "07.png",
-    "w": 24,
-    "h": 48,
-    "arriba": 19,
-    "abajo": 20,
-    "base": 37
-   },
-   {
-    "f": "08.png",
-    "w": 22,
-    "h": 58,
-    "arriba": 16,
-    "abajo": 17,
-    "base": 32
-   },
-   {
-    "f": "09.png",
-    "w": 20,
-    "h": 70,
-    "arriba": 15,
-    "abajo": 15,
-    "base": 26
-   },
-   {
-    "f": "10.png",
-    "w": 46,
-    "h": 53,
-    "arriba": 14,
-    "abajo": 23,
-    "base": 248
-   }
-  ]
+  "de_pie": [
+   2,
+   3,
+   10
+  ],
+  "ataque": true
  },
  {
   "fila": 17,
   "slug": "jump_kick",
   "nombre": "Salto + patada (debil o fuerte)",
   "bucle": false,
-  "nota": "Misma animacion para los dos botones; cambia el impacto y el dano.",
-  "banda": 15,
+  "nota": "Misma animacion para los dos botones; cambia el dano.",
   "n": 10,
-  "fps": 12,
   "gif": "gif/17_jump_kick.gif",
   "alto": [
    53,
@@ -1681,111 +463,27 @@
    7
   ],
   "extension": "brazo",
-  "de_pie": [
-   2,
-   3,
-   6,
-   9
-  ],
   "aire": [
    4,
    5,
    6,
    7
   ],
-  "ataque": true,
-  "frames": [
-   {
-    "f": "00.png",
-    "w": 46,
-    "h": 53,
-    "arriba": 14,
-    "abajo": 23,
-    "base": 248
-   },
-   {
-    "f": "01.png",
-    "w": 30,
-    "h": 70,
-    "arriba": 11,
-    "abajo": 15,
-    "base": 132
-   },
-   {
-    "f": "02.png",
-    "w": 20,
-    "h": 70,
-    "arriba": 15,
-    "abajo": 15,
-    "base": 26
-   },
-   {
-    "f": "03.png",
-    "w": 23,
-    "h": 62,
-    "arriba": 13,
-    "abajo": 12,
-    "base": 26
-   },
-   {
-    "f": "04.png",
-    "w": 23,
-    "h": 62,
-    "arriba": 13,
-    "abajo": 12,
-    "base": 26
-   },
-   {
-    "f": "05.png",
-    "w": 28,
-    "h": 67,
-    "arriba": 20,
-    "abajo": 13,
-    "base": 22
-   },
-   {
-    "f": "06.png",
-    "w": 41,
-    "h": 61,
-    "arriba": 34,
-    "abajo": 32,
-    "base": 23
-   },
-   {
-    "f": "07.png",
-    "w": 23,
-    "h": 62,
-    "arriba": 13,
-    "abajo": 12,
-    "base": 26
-   },
-   {
-    "f": "08.png",
-    "w": 20,
-    "h": 70,
-    "arriba": 15,
-    "abajo": 15,
-    "base": 26
-   },
-   {
-    "f": "09.png",
-    "w": 46,
-    "h": 53,
-    "arriba": 14,
-    "abajo": 23,
-    "base": 248
-   }
-  ]
+  "de_pie": [
+   2,
+   3,
+   6,
+   9
+  ],
+  "ataque": true
  },
  {
   "fila": 18,
   "slug": "crouch_punch_strong",
   "nombre": "Puno fuerte agachada",
   "bucle": false,
-  "nota": "Los frames de levantarse se reutilizan para pasar de stance a agachada y al reves.",
-  "banda": 16,
+  "nota": "Los frames de pie sirven de transicion stance <-> agachada.",
   "n": 12,
-  "fps": 12,
   "gif": "gif/18_crouch_punch_strong.gif",
   "alto": [
    46,
@@ -1799,111 +497,13 @@
    6
   ],
   "extension": "brazo",
+  "aire": [],
   "de_pie": [
    1,
    11,
    12
   ],
-  "aire": [],
-  "ataque": true,
-  "frames": [
-   {
-    "f": "00.png",
-    "w": 46,
-    "h": 53,
-    "arriba": 14,
-    "abajo": 23,
-    "base": 248
-   },
-   {
-    "f": "01.png",
-    "w": 46,
-    "h": 49,
-    "arriba": 16,
-    "abajo": 23,
-    "base": 247
-   },
-   {
-    "f": "02.png",
-    "w": 46,
-    "h": 47,
-    "arriba": 16,
-    "abajo": 23,
-    "base": 253
-   },
-   {
-    "f": "03.png",
-    "w": 50,
-    "h": 48,
-    "arriba": 21,
-    "abajo": 25,
-    "base": 271
-   },
-   {
-    "f": "04.png",
-    "w": 59,
-    "h": 46,
-    "arriba": 31,
-    "abajo": 27,
-    "base": 293
-   },
-   {
-    "f": "05.png",
-    "w": 78,
-    "h": 46,
-    "arriba": 50,
-    "abajo": 50,
-    "base": 291
-   },
-   {
-    "f": "06.png",
-    "w": 59,
-    "h": 46,
-    "arriba": 31,
-    "abajo": 27,
-    "base": 293
-   },
-   {
-    "f": "07.png",
-    "w": 50,
-    "h": 48,
-    "arriba": 21,
-    "abajo": 25,
-    "base": 271
-   },
-   {
-    "f": "08.png",
-    "w": 46,
-    "h": 47,
-    "arriba": 16,
-    "abajo": 23,
-    "base": 253
-   },
-   {
-    "f": "09.png",
-    "w": 46,
-    "h": 49,
-    "arriba": 16,
-    "abajo": 23,
-    "base": 247
-   },
-   {
-    "f": "10.png",
-    "w": 46,
-    "h": 53,
-    "arriba": 14,
-    "abajo": 23,
-    "base": 248
-   },
-   {
-    "f": "11.png",
-    "w": 46,
-    "h": 57,
-    "arriba": 14,
-    "abajo": 23,
-    "base": 250
-   }
-  ]
+  "ataque": true
  },
  {
   "fila": 19,
@@ -1911,9 +511,7 @@
   "nombre": "Patada fuerte agachada",
   "bucle": false,
   "nota": "Sale desde el suelo.",
-  "banda": 17,
   "n": 6,
-  "fps": 12,
   "gif": "gif/19_crouch_kick_strong.gif",
   "alto": [
    43,
@@ -1927,64 +525,14 @@
    3
   ],
   "extension": "brazo",
+  "aire": [],
   "de_pie": [
    1,
    3,
    5,
    6
   ],
-  "aire": [],
-  "ataque": true,
-  "frames": [
-   {
-    "f": "00.png",
-    "w": 37,
-    "h": 45,
-    "arriba": 20,
-    "abajo": 17,
-    "base": 158
-   },
-   {
-    "f": "01.png",
-    "w": 41,
-    "h": 43,
-    "arriba": 24,
-    "abajo": 17,
-    "base": 164
-   },
-   {
-    "f": "02.png",
-    "w": 68,
-    "h": 44,
-    "arriba": 39,
-    "abajo": 29,
-    "base": 305
-   },
-   {
-    "f": "03.png",
-    "w": 41,
-    "h": 43,
-    "arriba": 24,
-    "abajo": 17,
-    "base": 164
-   },
-   {
-    "f": "04.png",
-    "w": 37,
-    "h": 45,
-    "arriba": 20,
-    "abajo": 17,
-    "base": 158
-   },
-   {
-    "f": "05.png",
-    "w": 46,
-    "h": 47,
-    "arriba": 16,
-    "abajo": 23,
-    "base": 253
-   }
-  ]
+  "ataque": true
  },
  {
   "fila": 20,
@@ -1992,9 +540,7 @@
   "nombre": "Patada debil agachada",
   "bucle": false,
   "nota": "Extension corta.",
-  "banda": 18,
   "n": 5,
-  "fps": 12,
   "gif": "gif/20_crouch_kick_weak.gif",
   "alto": [
    32,
@@ -2008,53 +554,11 @@
    2
   ],
   "extension": "brazo",
+  "aire": [],
   "de_pie": [
    5
   ],
-  "aire": [],
-  "ataque": true,
-  "frames": [
-   {
-    "f": "00.png",
-    "w": 38,
-    "h": 42,
-    "arriba": 14,
-    "abajo": 19,
-    "base": 202
-   },
-   {
-    "f": "01.png",
-    "w": 58,
-    "h": 32,
-    "arriba": 26,
-    "abajo": 29,
-    "base": 323
-   },
-   {
-    "f": "02.png",
-    "w": 34,
-    "h": 37,
-    "arriba": 13,
-    "abajo": 17,
-    "base": 179
-   },
-   {
-    "f": "03.png",
-    "w": 38,
-    "h": 42,
-    "arriba": 14,
-    "abajo": 19,
-    "base": 202
-   },
-   {
-    "f": "04.png",
-    "w": 46,
-    "h": 47,
-    "arriba": 16,
-    "abajo": 23,
-    "base": 253
-   }
-  ]
+  "ataque": true
  },
  {
   "fila": 21,
@@ -2062,9 +566,7 @@
   "nombre": "Puno debil agachada",
   "bucle": false,
   "nota": "Golpe corto desde agachada.",
-  "banda": 19,
   "n": 6,
-  "fps": 12,
   "gif": "gif/21_crouch_punch_weak.gif",
   "alto": [
    45,
@@ -2078,6 +580,7 @@
    3
   ],
   "extension": "brazo",
+  "aire": [],
   "de_pie": [
    1,
    2,
@@ -2086,68 +589,15 @@
    5,
    6
   ],
-  "aire": [],
-  "ataque": true,
-  "frames": [
-   {
-    "f": "00.png",
-    "w": 46,
-    "h": 47,
-    "arriba": 17,
-    "abajo": 23,
-    "base": 250
-   },
-   {
-    "f": "01.png",
-    "w": 46,
-    "h": 46,
-    "arriba": 22,
-    "abajo": 23,
-    "base": 248
-   },
-   {
-    "f": "02.png",
-    "w": 59,
-    "h": 45,
-    "arriba": 36,
-    "abajo": 36,
-    "base": 248
-   },
-   {
-    "f": "03.png",
-    "w": 46,
-    "h": 46,
-    "arriba": 23,
-    "abajo": 23,
-    "base": 248
-   },
-   {
-    "f": "04.png",
-    "w": 46,
-    "h": 47,
-    "arriba": 17,
-    "abajo": 23,
-    "base": 250
-   },
-   {
-    "f": "05.png",
-    "w": 46,
-    "h": 47,
-    "arriba": 16,
-    "abajo": 23,
-    "base": 253
-   }
-  ]
+  "ataque": true
  },
  {
   "fila": 22,
   "slug": "block",
   "nombre": "Defensa / onda de choque",
   "bucle": true,
-  "nota": "Guarda normal; con impactos grandes genera la onda. Tambien arranca el super.",
-  "banda": 20,
+  "nota": "Guarda normal; con impactos grandes genera la onda. Arranca el super.",
   "n": 8,
-  "fps": 12,
   "gif": "gif/22_block.gif",
   "alto": [
    60,
@@ -2159,88 +609,20 @@
   ],
   "activos": [],
   "extension": null,
+  "aire": [],
   "de_pie": [
    7,
    8
   ],
-  "aire": [],
-  "ataque": false,
-  "frames": [
-   {
-    "f": "00.png",
-    "w": 46,
-    "h": 60,
-    "arriba": 12,
-    "abajo": 23,
-    "base": 250
-   },
-   {
-    "f": "01.png",
-    "w": 46,
-    "h": 62,
-    "arriba": 10,
-    "abajo": 23,
-    "base": 250
-   },
-   {
-    "f": "02.png",
-    "w": 46,
-    "h": 62,
-    "arriba": 23,
-    "abajo": 23,
-    "base": 250
-   },
-   {
-    "f": "03.png",
-    "w": 46,
-    "h": 62,
-    "arriba": 23,
-    "abajo": 23,
-    "base": 250
-   },
-   {
-    "f": "04.png",
-    "w": 47,
-    "h": 63,
-    "arriba": 24,
-    "abajo": 24,
-    "base": 226
-   },
-   {
-    "f": "05.png",
-    "w": 46,
-    "h": 68,
-    "arriba": 24,
-    "abajo": 24,
-    "base": 119
-   },
-   {
-    "f": "06.png",
-    "w": 80,
-    "h": 69,
-    "arriba": 20,
-    "abajo": 51,
-    "base": 215
-   },
-   {
-    "f": "07.png",
-    "w": 116,
-    "h": 74,
-    "arriba": 48,
-    "abajo": 59,
-    "base": 164
-   }
-  ]
+  "ataque": false
  },
  {
   "fila": 23,
   "slug": "super_sphere",
   "nombre": "Super \u00b7 esfera envolvente",
   "bucle": false,
-  "nota": "La esfera no esta dibujada; los frames son el arranque del super.",
-  "banda": 21,
+  "nota": "La esfera no esta dibujada; son los frames de arranque.",
   "n": 6,
-  "fps": 12,
   "gif": "gif/23_super_sphere.gif",
   "alto": [
    57,
@@ -2252,74 +634,22 @@
   ],
   "activos": [],
   "extension": null,
+  "aire": [],
   "de_pie": [
    1,
    2,
    3,
    4
   ],
-  "aire": [],
-  "ataque": false,
-  "frames": [
-   {
-    "f": "00.png",
-    "w": 116,
-    "h": 69,
-    "arriba": 56,
-    "abajo": 59,
-    "base": 158
-   },
-   {
-    "f": "01.png",
-    "w": 105,
-    "h": 69,
-    "arriba": 54,
-    "abajo": 54,
-    "base": 178
-   },
-   {
-    "f": "02.png",
-    "w": 86,
-    "h": 69,
-    "arriba": 39,
-    "abajo": 46,
-    "base": 157
-   },
-   {
-    "f": "03.png",
-    "w": 71,
-    "h": 65,
-    "arriba": 30,
-    "abajo": 36,
-    "base": 253
-   },
-   {
-    "f": "04.png",
-    "w": 48,
-    "h": 62,
-    "arriba": 10,
-    "abajo": 25,
-    "base": 250
-   },
-   {
-    "f": "05.png",
-    "w": 48,
-    "h": 57,
-    "arriba": 14,
-    "abajo": 25,
-    "base": 250
-   }
-  ]
+  "ataque": false
  },
  {
   "fila": 24,
   "slug": "knockdown",
   "nombre": "Derribo y recuperacion",
   "bucle": false,
-  "nota": "Se usan frames distintos segun la altura de la caida.",
-  "banda": 22,
+  "nota": "Se escogen frames segun la altura de la caida.",
   "n": 11,
-  "fps": 12,
   "gif": "gif/24_knockdown.gif",
   "alto": [
    24,
@@ -2331,10 +661,6 @@
   ],
   "activos": [],
   "extension": null,
-  "de_pie": [
-   1,
-   5
-  ],
   "aire": [
    1,
    2,
@@ -2342,96 +668,10 @@
    4,
    5
   ],
-  "ataque": false,
-  "frames": [
-   {
-    "f": "00.png",
-    "w": 34,
-    "h": 63,
-    "arriba": 21,
-    "abajo": 12,
-    "base": 26
-   },
-   {
-    "f": "01.png",
-    "w": 58,
-    "h": 46,
-    "arriba": 44,
-    "abajo": 13,
-    "base": 37
-   },
-   {
-    "f": "02.png",
-    "w": 64,
-    "h": 36,
-    "arriba": 53,
-    "abajo": 51,
-    "base": 59
-   },
-   {
-    "f": "03.png",
-    "w": 63,
-    "h": 24,
-    "arriba": 45,
-    "abajo": 40,
-    "base": 171
-   },
-   {
-    "f": "04.png",
-    "w": 37,
-    "h": 61,
-    "arriba": 30,
-    "abajo": 15,
-    "base": 49
-   },
-   {
-    "f": "05.png",
-    "w": 48,
-    "h": 45,
-    "arriba": 26,
-    "abajo": 21,
-    "base": 167
-   },
-   {
-    "f": "06.png",
-    "w": 59,
-    "h": 31,
-    "arriba": 46,
-    "abajo": 30,
-    "base": 77
-   },
-   {
-    "f": "07.png",
-    "w": 66,
-    "h": 24,
-    "arriba": 51,
-    "abajo": 50,
-    "base": 48
-   },
-   {
-    "f": "08.png",
-    "w": 60,
-    "h": 32,
-    "arriba": 32,
-    "abajo": 44,
-    "base": 83
-   },
-   {
-    "f": "09.png",
-    "w": 50,
-    "h": 40,
-    "arriba": 23,
-    "abajo": 34,
-    "base": 121
-   },
-   {
-    "f": "10.png",
-    "w": 46,
-    "h": 53,
-    "arriba": 14,
-    "abajo": 23,
-    "base": 248
-   }
-  ]
+  "de_pie": [
+   1,
+   5
+  ],
+  "ataque": false
  }
 ]

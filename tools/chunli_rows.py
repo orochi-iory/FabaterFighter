@@ -1,13 +1,19 @@
 #!/usr/bin/env python3
-"""Reconstruye las animaciones de Chun-Li con la numeracion REAL de filas.
+"""Chun-Li: las 24 filas reales de la hoja, con sus nombres.
 
-Las 23 bandas que salen del corte por huecos de fondo no coinciden con las 24
-filas de la hoja: la banda 03 lleva DOS animaciones (caminar adelante y caminar
-atras, 6 + 6 frames). El resto va 1 banda = 1 fila.
+Correcciones sobre la version anterior:
+
+1. La banda 0 no es una fila: lleva DOS filas superpuestas (figuras a y≈7-76 y
+   a y≈85-145) mas el retrato. Se separan por altura.
+2. El stance son las filas 1, 2 y 3 y es UNA animacion de 23 frames. No se
+   publica por partes.
+3. Caminar adelante y caminar atras son filas distintas (12 frames cada una).
+   Antes se partio una sola fila en dos mitades y eso no vale.
+4. El speed kick lleva, ademas de las poses, estelas amarillas dibujadas aparte.
+   Se pegan a su pose cuando estan a menos de 8 px; las que van sueltas se
+   guardan como capa de efectos.
 
     PYTHONPATH=tools/pylibs python3 tools/chunli_rows.py voltia/nuevo/chunli
-
-Escribe rows/<id>/ con los frames, gif/<id>.gif y rows.json con medidas y ficha.
 """
 import json
 import os
@@ -17,63 +23,102 @@ import sys
 
 from PIL import Image
 
-# fila -> (slug, nombre, bucle, nota, banda, rango de frames)
-# banda 03 se parte: frames 0-5 = caminar adelante, 6-11 = caminar atras.
+BG = (144, 200, 232)
+TOL = 24
+
+# fila, slug, nombre, bucle, nota, banda
 FILAS = [
-    (1, 'stance_1', 'Stance · parte 1', True,
-     'Con las filas 2 y 3 forma el bucle completo del stance.', 0, None),
-    (2, 'stance_2', 'Stance · parte 2', True,
-     'Segunda parte del mismo bucle.', 1, None),
-    (3, 'stance_3', 'Stance · parte 3', True,
-     'Tercera parte; al acabar vuelve a la fila 1.', 2, None),
-    (4, 'walk_fwd', 'Caminar adelante', True,
-     'Ciclo de 6 frames.', 3, (0, 6)),
-    (5, 'walk_back', 'Caminar atras', True,
-     'Mismo patron dibujado al reves en la hoja; 6 frames.', 3, (6, 12)),
+    # fila, slug, nombre, bucle, nota, banda, desde, hasta
+    # (desde/hasta recortan la lista de figuras de la banda; None = todas)
+    (4, 'walk_fwd', 'Caminar adelante', True, 'Ciclo de 12 frames.', 2),
+    (5, 'walk_back', 'Caminar atras', True, 'Fila propia, 12 frames.', 3),
     (6, 'kick_strong', 'Patada fuerte (de pie)', False,
-     'La pierna sube por encima de la cadera.', 4, None),
-    (7, 'punch_strong', 'Puno fuerte (de pie)', False,
-     'Brazo extendido al frente.', 5, None),
-    (8, 'punch_weak', 'Puno debil (de pie)', False,
-     'Misma idea que el fuerte pero mas corto.', 6, None),
-    (9, 'kick_weak', 'Patada debil (de pie)', False,
-     'Rodilla y extension corta.', 7, None),
+     'La pierna sube por encima de la cadera.', 4),
+    (7, 'punch_strong', 'Puno fuerte (de pie)', False, 'Brazo extendido al frente.', 5),
+    (8, 'punch_weak', 'Puno debil (de pie)', False, 'Mas corto que el fuerte.', 6),
+    (9, 'kick_weak', 'Patada debil (de pie)', False, 'Rodilla y extension corta.', 7),
     (10, 'special_dd_k', 'Especial ↓ ↓↘ → + patada', False,
-     'La patada girada con el efecto en el pie.', 8, None),
+     'Patada girada con efecto en el pie.', 8),
     (11, 'special_projectile', 'Especial proyectil', False,
-     'El proyectil NO esta dibujado: hay que completarlo con la chispa de Voltia.', 9, None),
+     'El proyectil no esta dibujado: se completa con la chispa de Voltia.', 9),
     (12, 'speed_kick', 'Speed kick', False,
-     'Patada rapida repetida (machaque de boton).', 10, None),
-    (13, 'jump_place', 'Salto en el sitio', False,
-     'Los pies se separan del suelo y vuelven.', 11, None),
-    (14, 'jump_fwd', 'Salto adelante', False,
-     'Invertido sirve de salto atras.', 12, None),
+     'Poses rapidas repetidas; las estelas van dibujadas aparte en la hoja.', 10),
+    (13, 'jump_place', 'Salto en el sitio', False, 'Pies fuera del suelo y vuelta.', 11),
+    (14, 'jump_fwd', 'Salto adelante', False, 'Invertido sirve de salto atras.', 12),
     (15, 'kick_fwd_down', 'Patada adelante-abajo + voltereta atras', False,
-     'Sube caminando por el pecho del rival y cae con voltereta.', 13, None),
+     'Sube por el pecho del rival y cae con voltereta.', 13),
     (16, 'jump_punch', 'Salto + puno (debil o fuerte)', False,
-     'Misma animacion para los dos botones; cambia el impacto y el dano.', 14, None),
+     'Misma animacion para los dos botones; cambia el dano.', 14),
     (17, 'jump_kick', 'Salto + patada (debil o fuerte)', False,
-     'Misma animacion para los dos botones; cambia el impacto y el dano.', 15, None),
+     'Misma animacion para los dos botones; cambia el dano.', 15),
     (18, 'crouch_punch_strong', 'Puno fuerte agachada', False,
-     'Los frames de levantarse se reutilizan para pasar de stance a agachada y al reves.', 16, None),
-    (19, 'crouch_kick_strong', 'Patada fuerte agachada', False,
-     'Sale desde el suelo.', 17, None),
-    (20, 'crouch_kick_weak', 'Patada debil agachada', False,
-     'Extension corta.', 18, None),
-    (21, 'crouch_punch_weak', 'Puno debil agachada', False,
-     'Golpe corto desde agachada.', 19, None),
+     'Los frames de pie sirven de transicion stance <-> agachada.', 16),
+    (19, 'crouch_kick_strong', 'Patada fuerte agachada', False, 'Sale desde el suelo.', 17),
+    (20, 'crouch_kick_weak', 'Patada debil agachada', False, 'Extension corta.', 18),
+    (21, 'crouch_punch_weak', 'Puno debil agachada', False, 'Golpe corto desde agachada.', 19),
     (22, 'block', 'Defensa / onda de choque', True,
-     'Guarda normal; con impactos grandes genera la onda. Tambien arranca el super.', 20, None),
+     'Guarda normal; con impactos grandes genera la onda. Arranca el super.', 20),
     (23, 'super_sphere', 'Super · esfera envolvente', False,
-     'La esfera no esta dibujada; los frames son el arranque del super.', 21, None),
+     'La esfera no esta dibujada; son los frames de arranque.', 21),
     (24, 'knockdown', 'Derribo y recuperacion', False,
-     'Se usan frames distintos segun la altura de la caida.', 22, None),
+     'Se escogen frames segun la altura de la caida.', 22),
 ]
 
-
-# filas cuyo sentido son golpes: solo en estas tiene sentido buscar el frame
-# activo por extension del brazo o de la pierna
 ATAQUE = {6, 7, 8, 9, 10, 12, 15, 16, 17, 18, 19, 20, 21}
+
+
+def limpiar(im):
+    """Fondo de la hoja -> transparente."""
+    px = im.load()
+    for y in range(im.size[1]):
+        for x in range(im.size[0]):
+            r, g, b = px[x, y][:3]
+            if abs(r - BG[0]) <= TOL and abs(g - BG[1]) <= TOL and abs(b - BG[2]) <= TOL:
+                px[x, y] = (0, 0, 0, 0)
+    return im
+
+
+def runs_columna(im, y0, y1):
+    """Tramos de columnas con tinta entre dos filas."""
+    px = im.load()
+    salida, ini = [], None
+    for x in range(im.size[0]):
+        tinta = False
+        for y in range(y0, min(y1, im.size[1])):
+            r, g, b = px[x, y][:3]
+            if abs(r - BG[0]) > TOL or abs(g - BG[1]) > TOL or abs(b - BG[2]) > TOL:
+                tinta = True
+                break
+        if tinta and ini is None:
+            ini = x
+        elif not tinta and ini is not None:
+            salida.append((ini, x - 1)); ini = None
+    if ini is not None:
+        salida.append((ini, im.size[0] - 1))
+    return salida
+
+
+def tramos_con_estela(hoja, y0, y1, min_ink=420):
+    """Tramos de columna de una fila, separando poses de estelas.
+
+    Una estela (el rastro amarillo del golpe) tiene mucha menos tinta que una
+    pose. Se pega a la pose anterior si esta a menos de 16 px.
+    """
+    runs = runs_columna(hoja, y0, y1)
+    piezas = []
+    for a, c in runs:
+        sub = limpiar(hoja.crop((a, y0, c + 1, y1)))
+        ink = sum(1 for p in sub.get_flattened_data() if p[3] > 0)
+        piezas.append({'x0': a, 'x1': c, 'ink': ink})
+    poses = []
+    for p in piezas:
+        if p['ink'] >= min_ink:
+            poses.append({'x0': p['x0'], 'x1': p['x1']})
+        elif poses and p['x0'] - poses[-1]['x1'] <= 16:
+            poses[-1]['x1'] = p['x1']          # estela de esa pose
+        else:
+            poses.append({'x0': p['x0'], 'x1': p['x1']})  # estela suelta
+    return poses
 
 
 def medir(carpeta):
@@ -89,7 +134,7 @@ def medir(carpeta):
                 if px[x, y][3] > 0:
                     xs.append(x)
         cx = sorted(xs)[len(xs) // 2] if xs else w // 2
-        arriba = abajo = pies = 0
+        arriba = abajo = base = 0
         for y in range(h):
             for x in range(w):
                 if px[x, y][3] > 0:
@@ -99,111 +144,118 @@ def medir(carpeta):
                     else:
                         abajo = max(abajo, dist)
                     if y >= h - 6:
-                        pies += 1
-        out.append({'f': f, 'w': w, 'h': h, 'arriba': arriba, 'abajo': abajo,
-                    'base': pies})
+                        base += 1
+        out.append({'f': f, 'w': w, 'h': h, 'arriba': arriba, 'abajo': abajo, 'base': base})
     return out
 
 
 def main():
     base = sys.argv[1] if len(sys.argv) > 1 else 'voltia/nuevo/chunli'
+    hoja = Image.open('voltia/nuevo/ref/chunli_sheet.png').convert('RGBA')
+    bandas = {b['banda']: b for b in json.load(open(os.path.join(base, 'bandas.json')))}
     destino = os.path.join(base, 'rows')
-    gifs = os.path.join(base, 'gif')
     os.makedirs(destino, exist_ok=True)
-    os.makedirs(gifs, exist_ok=True)
-    bandas_json = {b['banda']: b['frames'] for b in
-                   json.load(open(os.path.join(base, 'bandas.json')))}
+    for d in os.listdir(destino):
+        shutil.rmtree(os.path.join(destino, d), ignore_errors=True)
+    os.makedirs(os.path.join(base, 'gif'), exist_ok=True)
     salida = []
 
-    for (num, slug, nombre, bucle, nota, banda, rango) in FILAS:
-        origen = os.path.join(base, 'banda_%02d' % banda)
-        fs = sorted(f for f in os.listdir(origen) if f.endswith('.png'))
-        if rango:
-            fs = fs[rango[0]:rango[1]]
-        carpeta = os.path.join(destino, '%02d_%s' % (num, slug))
-        if os.path.isdir(carpeta):
-            shutil.rmtree(carpeta)
-        os.makedirs(carpeta)
-        # fuera los retratos: son mas altos que cualquier frame de animacion
-        alturas_src = [Image.open(os.path.join(origen, f)).size[1] for f in fs]
-        if alturas_src:
-            med_src = sorted(alturas_src)[len(alturas_src) // 2]
-            fs = [f for f, h in zip(fs, alturas_src) if h < 1.8 * med_src]
-        for k, f in enumerate(fs):
-            shutil.copy(os.path.join(origen, f), os.path.join(carpeta, '%02d.png' % k))
-        med = medir(carpeta)
+    def guardar(carpeta, cajas):
+        """cajas: lista de (x0,y0,x1,y1) ya en orden. Devuelve los y1 de origen."""
+        os.makedirs(carpeta, exist_ok=True)
+        ys = []
+        for k, (x0, y0, x1, y1) in enumerate(cajas):
+            limpiar(hoja.crop((x0, y0, x1 + 1, y1 + 1))).save(
+                os.path.join(carpeta, '%02d.png' % k))
+            ys.append(y1)
+        return ys
 
+    def ficha(num, slug, nombre, bucle, nota, carpeta, ys, ataque):
+        med = medir(carpeta)
         alturas = sorted(m['h'] for m in med)
-        medh = alturas[len(alturas) // 2]
         activos, ext = [], None
-        claves = ('arriba', 'abajo') if num in ATAQUE else ()
-        for clave in claves:
+        for clave in (('arriba', 'abajo') if ataque else ()):
             vals = [m[clave] for m in med]
-            mx = max(vals)
-            medv = sorted(vals)[len(vals) // 2]
+            mx, medv = max(vals), sorted(vals)[len(vals) // 2]
             if mx >= 1.25 * max(medv, 1):
                 fr = [i + 1 for i, m in enumerate(med) if m[clave] >= 0.9 * mx]
                 if len(fr) > len(activos):
                     activos, ext = fr, ('brazo' if clave == 'arriba' else 'pierna')
-        # frames "de pie" (sirven de transicion agachada <-> stance)
+        if ys is None or len(ys) != len(med):
+            # el stance se arma con tres filas y se le quita una costura: los
+            # y1 de origen ya no cuadran con los frames guardados
+            aire = []
+        else:
+            suelo = sorted(ys)[len(ys) // 2]
+            aire = [i + 1 for i, y in enumerate(ys) if y < suelo - 8]
         depie = [i + 1 for i, m in enumerate(med) if m['h'] >= 0.92 * max(alturas)]
-        # frames en el aire: el borde inferior del recorte queda por encima de
-        # la linea de suelo de la fila (y menor = mas alto en la hoja)
-        fuente = bandas_json[banda]
-        if rango:
-            fuente = fuente[rango[0]:rango[1]]
-        y1s = [fr['y1'] for fr in fuente][:len(med)]
-        suelo = sorted(y1s)[len(y1s) // 2] if y1s else 0
-        aire = [i + 1 for i, y in enumerate(y1s) if y < suelo - 8]
-
         gif = 'gif/%02d_%s.gif' % (num, slug)
-        fps = 12
         subprocess.run([sys.executable, 'tools/make_gif.py', carpeta,
-                        os.path.join(base, gif), '--fps', str(fps), '--zoom', '2',
+                        os.path.join(base, gif), '--fps', '12', '--zoom', '2',
                         '--bg', 'EDEDF2', '--pad', '6'],
                        check=False, env=dict(os.environ, PYTHONPATH='tools/pylibs'))
-        salida.append({
-            'fila': num, 'slug': slug, 'nombre': nombre, 'bucle': bucle,
-            'nota': nota, 'banda': banda, 'n': len(med), 'fps': fps,
-            'gif': gif, 'alto': [min(alturas), max(alturas)],
-            'ancho': [min(m['w'] for m in med), max(m['w'] for m in med)],
-            'activos': activos, 'extension': ext, 'de_pie': depie, 'aire': aire,
-            'ataque': num in ATAQUE,
-            'frames': med,
-        })
-        print('fila %2d  %-22s %2d frames  activos=%s  aire=%s  de pie=%s'
-              % (num, slug, len(med), activos or '-', aire or '-', depie or '-'))
+        fila = {'fila': num, 'slug': slug, 'nombre': nombre, 'bucle': bucle,
+                'nota': nota, 'n': len(med), 'gif': gif,
+                'alto': [min(alturas), max(alturas)],
+                'ancho': [min(m['w'] for m in med), max(m['w'] for m in med)],
+                'activos': activos, 'extension': ext, 'aire': aire,
+                'de_pie': depie, 'ataque': ataque}
+        salida.append(fila)
+        print('fila %2d  %-22s %2d frames  activos=%s aire=%s'
+              % (num, slug, len(med), activos or '-', aire or '-'))
+        return fila
 
-    # stance completo: filas 1 a 3 en orden
-    stance = [s for s in salida if s['fila'] in (1, 2, 3)]
-    carpeta = os.path.join(destino, '00_stance_full')
-    if os.path.isdir(carpeta):
-        shutil.rmtree(carpeta)
-    os.makedirs(carpeta)
-    k = 0
-    for s in stance:
-        src = os.path.join(destino, '%02d_%s' % (s['fila'], s['slug']))
-        for f in sorted(os.listdir(src)):
-            shutil.copy(os.path.join(src, f), os.path.join(carpeta, '%02d.png' % k))
-            k += 1
-    subprocess.run([sys.executable, 'tools/make_gif.py', carpeta,
-                    os.path.join(base, 'gif/00_stance_full.gif'), '--fps', '12',
-                    '--zoom', '2', '--bg', 'EDEDF2', '--pad', '6'],
-                   check=False, env=dict(os.environ, PYTHONPATH='tools/pylibs'))
-    salida.insert(0, {
-        'fila': 0, 'slug': 'stance_full', 'nombre': 'Stance completo (filas 1-3)',
-        'bucle': True, 'nota': 'Las tres filas seguidas: %d frames de bucle.' % k,
-        'banda': None, 'n': k, 'fps': 12, 'gif': 'gif/00_stance_full.gif',
-        'alto': [min(m['h'] for s in stance for m in s['frames']),
-                 max(m['h'] for s in stance for m in s['frames'])],
-        'ancho': [min(m['w'] for s in stance for m in s['frames']),
-                  max(m['w'] for s in stance for m in s['frames'])],
-        'activos': [], 'extension': None, 'de_pie': [], 'aire': [],
-        'frames': [],
-    })
-    print('stance completo:', k, 'frames')
+    # ---------- stance: filas 1, 2 y 3 en UNA sola animacion ----------
+    b0 = bandas[0]['frames']
+    fila1 = sorted([f for f in b0 if f['y0'] < 80 and f['h'] < 100], key=lambda f: f['x0'])
+    fila2 = sorted([f for f in b0 if f['y0'] >= 80], key=lambda f: f['x0'])
+    fila3 = sorted(bandas[1]['frames'], key=lambda f: f['x0'])
+    cajas, ys = [], []
+    for grupo in (fila1, fila2, fila3):
+        for f in grupo:
+            cajas.append((f['x0'], f['y0'], f['x1'], f['y1']))
+    ys = guardar(os.path.join(destino, '01_stance'), cajas)
+    # quitar frames repetidos en las costuras entre filas
+    import hashlib
+    carpeta = os.path.join(destino, '01_stance')
+    previo, k = None, 0
+    for f in sorted(os.listdir(carpeta)):
+        ruta = os.path.join(carpeta, f)
+        h = hashlib.md5(open(ruta, 'rb').read()).hexdigest()
+        if h == previo:
+            os.remove(ruta)
+        else:
+            previo = h
+    for i, f in enumerate(sorted(os.listdir(carpeta))):
+        os.rename(os.path.join(carpeta, f), os.path.join(carpeta, 'tmp%03d.png' % i))
+    for f in sorted(os.listdir(carpeta)):
+        os.rename(os.path.join(carpeta, f), os.path.join(carpeta, f.replace('tmp', '')))
+    ficha(1, 'stance', 'Stance', True,
+          'Filas 1, 2 y 3 son el mismo bucle: van juntas, sin repetir el frame de costura.',
+          carpeta, None, False)
+    salida[-1]['filas'] = '1-3'
+
+    # ---------- filas 4 a 24 ----------
+    for (num, slug, nombre, bucle, nota, banda) in FILAS:
+        b = bandas[banda]
+        carpeta = os.path.join(destino, '%02d_%s' % (num, slug))
+        if num == 12:
+            poses = tramos_con_estela(hoja, b['y0'], b['y1'] + 1)
+            cajas = []
+            for p in poses:
+                sub = limpiar(hoja.crop((p['x0'], b['y0'], p['x1'] + 1, b['y1'] + 1)))
+                bb = sub.getbbox()
+                if bb:
+                    cajas.append((p['x0'] + bb[0], b['y0'] + bb[1],
+                                  p['x0'] + bb[2] - 1, b['y0'] + bb[3] - 1))
+        else:
+            cajas = [(f['x0'], f['y0'], f['x1'], f['y1'])
+                     for f in sorted(b['frames'], key=lambda f: f['x0'])]
+        ys = guardar(carpeta, cajas)
+        ficha(num, slug, nombre, bucle, nota, carpeta, ys, num in ATAQUE)
 
     json.dump(salida, open(os.path.join(base, 'rows.json'), 'w'), indent=1)
+    print('total animaciones:', len(salida))
 
 
 if __name__ == '__main__':

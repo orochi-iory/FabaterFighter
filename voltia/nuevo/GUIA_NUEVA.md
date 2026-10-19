@@ -137,9 +137,20 @@ juego y la lista de movimientos del personaje, no el dibujo.
 
 ## Chun-Li: mapa real de filas (dado por el usuario)
 
-El corte por huecos daba **23 filas**; la hoja tiene **24**. La diferencia: la
-banda 3 llevaba dos animaciones (caminar adelante y caminar atrás, 6 + 6). Con
-ese corte el resto encaja 1 banda = 1 fila. Ver `tools/chunli_rows.py`.
+La hoja tiene **24 filas**. El corte por huecos daba 23 porque **la banda 0 lleva
+dos filas superpuestas** (bordes inferiores a y≈76 y a y≈145), además del retrato.
+Se separan por la **línea de suelo** —el borde inferior de la figura—, nunca por el
+borde superior: un salto cambia el alto del dibujo pero no la fila.
+
+Error anterior, para no repetirlo: partir una fila de 12 frames en dos mitades
+suponiendo que eran «caminar adelante» y «caminar atrás». Son **filas distintas**.
+Y el «stance completo» metía la fila 4, que es caminar: el stance son solo las
+filas 1, 2 y 3, unidas en una única animación (22 frames, quitando el frame
+repetido de cada costura).
+
+El **speed kick** tiene 9 poses y estelas amarillas dibujadas como trozos sueltos.
+Se distinguen por tinta (una estela tiene menos de un tercio que una pose) y se
+pegan a su pose si están a menos de 16 px.
 
 | Filas | Qué es |
 |---|---|
