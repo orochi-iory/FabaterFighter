@@ -54,23 +54,25 @@
 <section>
   <div class="box">
     <p class="warn" id="warn">Cargando…</p>
+    <div class="tabs" id="tabs"></div>
     <div class="scroller" id="scroller">
-      <canvas id="sprite" width="200" height="300"></canvas>
+      <canvas id="sprite" width="200" height="240"></canvas>
     </div>
     <p class="cap" id="cap"></p>
     <div class="controls">
       <button id="play" type="button">Pausa</button>
       <button id="step" type="button">Frame</button>
+      <button id="prev" type="button">◀</button>
+      <button id="next" type="button">▶</button>
       <button id="z100" type="button">1:1</button>
       <button id="z50" type="button">50%</button>
       <button id="z25" type="button">25%</button>
-      <button id="z12" type="button">bloques (12,5%)</button>
       <button id="bg" type="button">Fondo magenta</button>
       <button id="bg2" type="button">Fondo claro</button>
     </div>
     <p class="note" id="note"></p>
-    <p class="warn">Los botones solo cambian el zoom de la vista. El archivo no se toca:
-      el PNG sigue a 1024 × 1024. El zoom no añade ni quita píxeles al archivo.</p>
+    <p class="warn">Los botones solo cambian el zoom de la vista. Los PNG no se
+      tocan: cada frame mide 200 × 240.</p>
     <ul class="facts">
       <li>Sprite de juego: <b>150 × 200</b>, altura nativa. Se usa 1:1, sin escalar.</li>
       <li>Maestro: <b>1024 × 1024</b>, el archivo del modelo, sin recortar. Solo se le quita el verde.</li>
@@ -121,7 +123,7 @@
   const H = 1024;
   // ?v= para que el navegador no sirva el PNG viejo de esta misma ruta
   // El sprite de juego: 150 x 200, la altura nativa del ring. Se dibuja 1:1.
-  window.STAGE_FIGHTER = '../voltia/nueva/00.png?v=7';
+  window.STAGE_FIGHTER = '../voltia/nueva/idle/00.png?v=8';
   // Suelo en el centro del rombo dibujado (spec.floorY es 408, el borde trasero).
   window.STAGE_FLOOR_Y = 426;
   // El archivo no se toca. El escenario lo dibuja a la escala que se elija.
@@ -227,45 +229,67 @@
   const cap = document.getElementById('cap');
   const cv = document.getElementById('sprite');
   const cx = cv.getContext('2d');
-  // Los frames se cargan de la guía: voltia/nueva/00_stand.png … 19_stand.png
-  const zooms = { z100: 1, z50: 0.5, z25: 0.25, z12: 0.125 };
+  const tabs = document.getElementById('tabs');
   const cls = ['', 'magenta', 'light', 'green'];
   const names = ['oscuro', 'magenta', 'claro', 'verde'];
-  let ci = 0, zoom = 1, i = 0, playing = true, imgs = [], FRAMES = [];
+  let ci = 0, zoom = 1, i = 0, playing = true, anim = null, imgs = [], timer = null;
+
+  function draw() {
+    if (!anim) return;
+    cx.imageSmoothingEnabled = false;
+    cx.clearRect(0, 0, cv.width, cv.height);
+    if (imgs[i]) cx.drawImage(imgs[i], 0, 0);
+    cap.textContent = anim.title + ' · frame ' + (i + 1) + '/' + imgs.length +
+      ' · ' + Math.round(zoom * 100) + '% · el archivo mide ' + cv.width + ' × ' + cv.height;
+  }
   function applyZoom() {
     cv.className = 'px ' + cls[ci];
     cv.style.width = Math.round(cv.width * zoom) + 'px';
     cv.style.height = Math.round(cv.height * zoom) + 'px';
-    cap.textContent = 'Vista al ' + Math.round(zoom * 100) + '%. Frame ' +
-      cv.width + ' × ' + cv.height + ' del idle. El archivo no se toca.';
+    draw();
   }
-  function draw() {
-    const f = FRAMES[i % FRAMES.length];
-    cx.imageSmoothingEnabled = false;
-    cx.clearRect(0, 0, cv.width, cv.height);
-    if (f && imgs[i]) cx.drawImage(imgs[i], 0, -f.lift);
-    cap.textContent = (i + 1) + '/' + FRAMES.length + ' · ' + (f ? f.caption : '') +
-      ' · vista al ' + Math.round(zoom * 100) + '%.';
+  function restartTimer() {
+    if (timer) clearInterval(timer);
+    timer = setInterval(() => {
+      if (!playing || !imgs.length) return;
+      i = (i + 1) % imgs.length;
+      draw();
+    }, 1000 / (anim.fps || 8));
   }
-  try {
-    const guide = await (await fetch('../voltia/guide/style.json?v=' + Date.now(),
-      { cache: 'no-store' })).json();
-    FRAMES = guide.idle.frames;
-    for (let k = 0; k < FRAMES.length; k++) {
+  async function select(name) {
+    const guide = window.__GUIDE;
+    anim = guide.anims[name];
+    if (!anim) return;
+    cv.width = anim.canvas[0];
+    cv.height = anim.canvas[1];
+    i = 0; imgs = [];
+    document.querySelectorAll('#tabs button').forEach(b => {
+      b.classList.toggle('active', b.dataset.name === name);
+    });
+    note.textContent = anim.note;
+    for (const f of anim.frames) {
       const im = new Image();
-      im.src = '../voltia/nueva/' + FRAMES[k].file + '?v=7';
+      im.src = '../voltia/' + anim.dir + '/' + f + '?v=8';
       await im.decode();
       imgs.push(im);
     }
-    applyZoom(); draw();
-    warn.textContent = 'Idle de ' + FRAMES.length + ' frames a 200 px nativos, 1:1. ' +
-      'El saltito sube el frame entero; no se infla el personaje.';
-    note.textContent = 'Mira la máscara, el visor, la boca y el rayo en cada pose.';
-    setInterval(() => {
-      if (!playing) return;
-      i = (i + 1) % FRAMES.length;
-      draw();
-    }, 1000 / (guide.idle.fps || 8));
+    restartTimer();
+    applyZoom();
+  }
+  try {
+    const guide = await (await fetch('../voltia/guide/style.json?v=9',
+      { cache: 'no-store' })).json();
+    window.__GUIDE = guide;
+    const entries = Object.entries(guide.anims || {});
+    entries.forEach(([name, a]) => {
+      const b = document.createElement('button');
+      b.type = 'button';
+      b.dataset.name = name;
+      b.textContent = a.title + ' · ' + a.count;
+      b.onclick = () => select(name);
+      tabs.appendChild(b);
+    });
+    warn.textContent = 'Cada animación se ve por separado. Todas a 200 px nativos.';
     document.getElementById('play').onclick = () => {
       playing = !playing;
       document.getElementById('play').textContent = playing ? 'Pausa' : 'Seguir';
@@ -273,22 +297,33 @@
     document.getElementById('step').onclick = () => {
       playing = false;
       document.getElementById('play').textContent = 'Seguir';
-      i = (i + 1) % FRAMES.length;
-      draw();
+      i = (i + 1) % imgs.length; draw();
     };
+    document.getElementById('prev').onclick = () => {
+      playing = false;
+      document.getElementById('play').textContent = 'Seguir';
+      i = (i - 1 + imgs.length) % imgs.length; draw();
+    };
+    document.getElementById('next').onclick = () => {
+      playing = false;
+      document.getElementById('play').textContent = 'Seguir';
+      i = (i + 1) % imgs.length; draw();
+    };
+    const zooms = { z100: 1, z50: 0.5, z25: 0.25 };
     Object.entries(zooms).forEach(([id, z]) => {
-      document.getElementById(id).onclick = () => { zoom = z; applyZoom(); draw(); };
+      document.getElementById(id).onclick = () => { zoom = z; applyZoom(); };
     });
     document.getElementById('bg').onclick = () => {
-      ci = (ci + 1) % cls.length; applyZoom(); draw();
+      ci = (ci + 1) % cls.length; applyZoom();
       document.getElementById('bg').textContent = 'Fondo ' + names[ci];
     };
     document.getElementById('bg2').onclick = () => {
-      ci = (ci + 1) % cls.length; applyZoom(); draw();
+      ci = (ci + 1) % cls.length; applyZoom();
       document.getElementById('bg').textContent = 'Fondo ' + names[ci];
     };
+    if (entries.length) select(entries[entries.length - 1][0]);
   } catch (err) {
-    warn.textContent = 'No pude cargar el sprite: ' + (err && err.message ? err.message : err);
+    warn.textContent = 'No pude cargar el visor: ' + (err && err.message ? err.message : err);
   }
 })();
 </script>

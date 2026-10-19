@@ -3,8 +3,8 @@
   "updated": "2026-10-19",
   "character": "Voltia",
   "status": "Un sprite, 150 × 200 nativos. Sin idle todavía.",
-  "anchor": "nueva/00.png",
-  "anchorNote": "Guardia, 200 px de alto, en un lienzo de 200 x 240 con el suelo comun. Sale de la hoja de 20 poses y de ahi salen todos los frames.",
+  "anchor": "nueva/idle/00.png",
+  "anchorNote": "Guardia del idle, 200 px de alto, lienzo de 200 x 240. Todos los frames del idle comparten lienzo, escala y suelo.",
   "styleRef": {
     "file": "ref/chunli_sf2_sheet.png",
     "what": "Hoja de Chun-Li de Street Fighter II. Es la referencia de DIBUJO, no de personaje: se copia el pixelado, el grosor de línea, los tonos planos y la postura. No se copia su ropa ni su anatomía.",
@@ -215,7 +215,7 @@
     }
   ],
   "idle": {
-    "status": "tercera pasada, sin aprobar",
+    "status": "primera pasada, sin aprobar",
     "fps": 8,
     "count": 20,
     "canvas": [
@@ -388,5 +388,73 @@
     "deliver": "El sprite de juego mide 200 px de alto y se dibuja 1:1. El maestro a 1024 se conserva, no se entrega.",
     "why": "Con bloques de 5 el recorte queda perfecto: 200 nativos y el escenario lo pinta sin deformar. Con bloques de 8, 200 px obligaban a un x1,57 y no cuadraba.",
     "check": "Antes de aprobar un sprite: alto = 200 px con coleta y misma escala de píxel que el resto de la hoja."
+  },
+  "anims": {
+    "jump": {
+      "title": "Salto adelante",
+      "dir": "nueva/jump",
+      "count": 20,
+      "fps": 10,
+      "canvas": [
+        200,
+        300
+      ],
+      "note": "Salto de 20 frames. Servia para salto adelante, no como saltito de idle.",
+      "frames": [
+        "00.png",
+        "01.png",
+        "02.png",
+        "03.png",
+        "04.png",
+        "05.png",
+        "06.png",
+        "07.png",
+        "08.png",
+        "09.png",
+        "10.png",
+        "11.png",
+        "12.png",
+        "13.png",
+        "14.png",
+        "15.png",
+        "16.png",
+        "17.png",
+        "18.png",
+        "19.png"
+      ]
+    },
+    "idle": {
+      "title": "Idle",
+      "dir": "nueva/idle",
+      "count": 20,
+      "fps": 8,
+      "canvas": [
+        200,
+        240
+      ],
+      "note": "Saltito pequeno doble y atusado de piernas. Pies en la misma linea.",
+      "frames": [
+        "00.png",
+        "01.png",
+        "02.png",
+        "03.png",
+        "04.png",
+        "05.png",
+        "06.png",
+        "07.png",
+        "08.png",
+        "09.png",
+        "10.png",
+        "11.png",
+        "12.png",
+        "13.png",
+        "14.png",
+        "15.png",
+        "16.png",
+        "17.png",
+        "18.png",
+        "19.png"
+      ]
+    }
   }
 }
