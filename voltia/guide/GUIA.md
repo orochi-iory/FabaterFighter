@@ -1,7 +1,10 @@
-# Guía de estilo — Voltia
+# Guía de estilo — modelo nuevo
 
-Apartado **Guía de estilo** del visor. Si un frame sale mal, la regla se anota
-aquí antes de seguir.
+Página `preview/guia.html`. Solo información para generar, y el prompt.
+No reproduce frames. Los frames se miran en `preview/nueva.html`.
+
+El personaje de la pelea tiene su propia guía, `preview/guia-vieja.html`,
+por si este estilismo no sobrevive al recorte.
 
 La pelea no usa estos frames.
 

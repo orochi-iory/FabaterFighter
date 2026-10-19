@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Guía de estilo · modelo nuevo</title>
+<style>
+  * { box-sizing: border-box; }
+  body { margin:0; font-family: system-ui, sans-serif; background:#181624; color:#eee; }
+  header, main { width:100%; max-width:880px; margin:0 auto; padding:20px 16px; }
+  h1 { margin:0; color:#ffcb3d; letter-spacing:1px; font-size:28px; }
+  h2 { color:#96ffeb; font-size:16px; margin:22px 0 8px; }
+  p, li { color:#d8d6ea; font-size:15px; line-height:1.5; }
+  a.play { display:inline-block; margin:14px 8px 0 0; background:#ffcb3d; color:#181624;
+    text-decoration:none; font-weight:700; padding:8px 14px; border-radius:8px; }
+  a.play.alt { background:transparent; color:#ffcb3d; border:2px solid #ffcb3d; }
+  .box { background:#222033; border:2px solid #ffcb3d; border-radius:12px; padding:16px 18px 22px; }
+  .swatches { display:flex; flex-wrap:wrap; gap:8px; }
+  .sw { width:92px; }
+  .sw i { display:block; height:28px; border:1px solid #4a4767; border-radius:4px; }
+  .sw b, .sw span { display:block; font-size:11px; color:#9d9ab5; margin-top:3px; font-weight:500; }
+  .sw b { color:#ffcb3d; }
+  pre { white-space:pre-wrap; background:#181624; color:#eee; padding:12px; border-radius:8px;
+    font-size:13px; line-height:1.45; }
+  button { background:#35324e; color:#eee; border:1px solid #4a4767; border-radius:8px;
+    padding:8px 12px; cursor:pointer; font-size:14px; }
+  .warn { color:#ffcb3d; }
+</style>
+</head>
+<body data-guide="../voltia/guide/style.json">
+<header>
+  <h1 id="guideTitle">Guía de estilo · modelo nuevo</h1>
+  <p class="warn">Solo reglas y prompt. Aquí no hay animación.</p>
+  <a class="play" href="nueva.html">Ver el modelo nuevo</a>
+  <a class="play alt" href="guia-vieja.html">Guía del personaje de la pelea</a>
+  <a class="play alt" href="index.html">Visor actual</a>
+</header>
+<main>
+  <div class="box">
+    <p id="guideLead">Cargando la guía…</p>
+    <div class="swatches" id="guideKey"></div>
+    <h2>Recorte</h2>
+    <p id="guideClip"></p>
+    <h2>Paleta</h2>
+    <div class="swatches" id="guidePal"></div>
+    <h2>Qué se está generando</h2>
+    <div id="guideBeats" hidden><p>Idle de veinte pasos. Se mira en el visor del modelo nuevo, no aquí.</p></div>
+    <h2>Reglas</h2>
+    <ol id="guideRules"></ol>
+    <h2>Prompt</h2>
+    <p><button id="copyPrompt" type="button">Copiar prompt</button></p>
+    <pre id="guidePrompt"></pre>
+    <h2>Historial</h2>
+    <ul id="guideLog"></ul>
+  </div>
+</main>
+<script src="guia.js"></script>
+</body>
+</html>

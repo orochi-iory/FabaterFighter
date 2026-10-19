@@ -45,9 +45,10 @@
     "Un hueco encerrado de hasta 40 px se cierra. El lazo de la coleta no. El hueco entre brazo y pecho no.",
     "Reutilizar es el dibujo completo en otro momento. No se recorta un brazo ni un trozo de máscara para pegarlo.",
     "Un frame partido no se entrega.",
-    "La pelea no cambia de hoja hasta que este ciclo se acepte."
+    "La pelea no cambia de hoja hasta que este ciclo se acepte.",
+    "Esta guía no reproduce animaciones. Los frames se miran en el visor del modelo nuevo."
   ],
-  "prompt": "One fighting-game pixel sprite of the reference character, full body, facing right. Match the reference exactly: complete unbroken magenta mask with a visible mouth (dark opening and a skin-colored lip under the teal visor), teal visor, huge violet ponytail, teal suit, fat yellow lightning, gold belt, navy gloves and boots. Flat colors, black outlines, no anti-aliasing. Background is flat pure green edge to edge, never pink. No floor, no shadow, no text. At least 24 pixels of green margin. The mask must stay intact, mouth included.",
+  "prompt": "One fighting-game pixel sprite of Voltia, a single full-body frame, side view, facing right. Match the reference frame exactly: same person, same proportions, same 13 inks.\n\nComplete magenta mask, unbroken. A readable mouth on the front of the mask, under the teal visor: dark opening and a skin-colored lower lip. Teal visor with a dark eye slit. Huge violet ponytail. Teal suit, fat yellow lightning on the chest, gold belt, bare arms, navy gloves, navy boots. Black outlines. Flat colors only. No anti-aliasing, no gradients, no green fringe.\n\nBackground is one flat green, #11EF06, edge to edge. Never pink, never magenta, never a mask color and never a suit color. At least 24 pixels of that green on every side. No floor, no shadow, no text, no second figure.\n\nDo not cut the mask. Do not leave missing pixels inside the body. The loop of the ponytail may stay open. If any ink is close to the green, change the ink. Do not change the background and do not change the mask.",
   "keys": [
     {"id": "stand", "file": "00_stand.png", "use": "De pie. Aterrizaje y cierre del idle. Se reutiliza entero, más alto, en el saltito."},
     {"id": "hop", "file": "02_hop1_peak.png", "use": "Rodilla arriba, en el aire. Pico del saltito."},

@@ -1,0 +1,62 @@
+{
+  "title": "Guía de estilo · personaje de la pelea",
+  "updated": "2026-10-19",
+  "character": "Voltia",
+  "which": "vieja",
+  "anchor": "ref_stance.png",
+  "anchorNote": "Este es el personaje que ya está en la pelea. Se guarda por si el estilismo nuevo no sobrevive al recorte. El ancla es el stance congelado, no el póster y no el frame que el juego regenera.",
+  "facing": "derecha",
+  "standHeight": 148,
+  "key": {
+    "hex": "#00FF00",
+    "rgb": [0, 255, 0],
+    "hard": 70,
+    "exclude": 120,
+    "why": "El fondo de esta hoja es verde puro, de borde a borde. El rosa se prohibió: es tono de máscara, el recorte se la come y deja rosa pegado. No se mide un verde cercano. Aquí el verde es #00FF00."
+  },
+  "nearest": {
+    "name": "traje claro",
+    "rgb": [5, 173, 153],
+    "pixels": 0,
+    "distance": 174
+  },
+  "visorDistance": 174,
+  "sacrifice": "No se sacrifica la máscara. La más cercana al verde es el traje claro, a 174. La máscara está mucho más lejos. Si una tinta nueva cae a menos de 120 del verde, se mueve esa tinta. El póster conceptual no se usa de referencia: arrastra otro estilo y rompe la hoja.",
+  "clip": "Se recorta contra verde puro #00FF00. No contra rosa, no contra magenta, no por «canal verde alto». Un píxel es fondo si es ese verde. La máscara no se toca.",
+  "palette": [
+    {"name": "perfil", "rgb": [1, 1, 2], "distance": 254},
+    {"name": "traje sombra", "rgb": [22, 81, 104], "distance": 204},
+    {"name": "traje", "rgb": [26, 150, 142], "distance": 179},
+    {"name": "traje claro", "rgb": [5, 176, 157], "distance": 176},
+    {"name": "navy sombra", "rgb": [18, 19, 63], "distance": 245},
+    {"name": "navy", "rgb": [32, 38, 86], "distance": 236},
+    {"name": "piel sombra", "rgb": [140, 78, 60], "distance": 234},
+    {"name": "piel", "rgb": [223, 156, 119], "distance": 272},
+    {"name": "máscara sombra", "rgb": [37, 5, 42], "distance": 256},
+    {"name": "máscara", "rgb": [134, 18, 90], "distance": 287},
+    {"name": "máscara clara", "rgb": [200, 23, 125], "distance": 331},
+    {"name": "coleta sombra", "rgb": [47, 10, 84], "distance": 263},
+    {"name": "coleta", "rgb": [88, 40, 101], "distance": 253},
+    {"name": "rayo sombra", "rgb": [200, 195, 126], "distance": 244},
+    {"name": "rayo", "rgb": [250, 211, 83], "distance": 267}
+  ],
+  "rules": [
+    "Ancla única: voltia/ref_stance.png. Como mucho un segundo frame, voltia/ref_torso.png, para el rayo gordo. No se promedian tres referencias.",
+    "Prohibido el póster conceptual. Prohibido usar el frame de juego regenerado como referencia.",
+    "Fondo verde puro #00FF00, de borde a borde. Nunca rosa ni magenta.",
+    "Paleta congelada de 49 tintas, en voltia/spec.json. Rampas de 3 tonos por material. El rayo tiene 2. El perfil y el blanco, 1.",
+    "La cabeza mide 23 px-arte. La altura de pie sale de esa cabeza, no se fuerza si deforma el agachado.",
+    "Se mira y se golpea a la derecha. El motor ya espeja.",
+    "Una animación nueva de este estilo es una hoja entera, 8 columnas por 5 filas, no una tira suelta. El texto de la animación lo escribe gen_sheet.py. No se pega el de otro movimiento.",
+    "Hueco verde de al menos media figura entre celdas, en horizontal y en vertical. Nada toca el borde. Sin línea de suelo ni sombra.",
+    "El rayo amarillo gordo va en todas las celdas.",
+    "Los pies van al borde inferior de la celda. Lo que está en el aire se queda flotando.",
+    "Píxel grueso, tintas planas, perfil oscuro. Sin degradados. Como mucho una sombra dura por zona.",
+    "Si la puerta QA rechaza, se regenera. No se afloja la puerta.",
+    "Esta guía no reproduce animaciones. El personaje se mira en su visor."
+  ],
+  "prompt": "2D fighting-game sprite sheet, ONE image, strict grid of 8 columns by 5 rows, reading order left to right then top to bottom. Each cell is one frame of the named animation. The animation text is filled by gen_sheet.py. Do not paste another move's description.\n\nWide flat pure #00FF00 gutters between every cell, horizontal and vertical, at least half a figure. Pure flat solid #00FF00 background edge to edge. Never pink. Never magenta. No floor line, no ground shadow. Nothing touches a cell edge. Feet sit on the bottom edge of the cell, with a 0 to 2 pixel gap. Airborne frames float.\n\nMasked luchadora with a full-face magenta mask and teal eye patches, extremely long thick violet ponytail flowing behind, teal bodysuit with a LARGE FAT chunky zigzag yellow lightning bolt across the chest and a thin gold belt, bare arms, long dark-navy gauntlet gloves, dark-navy boots with knee pads. Slender, about seven heads tall. Side view, facing right. The same character in every cell. The fat yellow lightning is in every cell, no exceptions.\n\nPixel-art fighting-game sprite in the EXACT style of the reference frame: chunky large pixels, simple bold shapes, minimal detail, thick dark outlines, FLAT solid color fills, absolutely no gradients or blended shading, at most one hard-edged shadow shape per area, no fine detail.\n\nFull body visible. No text, no borders, no other characters. The only reference image is the frozen stance frame. Do not use the concept poster. Do not average several references.",
+  "changelog": [
+    "2026-10-19. Guía del personaje que ya está en la pelea, aparte del modelo nuevo. Sirve si el estilismo nuevo no sobrevive al recorte. Ancla, verde puro y prompt copiados del candado que ya tenía la hoja."
+  ]
+}

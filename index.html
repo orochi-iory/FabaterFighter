@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>VOLTIA</title>
+<style>
+  * { box-sizing: border-box; }
+  body { margin:0; font-family: system-ui, sans-serif; background:#181624; color:#eee;
+    min-height:100vh; display:flex; align-items:center; justify-content:center; padding:24px; }
+  main { width:100%; max-width:720px; }
+  h1 { margin:0 0 8px; color:#ffcb3d; letter-spacing:2px; }
+  p { color:#d8d6ea; line-height:1.5; }
+  nav { display:grid; gap:12px; margin-top:22px; }
+  a { display:block; text-decoration:none; background:#222033; border:2px solid #3a3752;
+    border-radius:12px; padding:16px 18px; color:#eee; }
+  a strong { display:block; color:#ffcb3d; font-size:18px; margin-bottom:4px; }
+  a span { color:#9d9ab5; font-size:14px; line-height:1.4; }
+  a.main { border-color:#ffcb3d; }
+  a:hover { background:#2c2a40; }
+</style>
+</head>
+<body>
+<main>
+  <h1>VOLTIA</h1>
+  <p>El personaje de la pelea y el modelo nuevo no comparten página. Las guías no animan nada: solo guardan cómo generar.</p>
+  <nav>
+    <a class="main" href="preview/index.html">
+      <strong>Visor del personaje actual</strong>
+      <span>El que ya está en la pelea. Animaciones, escenario y manual.</span>
+    </a>
+    <a href="preview/nueva.html">
+      <strong>Visor del modelo nuevo</strong>
+      <span>El idle que se está dibujando, sobre el escenario que ya teníamos.</span>
+    </a>
+    <a href="preview/guia.html">
+      <strong>Guía · modelo nuevo</strong>
+      <span>Reglas de recorte y el prompt. Sin animación.</span>
+    </a>
+    <a href="preview/guia-vieja.html">
+      <strong>Guía · personaje de la pelea</strong>
+      <span>Por si hay que volver a este estilo. Reglas y prompt, sin animación.</span>
+    </a>
+  </nav>
+</main>
+</body>
+</html>

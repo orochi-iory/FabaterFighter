@@ -41,15 +41,7 @@
   #say { color:#ffcb3d; margin-top:4px; min-height:1.2em; font-style:italic; }
   canvas#strip { image-rendering:pixelated; border-radius:8px; max-width:100%;
     background: repeating-conic-gradient(#2c2a40 0 25%, #242233 0 50%) 0 0/24px 24px; }
-  section.nueva { width:100%; max-width:1200px; padding:8px 16px 8px; }
-  section.nueva h2 { color:#ffcb3d; letter-spacing:1px; margin:8px 0; }
-  section.nueva .box { background:#222033; border:2px solid #ffcb3d; border-radius:12px; padding:16px; }
-  canvas#newcv, canvas#newstrip { image-rendering:pixelated; image-rendering:crisp-edges;
-    display:block; margin:0 auto; background:#101018; border-radius:8px; }
-  canvas#newcv { width:min(100%, 720px); height:auto; border:1px solid #3a3752; }
-  canvas#newstrip { max-width:100%; height:auto; margin-top:12px; }
-  section.nueva .warn { color:#ffcb3d; font-size:14px; margin:0 0 12px; }
-  section.nueva .note { color:#d8d6ea; font-size:14px; line-height:1.5; min-height:2.8em; }
+
   section.manual { width:100%; max-width:1200px; padding:0 16px 16px; }
   .card { background:#222033; border:2px solid #3a3752; border-radius:12px; padding:20px;
           display:flex; gap:20px; flex-wrap:wrap; }
@@ -76,22 +68,6 @@
   .arena input[type=range] { width:140px; }
   .layers { color:#d8d6ea; font-size:13px; line-height:1.55; margin:12px 0 0; }
   .layers b { color:#96ffeb; }
-  section.guia { width:100%; max-width:1200px; padding:8px 16px 8px; }
-  section.guia h2 { color:#ffcb3d; letter-spacing:1px; margin:8px 0; }
-  section.guia h3 { color:#96ffeb; font-size:15px; margin:18px 0 8px; }
-  section.guia .box { background:#222033; border:2px solid #ffcb3d; border-radius:12px; padding:16px; }
-  section.guia p, section.guia li { color:#d8d6ea; font-size:14px; line-height:1.5; }
-  section.guia .swatches { display:flex; flex-wrap:wrap; gap:8px; }
-  section.guia .sw { width:78px; }
-  section.guia .sw i { display:block; height:28px; border:1px solid #4a4767; border-radius:4px; }
-  section.guia .sw b, section.guia .sw span { display:block; font-size:11px; color:#9d9ab5; margin-top:3px; font-weight:500; }
-  section.guia .sw b { color:#ffcb3d; }
-  section.guia pre { white-space:pre-wrap; background:#181624; color:#eee; padding:10px; border-radius:8px; font-size:12px; line-height:1.45; }
-  section.guia img.proof { max-width:100%; height:auto; image-rendering:pixelated; image-rendering:crisp-edges; border-radius:8px; background:#101018; }
-  canvas#guidecv, canvas#guidestrip { image-rendering:pixelated; image-rendering:crisp-edges; display:block; background:#101018; }
-  canvas#guidecv { width:min(100%, 448px); height:auto; margin:0 auto; border:1px solid #3a3752; border-radius:8px; }
-  canvas#guidestrip { max-width:100%; height:auto; margin-top:10px; }
-  section.guia .keyrow { display:flex; flex-wrap:wrap; gap:8px; }
 </style>
 </head>
 <body>
@@ -99,7 +75,9 @@
   <h1>⚡ VOLTIA ⚡</h1>
   <p id="ver">cargando…</p>
   <a class="play" href="fight.html">Probar pelea · Voltia vs Voltia</a>
-  <a class="play alt" href="#guia">Guía de estilo</a>
+  <a class="play alt" href="nueva.html">Modelo nuevo</a>
+  <a class="play alt" href="guia-vieja.html">Guía de este personaje</a>
+  <p class="notes">Este visor es el personaje de la pelea. El modelo nuevo está en otra página.</p>
   <p class="notes" id="notes"></p>
   <p id="syncwarn"></p>
 </header>
@@ -129,30 +107,6 @@
     <div class="info">Consejo: <b>magenta</b> y <b>verde</b> sirven para comprobar la transparencia y el chroma.</div>
   </div>
 </main>
-<section class="guia" id="guia">
-  <h2>Guía de estilo</h2>
-  <div class="box">
-    <p id="guideLead">Cargando la guía…</p>
-    <div class="swatches" id="guideKey"></div>
-    <h3>Recorte</h3>
-    <p id="guideClip"></p>
-    <h3>Paleta</h3>
-    <div class="swatches" id="guidePal"></div>
-    <h3>Idle nuevo</h3>
-    <canvas id="guidecv" width="128" height="156"></canvas>
-    <div class="controls" id="guideBtns"></div>
-    <p id="guideIdleNote"></p>
-    <canvas id="guidestrip" width="240" height="36"></canvas>
-    <h3>Sprites clave</h3>
-    <div class="keyrow" id="guideKeys"></div>
-    <h3>Reglas</h3>
-    <ol id="guideRules"></ol>
-    <h3>Prompt para generar</h3>
-    <pre id="guidePrompt"></pre>
-    <h3>Historial</h3>
-    <ul id="guideLog"></ul>
-  </div>
-</section>
 <section class="arena" id="escenario">
   <h2>Escenario · Cyber Fist</h2>
   <div class="box">
@@ -193,12 +147,19 @@
 <footer id="foot">FabaterFighter</footer>
 <script>
 (async () => {
+  try {
   // Anti-caché: hoja y datos siempre frescos y emparejados (evita el "carrusel").
   const QB = '?v=' + Date.now();
   const meta = await (await fetch('../voltia/sheet.json' + QB, { cache: 'no-store' })).json();
+  document.getElementById('ver').textContent = `Vista v${meta.version || 'dev'} · cargando la hoja…`;
   const sheet = new Image();
   sheet.src = '../voltia/' + meta.sprite + QB;
-  await sheet.decode();
+  // La hoja uniforme es enorme. Si no entra, el visor sigue con los frames sueltos.
+  const sheetOk = await Promise.race([
+    sheet.decode().then(() => sheet.naturalWidth > 100).catch(() => false),
+    new Promise(res => setTimeout(() => res(false), 8000)),
+  ]);
+  const looseCache = {};
 
   const cell = meta.cell;              // {w,h} en px de hoja (uniform_scale)
   const unit = meta.art.uniform_scale; // px-hoja por px-arte
@@ -206,7 +167,13 @@
   // Guardia de sincronía: si la hoja no cubre la parrilla, avisar en vez de descuadrar.
   const needW = Math.max(...meta.animations.map(a => a.frames)) * cell.w;
   const needH = meta.rows * cell.h;
-  if (sheet.naturalWidth < needW - 2 || sheet.naturalHeight < needH - 2) {
+  if (!sheetOk) {
+    const w = document.getElementById('syncwarn');
+    w.style.display = 'block';
+    w.textContent = 'La hoja completa no entró. Se usan los frames sueltos: es el mismo personaje.';
+    const scale = document.getElementById('scale');
+    if (scale) scale.value = '4';
+  } else if (sheet.naturalWidth < needW - 2 || sheet.naturalHeight < needH - 2) {
     const w = document.getElementById('syncwarn');
     w.style.display = 'block';
     w.textContent = `⚠️ Hoja y datos desincronizados (${sheet.naturalWidth}×${sheet.naturalHeight} ` +
@@ -265,6 +232,12 @@
 
   function setScale() {
     const s = +document.getElementById('scale').value;
+    const loose = looseCache[cur];
+    if (!sheetOk && loose && loose[0]) {
+      cv.style.width = (loose[0].width * s / 4) + 'px';
+      cv.style.height = (loose[0].height * s / 4) + 'px';
+      return;
+    }
     cv.style.width = (cell.w * s / unit) + 'px';
     cv.style.height = (cell.h * s / unit) + 'px';
   }
@@ -288,14 +261,38 @@
     box.appendChild(b);
   });
 
+  async function framesOf(a) {
+    const imgs = [];
+    for (let i = 0; i < a.frames; i++) {
+      const im = new Image();
+      im.src = `../voltia/frames/voltia_${a.id}_${i}.png` + QB;
+      await im.decode();
+      imgs.push(im);
+    }
+    return imgs;
+  }
+
   function drawStrip() {
     const a = meta.animations[cur];
-    strip.width = a.frames * cell.w;
-    strip.height = cell.h;
-    sx.clearRect(0, 0, strip.width, strip.height);
-    for (let f = 0; f < a.frames; f++)
-      sx.drawImage(sheet, f * cell.w, a.row * cell.h, cell.w, cell.h,
-                   f * cell.w, 0, cell.w, cell.h);
+    const loose = looseCache[cur];
+    if (!sheetOk && loose && loose[0]) {
+      const sc = 0.35;
+      strip.width = Math.round(a.frames * loose[0].width * sc);
+      strip.height = Math.round(loose[0].height * sc);
+      sx.imageSmoothingEnabled = false;
+      sx.clearRect(0, 0, strip.width, strip.height);
+      loose.forEach((im, f) => {
+        sx.drawImage(im, Math.round(f * loose[0].width * sc), 0,
+          Math.round(loose[0].width * sc), Math.round(loose[0].height * sc));
+      });
+    } else if (sheetOk) {
+      strip.width = a.frames * cell.w;
+      strip.height = cell.h;
+      sx.clearRect(0, 0, strip.width, strip.height);
+      for (let f = 0; f < a.frames; f++)
+        sx.drawImage(sheet, f * cell.w, a.row * cell.h, cell.w, cell.h,
+                     f * cell.w, 0, cell.w, cell.h);
+    }
     strip.style.width = Math.min(strip.width, 560) + 'px';
     strip.style.height = 'auto';
     info.innerHTML = `<b>${a.label}</b> · fila ${a.row} · ${a.frames} frames @ ${a.fps}fps · ` +
@@ -409,9 +406,14 @@
     a.play().catch(() => {});
   }
 
-  function select(i) {
+  async function select(i) {
     cur = i; frame = 0; acc = 0;
     [...box.children].forEach((b, j) => b.classList.toggle('active', j === i));
+    if (!sheetOk && !looseCache[i]) {
+      info.textContent = 'Cargando frames…';
+      looseCache[i] = await framesOf(meta.animations[i]);
+      setScale();
+    }
     drawStrip();
     playVoice(meta.animations[i].id);
   }
@@ -429,9 +431,22 @@
     }
     last = t;
     // Cine, no carrusel: cada frame sustituye al anterior fijo en la celda.
-    cx.clearRect(0, 0, cell.w, cell.h);
-    cx.drawImage(sheet, frame * cell.w, a.row * cell.h, cell.w, cell.h,
-                 0, 0, cell.w, cell.h);
+    if (sheetOk) {
+      cx.clearRect(0, 0, cell.w, cell.h);
+      cx.drawImage(sheet, frame * cell.w, a.row * cell.h, cell.w, cell.h,
+                   0, 0, cell.w, cell.h);
+    } else {
+      const im = (looseCache[cur] || [])[frame];
+      if (im) {
+        if (cv.width !== im.width || cv.height !== im.height) {
+          cv.width = im.width;
+          cv.height = im.height;
+          cx.imageSmoothingEnabled = false;
+        }
+        cx.clearRect(0, 0, cv.width, cv.height);
+        cx.drawImage(im, 0, 0);
+      }
+    }
     const fc = document.getElementById('fcount');
     if (fc && fc._v !== frame) { fc._v = frame; fc.textContent = (frame + 1) + '/' + a.frames; }
     requestAnimationFrame(loop);
@@ -439,409 +454,18 @@
 
   select(0);
   requestAnimationFrame(loop);
-})();
-</script>
-<script>
-(() => {
-  const cv = document.getElementById('stagecv');
-  if (!cv) return;
-  const cx = cv.getContext('2d');
-  cx.imageSmoothingEnabled = false;
-  const note = document.getElementById('stageNote');
-  let spec = null, bg = null, ring = null, stance = null;
-  const led = [], crowd = [], smoke = [];
-  const neonImgs = { bars: [], letters: [] };
-  let neonTimers = [];
-  let fxCanvas = null;
-  let scroll = 0.5, zoom = 0.7, jump = 0, t0 = performance.now();
-
-  function load(src) {
-    return new Promise((res, rej) => {
-      const im = new Image();
-      im.onload = () => res(im);
-      im.onerror = rej;
-      im.src = src;
-    });
-  }
-
-  function world() {
-    const v = spec.view;
-    return { w: v.w / zoom, h: v.h / zoom };
-  }
-  function cam() {
-    const w = world();
-    const vw = Math.max(1, Math.round(w.w));
-    const vh = Math.max(1, Math.round(w.h));
-    const maxX = Math.max(0, bg.width - vw);
-    const x = Math.round(scroll * maxX);
-    // la línea de suelo queda hacia el centro del encuadre, con ring por debajo
-    let y = spec.floorY - vh * 0.62 - jump;
-    y = Math.round(Math.max(0, Math.min(Math.max(0, bg.height - vh), y)));
-    return { x, y, w: Math.min(vw, bg.width - x), h: Math.min(vh, bg.height - y) };
-  }
-
-  function paintBeam(fxx, lampX, lampY, floorX, floorY, w0, w1, rgb, alpha, cam) {
-    const y0 = lampY - cam.y;
-    const y1 = floorY - cam.y;
-    const span = y1 - y0;
-    if (span <= 1) return;
-    fxx.fillStyle = `rgba(${rgb[0]},${rgb[1]},${rgb[2]},${alpha})`;
-    const yStart = Math.max(0, y0 | 0);
-    const yEnd = Math.min(fxx.canvas.height - 1, y1 | 0);
-    for (let y = yStart; y <= yEnd; y++) {
-      const t = (y - y0) / span;
-      const cxw = lampX + (floorX - lampX) * t - cam.x;
-      const half = w0 + (w1 - w0) * t;
-      const x0 = Math.round(cxw - half);
-      const x1 = Math.round(cxw + half);
-      const left = Math.max(0, x0);
-      const right = Math.min(fxx.canvas.width, x1);
-      if (right > left) fxx.fillRect(left, y, right - left, 1);
-    }
-  }
-
-  function paintSpots(cam) {
-    if (!fxCanvas) fxCanvas = document.createElement('canvas');
-    if (fxCanvas.width !== cam.w || fxCanvas.height !== cam.h) {
-      fxCanvas.width = cam.w;
-      fxCanvas.height = cam.h;
-    }
-    const fxx = fxCanvas.getContext('2d');
-    fxx.imageSmoothingEnabled = false;
-    fxx.clearRect(0, 0, cam.w, cam.h);
-    const t = performance.now() / 1000;
-    for (const s of spec.spots) {
-      const wobble = 0.85 + 0.15 * Math.sin(t * 7 + s.phase);
-      const swing = Math.sin(t * s.speed + s.phase) * s.amp;
-      const floorX = s.x + swing;
-      paintBeam(fxx, s.x, s.y, floorX, s.y1, 1, s.wide, s.color, s.alpha * wobble, cam);
-      paintBeam(fxx, s.x, s.y, floorX, s.y1, 1, s.wide * 0.35, s.color, s.alpha * 1.6 * wobble, cam);
-    }
-    cx.save();
-    cx.globalCompositeOperation = 'lighter';
-    cx.drawImage(fxCanvas, 0, 0, cv.width, cv.height);
-    cx.restore();
-  }
-
-  function armNeon(now) {
-    if (!spec.neon || neonTimers.length) return;
-    (spec.neon.bars || []).forEach((_, i) => {
-      neonTimers.push({ kind: 'bar', i, offUntil: 0, next: now + 350 + Math.random() * 900 });
-    });
-    (spec.neon.letters || []).forEach((_, i) => {
-      neonTimers.push({ kind: 'letter', i, offUntil: 0, next: now + 700 + Math.random() * 2200 });
-    });
-  }
-
-  function paintNeon(blit) {
-    const tog = document.getElementById('togNeon');
-    if (!tog || !tog.checked || !spec.neon) return;
-    const now = performance.now();
-    armNeon(now);
-    for (const t of neonTimers) {
-      if (now >= t.next && now >= t.offUntil) {
-        const dur = t.kind === 'bar' ? 80 + Math.random() * 170 : 60 + Math.random() * 130;
-        t.offUntil = now + dur;
-        let gap = t.kind === 'bar' ? 650 + Math.random() * 2400 : 1500 + Math.random() * 4200;
-        if (Math.random() < 0.28) gap = 45 + Math.random() * 80;
-        t.next = t.offUntil + gap;
-      }
-      if (now >= t.offUntil) continue;
-      const img = t.kind === 'bar' ? neonImgs.bars[t.i] : neonImgs.letters[t.i];
-      if (img) blit(img, spec.neon.x, spec.neon.y);
-    }
-  }
-
-  function draw() {
-    if (!spec || !bg) return;
-    const c = cam();
-    const tick = Math.floor((performance.now() - t0) / 140);
-    cx.imageSmoothingEnabled = false;
-    cx.clearRect(0, 0, cv.width, cv.height);
-    cx.drawImage(bg, c.x, c.y, c.w, c.h, 0, 0, cv.width, cv.height);
-    const sx = cv.width / c.w, sy = cv.height / c.h;
-    const blit = (img, x, y) => {
-      cx.drawImage(img, Math.round((x - c.x) * sx), Math.round((y - c.y) * sy),
-        Math.round(img.width * sx), Math.round(img.height * sy));
-    };
-    paintNeon(blit);
-    const blitPart = (img, sx0, sy0, sw, sh, x, y, dw, dh, flip) => {
-      dw = dw || sw;
-      dh = dh || sh;
-      const dx = Math.round((x - c.x) * sx);
-      const dy = Math.round((y - c.y) * sy);
-      const ddw = Math.max(1, Math.round(dw * sx));
-      const ddh = Math.max(1, Math.round(dh * sy));
-      if (!flip) {
-        cx.drawImage(img, sx0, sy0, sw, sh, dx, dy, ddw, ddh);
-        return;
-      }
-      cx.save();
-      cx.translate(dx + ddw, dy);
-      cx.scale(-1, 1);
-      cx.imageSmoothingEnabled = false;
-      cx.drawImage(img, sx0, sy0, sw, sh, 0, 0, ddw, ddh);
-      cx.restore();
-    };
-    if (document.getElementById('togLed').checked && led.length) {
-      const f = led[tick % led.length];
-      for (const s of spec.screens) blit(f, s.x, s.y);
-    }
-    if (document.getElementById('togCrowd').checked && crowd.length) {
-      const rows = spec.rows || (spec.crowd ? [spec.crowd] : []);
-      for (const band of rows) {
-        const step = band.step || crowd[0].width;
-        const limit = band.xMax != null ? band.xMax : bg.width;
-        let i = 0;
-        for (let x = band.x0; x + step <= band.x1 + 8; x += step, i++) {
-          const f = crowd[(tick + i + (band.phase || 0)) % crowd.length];
-          let sw = f.width;
-          if (x >= limit) continue;
-          if (x + sw > limit) sw = limit - x;
-          if (sw < 12) continue;
-          blitPart(f, 0, 0, sw, f.height, x, band.feet - f.height);
-        }
-      }
-      if (spec.sides && spec.figs) {
-        for (const p of spec.sides) {
-          const fi = (tick + (p.phase || 0)) % crowd.length;
-          const box = spec.figs[fi][p.slot % spec.figs[fi].length];
-          const f = crowd[fi];
-          const dw = box[1] * p.scale;
-          const dh = f.height * p.scale;
-          blitPart(f, box[0], 0, box[1], f.height, p.x, p.feet - dh, dw, dh);
-        }
-      }
-    }
-    if (document.getElementById('togRing').checked && ring) {
-      cx.drawImage(ring, c.x, c.y, c.w, c.h, 0, 0, cv.width, cv.height);
-    }
-    if (document.getElementById('togSmoke').checked && smoke.length && spec.smoke) {
-      const now = performance.now();
-      for (const s of spec.smoke) {
-        const cycle = s.cycle || 20000;
-        const puff = s.puff || 2400;
-        const t = (now + (s.delay || 0)) % cycle;
-        if (t >= puff) continue;
-        const fi = Math.min(smoke.length - 1, Math.floor(t / puff * smoke.length));
-        const f = smoke[fi];
-        const sc = s.scale || 1;
-        const dw = f.width * sc;
-        const dh = f.height * sc;
-        cx.save();
-        cx.globalAlpha = s.alpha != null ? s.alpha : 0.5;
-        blitPart(f, 0, 0, f.width, f.height, s.x - dw / 2, s.y - dh, dw, dh, s.flip);
-        cx.restore();
-      }
-    }
-    if (document.getElementById('togGirl').checked && stance) {
-      const feet = spec.floorY - jump;
-      blit(stance, bg.width / 2 - stance.width / 2, feet - stance.height);
-    }
-    if (document.getElementById('togSpot').checked && spec.spots) {
-      paintSpots(c);
-    }
-    if (document.getElementById('togFloor').checked) {
-      const y = (spec.floorY - c.y) * sy;
-      cx.strokeStyle = '#ffcb3d';
-      cx.setLineDash([6, 4]);
-      cx.beginPath(); cx.moveTo(0, y); cx.lineTo(cv.width, y); cx.stroke();
-      cx.setLineDash([]);
-    }
-    requestAnimationFrame(draw);
-  }
-
-  document.getElementById('stageScroll').oninput = e => { scroll = e.target.value / 1000; };
-  document.getElementById('stageZoom').oninput = e => { zoom = e.target.value / 100; };
-  document.getElementById('stageJump').onclick = () => {
-    const t = performance.now();
-    const step = (now) => {
-      const k = (now - t) / 700;
-      jump = k < 1 ? Math.sin(k * Math.PI) * 170 : 0;
-      if (k < 1) requestAnimationFrame(step);
-    };
-    requestAnimationFrame(step);
-  };
-
-  (async () => {
-    spec = await (await fetch('../voltia/stage/stage.json', { cache: 'no-store' })).json();
-    bg = await load('../voltia/stage/' + spec.active);
-    ring = spec.ring ? await load('../voltia/stage/' + spec.ring) : null;
-    stance = await load('../voltia/stage/' + (spec.fighter || 'fighter.png'));
-    for (let i = 0; i < 4; i++) {
-      led.push(await load('../voltia/stage/led/f' + i + '.png'));
-      crowd.push(await load('../voltia/stage/crowd/f' + i + '.png'));
-    }
-    for (let i = 0; i < 8; i++) {
-      smoke.push(await load('../voltia/stage/fx/smoke_f' + i + '.png'));
-    }
-    if (spec.neon) {
-      for (const name of spec.neon.bars || []) {
-        neonImgs.bars.push(await load('../voltia/stage/fx/' + name));
-      }
-      for (const name of spec.neon.letters || []) {
-        neonImgs.letters.push(await load('../voltia/stage/fx/' + name));
-      }
-    }
-    note.innerHTML =
-      `<b>${spec.name}</b> · ${bg.width}×${bg.height} px · 4× la figura. ` +
-      `Voltia ${stance.width}×${stance.height}, a 1:1. Zoom 100 = el pixel real.<br>` +
-      `${spec.note} ` +
-      `Orden: fondo, neón, pantallas, público, ring, humo, Voltia, focos. ` +
-      `Música: tema «Puerto Voltaje», cumbia electrónica a pulso fijo, en bucle.`;
-    draw();
-  })().catch(err => { note.textContent = 'No se pudo cargar el escenario: ' + err; });
-})();
-</script>
-<script>
-/* Guía de estilo. Lee voltia/guide/ y el idle nuevo. No toca la pelea. */
-(async () => {
-  const QB = '?v=' + Date.now();
-  const lead = document.getElementById('guideLead');
-  let guide;
-  try {
-    guide = await (await fetch('../voltia/guide/style.json' + QB, { cache: 'no-store' })).json();
   } catch (err) {
-    lead.textContent = 'No pude cargar la guía.';
-    return;
+    const w = document.getElementById('syncwarn');
+    if (w) {
+      w.style.display = 'block';
+      w.textContent = 'El visor no pudo arrancar: ' + (err && err.message ? err.message : err);
+    }
+    const ver = document.getElementById('ver');
+    if (ver) ver.textContent = 'No cargó';
   }
-  const hex = (rgb) => '#' + rgb.map(n => n.toString(16).padStart(2, '0')).join('');
-  lead.textContent = guide.anchorNote + ' ' + guide.sacrifice;
-  document.getElementById('guideClip').textContent = guide.clip + ' ' + guide.key.why;
-  const keyBox = document.getElementById('guideKey');
-  const chips = [
-    { name: 'recorte', rgb: guide.key.rgb, extra: guide.key.hex },
-    { name: 'más cerca', rgb: guide.nearest.rgb, extra: guide.nearest.distance + ' de distancia' },
-    { name: 'visor', rgb: [40, 176, 184], extra: guide.visorDistance + ' de distancia' }
-  ];
-  chips.forEach(c => {
-    const d = document.createElement('div');
-    d.className = 'sw';
-    d.innerHTML = '<i></i><b></b><span></span>';
-    d.querySelector('i').style.background = hex(c.rgb);
-    d.querySelector('b').textContent = c.name;
-    d.querySelector('span').textContent = c.extra;
-    keyBox.appendChild(d);
-  });
-  const pal = document.getElementById('guidePal');
-  guide.palette.forEach(c => {
-    const d = document.createElement('div');
-    d.className = 'sw';
-    d.innerHTML = '<i></i><b></b><span></span>';
-    d.querySelector('i').style.background = hex(c.rgb);
-    d.querySelector('b').textContent = c.name;
-    d.querySelector('span').textContent = c.distance;
-    pal.appendChild(d);
-  });
-  document.getElementById('guidePrompt').textContent = guide.prompt;
-  const rules = document.getElementById('guideRules');
-  guide.rules.forEach(t => {
-    const li = document.createElement('li');
-    li.textContent = t;
-    rules.appendChild(li);
-  });
-  const log = document.getElementById('guideLog');
-  guide.changelog.forEach(t => {
-    const li = document.createElement('li');
-    li.textContent = t;
-    log.appendChild(li);
-  });
-
-  const root = '../voltia/nueva/';
-  const cache = {};
-  async function frame(name) {
-    if (cache[name]) return cache[name];
-    const img = new Image();
-    img.src = root + name + QB;
-    await img.decode();
-    cache[name] = img;
-    return img;
-  }
-  const names = guide.idle.frames.filter((n, i, all) => all.indexOf(n) === i);
-  await Promise.all(names.map(frame));
-  const cv = document.getElementById('guidecv');
-  const strip = document.getElementById('guidestrip');
-  const cx = cv.getContext('2d');
-  const sx = strip.getContext('2d');
-  cx.imageSmoothingEnabled = false;
-  sx.imageSmoothingEnabled = false;
-  const note = document.getElementById('guideIdleNote');
-  note.textContent = guide.idle.note;
-  let tick = 0;
-  let playing = true;
-  let shown = -1;
-  const buttons = document.getElementById('guideBtns');
-  const playBtn = document.createElement('button');
-  playBtn.type = 'button';
-  playBtn.textContent = 'Pausa';
-  playBtn.addEventListener('click', () => {
-    playing = !playing;
-    playBtn.textContent = playing ? 'Pausa' : 'Seguir';
-  });
-  buttons.appendChild(playBtn);
-  guide.keys.forEach(k => {
-    const b = document.createElement('button');
-    b.type = 'button';
-    b.textContent = k.id;
-    b.title = k.use;
-    b.addEventListener('click', () => {
-      const i = guide.idle.frames.indexOf(k.file);
-      if (i >= 0) tick = i;
-      playing = false;
-      playBtn.textContent = 'Seguir';
-      draw();
-    });
-    buttons.appendChild(b);
-  });
-  const keyBox2 = document.getElementById('guideKeys');
-  guide.keys.forEach(k => {
-    const p = document.createElement('p');
-    p.innerHTML = '<b></b> ';
-    p.querySelector('b').textContent = k.id;
-    p.append(k.use);
-    keyBox2.appendChild(p);
-  });
-  function draw() {
-    const frames = guide.idle.frames;
-    const i = Math.floor(tick) % frames.length;
-    if (i === shown) return;
-    shown = i;
-    const img = cache[frames[i]];
-    cx.clearRect(0, 0, cv.width, cv.height);
-    cx.fillStyle = '#101018';
-    cx.fillRect(0, 0, cv.width, cv.height);
-    cx.drawImage(img, 0, 0);
-    cx.fillStyle = '#5a5040';
-    cx.fillRect(0, 147, cv.width, 1);
-    const cap = guide.idle.captions[i] || '';
-    note.textContent = (i + 1) + '/' + frames.length + ' · ' + cap + ' — ' + guide.idle.note;
-    const gap = 4;
-    const scale = 2;
-    const sw = frames.reduce((n, name) => n + cache[name].width * scale + gap, gap);
-    const sh = 156 * scale + 16;
-    if (strip.width !== sw) strip.width = sw;
-    if (strip.height !== sh) strip.height = sh;
-    sx.imageSmoothingEnabled = false;
-    sx.fillStyle = '#101018';
-    sx.fillRect(0, 0, sw, sh);
-    let x = gap;
-    frames.forEach((name, fi) => {
-      const fr = cache[name];
-      sx.drawImage(fr, x, 14, fr.width * scale, fr.height * scale);
-      if (fi === i) {
-        sx.strokeStyle = '#ffcb3d';
-        sx.strokeRect(x - 1, 13, fr.width * scale + 2, fr.height * scale + 2);
-      }
-      x += fr.width * scale + gap;
-    });
-  }
-  draw();
-  setInterval(() => {
-    if (!playing) return;
-    tick += guide.idle.fps / 60;
-    draw();
-  }, 1000 / 60);
 })();
 </script>
+<script src="stage.js"></script>
+
 </body>
 </html>
