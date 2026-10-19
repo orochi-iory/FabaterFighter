@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>VOLTIA · modelo nuevo</title>
+<title>VOLTIA · modelo nuevo, sin reducir</title>
 <style>
   * { box-sizing: border-box; }
   body { margin:0; font-family: system-ui, sans-serif; background:#181624; color:#eee;
@@ -16,14 +16,14 @@
     text-decoration:none; font-weight:700; padding:8px 14px; border-radius:8px; }
   a.play.alt { background:transparent; color:#ffcb3d; border:2px solid #ffcb3d; }
   .box { background:#222033; border:2px solid #ffcb3d; border-radius:12px; padding:16px; }
-  .plate { margin:12px auto; width:max-content; max-width:100%; overflow:auto; }
-  .plate canvas { image-rendering:pixelated; image-rendering:crisp-edges; display:block;
-    background:#111018; border:1px solid #3a3752; }
-  .plate canvas.magenta { background:#c0c; }
-  .plate canvas.light { background:#e9e6f5; }
-  .plate canvas.green { background:#11ef06; }
-  .cap { color:#9d9ab5; font-size:12px; margin-top:6px; text-align:center; }
-  .row { display:flex; gap:18px; flex-wrap:wrap; justify-content:center; align-items:flex-end; }
+  .scroller { overflow:auto; max-height:70vh; border:1px solid #3a3752; border-radius:8px;
+    background:#111018; margin:12px 0; }
+  .scroller canvas { display:block; }
+  .scroller canvas.px { image-rendering:pixelated; }
+  .scroller canvas.magenta { background:#c0c; }
+  .scroller canvas.light { background:#e9e6f5; }
+  .scroller canvas.green { background:#11ef06; }
+  .cap { color:#9d9ab5; font-size:12px; margin-top:6px; }
   .controls { display:flex; gap:8px; flex-wrap:wrap; justify-content:center; align-items:center; }
   button, select { background:#35324e; color:#eee; border:1px solid #4a4767; border-radius:8px;
     padding:8px 12px; cursor:pointer; font-size:14px; }
@@ -42,9 +42,10 @@
 </head>
 <body>
 <header>
-  <h1>Modelo nuevo · sprite de referencia</h1>
-  <p>Una sola imagen, de pie, todavía sin aprobar. Está cortada bajando por bloques
-    enteros de 8, así que no se ha escalado ni se ha mezclado ningún píxel.</p>
+  <h1>Modelo nuevo · sin reducir</h1>
+  <p>La imagen generada tal cual. El archivo mide lo mismo que generó el modelo:
+    <b>1024 × 1024</b>. No se ha recortado, ni escalado, ni cuantizado. Solo se ha
+    quitado el verde del fondo.</p>
   <a class="play" href="guia.html">Guía de este modelo</a>
   <a class="play alt" href="index.html">Visor del personaje actual</a>
   <a class="play alt" href="guia-vieja.html">Guía del personaje actual</a>
@@ -52,21 +53,26 @@
 <section>
   <div class="box">
     <p class="warn" id="warn">Cargando…</p>
-    <div class="row">
-      <div class="plate" id="plateA"></div>
-      <div class="plate" id="plateB"></div>
+    <div class="scroller" id="scroller">
+      <canvas id="sprite" width="1024" height="1024"></canvas>
     </div>
+    <p class="cap" id="cap"></p>
     <div class="controls">
+      <button id="z100" type="button">1:1</button>
+      <button id="z50" type="button">50%</button>
+      <button id="z25" type="button">25%</button>
+      <button id="z12" type="button">bloques (12,5%)</button>
       <button id="bg" type="button">Fondo magenta</button>
       <button id="bg2" type="button">Fondo claro</button>
-      <button id="bg3" type="button">Fondo verde</button>
     </div>
     <p class="note" id="note"></p>
+    <p class="warn">Los botones solo cambian el zoom de la vista. El archivo no se toca:
+      el PNG sigue a 1024 × 1024. El zoom no añade ni quita píxeles al archivo.</p>
     <ul class="facts">
-      <li>Imagen generada: <b>1024 × 1024</b>, bloques de unos 8 píxeles.</li>
-      <li>Recorte: <b>95 × 126</b>, bajando por bloques de 8 enteros (÷8, sin interpolar). Ningún color se ha mezclado.</li>
-      <li>La figura del escenario mide <b>153</b> de alto. Esta mide <b>126</b>.</li>
-      <li>La prueba 1:1 del recorte nativo, sin tocar, está en <code>nueva.html?mode=native</code>.</li>
+      <li>Archivo: <b>1024 × 1024</b>, sin recortar. El dibujo ocupa de (122, 10) a (882, 1024).</li>
+      <li>Bloque de píxel medido: <b>8</b>. El dibujo mide <b>1014</b> de alto, o sea <b>126,8 bloques</b>.</li>
+      <li>Resolución nativa del sprite: <b>~127 píxeles</b> de alto. La figura del escenario mide 153 y la de la pelea 120.</li>
+      <li>Eso es lo que antes se estropeaba: en vez de leer 127 como resolución nativa, se tomaba 1022 como si fueran 1022 píxeles de sprite y se bajaba a 120.</li>
     </ul>
   </div>
 </section>
@@ -75,13 +81,14 @@
   <div class="box">
     <p class="warn" id="modeNote"></p>
     <div class="controls">
-      <button id="mNative" type="button">Tamaño natural</button>
-      <button id="mFit" type="button">Igualar a la figura vieja (153)</button>
+      <button id="mNative" type="button">Nativo, 1024 (1:1)</button>
+      <button id="mBlocks" type="button">Un bloque = un píxel de juego</button>
+      <button id="mFit153" type="button">Alto 153, como la figura vieja</button>
     </div>
     <canvas id="stagecv" width="960" height="540"></canvas>
     <div class="controls">
       <label>Desplazamiento <input id="stageScroll" type="range" min="0" max="1000" value="500"></label>
-      <label>Zoom (100 = 1:1) <input id="stageZoom" type="range" min="25" max="140" value="70"></label>
+      <label>Zoom <input id="stageZoom" type="range" min="8" max="140" value="18"></label>
       <button id="stageJump" type="button">Simular salto</button>
       <button id="stageMusic" type="button" title="Puerto Voltaje. No suena solo.">▶ Música</button>
       <label>Volumen <input id="musicVol" type="range" min="0" max="100" value="75"></label>
@@ -100,10 +107,12 @@
 <footer>FabaterFighter · modelo nuevo, aparte de la pelea</footer>
 <script>
 (() => {
-  const mode = new URLSearchParams(location.search).get('mode') === 'fit' ? 'fit' : 'native';
+  const q = new URLSearchParams(location.search).get('mode') || 'blocks';
+  const H = 1024;
   window.STAGE_FIGHTER = '../voltia/newref/ref_stand.png';
-  window.STAGE_FIGHTER_SCALE = mode === 'fit' ? 153 / 126 : 1;
-  window.__MODE = mode;
+  // El archivo no se toca. El escenario lo dibuja a la escala que se elija.
+  window.STAGE_FIGHTER_SCALE = q === 'native' ? 1 : q === 'fit153' ? 153 / H : 1 / 8;
+  window.__MODE = q;
 })();
 </script>
 <script src="stage.js"></script>
@@ -111,17 +120,21 @@
 (() => {
   const mode = window.__MODE;
   const note = document.getElementById('modeNote');
-  if (mode === 'fit') {
-    note.textContent = 'Igualada a la figura vieja (153 de alto, ×1,21). Ese medio pixel de más ' +
-      'es el que estropea un sprite: aquí se ve si merece la pena.';
-    document.getElementById('mFit').classList.add('active');
-  } else {
-    note.textContent = 'Tamaño natural: 126 de alto, contra los 153 de la figura que ya juega. ' +
-      'El escenario no se toca.';
-    document.getElementById('mNative').classList.add('active');
-  }
-  document.getElementById('mNative').onclick = () => { location.search = '?mode=native'; };
-  document.getElementById('mFit').onclick = () => { location.search = '?mode=fit'; };
+  const texts = {
+    native: 'Nativo 1:1: la imagen sin escalar. Con los pies en el suelo se sale por ' +
+      'arriba de la placa, porque mide 1024 de alto. Es la prueba de que así no cabe.',
+    blocks: 'Un bloque de 8 = un píxel de juego. Es la resolución nativa real del ' +
+      'dibujo (≈127 de alto), no un remuestreo a ojo. El archivo sigue a 1024.',
+    fit153: 'Alto 153, igual que la figura vieja. Ese ×1,2 no es su resolución nativa: ' +
+      'por eso se ve peor.'
+  };
+  note.textContent = texts[mode] || texts.blocks;
+  const map = { mNative: 'native', mBlocks: 'blocks', mFit153: 'fit153' };
+  Object.entries(map).forEach(([id, m]) => {
+    const b = document.getElementById(id);
+    if (m === mode) b.classList.add('active');
+    b.onclick = () => { location.search = '?mode=' + m; };
+  });
 })();
 </script>
 <script>
@@ -166,52 +179,43 @@
 (async () => {
   const warn = document.getElementById('warn');
   const note = document.getElementById('note');
-  const cls = { dark: '', magenta: 'magenta', light: 'light', green: 'green' };
-  const names = { dark: 'oscuro', magenta: 'magenta', light: 'claro', green: 'verde' };
-  let i = 0;
-  const order = ['dark', 'magenta', 'light', 'green'];
-  const canvases = [];
+  const cap = document.getElementById('cap');
+  const cv = document.getElementById('sprite');
+  const cx = cv.getContext('2d');
+  const SRC = '../voltia/newref/ref_stand.png';
+  const zooms = { z100: 1, z50: 0.5, z25: 0.25, z12: 0.125 };
+  const cls = ['', 'magenta', 'light', 'green'];
+  const names = ['oscuro', 'magenta', 'claro', 'verde'];
+  let ci = 0, zoom = 1;
+  function applyZoom() {
+    cv.className = 'px ' + cls[ci];
+    cv.style.width = Math.round(cv.width * zoom) + 'px';
+    cv.style.height = Math.round(cv.height * zoom) + 'px';
+    cap.textContent = 'Vista al ' + Math.round(zoom * 100) + '%. El archivo mide ' +
+      cv.width + ' × ' + cv.height + ', sin tocar.';
+  }
   try {
-    const add = async (id, src, scale, caption) => {
-      const img = new Image();
-      img.src = src + '?v=' + Date.now();
-      await img.decode();
-      const cv = document.createElement('canvas');
-      cv.width = img.naturalWidth * scale;
-      cv.height = img.naturalHeight * scale;
-      const cx = cv.getContext('2d');
-      cx.imageSmoothingEnabled = false;
-      cx.drawImage(img, 0, 0, cv.width, cv.height);
-      const holder = document.getElementById(id);
-      holder.appendChild(cv);
-      const cap = document.createElement('div');
-      cap.className = 'cap';
-      cap.textContent = caption + ' · ' + img.naturalWidth + ' × ' + img.naturalHeight +
-        ' a ' + scale + '×';
-      holder.appendChild(cap);
-      canvases.push(cv);
-      return img;
-    };
-    await add('plateA', '../voltia/newref/ref_stand.png', 4,
-      'Recorte nuevo, bloques enteros');
-    await add('plateB', '../voltia/stage/fighter.png', 3,
-      'La figura que ya juega, para comparar');
-    warn.textContent = 'Izquierda: el recorte nuevo. Derecha: la que ya juega. ' +
-      'Mismo tamaño de píxel en pantalla, distinto alto.';
-    note.textContent = 'Mira la máscara, el visor, la boca y el rayo. Si algo no cuadra, ' +
-      'este dibujo no vale y no salen las demás poses.';
+    const img = new Image();
+    img.src = SRC + '?v=' + Date.now();
+    await img.decode();
+    cx.imageSmoothingEnabled = false;
+    cx.clearRect(0, 0, cv.width, cv.height);
+    cx.drawImage(img, 0, 0);
+    applyZoom();
+    warn.textContent = 'Este es el sprite, a resolución completa: ' + img.naturalWidth +
+      ' × ' + img.naturalHeight + '. Solo se le ha quitado el verde del fondo.';
+    note.textContent = 'Mira la máscara, el visor, la boca y el rayo. A 1:1 o al 50% ' +
+      'se ven todas las calidades del dibujo.';
+    Object.entries(zooms).forEach(([id, z]) => {
+      document.getElementById(id).onclick = () => { zoom = z; applyZoom(); };
+    });
     document.getElementById('bg').onclick = () => {
-      i = (i + 1) % order.length;
-      canvases.forEach(cv => { cv.className = cls[order[i]]; });
-      document.getElementById('bg').textContent = 'Fondo ' + names[order[i]];
+      ci = (ci + 1) % cls.length; applyZoom();
+      document.getElementById('bg').textContent = 'Fondo ' + names[ci];
     };
     document.getElementById('bg2').onclick = () => {
-      canvases.forEach(cv => { cv.className = ''; });
-      document.getElementById('bg').textContent = 'Fondo magenta';
-    };
-    document.getElementById('bg3').onclick = () => {
-      canvases.forEach(cv => { cv.className = 'green'; });
-      document.getElementById('bg').textContent = 'Fondo magenta';
+      ci = (ci + 1) % cls.length; applyZoom();
+      document.getElementById('bg').textContent = 'Fondo ' + names[ci];
     };
   } catch (err) {
     warn.textContent = 'No pude cargar el sprite: ' + (err && err.message ? err.message : err);

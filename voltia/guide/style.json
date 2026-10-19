@@ -2,9 +2,9 @@
   "title": "Guía de estilo",
   "updated": "2026-10-19",
   "character": "Voltia",
-  "status": "Un solo sprite de referencia, cortado por bloques enteros. Sin aprobar. No hay idle.",
+  "status": "Un sprite de referencia, a resolución completa. Sin aprobar. No hay idle.",
   "anchor": "newref/ref_stand.png",
-  "anchorNote": "Sprite de referencia, 95 × 126. Sale de una sola imagen generada de 1024 × 1024 con bloques de unos 8 píxeles, bajada por bloques enteros (÷8), sin escalar y sin interpolar. Este es el dibujo que hay que copiar en todo lo que venga después.",
+  "anchorNote": "Sprite de referencia, 1024 × 1024, el archivo de la imagen generada sin recortar, sin escalar y sin cuantizar. Solo se le quita el verde. Su resolución nativa es la de sus bloques: 8 px por bloque, 126,8 bloques de alto, o sea ~127 píxeles de sprite.",
   "styleRef": {
     "file": "ref/chunli_sf2_sheet.png",
     "what": "Hoja de Chun-Li de Street Fighter II. Es la referencia de DIBUJO, no de personaje: se copia el pixelado, el grosor de línea, los tonos planos y la postura. No se copia su ropa ni su anatomía.",
@@ -129,8 +129,10 @@
   ],
   "rules": [
     "Primero se aprueba UN sprite. Hasta que el usuario lo apruebe no se generan las demás poses del idle.",
-    "La escala se pide en el prompt y se comprueba después: bloques de 8, figura de 120 bloques, margen de 24. Si el modelo no la clava, se corta en código por bloques enteros.",
-    "Nunca se reduce con una escala fraccionaria. Para bajar de 1024 a tamaño de juego se divide por el tamaño del bloque, entero.",
+    "La escala se pide en el prompt (1024, bloques de 8, 120 bloques de alto), pero el archivo se guarda como sale: no se recorta a la caja, no se escala y no se cuantiza.",
+    "Prohibido reducir el archivo. Ni con LANCZOS, ni con NEAREST, ni dividiendo por el bloque. El zoom es cosa de la vista, no del PNG.",
+    "La resolución nativa del dibujo es su rejilla: 8 px por bloque. Se mide el bloque, no se supone por el tamaño del lienzo.",
+    "Antes de aprobar un sprite: el archivo del visor y el generado, mismo tamaño en píxeles y mismo bloque. Si no, se empieza de nuevo.",
     "El dibujo es el de la hoja de Chun-Li de SF2: píxel gordo, contorno negro grueso, tonos planos, 16 colores, tres tonos por material.",
     "El diseño es el de Voltia: traje teal entero hasta la bota, sin muslos desnudos. Muslos desnudos es el diseño de Chun-Li y es un fallo.",
     "La máscara se queda entera, con visor y con boca: abertura oscura y labio de piel, bajo el visor, mirando a la derecha. Sin boca no entra.",
@@ -139,7 +141,7 @@
     "El fondo es un verde plano medido en el borde, nunca rosa ni magenta ni un tono del traje.",
     "Al bajar, se quitan los píxeles verdes de borde: verde dominante sobre rojo y azul. El teal tiene verde igual a azul y no se toca.",
     "No se cuantiza a ciegas: si la máscara pierde el magenta, el rayo pierde el amarillo o el cinturón pierde el oro, el resultado no entra.",
-    "Reutilizar es el frame entero en otro momento. No se recorta un brazo ni un trozo de máscara para pegarlo.",
+    "Al quitar el fondo se toca el archivo lo mínimo: se vuelve transparente el verde medido en el borde. Nada más. Ni recorte, ni retoque de borde, ni cuantizado.",
     "Un frame partido no se entrega. La pelea no cambia de hoja hasta que el ciclo se acepte.",
     "Esta guía no reproduce animaciones. Los frames se miran en el visor del modelo nuevo."
   ],
@@ -148,7 +150,7 @@
     {
       "id": "stand",
       "file": "newref/ref_stand.png",
-      "use": "De pie. Referencia única. Todo lo demás sale de aquí: mismo dibujo, otros momentos."
+      "use": "De pie, a resolución completa. Referencia única. Todo lo demás sale de aquí: mismo dibujo, otros momentos."
     }
   ],
   "idle": {
@@ -160,6 +162,7 @@
     "captions": []
   },
   "lessons": [
+    "2026-10-19. Error de método: se redujo el archivo generado dos veces (LANCZOS a 120 y luego ÷8 a 95 × 126). El archivo no se toca: se guarda a 1024 y se mira con zoom. La resolución nativa del dibujo es la de sus bloques, 8 px por bloque, es decir ~127 píxeles de sprite, que ya es escala de juego. Se comprueba midiendo el bloque, no el lienzo.",
     "2026-10-19. Tirada 1. Dibujo de dibujos animados, no pixel art de SF2. Fallo: faltaba la hoja de Chun-Li como referencia de dibujo; solo había diseño. Desde aquí la hoja entra siempre como imagen 1.",
     "2026-10-19. Tirada 2, con hoja. El pixelado ya es el bueno, pero la figura toca el borde y los puños no se leen. Se pide margen explícito en píxeles y puño con nudillos y línea del pulgar.",
     "2026-10-19. Tirada 3. Copió el diseño de Chun-Li: muslos desnudos. Fallo: la referencia de diseño tiene que ir listada como imagen aparte y el prompt tiene que decir 'sin muslos desnudos'.",
@@ -171,15 +174,16 @@
     "2026-10-19. Conclusión para el escenario: la figura que ya juega mide 153 y esta 126, así que entra sin escalar. Si algún día hay que igualarla a 120, se genera a 120 bloques de 8 = 960 y se corta ÷8 exacto."
   ],
   "changelog": [
+    "2026-10-19. Se deja de reducir el archivo. El sprite de referencia es el PNG generado de 1024 × 1024, solo con el verde quitado. La resolución nativa se mide por bloques: ~127 de alto.",
     "2026-10-19. La escala pasa a ser regla de primera: rejilla en el prompt y bajada por bloques enteros en código. Sprite de referencia nuevo, 95 × 126, sin escalar.",
     "2026-10-19. Se tira el idle de 20 frames entero y su recorte. Queda un solo sprite de referencia, sin aprobar. El script que comía píxeles está borrado.",
     "2026-10-19. La hoja de Chun-Li entra como referencia de dibujo. El prompt se reescribe con pixelado, 16 colores, encuadre y traje teal entero."
   ],
   "scale": {
-    "rule": "La imagen se genera a 1024 × 1024 con bloques de 8. El recorte se baja dividiendo por 8, entero, nunca con LANCZOS ni con una escala fraccionaria.",
-    "native": "newref/ref_stand_native.png, 567 × 1022, el recorte sin tocar, para la prueba 1:1.",
-    "fight": "La figura de la pelea mide 120 de alto. La del escenario, 153. Este recorte mide 126 y entra sin reescalar.",
-    "why": "Reducir a 120 con LANCZOS metía cada píxel del dibujo en una fracción de píxel: 3000 tonos, detalles muertos. Con la bajada entera no se mezcla ningún color.",
-    "modelNote": "El modelo NO clava la rejilla aunque se le pida: en la tirada de 1024 los escalones no caen en múltiplos de 8. Sirve igual porque los bloques son de ~8 y la división es entera. Un sprite de verdad, con rejilla exacta, es el paso siguiente si esta escala no cuadra en el escenario."
+    "rule": "El archivo NO se reduce nunca. Se guarda a la resolución a la que lo generó el modelo. Si hay que verlo más pequeño, se cambia el zoom de la vista, no el archivo.",
+    "native": "La resolución nativa del dibujo es su rejilla de bloques: 8 píxeles por bloque. El dibujo mide 1014 px de alto, o sea 126,8 bloques ≈ 127 píxeles de sprite. Eso ya está en la escala de juego (pelea 120, escenario 153).",
+    "error": "El fallo anterior fue leer 1022 como si fueran 1022 píxeles de sprite y bajarlos a 120. Eso es un remuestreo ×0,117: cada píxel del dibujo cae en una fracción de píxel y se pierde el detalle. Después se llegó a bajar por bloques a 95 × 126: menos malo, pero seguía siendo reducir el archivo. Prohibido.",
+    "engine": "Si el motor necesita 127 píxeles de alto, dibuja el archivo a un píxel por bloque, con el suavizado apagado. Eso no cambia el archivo ni inventa colores: cada bloque se convierte en un píxel.",
+    "check": "Antes de dar un sprite por bueno se comprueba que el archivo del visor y el generado tienen el mismo tamaño en píxeles, y que el bloque mide lo mismo. Si no coinciden, se empieza otra vez."
   }
 }
