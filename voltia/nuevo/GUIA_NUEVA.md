@@ -134,3 +134,29 @@ Lo comprobado, con número:
 Lo que sigue sin resolverse: filas con dos animaciones seguidas, y los golpes
 que se diferencian solo por la intención (débil/fuerte). Para eso hace falta el
 juego y la lista de movimientos del personaje, no el dibujo.
+
+## Chun-Li: mapa real de filas (dado por el usuario)
+
+El corte por huecos daba **23 filas**; la hoja tiene **24**. La diferencia: la
+banda 3 llevaba dos animaciones (caminar adelante y caminar atrás, 6 + 6). Con
+ese corte el resto encaja 1 banda = 1 fila. Ver `tools/chunli_rows.py`.
+
+| Filas | Qué es |
+|---|---|
+| 1-3 | bucle completo del stance (35 frames en total) |
+| 4 / 5 | caminar adelante / atrás |
+| 6 / 7 / 8 / 9 | patada fuerte, puño fuerte, puño débil, patada débil |
+| 10 | especial ↓ ↓↘ → + patada |
+| 11 | especial proyectil (proyectil sin dibujar → chispa de Voltia) |
+| 12 | speed kick |
+| 13 / 14 | salto en el sitio / salto adelante (invertido = atrás) |
+| 15 | patada adelante-abajo + voltereta atrás |
+| 16 / 17 | salto + puño / salto + patada (misma animación para débil y fuerte) |
+| 18 | puño fuerte agachada (los frames de pie sirven de transición) |
+| 19 / 20 / 21 | patada fuerte, patada débil y puño débil agachada |
+| 22 / 23 | defensa y onda de choque / arranque del super |
+| 24 | derribo y recuperación (frames según la altura) |
+
+Regla que se queda: **cuando una hoja tiene dos animaciones en la misma franja,
+el único corte fiable es el que da el que conoce el juego**, no el hueco de
+píxeles.
