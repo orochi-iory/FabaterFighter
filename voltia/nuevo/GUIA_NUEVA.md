@@ -171,3 +171,19 @@ pegan a su pose si están a menos de 16 px.
 Regla que se queda: **cuando una hoja tiene dos animaciones en la misma franja,
 el único corte fiable es el que da el que conoce el juego**, no el hueco de
 píxeles.
+
+### Los caminar de esta hoja traen ida y vuelta
+
+Cada fila de caminar de Chun-Li lleva **el ciclo y su vuelta espejada**:
+`A B C D E F G F E D C B` en 12 frames. Reproduciéndolos todos, los dos caminar
+se ven iguales (un paseo de ida y vuelta) y parece que se está usando la misma
+fila. Hay que **cortar en el primer frame repetido**: quedan 7 frames de ciclo
+por caminar.
+
+Para distinguir adelante de atrás, el criterio del usuario: **el torso**. Se mide
+como el adelanto del centro de la mitad alta respecto al de la mitad baja.
+
+| fila | torso | lectura |
+|---|---|---|
+| 4 | +3,8 px | inclinado adelante |
+| 5 | 0,0 px | recto |

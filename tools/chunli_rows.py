@@ -121,6 +121,27 @@ def tramos_con_estela(hoja, y0, y1, min_ink=420):
     return poses
 
 
+def recortar_ciclo(carpeta):
+    """Quita la segunda mitad espejada de las filas de caminar.
+
+    Los caminar de esta hoja traen el ciclo y su vuelta: A B C D E F G F E D C B.
+    Si se reproducen los 12, el GIF se ve como un paseo de ida y vuelta y las dos
+    filas parecen la misma. Se corta en el primer frame repetido.
+    """
+    import hashlib
+    fs = sorted(f for f in os.listdir(carpeta) if f.endswith('.png'))
+    vistos, corte = set(), len(fs)
+    for i, f in enumerate(fs):
+        h = hashlib.md5(open(os.path.join(carpeta, f), 'rb').read()).hexdigest()
+        if h in vistos:
+            corte = i
+            break
+        vistos.add(h)
+    for f in fs[corte:]:
+        os.remove(os.path.join(carpeta, f))
+    return len(fs[:corte])
+
+
 def medir(carpeta):
     fs = sorted(f for f in os.listdir(carpeta) if f.endswith('.png'))
     out = []
@@ -170,6 +191,26 @@ def main():
             ys.append(y1)
         return ys
 
+    def inclinacion(carpeta):
+        """Cuanto se adelanta la mitad alta del cuerpo respecto a la baja.
+        Positivo = torso echado hacia delante. Es lo que distingue caminar
+        adelante de caminar atras."""
+        vals = []
+        for f in sorted(x for x in os.listdir(carpeta) if x.endswith('.png')):
+            im = Image.open(os.path.join(carpeta, f)).convert('RGBA')
+            px = im.load()
+            pts = [(x, y) for y in range(im.size[1]) for x in range(im.size[0])
+                   if px[x, y][3] > 0]
+            if not pts:
+                continue
+            ys = [y for _, y in pts]
+            medio = (min(ys) + max(ys)) // 2
+            alto = [x for x, y in pts if y < medio]
+            bajo = [x for x, y in pts if y >= medio]
+            if alto and bajo:
+                vals.append(sum(alto) / len(alto) - sum(bajo) / len(bajo))
+        return round(sum(vals) / len(vals), 1) if vals else None
+
     def ficha(num, slug, nombre, bucle, nota, carpeta, ys, ataque):
         med = medir(carpeta)
         alturas = sorted(m['h'] for m in med)
@@ -199,7 +240,8 @@ def main():
                 'alto': [min(alturas), max(alturas)],
                 'ancho': [min(m['w'] for m in med), max(m['w'] for m in med)],
                 'activos': activos, 'extension': ext, 'aire': aire,
-                'de_pie': depie, 'ataque': ataque}
+                'de_pie': depie, 'ataque': ataque,
+                'inclinacion': inclinacion(carpeta)}
         salida.append(fila)
         print('fila %2d  %-22s %2d frames  activos=%s aire=%s'
               % (num, slug, len(med), activos or '-', aire or '-'))
@@ -252,6 +294,10 @@ def main():
             cajas = [(f['x0'], f['y0'], f['x1'], f['y1'])
                      for f in sorted(b['frames'], key=lambda f: f['x0'])]
         ys = guardar(carpeta, cajas)
+        if num in (4, 5):
+            n = recortar_ciclo(carpeta)
+            ys = ys[:n]
+            nota = nota + ' Ciclo real de %d frames (la fila trae tambien la vuelta espejada).' % n
         ficha(num, slug, nombre, bucle, nota, carpeta, ys, num in ATAQUE)
 
     json.dump(salida, open(os.path.join(base, 'rows.json'), 'w'), indent=1)

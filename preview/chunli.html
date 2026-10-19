@@ -18,13 +18,13 @@
   header h1 { margin:0; color:var(--cyan); letter-spacing:2px; }
   header p { color:#a9bcc9; line-height:1.55; max-width:900px; }
   header p b { color:var(--gold); }
-  .hero { display:flex; gap:20px; align-items:center; flex-wrap:wrap; background:var(--panel);
-    border:2px solid var(--line); border-radius:16px; padding:16px; margin:18px 0 0; }
-  .hero img { image-rendering:pixelated; height:200px; width:auto; background:#22333f; border-radius:10px; }
-  .hero .txt { flex:1; min-width:240px; }
-  .hero h2 { margin:0 0 6px; font-size:17px; color:var(--gold); }
-  .hero p { margin:0; color:#a9bcc9; font-size:14px; line-height:1.5; }
-  .stats { display:flex; gap:10px; flex-wrap:wrap; margin:14px 0 0; }
+  .pair { display:grid; grid-template-columns:1fr 1fr; gap:16px; margin:18px 0 0; }
+  @media (max-width:760px) { .pair { grid-template-columns:1fr; } }
+  .card { background:var(--panel); border:2px solid var(--line); border-radius:16px; padding:14px; }
+  .card img { image-rendering:pixelated; height:170px; width:auto; background:#22333f; border-radius:10px; display:block; margin:0 auto; }
+  .card h2 { margin:0 0 4px; font-size:15px; color:var(--gold); }
+  .card p { margin:6px 0 0; color:#a9bcc9; font-size:13px; line-height:1.45; }
+  .stats { display:flex; gap:10px; flex-wrap:wrap; margin:16px 0 0; }
   .stat { background:var(--panel); border:2px solid var(--line); border-radius:12px; padding:9px 14px; }
   .stat b { display:block; font-size:22px; color:var(--cyan); }
   .stat span { font-size:12px; color:#8ba1b1; }
@@ -56,23 +56,30 @@
 </nav>
 
 <header>
-  <h1>Chun-Li · animaciones corregidas</h1>
-  <p>Ahora con las filas leídas bien: <b>24 filas</b> en la hoja, pero el stance
-     son las filas 1, 2 y 3 unidas en <b>una sola animación</b> de 22 frames.
-     Caminar adelante y caminar atrás son filas distintas, no una partida en dos.</p>
-  <div class="hero">
-    <img src="../voltia/nuevo/chunli/gif/01_stance.gif" alt="Stance">
-    <div class="txt">
-      <h2>Stance · 22 frames · filas 1, 2 y 3</h2>
-      <p>Las tres filas se concatenan y se quita el frame repetido de cada costura,
-         así no hay pausa al empalmar. Ya no lleva ni un frame de caminar: esos
-         están en las filas 4 y 5, aparte.</p>
+  <h1>Chun-Li · animaciones</h1>
+  <p><b>24 filas</b> en la hoja · el stance son las filas 1-3 unidas · <b>22 animaciones</b>.
+     Caminar adelante y caminar atrás son filas distintas (4 y 5) y ahora cada una
+     enseña solo su ciclo, sin la vuelta espejada.</p>
+
+  <div class="pair">
+    <div class="card">
+      <img src="../voltia/nuevo/chunli/gif/04_walk_fwd.gif" alt="Caminar adelante">
+      <h2>Fila 4 · caminar adelante</h2>
+      <p>7 frames de ciclo. Torso echado hacia delante: <b>+3,8 px</b> de media
+         (la mitad alta del cuerpo va por delante de la baja).</p>
+    </div>
+    <div class="card">
+      <img src="../voltia/nuevo/chunli/gif/05_walk_back.gif" alt="Caminar atrás">
+      <h2>Fila 5 · caminar atrás</h2>
+      <p>7 frames de ciclo. Torso recto: <b>0,0 px</b>. Ahí se nota la diferencia
+         respecto a la fila 4.</p>
     </div>
   </div>
+
   <div class="stats">
-    <div class="stat"><b>24</b><span>filas en la hoja</span></div>
+    <div class="stat"><b>24</b><span>filas</span></div>
     <div class="stat"><b>22</b><span>animaciones</span></div>
-    <div class="stat"><b>198</b><span>frames</span></div>
+    <div class="stat"><b>188</b><span>frames</span></div>
     <div class="stat"><b>9</b><span>poses de speed kick</span></div>
   </div>
 </header>
@@ -95,24 +102,24 @@
       <tr>
         <td class="b">04</td>
         <td><img class="mini" src="../voltia/nuevo/chunli/gif/04_walk_fwd.gif" alt="Caminar adelante"></td>
-        <td class="n">Caminar adelante</td>
-        <td class="mono">12</td>
+        <td class="n">Caminar adelante<br><span class='dim'>torso: +3.8 px</span></td>
+        <td class="mono">7</td>
         <td class="mono">sí</td>
         <td class="mono">—</td>
         <td class="mono">—</td>
         <td class="mono">56×35</td>
-        <td class="note">Ciclo de 12 frames.</td>
+        <td class="note">Ciclo de 12 frames. Ciclo real de 7 frames (la fila trae tambien la vuelta espejada).</td>
       </tr>
       <tr>
         <td class="b">05</td>
         <td><img class="mini" src="../voltia/nuevo/chunli/gif/05_walk_back.gif" alt="Caminar atras"></td>
-        <td class="n">Caminar atras</td>
-        <td class="mono">12</td>
+        <td class="n">Caminar atras<br><span class='dim'>torso: -0.0 px</span></td>
+        <td class="mono">7</td>
         <td class="mono">sí</td>
         <td class="mono">—</td>
         <td class="mono">—</td>
         <td class="mono">59×34</td>
-        <td class="note">Fila propia, 12 frames.</td>
+        <td class="note">Fila propia, 12 frames. Ciclo real de 7 frames (la fila trae tambien la vuelta espejada).</td>
       </tr>
       <tr>
         <td class="b">06</td>
@@ -329,7 +336,7 @@
     <h2>Frame data de los golpes</h2>
     <p>Arranque = frames antes de la extensión; activo = frames con el brazo o la
        pierna extendidos; recuperación = frames hasta la guardia. Sale de medir el
-       alcance de cada frame, no de mirar la foto.</p>
+       alcance de cada frame.</p>
     <table>
       <tr><th>Fila</th><th>Animación</th><th>Frames</th><th>Arranque</th>
           <th>Activo</th><th>Recuperación</th><th>Total a 12 fps</th><th>Extiende</th></tr>
@@ -388,13 +395,25 @@
     </table>
   </div>
 
+  <div class="box">
+    <h2>El fallo de los caminar, y cómo queda</h2>
+    <p>Cada fila de caminar trae <b>el ciclo y su vuelta espejada</b>: en la fila 4
+       los 12 frames son <code>A B C D E F G F E D C B</code>. Al reproducirlos todos,
+       los dos caminar se veían como el mismo paseo de ida y vuelta y parecían la
+       misma fila. Ahora se corta en el primer frame repetido: <b>7 frames por
+       caminar</b>, y cada GIF enseña solo su dirección.</p>
+    <p>Y para distinguirlas hay una medida, no una impresión: el <b>adelanto del
+       torso</b> (centro de la mitad alta menos centro de la mitad baja). Fila 4:
+       <b>+3,8 px</b>. Fila 5: <b>0,0 px</b>. Justo el criterio que dijiste,
+       inclinado adelante contra recto.</p>
+  </div>
+
   <div class="box warn">
     <h2>Lo que la hoja no trae</h2>
     <ul>
-      <li><b>Fila 11, proyectil</b>: son 3 frames (guardia, palmas al frente,
-          guardia). El proyectil no está dibujado; se completa con la chispa de Voltia.</li>
-      <li><b>Fila 23, super</b>: la esfera que envuelve al personaje tampoco está;
-          estos frames son el arranque.</li>
+      <li><b>Fila 11, proyectil</b>: 3 frames (guardia, palmas al frente, guardia).
+          El proyectil no está dibujado; se completa con la chispa de Voltia.</li>
+      <li><b>Fila 23, super</b>: la esfera tampoco está; son los frames de arranque.</li>
       <li><b>Fila 22</b>: la onda de choque de los golpes grandes va aparte.</li>
       <li><b>Filas 16 y 17</b>: una sola animación para débil y fuerte; el daño se
           diferencia por código.</li>
@@ -402,30 +421,19 @@
   </div>
 
   <div class="box">
-    <h2>Speed kick: las estelas sí están</h2>
-    <p>La fila tiene <b>9 poses</b> y, entre ellas, estelas amarillas dibujadas
-       como trozos sueltos. Se distinguen por cantidad de tinta (una estela tiene
-       menos de un tercio que una pose) y se pegan a la pose que acompañan si están
-       a menos de 16 px. Así el golpe se ve con su rastro en vez de aparecer
-       cortado.</p>
-  </div>
-
-  <div class="box">
-    <h2>Por qué antes salía mal</h2>
+    <h2>Otros dos fallos corregidos</h2>
     <ul>
-      <li><b>La banda 0 de mi corte llevaba dos filas superpuestas</b> (figuras con
-          el borde inferior a y≈76 y a y≈145) más el retrato. Al no separarlas,
-          todo lo de abajo se desplazaba una fila.</li>
-      <li><b>Las filas se identifican por la línea de suelo</b> (borde inferior de
-          la figura), no por el borde superior: un salto cambia el alto del dibujo
-          pero no la fila a la que pertenece.</li>
-      <li><b>El «stance completo» anterior incluía la fila 4</b>, que es caminar
-          adelante. De ahí que se colara el caminar.</li>
-      <li><b>Caminar adelante y atrás son filas distintas</b> (12 frames cada una);
-          antes partí una sola fila en dos mitades y no valía.</li>
+      <li><b>La banda 0 llevaba dos filas superpuestas</b> (bordes inferiores en
+          y≈76 y y≈145) más el retrato. Se separan por la <b>línea de suelo</b>, no
+          por el borde superior.</li>
+      <li><b>El stance son solo las filas 1-3</b>, unidas en una animación de 22
+          frames quitando el frame repetido de cada costura. Antes se colaba la
+          fila 4, que es caminar.</li>
+      <li><b>Speed kick</b>: 9 poses con sus estelas amarillas, que en la hoja van
+          dibujadas aparte y se pegan por tinta a menos de 16 px.</li>
     </ul>
-    <p>Los frames están en <code>voltia/nuevo/chunli/rows/NN_nombre/</code>, los GIF
-       en <code>gif/</code> y los datos en <code>rows.json</code>.</p>
+    <p>Frames en <code>voltia/nuevo/chunli/rows/NN_nombre/</code>, GIF en
+       <code>gif/</code>, datos en <code>rows.json</code>.</p>
   </div>
 </main>
 </body>
