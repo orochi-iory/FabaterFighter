@@ -270,6 +270,52 @@ el torso.
 para **producir** frames. Cada frame de animación se genera en una imagen con
 una sola figura.
 
+## Medir antes de pedir (2026-10-19)
+
+Para generar una animacion nueva sin que cada frame acabe de otro tamano, se
+mide la hoja de referencia y **las medidas van dentro del prompt**. No se pide
+«que sea igual», se piden numeros.
+
+```
+PYTHONPATH=tools/pylibs python3 tools/measure_row.py <hoja> \
+    --y 14 85 --x0 80 --json voltia/guide/clone_spec.json
+```
+
+Mediana de las 9 figuras de pie de la fila de idle de Cammy (frame nativo de
+72 px de alto):
+
+| parte | px | % del alto |
+|---|---|---|
+| cabeza | 11 | 15 % |
+| hombros (ancho) | 25 | 35 % |
+| cintura desde arriba | 20 | 28 % |
+| botas | 11 | 15 % |
+| ancho total | 30 | 42 % |
+| eje de la cabeza | 40 % del ancho | la coleta va detras |
+
+Es decir: **6,45 cabezas de alto**, mucho mas pierna que un muñeco cartoon. Eso
+es lo que hace que el estilo se lea como fight game y no como dibujo animado.
+
+### El corte tiene que ser de escala unica
+
+`--per-cell` escala cada celda a su propia cabeza y deja el set entre 127 y
+166 px. Para un set nuevo:
+
+```
+python3 tools/build_sheet.py <hoja> <salida> 200 240 238 5 4 30 \
+    --grid --uniform
+```
+
+`--uniform` saca **un solo factor** de la mediana de las cabezas. Medido en la
+stance v2 (20 poses): 153-160 px los frames de pie, tinta 5625-6544.
+
+### La puerta cambia segun el set
+
+`consistency.py` compara contra la stance de pie y bloquea por tinta. Un set
+con frames agachados o en el aire **la falla por diseno** (un frame de 127 px
+agachada es correcto). Para esos sets la puerta util es la uniformidad entre
+frames equivalentes, no el alto absoluto.
+
 ## Cómo camina un personaje (referencia fija)
 
 La referencia de animación está en el repo y no se toca:

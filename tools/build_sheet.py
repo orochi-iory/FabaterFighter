@@ -523,6 +523,7 @@ def _fixed_grid(im, ncol, nrows):
 
 def build(sheet, outdir, cw, ch, ground, ncol=5, nrows=4, write=True, head=0,
           close=False, per_cell=False, clamp=0.08, grid_mode=False,
+          uniform_scale=False,
           blob_mode=False, drop_gray=False, proj_mode=False,
           valley_mode=False):
     im = Image.open(sheet)
@@ -567,7 +568,20 @@ def build(sheet, outdir, cw, ch, ground, ncol=5, nrows=4, write=True, head=0,
     figs = [f for f in figs if f.width > 4 and f.height > 4]   # celdas vacías
 
     out = []
-    if head and per_cell:
+    if head and per_cell and uniform_scale:
+        # ESCALA UNICA: un solo factor para toda la hoja, sacado de la mediana
+        # de las cabezas. Es lo que impide que unas figuras salgan a 166 px y
+        # otras a 127 px dentro del mismo set.
+        masks = [mask_height(snap(f)) for f in figs]
+        vals = sorted(m for m in masks if m)
+        if not vals:
+            raise SystemExit('ninguna celda tiene mascara: no puedo medir la cabeza')
+        med = vals[len(vals) // 2]
+        factor = head / med
+        for k, fig in enumerate(figs):
+            out.append(_place(fig, factor, cw, ch, ground, close))
+        print('escala UNICA %.3f (cabeza mediana %d px -> %d px)' % (factor, med, head))
+    elif head and per_cell:
         # Escala por celda, robusta: factor de cada celda, mediana de la hoja y
         # cada celda limitada a ±clamp de esa mediana. Así una pose rara (una
         # voltereta girada, donde la máscara no se puede medir) no se va de
@@ -619,6 +633,7 @@ if __name__ == '__main__':
     frames = build(sheet, outdir, cw, ch, ground, ncol=ncol, nrows=nrows,
                    head=head, close='--close' in args,
                    per_cell='--per-cell' in args,
+                   uniform_scale='--uniform' in args,
                    grid_mode='--grid' in args,
                    blob_mode='--blobs' in args,
                    drop_gray='--drop-gray' in args,
