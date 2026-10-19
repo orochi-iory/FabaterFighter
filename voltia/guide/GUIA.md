@@ -35,6 +35,15 @@ bajarlos a 120. Eso es un remuestreo por 0,117: cada píxel del dibujo cae en un
 fracción de píxel, y el detalle se muere. Después se llegó a bajar por bloques a
 95 × 126: menos malo, pero seguía siendo reducir el archivo. Prohibido.
 
+**Regla de escala del proyecto: 170 cm, con la coleta, son 200 píxeles.**
+Un píxel son 1,176 cm. Un personaje de 160 cm son 188 px; uno de 190, 224 px. El
+alto se cuenta siempre con el pelo o el accesorio incluido, y el sprite se dibuja
+1:1 en el escenario.
+
+El sprite de juego es `voltia/newref/ref_stand_200.png`, **150 × 200**. Sale del
+maestro de 1024 fijado a 200 de alto por muestreo al centro; el maestro se
+conserva en `voltia/newref/ref_stand.png`, sin tocar.
+
 **Altura de ring: 200 px.** Elegida por el usuario después de probar 254 y 300.
 Ocupa el 33% de la placa de 604 y deja 226 px sobre la cabeza. 127 ocupaba el
 21% y se veía pequeño.
@@ -44,10 +53,11 @@ quedar detrás del rombo. El rombo pintado va de 405 a 445; su centro es 426, y
 ahí pisan los pies. Se cambia por página con `window.STAGE_FLOOR_Y`, así el
 visor viejo se queda como estaba.
 
-**El techo del generador es ~127 nativos.** Tres tiradas pidiendo 300 (bloques de
-3 en lienzo de 960, lienzo pequeño de 320, y «300 px de alto» explícito)
-devolvieron lo mismo: 1024 × 1024, bloques de 8, figura de 1014. No se puede
-sacar 300 nativos de este modelo.
+**El techo del generador es ~127 nativos.** Siete tiradas lo confirman: 300 con
+bloques de 3, lienzo pequeño de 320, 960 explícito, 200 con bloques de 5, «zoom
+×5 de un sprite de 200», figura pequeña a 1 píxel por píxel, y la referencia ya
+dibujada con bloques de 5. Todas devuelven 1024 × 1024, bloques de 8, figura de
+1014. No se puede sacar 200 ni 300 nativos de este modelo.
 
 Así que la altura del ring se consigue con un **múltiplo entero** de los 127
 nativos: **254 (×2)** o 381 (×3). A 300 son ×2,37 y los bloques salen de 2 y de 3

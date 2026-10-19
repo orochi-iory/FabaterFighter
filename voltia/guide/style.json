@@ -2,9 +2,9 @@
   "title": "Guía de estilo",
   "updated": "2026-10-19",
   "character": "Voltia",
-  "status": "Un sprite de referencia, a resolución completa. Sin aprobar. No hay idle.",
-  "anchor": "newref/ref_stand.png",
-  "anchorNote": "Sprite de referencia, 1024 × 1024, el archivo de la imagen generada sin recortar, sin escalar y sin cuantizar. Solo se le quita el verde. Su resolución nativa es la de sus bloques: 8 px por bloque, 126,8 bloques de alto, o sea ~127 píxeles de sprite.",
+  "status": "Un sprite, 150 × 200 nativos. Sin idle todavía.",
+  "anchor": "newref/ref_stand_200.png",
+  "anchorNote": "Sprite de juego, 150 × 200. Altura nativa de ring. El escenario lo dibuja 1:1. Sale del maestro de 1024 (newref/ref_stand.png) fijado a 200 de alto por muestreo al centro, porque el generador no da más resolución nativa.",
   "styleRef": {
     "file": "ref/chunli_sf2_sheet.png",
     "what": "Hoja de Chun-Li de Street Fighter II. Es la referencia de DIBUJO, no de personaje: se copia el pixelado, el grosor de línea, los tonos planos y la postura. No se copia su ropa ni su anatomía.",
@@ -128,6 +128,7 @@
     }
   ],
   "rules": [
+    "Escala: 170 cm con coleta = 200 px de alto. Todos los personajes se miden así y se dibujan 1:1 en el escenario.",
     "La altura de ring es 300 px de mundo. Si el dibujo nativo es 127, se llega con ×2 exacto (254) o se acepta el ×2,37 de 300. Nunca se genera un PNG derivado: se dibuja a esa escala.",
     "Primero se aprueba UN sprite. Hasta que el usuario lo apruebe no se generan las demás poses del idle.",
     "La escala se pide en el prompt (1024, bloques de 8, 120 bloques de alto), pero el archivo se guarda como sale: no se recorta a la caja, no se escala y no se cuantiza.",
@@ -150,8 +151,8 @@
   "keys": [
     {
       "id": "stand",
-      "file": "newref/ref_stand.png",
-      "use": "De pie, a resolución completa. Referencia única. Todo lo demás sale de aquí: mismo dibujo, otros momentos."
+      "file": "newref/ref_stand_200.png",
+      "use": "De pie, 150 × 200, 1:1. Referencia única para todo lo que venga."
     }
   ],
   "idle": {
@@ -163,6 +164,7 @@
     "captions": []
   },
   "lessons": [
+    "2026-10-19. Escala definitiva: 170 cm con coleta = 200 px. Cuatro intentos de sacar 200 nativos del generador (bloques de 5, zoom x5 declarado, figura pequeña a 1 px, referencia con bloques de 5) devuelven el mismo raster de 8. El sprite de juego se fija a 200 desde el maestro aprobado y se dibuja 1:1.",
     "2026-10-19. El suelo de la placa (408) era el borde trasero del ring, no el centro del rombo. Bajado a 426, los pies pisan el rombo. Solo en el visor nuevo: window.STAGE_FLOOR_Y.",
     "2026-10-19. Tres tiradas pidiendo 300 nativos (bloques de 3 en 960, lienzo pequeño de 320, y 300 px de alto explícito). Las tres devuelven 1024 con bloques de 8 y la figura de 1014: el techo nativo del modelo es ~127. Para el ring se dibuja a 254 (×2 exacto) o 300 si se acepta ×2,37.",
     "2026-10-19. Error de método: se redujo el archivo generado dos veces (LANCZOS a 120 y luego ÷8 a 95 × 126). El archivo no se toca: se guarda a 1024 y se mira con zoom. La resolución nativa del dibujo es la de sus bloques, 8 px por bloque, es decir ~127 píxeles de sprite, que ya es escala de juego. Se comprueba midiendo el bloque, no el lienzo.",
@@ -177,6 +179,7 @@
     "2026-10-19. Conclusión para el escenario: la figura que ya juega mide 153 y esta 126, así que entra sin escalar. Si algún día hay que igualarla a 120, se genera a 120 bloques de 8 = 960 y se corta ÷8 exacto."
   ],
   "changelog": [
+    "2026-10-19. Regla de escala por altura real: 170 cm = 200 px. El sprite de juego queda en 150 × 200 y el escenario lo pinta 1:1.",
     "2026-10-19. Altura de ring a 200. Suelo del visor nuevo a 426, en el centro del rombo. El escenario acepta STAGE_FLOOR_Y por página.",
     "2026-10-19. Altura de ring a 300. Se mide el techo del generador: ~127 nativos. Se añaden los modos 254/300/381 en el escenario y la figura ya no puede tumbar la carga del ring.",
     "2026-10-19. Se deja de reducir el archivo. El sprite de referencia es el PNG generado de 1024 × 1024, solo con el verde quitado. La resolución nativa se mide por bloques: ~127 de alto.",
@@ -186,17 +189,23 @@
   ],
   "scale": {
     "rule": "El archivo NO se reduce nunca. Se guarda a la resolución a la que lo generó el modelo. Si hay que verlo más pequeño, se cambia el zoom de la vista, no el archivo.",
-    "native": "La resolución nativa del dibujo es su rejilla de bloques: 8 píxeles por bloque. El dibujo mide 1014 px de alto, o sea 126,8 bloques ≈ 127 píxeles de sprite. Eso ya está en la escala de juego (pelea 120, escenario 153).",
+    "native": "El sprite de juego es newref/ref_stand_200.png, 150 x 200. Sale del maestro de 1024 fijado a 200 de alto, muestreo al centro y limpieza del verde del borde. Es la única reducción permitida y está aprobada por el usuario: el maestro se conserva en newref/ref_stand.png.",
     "error": "El fallo anterior fue leer 1022 como si fueran 1022 píxeles de sprite y bajarlos a 120. Eso es un remuestreo ×0,117: cada píxel del dibujo cae en una fracción de píxel y se pierde el detalle. Después se llegó a bajar por bloques a 95 × 126: menos malo, pero seguía siendo reducir el archivo. Prohibido.",
-    "engine": "El archivo sigue a 1024 y se dibuja a 254/1024 con el suavizado apagado: cada bloque de 8 pasa a 2 px. No se crea ningún PNG derivado.",
+    "engine": "Se dibuja 1:1: un píxel del archivo, un píxel de mundo. Sin escalar en el motor.",
     "check": "Antes de dar un sprite por bueno se comprueba que el archivo del visor y el generado tienen el mismo tamaño en píxeles, y que el bloque mide lo mismo. Si no coinciden, se empieza otra vez.",
     "target": "Altura de ring: 200 px de mundo. Con los pies en 426 de la placa, ocupa el 33% y deja 226 px sobre la cabeza.",
-    "ceiling": "El generador no pasa de ~127 píxeles nativos. Tres tiradas pidiendo 300 (bloques de 3, lienzo 960, lienzo pequeño 320) devuelven lo mismo: 1024 × 1024, bloques de 8, figura de 1014 px. No hay forma de sacar 300 nativos de este modelo.",
+    "ceiling": "Confirmado en cuatro tiradas más (bloques de 5, zoom x5 de un sprite de 200, figura pequeña a 1 px por píxel, y referencia ya con bloques de 5): el modelo devuelve SIEMPRE 1024 x 1024 con bloques de 8 y la figura de 1014 px, o sea 127 nativos. El techo es 127.",
     "integer": "Para el ring se usa un múltiplo entero de 127: 254 (×2) o 381 (×3). A 300 son ×2,37: los bloques salen de 2 y de 3 px mezclados. 254 es el tamaño correcto de ring; 381 no cabe."
   },
   "floor": {
     "value": 426,
     "note": "El suelo baja de 408 a 426 para que los pies caigan en el centro del rombo dibujado en la placa (el rombo va de 405 a 445; el centro es 425-426). Se cambia por página con window.STAGE_FLOOR_Y, así el visor viejo sigue en 408.",
     "why": "Con 408 la figura quedaba detrás del rombo: parecía flotar por encima del suelo pintado."
+  },
+  "metric": {
+    "rule": "Regla de escala del proyecto: un personaje de 170 cm, con coleta, mide 200 píxeles de imagen.",
+    "ratio": "170 cm = 200 px, o sea 1,176 cm por píxel. Un personaje de 160 cm serán 188 px; uno de 190 cm, 224 px. El alto se cuenta siempre con el pelo o el accesorio incluido.",
+    "ring": "El suelo del escenario va en 426 px de la placa y la figura de 200 px ocupa el 33% del alto de la placa.",
+    "check": "Antes de aprobar: el archivo mide 200 px de alto con la coleta y se dibuja 1:1."
   }
 }
