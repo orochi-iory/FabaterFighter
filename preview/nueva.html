@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>VOLTIA · sprite de referencia</title>
+<title>VOLTIA · prueba 1:1 del recorte</title>
 <style>
   * { box-sizing: border-box; }
   body { margin:0; font-family: system-ui, sans-serif; background:#181624; color:#eee;
@@ -16,60 +16,69 @@
     text-decoration:none; font-weight:700; padding:8px 14px; border-radius:8px; }
   a.play.alt { background:transparent; color:#ffcb3d; border:2px solid #ffcb3d; }
   .box { background:#222033; border:2px solid #ffcb3d; border-radius:12px; padding:16px; }
-  .plate { display:flex; flex-wrap:wrap; gap:18px; justify-content:center; align-items:flex-end;
-    margin:12px 0; }
-  .plate figure { margin:0; text-align:center; }
+  .plate { margin:12px auto; width:max-content; max-width:100%; overflow:auto; }
   .plate canvas { image-rendering:pixelated; image-rendering:crisp-edges; display:block;
-    background:#101018; border:1px solid #3a3752; border-radius:8px; }
-  .plate figcaption { color:#9d9ab5; font-size:12px; margin-top:6px; }
+    background:#111018; border:1px solid #3a3752; }
   .plate canvas.magenta { background:#c0c; }
-  .plate canvas.green { background:#11ef06; }
   .plate canvas.light { background:#e9e6f5; }
+  .plate canvas.green { background:#11ef06; }
+  .cap { color:#9d9ab5; font-size:12px; margin-top:6px; text-align:center; }
   .controls { display:flex; gap:8px; flex-wrap:wrap; justify-content:center; align-items:center; }
   button, select { background:#35324e; color:#eee; border:1px solid #4a4767; border-radius:8px;
     padding:8px 12px; cursor:pointer; font-size:14px; }
+  button.active { background:#0e7c8c; border-color:#96ffeb; }
   .note { min-height:1.4em; color:#ffcb3d; }
   .warn { color:#9d9ab5; font-size:14px; }
+  ul.facts { margin:8px 0 0; padding-left:22px; color:#d8d6ea; line-height:1.6; }
+  ul.facts b { color:#ffcb3d; }
   canvas#stagecv { image-rendering:pixelated; width:100%; max-width:960px; height:auto;
     background:#101018; border-radius:8px; display:block; margin:0 auto; }
   .arena label { color:#9d9ab5; font-size:13px; display:flex; align-items:center; gap:6px; }
   .arena input[type=range] { width:140px; }
   .layers { color:#d8d6ea; font-size:13px; line-height:1.55; }
   footer { color:#6d6b85; font-size:13px; padding:16px; }
+  .pick { display:flex; gap:8px; justify-content:center; margin:10px 0; }
 </style>
 </head>
 <body>
 <header>
-  <h1>Sprite de referencia</h1>
-  <p>Uno solo, de pie. Todavía no hay idle: primero se aprueba este dibujo y después
-    salen las demás poses copiándolo. No es la hoja de la pelea y no es el visor del
-    personaje que ya juega.</p>
+  <h1>Prueba 1:1 del recorte</h1>
+  <p>El recorte de la imagen generada, sin reducir nada: ni zoom, ni 120 de alto.
+    Se ve al tamaño real de sus píxeles, y se ve también cómo encaja en el escenario.</p>
   <a class="play" href="guia.html">Guía de este modelo</a>
   <a class="play alt" href="index.html">Visor del personaje actual</a>
   <a class="play alt" href="guia-vieja.html">Guía del personaje actual</a>
 </header>
 <section>
   <div class="box">
-    <p class="warn" id="warn">Cargando el sprite…</p>
+    <p class="warn" id="warn">Cargando…</p>
     <div class="plate" id="plate"></div>
     <div class="controls">
       <button id="bg" type="button">Fondo magenta</button>
       <button id="bg2" type="button">Fondo claro</button>
+      <button id="bg3" type="button">Fondo verde</button>
     </div>
     <p class="note" id="note"></p>
-    <p class="warn">67 × 120 píxeles. Los frames de la pelea miden 120 de alto, así que
-      este dibujo entra a la misma escala. La pelea no lo usa.</p>
+    <ul class="facts">
+      <li>Recorte nativo: <b>567 × 1022</b> píxeles. Sin escala.</li>
+      <li>La figura del escenario mide <b>153</b> de alto. La hoja de la pelea, <b>120</b>.</li>
+      <li>El fondo del ring mide <b>1344 × 604</b>. Con los pies en el suelo (y = 408), una figura de 1022 deja la cabeza <b>614 píxeles por encima</b> del borde de la placa.</li>
+      <li>Para que entre a la escala de la pelea habría que multiplicarla por <b>0,117</b>. Eso es lo que emborronaba: cada píxel del dibujo caía en una fracción de píxel.</li>
+    </ul>
   </div>
 </section>
 <section class="arena" id="escenario">
-  <h2>Escenario · el mismo de siempre</h2>
+  <h2>Escenario · cómo encaja de verdad</h2>
   <div class="box">
-    <p class="warn">El ring, el público y los focos son los que ya estaban. La figura es
-      el sprite de referencia, no la de la pelea.</p>
+    <p class="warn" id="modeNote"></p>
+    <div class="pick controls">
+      <button id="mNative" type="button">Nativo 1:1</button>
+      <button id="mFit" type="button">Escala de pelea</button>
+    </div>
     <canvas id="stagecv" width="960" height="540"></canvas>
     <div class="controls">
       <label>Desplazamiento <input id="stageScroll" type="range" min="0" max="1000" value="500"></label>
-      <label>Zoom (100 = 1:1) <input id="stageZoom" type="range" min="45" max="140" value="70"></label>
+      <label>Zoom (100 = 1:1) <input id="stageZoom" type="range" min="25" max="140" value="70"></label>
       <button id="stageJump" type="button">Simular salto</button>
       <button id="stageMusic" type="button" title="Puerto Voltaje. No suena solo.">▶ Música</button>
       <label>Volumen <input id="musicVol" type="range" min="0" max="100" value="75"></label>
@@ -85,11 +94,35 @@
     <p class="layers" id="stageNote"></p>
   </div>
 </section>
-<footer>FabaterFighter · sprite de referencia, aparte de la pelea</footer>
+<footer>FabaterFighter · prueba de encuadre, aparte de la pelea</footer>
 <script>
-window.STAGE_FIGHTER = '../voltia/newref/ref_stand.png';
+(() => {
+  const NATIVE = '../voltia/newref/ref_stand_native.png';
+  const H = 1022;
+  const mode = new URLSearchParams(location.search).get('mode') === 'fit' ? 'fit' : 'native';
+  window.STAGE_FIGHTER = NATIVE;
+  window.STAGE_FIGHTER_SCALE = mode === 'fit' ? 120 / H : 1;
+  window.__MODE = mode;
+})();
 </script>
 <script src="stage.js"></script>
+<script>
+(() => {
+  const mode = window.__MODE;
+  const note = document.getElementById('modeNote');
+  if (mode === 'fit') {
+    note.textContent = 'Escala de pelea: la misma imagen reducida a 120 de alto ' +
+      '(×0,117). Así es como se veía antes: el detalle se pierde.';
+    document.getElementById('mFit').classList.add('active');
+  } else {
+    note.textContent = 'Nativo 1:1: la imagen sin tocar. Con los pies en el suelo, ' +
+      'la figura se sale por arriba de la placa. Baja el zoom para ver más.';
+    document.getElementById('mNative').classList.add('active');
+  }
+  document.getElementById('mNative').onclick = () => { location.search = '?mode=native'; };
+  document.getElementById('mFit').onclick = () => { location.search = '?mode=fit'; };
+})();
+</script>
 <script>
 (() => {
   const btn = document.getElementById('stageMusic');
@@ -97,16 +130,9 @@ window.STAGE_FIGHTER = '../voltia/newref/ref_stand.png';
   let ctx = null, gain = null, buf = null, src = null, loading = false;
   function volume() { return vol ? Number(vol.value) / 100 : 0.75; }
   btn.addEventListener('click', async () => {
-    if (src) {
-      src.stop();
-      src = null;
-      btn.textContent = '▶ Música';
-      return;
-    }
+    if (src) { src.stop(); src = null; btn.textContent = '▶ Música'; return; }
     if (loading) return;
-    loading = true;
-    btn.disabled = true;
-    btn.textContent = 'Cargando…';
+    loading = true; btn.disabled = true; btn.textContent = 'Cargando…';
     try {
       if (!ctx) {
         ctx = new AudioContext();
@@ -120,17 +146,14 @@ window.STAGE_FIGHTER = '../voltia/newref/ref_stand.png';
         buf = await ctx.decodeAudioData(await res.arrayBuffer());
       }
       src = ctx.createBufferSource();
-      src.buffer = buf;
-      src.loop = true;
-      src.connect(gain);
+      src.buffer = buf; src.loop = true; src.connect(gain);
       src.onended = () => { src = null; btn.textContent = '▶ Música'; };
       src.start();
       btn.textContent = '⏸ Música';
     } catch (err) {
       btn.textContent = '▶ Música';
     } finally {
-      loading = false;
-      btn.disabled = false;
+      loading = false; btn.disabled = false;
     }
   });
   vol.addEventListener('input', () => {
@@ -143,45 +166,44 @@ window.STAGE_FIGHTER = '../voltia/newref/ref_stand.png';
   const warn = document.getElementById('warn');
   const note = document.getElementById('note');
   const plate = document.getElementById('plate');
-  const SRC = '../voltia/newref/ref_stand.png';
+  const SRC = '../voltia/newref/ref_stand_native.png';
   try {
     const img = new Image();
     img.src = SRC + '?v=' + Date.now();
     await img.decode();
-    const scales = [1, 4, 8];
-    const canvases = [];
-    for (const s of scales) {
-      const fig = document.createElement('figure');
-      const cv = document.createElement('canvas');
-      cv.width = img.naturalWidth * s;
-      cv.height = img.naturalHeight * s;
-      const cx = cv.getContext('2d');
-      cx.imageSmoothingEnabled = false;
-      cx.drawImage(img, 0, 0, cv.width, cv.height);
-      canvases.push(cv);
-      const cap = document.createElement('figcaption');
-      cap.textContent = s + '× · ' + img.naturalWidth + ' × ' + img.naturalHeight;
-      fig.appendChild(cv);
-      fig.appendChild(cap);
-      plate.appendChild(fig);
-    }
-    warn.textContent = 'Mira la máscara, el visor, la boca y el rayo. Si algo no cuadra, ' +
-      'este dibujo no vale y no salen las demás poses.';
-    note.textContent = 'Sin halo verde en el borde. Fondo transparente de verdad.';
-    let alt = false;
+    const cv = document.createElement('canvas');
+    cv.width = img.naturalWidth;
+    cv.height = img.naturalHeight;
+    const cx = cv.getContext('2d');
+    cx.imageSmoothingEnabled = false;
+    cx.drawImage(img, 0, 0);
+    plate.appendChild(cv);
+    const cap = document.createElement('div');
+    cap.className = 'cap';
+    cap.textContent = '1:1 · ' + img.naturalWidth + ' × ' + img.naturalHeight +
+      '. Nada escalado: un píxel de la imagen, un píxel de pantalla.';
+    plate.appendChild(cap);
+    warn.textContent = 'Este es el recorte tal cual salió del modelo, solo con el verde quitado.';
+    note.textContent = 'Fíjate en la máscara, el visor, la boca y el rayo: aquí está todo el detalle que se perdía al reducir.';
+    const cls = { dark: '', magenta: 'magenta', light: 'light', green: 'green' };
+    let i = 0;
+    const order = ['dark', 'magenta', 'light', 'green'];
     document.getElementById('bg').onclick = () => {
-      alt = !alt;
-      canvases.forEach(cv => { cv.className = alt ? 'magenta' : ''; });
-      document.getElementById('bg').textContent = alt ? 'Fondo oscuro' : 'Fondo magenta';
+      i = (i + 1) % order.length;
+      cv.className = cls[order[i]];
+      document.getElementById('bg').textContent =
+        'Fondo ' + ({ dark: 'oscuro', magenta: 'magenta', light: 'claro', green: 'verde' })[order[i]];
     };
-    let light = false;
     document.getElementById('bg2').onclick = () => {
-      light = !light;
-      canvases.forEach(cv => { cv.className = light ? 'light' : (alt ? 'magenta' : ''); });
-      document.getElementById('bg2').textContent = light ? 'Fondo oscuro' : 'Fondo claro';
+      cv.className = '';
+      document.getElementById('bg').textContent = 'Fondo magenta';
+    };
+    document.getElementById('bg3').onclick = () => {
+      cv.className = 'green';
+      document.getElementById('bg').textContent = 'Fondo magenta';
     };
   } catch (err) {
-    warn.textContent = 'No pude cargar el sprite: ' + (err && err.message ? err.message : err);
+    warn.textContent = 'No pude cargar el recorte: ' + (err && err.message ? err.message : err);
   }
 })();
 </script>

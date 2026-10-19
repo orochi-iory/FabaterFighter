@@ -116,9 +116,11 @@
     cx.clearRect(0, 0, cv.width, cv.height);
     cx.drawImage(bg, c.x, c.y, c.w, c.h, 0, 0, cv.width, cv.height);
     const sx = cv.width / c.w, sy = cv.height / c.h;
-    const blit = (img, x, y) => {
+    const blit = (img, x, y, dw, dh) => {
+      const iw = dw == null ? img.width : dw;
+      const ih = dh == null ? img.height : dh;
       cx.drawImage(img, Math.round((x - c.x) * sx), Math.round((y - c.y) * sy),
-        Math.round(img.width * sx), Math.round(img.height * sy));
+        Math.round(iw * sx), Math.round(ih * sy));
     };
     paintNeon(blit);
     const blitPart = (img, sx0, sy0, sw, sh, x, y, dw, dh, flip) => {
@@ -192,7 +194,10 @@
     }
     if (document.getElementById('togGirl').checked && stance) {
       const feet = spec.floorY - jump;
-      blit(stance, bg.width / 2 - stance.width / 2, feet - stance.height);
+      const fs = window.STAGE_FIGHTER_SCALE || 1;
+      const fw = stance.width * fs;
+      const fh = stance.height * fs;
+      blit(stance, bg.width / 2 - fw / 2, feet - fh, fw, fh);
     }
     if (document.getElementById('togSpot').checked && spec.spots) {
       paintSpots(c);
@@ -239,9 +244,12 @@
         neonImgs.letters.push(await load('../voltia/stage/fx/' + name));
       }
     }
+    const fs = window.STAGE_FIGHTER_SCALE || 1;
     note.innerHTML =
-      `<b>${spec.name}</b> · ${bg.width}×${bg.height} px · 4× la figura. ` +
-      `Voltia ${stance.width}×${stance.height}, a 1:1. Zoom 100 = el pixel real.<br>` +
+      `<b>${spec.name}</b> · ${bg.width}×${bg.height} px. ` +
+      `Voltia ${stance.width}×${stance.height}, dibujada a ${fs}× (1 = pixel de la imagen). ` +
+      `Ocupa ${Math.round(stance.height * fs)} px de mundo, con ${spec.floorY} px de suelo. ` +
+      `Zoom 100 = el pixel real.<br>` +
       `${spec.note} ` +
       `Orden: fondo, neón, pantallas, público, ring, humo, Voltia, focos. ` +
       `Música: tema «Puerto Voltaje», cumbia electrónica a pulso fijo, en bucle.`;
