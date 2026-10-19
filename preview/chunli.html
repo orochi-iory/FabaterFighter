@@ -232,6 +232,13 @@
 <figure><img src="../voltia/nuevo/chunli/raw/fila_03.gif" alt="franja 3 de la hoja"><figcaption>franja 3 · 7 figuras</figcaption></figure>
 </div>
 <p class="dim">Las tres franjas de la hoja de las que sale el bucle, solo para contar. En el juego no existen por separado.</p></div>
+<div class="box"><h2>Ya se puede elegir en ⚔ Pelea</h2>
+<p>Chun-Li está en el juego como personaje jugable: en el menú de <a href="fight.html" style="color:#ffcb3d;font-weight:700">⚔ Pelea</a> se elige <b>P1</b> y <b>P2</b>, Voltia o Chun-Li. En Versus la llevan los dos mandos; en Pelea y Entrenamiento la controla la CPU si la eliges para P2.</p>
+<p><b>Altura, medida antes de tocar nada:</b> Voltia mide 294 px de tinta en su hoja (× 0,5 de scale) = <b>147 px de mundo</b>. Chun-Li mide 60 px de tinta de stance (sin la sombra del suelo) → horneada a <b>×2,45</b> = <b>147 px de mundo</b>. No son 200 px: son 147, los que mide Voltia de verdad.</p>
+<p>Su hoja de juego son <b>29 animaciones</b> en celdas de 284×198, pivote (141, 196), scale 1: la escala va horneada en el PNG con NEAREST, así el navegador no reescala nada.</p>
+<p class="dim">Aviso honesto: sus píxeles son 2,45 veces los del dibujo original, así que se ve más gruesa que Voltia. No es un fallo del montaje: Voltia viene de una hoja de 294 px reducida a la mitad y Chun-Li de una de 60 px subida 2,45 veces. A la misma altura, la resolución de origen no da para más.</p>
+<p class="dim">Lo que la hoja no trae y se ha reutilizado, dicho: no hay animación de daño (hit y crouch_hit usan la guardia), ni de victoria propia (victoria1 usa la aurora del super y victoria2 la patada), y el proyectil usa la chispa de Voltia. Todo está marcado en <code>preview/chars/chunli.js</code>.</p>
+</div>
 <div class="box"><h2>Speed kick: las 9 poses con su estela, en orden</h2>
 <p>Las estelas amarillas de la hoja no están pegadas a la pose: son trozos aparte, a la derecha de cada patada. Aquí van <b>dentro del frame</b>, en el mismo desfase que tienen en la hoja, así que acompañan al movimiento en vez de desaparecer.</p>
 <img class="strip" src="../voltia/nuevo/chunli/speed_kick_secuencia.png" alt="las 9 poses del speed kick con su estela">

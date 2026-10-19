@@ -90,7 +90,9 @@
   let cam = { x: 360, y: 150, w: 720, h: 405 };
   let view = { x: 360, y: 150, w: 720, h: 405 };
   let fxCanvas = null;
-  const MATCH = ['voltia', 'voltia'];
+  // P1 y P2 eligen personaje en el menu. Los dos se cargan al arrancar.
+  const picks = ['voltia', 'chunli'];
+  const ROSTER_IDS = ['voltia', 'chunli'];
   const chars = {};
   const artCache = {};
 
@@ -221,6 +223,13 @@
   }
   function moveOf(p) { return p.move ? p.def.moves[p.move] : null; }
   function animOf(p) { return p.def.art.anims[p.anim] || p.def.art.anims.stance; }
+
+  // Chun-Li tiene fila propia para caminar atras. Voltia no: para ella se sigue
+  // usando 'walk', como hasta ahora.
+  function walkId(p) {
+    const a = p.def.art;
+    return (p.back && a && a.anims.walk_back) ? 'walk_back' : 'walk';
+  }
 
   function setAnim(p, id, restart) {
     if (p.anim !== id || restart) {
@@ -544,7 +553,7 @@
       return;
     }
     if (p.state === 'idle') setAnim(p, 'stance');
-    if (p.state === 'walk' || p.state === 'dash' || p.state === 'run') setAnim(p, p.state === 'walk' ? 'walk' : 'dash');
+    if (p.state === 'walk' || p.state === 'dash' || p.state === 'run') setAnim(p, p.state === 'walk' ? walkId(p) : 'dash');
     const a = animOf(p);
     if (!a) return;
     const mv = moveOf(p);
@@ -947,10 +956,11 @@
     }
     if (inp.x) {
       const back = inp.x !== p.face;
+      p.back = back;
       p.state = 'walk';
       p.vx = inp.x * (back ? p.def.phys.walkB : p.def.phys.walkF);
       p.x += p.vx * dt;
-      setAnim(p, 'walk');
+      setAnim(p, walkId(p));
       tickAnim(p, dt);
       clampX(p);
       return;
@@ -1488,6 +1498,43 @@
     if (pauseLine) pauseLine.textContent = trainOn() ? 'Entrenamiento' : (cpuOn() ? 'Pelea · ' + aiLevel().name : 'Versus');
     paintMenu();
     paintMusic();
+    paintPicks();
+  }
+
+  let pickEls = null;
+  function pickButtons() {
+    // se buscan una vez: syncUi corre en cada frame
+    if (!pickEls) {
+      pickEls = [Array.from(document.querySelectorAll('[data-p1]')),
+                 Array.from(document.querySelectorAll('[data-p2]'))];
+    }
+    return pickEls;
+  }
+
+  function paintPicks() {
+    const botones = pickButtons();
+    for (let i = 0; i < 2; i++) {
+      botones[i].forEach((el) => {
+        const on = el.getAttribute('data-p' + (i + 1)) === picks[i];
+        el.classList.toggle('pick', on);
+      });
+    }
+    const line = document.getElementById('pick-line');
+    if (line) {
+      const a = chars[picks[0]], b = chars[picks[1]];
+      line.textContent = (a ? a.name : picks[0]) + (trainOn() ? '  vs  MUÑECO' : '  vs  ' + (b ? b.name : picks[1]));
+    }
+  }
+
+  function applyPicks() {
+    paintPicks();
+    if (phase !== 'menu') return;
+    if (chars[picks[0]] && chars[picks[1]]) {
+      placeFighters();
+      clearFx();
+      updateCamera(1, true);
+      syncUi();
+    }
   }
 
   function paintMenu() {
@@ -1562,8 +1609,8 @@
   }
 
   function placeFighters() {
-    P[0] = makeFighter(0, 500, MATCH[0]);
-    P[1] = makeFighter(1, 844, MATCH[1]);
+    P[0] = makeFighter(0, 500, picks[0]);
+    P[1] = makeFighter(1, 844, picks[1]);
     if (cpuOn() && !trainOn()) P[1].aiCd = aiLevel().think[0];
   }
 
@@ -1647,6 +1694,15 @@
       startMatch('fight');
     });
   });
+  for (let i = 0; i < 2; i++) {
+    document.querySelectorAll('[data-p' + (i + 1) + ']').forEach((el) => {
+      el.addEventListener('click', () => {
+        picks[i] = el.getAttribute('data-p' + (i + 1));
+        el.blur();
+        applyPicks();
+      });
+    });
+  }
   document.getElementById('resume').onclick = () => togglePause();
   document.getElementById('pause-menu').onclick = () => toMenu();
   document.getElementById('pause-music').onclick = () => toggleMusic();
@@ -1675,7 +1731,7 @@
 
   (async () => {
     try {
-      for (let i = 0; i < MATCH.length; i++) await loadChar(MATCH[i]);
+      for (let i = 0; i < ROSTER_IDS.length; i++) await loadChar(ROSTER_IDS[i]);
       const sfxAll = HIT_SFX.weak.concat(HIT_SFX.strong);
       for (let i = 0; i < sfxAll.length; i++) new Audio(sfxAll[i]);
       spec = await (await fetch('../voltia/stage/stage.json', { cache: 'no-store' })).json();

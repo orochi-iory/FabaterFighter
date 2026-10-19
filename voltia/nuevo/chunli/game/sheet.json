@@ -1,0 +1,248 @@
+{
+ "sprite": "sheet.png",
+ "cell": {
+  "w": 284,
+  "h": 198
+ },
+ "pivot": [
+  141,
+  196
+ ],
+ "scale": 1,
+ "height_world": 147,
+ "notes": "Chun-Li a la altura de Voltia. Escala 2.450 sobre frames nativos.",
+ "animations": [
+  {
+   "id": "stance",
+   "label": "stance",
+   "row": 0,
+   "frames": 22,
+   "fps": 12,
+   "loop": true
+  },
+  {
+   "id": "walk",
+   "label": "walk",
+   "row": 1,
+   "frames": 7,
+   "fps": 12,
+   "loop": true
+  },
+  {
+   "id": "walk_back",
+   "label": "walk back",
+   "row": 2,
+   "frames": 7,
+   "fps": 12,
+   "loop": true
+  },
+  {
+   "id": "dash",
+   "label": "dash",
+   "row": 3,
+   "frames": 3,
+   "fps": 16,
+   "loop": true
+  },
+  {
+   "id": "jump",
+   "label": "jump",
+   "row": 4,
+   "frames": 10,
+   "fps": 12,
+   "loop": false
+  },
+  {
+   "id": "fwdjump",
+   "label": "fwdjump",
+   "row": 5,
+   "frames": 11,
+   "fps": 12,
+   "loop": false
+  },
+  {
+   "id": "crouch",
+   "label": "crouch",
+   "row": 6,
+   "frames": 3,
+   "fps": 8,
+   "loop": true
+  },
+  {
+   "id": "block",
+   "label": "block",
+   "row": 7,
+   "frames": 6,
+   "fps": 10,
+   "loop": true
+  },
+  {
+   "id": "punch_weak",
+   "label": "punch weak",
+   "row": 8,
+   "frames": 6,
+   "fps": 14,
+   "loop": false
+  },
+  {
+   "id": "punch_strong",
+   "label": "punch strong",
+   "row": 9,
+   "frames": 6,
+   "fps": 11,
+   "loop": false
+  },
+  {
+   "id": "kick_weak",
+   "label": "kick weak",
+   "row": 10,
+   "frames": 5,
+   "fps": 13,
+   "loop": false
+  },
+  {
+   "id": "kick_strong",
+   "label": "kick strong",
+   "row": 11,
+   "frames": 7,
+   "fps": 10,
+   "loop": false
+  },
+  {
+   "id": "crouch_punch_weak",
+   "label": "crouch punch weak",
+   "row": 12,
+   "frames": 6,
+   "fps": 12,
+   "loop": false
+  },
+  {
+   "id": "crouch_punch_strong",
+   "label": "crouch punch strong",
+   "row": 13,
+   "frames": 12,
+   "fps": 11,
+   "loop": false
+  },
+  {
+   "id": "crouch_kick_weak",
+   "label": "crouch kick weak",
+   "row": 14,
+   "frames": 5,
+   "fps": 13,
+   "loop": false
+  },
+  {
+   "id": "crouch_kick_strong",
+   "label": "crouch kick strong",
+   "row": 15,
+   "frames": 6,
+   "fps": 12,
+   "loop": false
+  },
+  {
+   "id": "jump_punch",
+   "label": "jump punch",
+   "row": 16,
+   "frames": 11,
+   "fps": 10,
+   "loop": false
+  },
+  {
+   "id": "jump_kick",
+   "label": "jump kick",
+   "row": 17,
+   "frames": 10,
+   "fps": 12,
+   "loop": false
+  },
+  {
+   "id": "kick_fwd_down",
+   "label": "kick fwd down",
+   "row": 18,
+   "frames": 13,
+   "fps": 10,
+   "loop": false
+  },
+  {
+   "id": "special_dd_k",
+   "label": "special dd k",
+   "row": 19,
+   "frames": 7,
+   "fps": 12,
+   "loop": false
+  },
+  {
+   "id": "speed_kick",
+   "label": "speed kick",
+   "row": 20,
+   "frames": 9,
+   "fps": 16,
+   "loop": false
+  },
+  {
+   "id": "rayo_throw",
+   "label": "rayo throw",
+   "row": 21,
+   "frames": 3,
+   "fps": 10,
+   "loop": false
+  },
+  {
+   "id": "hit",
+   "label": "hit",
+   "row": 22,
+   "frames": 3,
+   "fps": 8,
+   "loop": false
+  },
+  {
+   "id": "crouch_hit",
+   "label": "crouch hit",
+   "row": 23,
+   "frames": 2,
+   "fps": 8,
+   "loop": false
+  },
+  {
+   "id": "knockdown",
+   "label": "knockdown",
+   "row": 24,
+   "frames": 7,
+   "fps": 8,
+   "loop": false
+  },
+  {
+   "id": "ko",
+   "label": "ko",
+   "row": 25,
+   "frames": 2,
+   "fps": 5,
+   "loop": true
+  },
+  {
+   "id": "victory1",
+   "label": "victory1",
+   "row": 26,
+   "frames": 8,
+   "fps": 8,
+   "loop": true
+  },
+  {
+   "id": "victory2",
+   "label": "victory2",
+   "row": 27,
+   "frames": 7,
+   "fps": 8,
+   "loop": true
+  },
+  {
+   "id": "rayo_proj",
+   "label": "rayo proj",
+   "row": 28,
+   "frames": 3,
+   "fps": 12,
+   "loop": true
+  }
+ ]
+}

@@ -246,3 +246,48 @@ como el adelanto del centro de la mitad alta respecto al de la mitad baja.
 |---|---|---|
 | 4 | +3,8 px | inclinado adelante |
 | 5 | 0,0 px | recto |
+
+## Chun-Li jugable: altura y hoja de juego
+
+**La altura se mide, no se supone.** Voltia mide **294 px de tinta** en su stance de
+`voltia/sheet_uniform.png` y se dibuja con `scale 0.5` → **147 px de mundo**. Chun-Li
+mide **60 px de tinta** de stance (mediana de sus 22 frames, **sin la sombra del
+suelo**) → va horneada a **×2,45** → **147 px de mundo**. Los 200 px de otras veces
+no salen de ninguna medición: no se usan.
+
+| | Voltia | Chun-Li |
+|---|---|---|
+| tinta en la hoja | 294 px | 60 px |
+| escala | ×0,5 (la aplica el motor) | ×2,45 (horneada en el PNG) |
+| altura en el juego | 147 px | 147 px |
+| px de canvas por px de hoja | 0,67 | 1,33 |
+
+Consecuencia que hay que decir: a la misma altura, Chun-Li se ve **más gruesa**.
+Voltia sale de una hoja de 294 px reducida a la mitad; Chun-Li de una de 60 px
+subida 2,45 veces. Eso no lo arregla el montaje, lo arreglaría un dibujo de origen
+más grande.
+
+**Cómo se arma la hoja** (`tools/chunli_sheet_game.py` → `game/sheet.png` + `sheet.json`,
+29 animaciones, celda 284×198, pivote (141, 196), scale 1):
+
+1. La sombra negra del suelo que trae el dibujo **se quita**. Es una mancha de negro
+   puro ancha y baja (≥10 px de ancho, ≤7 de alto, ancho ≥ 2,5× alto, relleno ≥ 50 %),
+   separada del cuerpo. Si se queda, al saltar la sombra salta con ella y además el
+   motor dibuja la suya.
+2. **Anclaje por los pies, no por la caja del dibujo ni por la sombra**: la altura del
+   salto y del derribo la mueve el motor con `p.y`, así que el sprite va con los pies
+   en el pivote. Dejando cada frame a la altura que tiene en la hoja, el salto sale doble.
+3. Eje horizontal: centro de la tinta de la cabeza (el 20 % de arriba), y el centro de
+   la caja si la figura va tumbada. El amarillo de las estelas **no cuenta** para el eje.
+4. Todo va en una celda común y se escala de una vez con NEAREST: así la escala queda
+   horneada y el navegador no reescala al dibujar.
+
+**Lo que la hoja no trae y se reutiliza, marcado en `preview/chars/chunli.js`:** no hay
+animación de daño (`hit` y `crouch_hit` usan la guardia), ni de victoria propia
+(`victory1` usa la aurora del super, `victory2` la patada) y el proyectil usa la chispa
+de Voltia, que es lo que se acordó. Los frames activos y los alcances de las cajas
+salen de medirlos (`tools/chunli_hitboxes.py`), no de copiarlos de Voltia.
+
+**Motor:** el personaje se elige en el menú (P1 y P2) y el motor ya no tiene un rival
+fijo. Se añadió `walk_back` como animación propia: si el personaje la tiene, andar hacia
+atrás usa su fila (Chun-Li la tiene; Voltia no y sigue con `walk`).

@@ -52,6 +52,14 @@
   .levels button { background:#2a2740; color:#d8d6ea; border:1px solid #4a4767; border-radius:999px;
                    padding:6px 12px; cursor:pointer; font-size:13px; letter-spacing:0.04em; }
   .levels button.pick, .levels button:hover { background:#0e7c8c; border-color:var(--cyan); color:#fff; }
+  .picks { display:flex; flex-direction:column; gap:4px; margin:8px 0 2px; }
+  .pickrow { display:flex; align-items:center; gap:6px; justify-content:center; }
+  .pickrow .pl { color:#9d9ab5; font-size:12px; font-weight:800; letter-spacing:0.14em; width:22px; text-align:right; }
+  button.pbtn { background:#2a2740; color:#d8d6ea; border:1px solid #4a4767; border-radius:999px;
+                padding:5px 12px; cursor:pointer; font-size:12px; font-weight:700; letter-spacing:0.06em; }
+  button.pbtn:hover { border-color:var(--cyan); color:#fff; }
+  button.pbtn.pick { background:#7c2e9e; border-color:#ff8ad4; color:#fff; }
+  .vsline { margin:2px 0 0; color:#8d8aa4; font-size:11px; letter-spacing:0.16em; }
   .line { min-height:2.6em; margin:4px 0 0; color:#9d9ab5; font-size:13px; line-height:1.4; }
   .foot { margin:14px 0 0; color:#8d8aa4; font-size:12px; letter-spacing:0.04em; }
   .foot a { color:var(--cyan); }
@@ -122,6 +130,19 @@
         <button class="item" type="button" data-act="versus">Versus</button>
         <button class="item" type="button" data-act="music" data-music>Música</button>
       </nav>
+      <div class="picks" id="picks">
+        <div class="pickrow">
+          <span class="pl">P1</span>
+          <button type="button" class="pbtn pick" data-p1="voltia">Voltia</button>
+          <button type="button" class="pbtn" data-p1="chunli">Chun-Li</button>
+        </div>
+        <div class="pickrow">
+          <span class="pl">P2</span>
+          <button type="button" class="pbtn" data-p2="voltia">Voltia</button>
+          <button type="button" class="pbtn pick" data-p2="chunli">Chun-Li</button>
+        </div>
+        <p class="vsline" id="pick-line"></p>
+      </div>
       <p class="line" id="ai-line"></p>
       <p class="foot">↑↓ elige · ←→ nivel · Enter empieza · <a href="index.html">Visor</a> · <a href="guia-vieja.html">Guía</a></p>
     </div>
@@ -145,11 +166,13 @@
     Atrás bloquea. Los bajos, agachado. El salto pega por arriba.
     Rayo: ↓↘→ + puño. El leve va más lento. Solo uno en pantalla y se apaga a media pista: desde el fondo no llega.
     Gancho: →↓↘ o →↓→ + puño. Si el movimiento lleva el gancho, sale el gancho y no el rayo. Giratoria: ↓↙← + patada. Los dos pegan dos veces y derriban si entran ambos.
+    <b>Chun-Li</b> ↓↘→ + puño kikoken · ↓↘→ + patada speed kick · ↓↙← + patada giratoria.
     Doble adelante: dash corto. Si mantienes el segundo adelante, corres hasta soltar. Doble atrás: salto corto atrás. Esc pausa. El reloj son 60 segundos reales.
   </p>
   <p id="status"></p>
 </div>
 <script src="chars/voltia.js?v=4"></script>
-<script src="fight.js?v=9"></script>
+<script src="chars/chunli.js?v=1"></script>
+<script src="fight.js?v=10"></script>
 </body>
 </html>
