@@ -335,7 +335,7 @@ def main():
                 vals.append(sum(alto) / len(alto) - sum(bajo) / len(bajo))
         return round(sum(vals) / len(vals), 1) if vals else None
 
-    def ficha(num, slug, nombre, bucle, nota, carpeta, ys, ataque):
+    def ficha(num, slug, nombre, bucle, nota, carpeta, ys, ataque, fps=12):
         med = medir(carpeta)
         alturas = sorted(m['h'] for m in med)
         activos, ext = [], None
@@ -356,7 +356,7 @@ def main():
         depie = [i + 1 for i, m in enumerate(med) if m['h'] >= 0.92 * max(alturas)]
         gif = 'gif/%02d_%s.gif' % (num, slug)
         subprocess.run([sys.executable, 'tools/make_gif.py', carpeta,
-                        os.path.join(base, gif), '--fps', '12', '--zoom', '2',
+                        os.path.join(base, gif), '--fps', str(fps), '--zoom', '2',
                         '--bg', 'EDEDF2', '--pad', '6'],
                        check=False, env=dict(os.environ, PYTHONPATH='tools/pylibs'))
         fila = {'fila': num, 'slug': slug, 'nombre': nombre, 'bucle': bucle,
@@ -378,13 +378,14 @@ def main():
     # Si se dejan las dos, el bucle se queda parado dos ticks.
     import hashlib
     b0 = bandas[0]['frames']
-    grupos = [
-        sorted([f for f in b0 if f['y0'] < 80 and f['h'] < 100], key=lambda f: f['x0']),
-        sorted([f for f in b0 if f['y0'] >= 80], key=lambda f: f['x0']),
-        sorted(bandas[1]['frames'], key=lambda f: f['x0']),
-    ]
+    fila1 = sorted([f for f in b0 if f['y0'] < 80 and f['h'] < 100], key=lambda f: f['x0'])
+    fila2 = sorted([f for f in b0 if f['y0'] >= 80], key=lambda f: f['x0'])
+    fila3 = sorted(bandas[1]['frames'], key=lambda f: f['x0'])
+    # la fila 1 vuelve entre la 2 y la 3: 1 2 1 3. Asi el bucle no se hace
+    # repetitivo, que era lo que pasaba jugando 1 2 3 y volviendo a empezar.
+    grupos = [fila1, fila2, fila1, fila3]
     cajas, origen = [], []
-    for n_fila, grupo in enumerate(grupos, start=1):
+    for n_fila, grupo in zip((1, 2, 1, 3), grupos):
         for f in grupo:
             cajas.append((f['x0'], f['y0'], f['x1'], f['y1']))
             origen.append(n_fila)
@@ -412,9 +413,11 @@ def main():
     tira.resize((tira.size[0] * 2, tira.size[1] * 2), Image.NEAREST).save(
         os.path.join(base, 'stance_secuencia.png'))
     ficha(1, 'stance', 'Stance', True,
-          'Filas 1, 2 y 3 son UN solo bucle de %d frames (10 + 6 + 7 = 23 en la hoja; '
-          'se descarta 1 porque esta repetido literalmente en la costura).' % len(fs),
-          carpeta, None, False)
+          'Filas 1, 2 y 3 son UN solo bucle: 1 -> 2 -> 1 -> 3, %d frames '
+          '(10 + 6 + 10 + 7 = 33 figuras; se descarta 1 porque esta repetido '
+          'literalmente en la costura entre la fila 1 y la 2). La fila 1 vuelve '
+          'entre la 2 y la 3 para que el bucle no se haga repetitivo.' % len(fs),
+          carpeta, None, False, 10)
     salida[-1]['filas'] = '1-3'
     salida[-1]['crudo'] = crudo
     salida[-1]['descartados'] = len(fuera)

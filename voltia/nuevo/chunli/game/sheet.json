@@ -16,8 +16,8 @@
    "id": "stance",
    "label": "stance",
    "row": 0,
-   "frames": 22,
-   "fps": 12,
+   "frames": 32,
+   "fps": 10,
    "loop": true
   },
   {
@@ -145,7 +145,7 @@
    "label": "jump punch",
    "row": 16,
    "frames": 11,
-   "fps": 10,
+   "fps": 16,
    "loop": false
   },
   {
@@ -153,7 +153,7 @@
    "label": "jump kick",
    "row": 17,
    "frames": 10,
-   "fps": 12,
+   "fps": 16,
    "loop": false
   },
   {
@@ -161,7 +161,7 @@
    "label": "kick fwd down",
    "row": 18,
    "frames": 13,
-   "fps": 10,
+   "fps": 18,
    "loop": false
   },
   {

@@ -13,7 +13,7 @@
   const WALL_R = 1058;
   const STAGE_W = 1344;
   const STAGE_H = 604;
-  const ROUND_TIME = 60;
+  const ROUND_TIME = 99;   // 99 segundos, como el original
   const KB_DECAY = 0.86;
   const ASPECT = 540 / 960;
 
@@ -264,6 +264,10 @@
     p.aiQueue = null;
     p.vx = air ? avx : 0;
     setAnim(p, m.anim, true);
+    // `start`: frames de entrada que se saltan. La hoja dibuja el arranque del
+    // salto (agacharse, cargar) y eso hace que el golpe salga medio segundo
+    // tarde; saltandolos, el frame activo llega cuando toca.
+    if (m.start) p.frame = Math.min(m.start, animOf(p).frames - 1);
     if (m.voice) voice(p.def, m.voice);
     return true;
   }
@@ -532,6 +536,8 @@
     for (let i = 0; i < cmds.length; i++) {
       const cmd = cmds[i];
       if (cmd.type !== 'motion' || !btnRecent(p, cmd.btn)) continue;
+      // `need` fija con que boton se ejecuta el comando (aqui, patada fuerte)
+      if (cmd.need && !inp[cmd.need]) continue;
       if (!commandMatches(p, cmd)) continue;
       const over = commandOverride(p, cmd);
       const picked = over || cmd;
@@ -547,9 +553,17 @@
     if (p.state === 'jump' || p.state === 'launch' || p.state === 'backdash') {
       const n = animOf(p).frames;
       const jv = p.def.phys.jumpV;
-      if (p.vy < jv * 0.24) p.frame = Math.min(1, n - 1);
-      else if (p.vy < -jv * 0.26) p.frame = Math.min(2, n - 1);
-      else p.frame = n - 1;
+      if (n <= 4) {
+        // Voltia dibuja el salto en 4 frames: 0 sube, 1 sube, 2 arriba, 3 cae
+        if (p.vy < jv * 0.24) p.frame = Math.min(1, n - 1);
+        else if (p.vy < -jv * 0.26) p.frame = Math.min(2, n - 1);
+        else p.frame = n - 1;
+      } else {
+        // filas largas (Chun-Li: 10 frames): se reparte el salto entero por la
+        // velocidad vertical, del despegue a la caida, sin congelar el dibujo
+        const u = Math.max(0, Math.min(1, (p.vy - jv) / (-2 * jv)));
+        p.frame = Math.min(n - 1, Math.round(u * (n - 1)));
+      }
       return;
     }
     if (p.state === 'idle') setAnim(p, 'stance');
@@ -743,7 +757,7 @@
       setAnim(winner, which, true);
       voice(winner.def, which);
       note = wins[winner.id] >= 2 ? 'Gana la pelea' : 'Ronda';
-      banner.innerHTML = `VOLTIA ${winner.id + 1}<small>${note}</small>`;
+      banner.innerHTML = `${P[winner.id].def.name} P${winner.id + 1}<small>${note}</small>`;
     } else {
       const a = P[0].hp, b = P[1].hp;
       if (a !== b) {
@@ -753,7 +767,7 @@
         setAnim(w, 'victory1', true);
         voice(w.def, 'victory1');
       }
-      banner.innerHTML = a === b ? 'Empate' : `VOLTIA ${a > b ? 1 : 2}<small>por tiempo</small>`;
+      banner.innerHTML = a === b ? 'Empate' : `${P[a > b ? 0 : 1].def.name} P${a > b ? 1 : 2}<small>por tiempo</small>`;
     }
     syncUi();
   }
@@ -1611,6 +1625,11 @@
   function placeFighters() {
     P[0] = makeFighter(0, 500, picks[0]);
     P[1] = makeFighter(1, 844, picks[1]);
+    // los nombres del HUD son los del personaje elegido, no siempre VOLTIA
+    const n1 = document.getElementById('n1');
+    const n2 = document.getElementById('n2');
+    if (n1 && P[0].def.name) n1.textContent = P[0].def.name;
+    if (n2 && P[1].def.name) n2.textContent = P[1].def.name;
     if (cpuOn() && !trainOn()) P[1].aiCd = aiLevel().think[0];
   }
 

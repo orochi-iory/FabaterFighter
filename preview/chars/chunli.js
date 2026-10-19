@@ -42,13 +42,18 @@
     normals: {
       stand: { lp: 'punch_weak', hp: 'punch_strong', lk: 'kick_weak', hk: 'kick_strong' },
       crouch: { lp: 'crouch_punch_weak', hp: 'crouch_punch_strong', lk: 'crouch_kick_weak', hk: 'crouch_kick_strong' },
-      air: { lp: 'jump_punch', hp: 'jump_punch', lk: 'jump_kick', hk: 'kick_fwd_down' }
+      // la patada en el aire es SIEMPRE la fila 17 (salto + patada). La fila 15
+      // no es un salto: empieza y acaba de pie, es el comando de abajo.
+      air: { lp: 'jump_punch', hp: 'jump_punch', lk: 'jump_kick', hk: 'jump_kick' }
     },
     commands: [
       // patada giratoria: ↓ ↙ ← + patada
       { type: 'motion', move: 'special_dd_k', btn: 'kick', window: 0.6, seq: [2, 1, 4], alt: [[2, 4], [1, 4]], release: [5], releaseTime: 0.18 },
       // speed kick: ↓ ↘ → + patada
       { type: 'motion', move: 'speed_kick', btn: 'kick', window: 0.55, seq: [2, 3, 6], release: [5], releaseTime: 0.16 },
+      // patada adelante-abajo (fila 15): se mantiene ↘ (abajo + adelante) y se
+      // pulsa patada FUERTE. `need` obliga a que sea la fuerte.
+      { type: 'motion', move: 'kick_fwd_down', btn: 'kick', need: 'hk', window: 0.4, seq: [3] },
       // kikoken: ↓ ↘ → + puño
       { type: 'motion', move: 'kikoken', btn: 'punch', window: 0.55, seq: [2, 3, 6], release: [5], releaseTime: 0.14 }
     ],
@@ -93,16 +98,19 @@
         hits: [{ active: [2], damage: 52, stun: 10, block: 11, weight: 3, slide: 3.4, stop: 11, shake: 5.4, level: 'low', knockdown: true, box: { x: 28, y: -44, w: 56, h: 22 } }]
       },
       jump_punch: {
-        anim: 'jump_punch', ai: 'air',
+        // start 2: se salta el frameo de subida de la hoja y pega a los 0,19 s
+        anim: 'jump_punch', ai: 'air', start: 2,
         hits: [{ active: [5], damage: 46, stun: 15, block: 9, weight: 2, slide: 3.0, stop: 9, shake: 4.4, level: 'overhead', box: { x: 14, y: -92, w: 40, h: 30 } }]
       },
       jump_kick: {
-        anim: 'jump_kick', ai: 'air',
+        anim: 'jump_kick', ai: 'air', start: 3,
         hits: [{ active: [6], damage: 58, stun: 16, block: 10, weight: 3, slide: 3.2, stop: 11, shake: 5.6, level: 'overhead', box: { x: 18, y: -80, w: 48, h: 28 } }]
       },
       kick_fwd_down: {
-        anim: 'kick_fwd_down', ai: 'air', zoom: 0.6,
-        hits: [{ active: [7, 8, 9], damage: 72, stun: 12, block: 12, weight: 4, slide: 4.8, stop: 13, shake: 7, level: 'overhead', knockdown: true, box: { x: 16, y: -58, w: 50, h: 36 } }]
+        // fila 15: patada adelante-abajo y voltereta atras. Es de suelo, no de
+        // salto. start 3 se come el paso de entrada para que entre rapido.
+        anim: 'kick_fwd_down', ai: 'heavy', start: 3, zoom: 0.6,
+        hits: [{ active: [7, 8, 9], damage: 74, stun: 12, block: 12, weight: 4, slide: 4.8, stop: 13, shake: 7, level: 'mid', knockdown: true, box: { x: 18, y: -60, w: 54, h: 38 } }]
       },
       special_dd_k: {
         anim: 'special_dd_k', ai: 'special', zoom: 1.2,
@@ -120,7 +128,9 @@
         hits: [],
         projectile: {
           anim: 'rayo_proj',
-          pivot: [141, 170],
+          // el mismo pivote (pies) que la celda de la hoja: la chispa queda a la
+          // altura del pecho con offset.y = -84
+          pivot: [141, 196],
           scale: 1,
           offset: { x: 46, y: -84 },
           speeds: { weak: 2.6, strong: 4.9 },

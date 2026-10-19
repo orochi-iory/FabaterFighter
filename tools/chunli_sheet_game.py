@@ -31,7 +31,7 @@ FILA_SPARK = 16            # rayo_proj en la hoja de Voltia
 
 # id, carpeta de rows/, frames (None = todos), fps, bucle
 ANIMS = [
-    ('stance', '01_stance', None, 12, True),
+    ('stance', '01_stance', None, 10, True),
     ('walk', '04_walk_fwd', None, 12, True),
     ('walk_back', '05_walk_back', None, 12, True),
     ('dash', '04_walk_fwd', [0, 1, 2], 16, True),
@@ -47,9 +47,11 @@ ANIMS = [
     ('crouch_punch_strong', '18_crouch_punch_strong', None, 11, False),
     ('crouch_kick_weak', '20_crouch_kick_weak', None, 13, False),
     ('crouch_kick_strong', '19_crouch_kick_strong', None, 12, False),
-    ('jump_punch', '16_jump_punch', None, 10, False),
-    ('jump_kick', '17_jump_kick', None, 12, False),
-    ('kick_fwd_down', '15_kick_fwd_down', None, 10, False),
+    ('jump_punch', '16_jump_punch', None, 16, False),
+    ('jump_kick', '17_jump_kick', None, 16, False),
+    # la voltereta lleva su propia altura dentro de la hoja: aqui NO se aplana
+    # al suelo, se deja subir y bajar como esta dibujada
+    ('kick_fwd_down', '15_kick_fwd_down', None, 18, False, 'sombra'),
     ('special_dd_k', '10_special_dd_k', None, 12, False),
     ('speed_kick', '12_speed_kick', None, 16, False),
     ('rayo_throw', '11_special_projectile', None, 10, False),
@@ -179,35 +181,37 @@ def main():
 
     # --- 2. piezas alineadas (antes de escalar) ---
     piezas = []          # (id, [imagenes recortadas con su (dx,dy) respecto al ancla])
-    for anim_id, carpeta, cuales, fps, bucle in ANIMS:
+    for fila in ANIMS:
+        anim_id, carpeta, cuales, fps, bucle = fila[:5]
+        ancla = fila[5] if len(fila) > 5 else 'pies'
         ims = frames_de(os.path.join(BASE, 'rows', carpeta), cuales)
-        piezas.append((anim_id, carpeta, ims, fps, bucle))
+        piezas.append((anim_id, carpeta, ims, fps, bucle, ancla))
 
     # la chispa entra como una animación más
     spark = spark_voltia(0.42)
-    piezas.append(('rayo_proj', 'voltia/sheet_uniform.png#16', spark, 12, True))
+    piezas.append(('rayo_proj', 'voltia/sheet_uniform.png#16', spark, 12, True, 'pies'))
 
     # --- 3. geometría común ---
     # para cada frame: eje_x, suelo_y dentro de su imagen; extensiones de la tinta
     geo = []
-    for anim_id, carpeta, ims, fps, bucle in piezas:
+    for anim_id, carpeta, ims, fps, bucle, ancla in piezas:
         lista = []
         for im in ims:
             if anim_id == 'rayo_proj':
                 bb = im.getbbox()
                 lista.append((im, (bb[0] + bb[2]) / 2.0, bb[3]))
                 continue
-            quitar_sombra(im)          # fuera la sombra del suelo
+            suelo_sombra = quitar_sombra(im)   # fuera la sombra del suelo
             # anclaje por los pies, no por la sombra ni por la caja del dibujo:
             # la altura del salto y del derribo la mueve el motor con p.y, asi
             # que el sprite tiene que ir con los pies en el pivote. Si los frames
             # se dejan a la altura que tienen en la hoja, el salto sale doble.
-            eje, suelo = anclas(im, None)
+            eje, suelo = anclas(im, suelo_sombra if ancla == 'sombra' else None)
             lista.append((im, eje, suelo))
-        geo.append((anim_id, carpeta, lista, fps, bucle))
+        geo.append((anim_id, carpeta, lista, fps, bucle, ancla))
 
     IZQ = DER = ARR = ABA = 0
-    for anim_id, carpeta, lista, fps, bucle in geo:
+    for anim_id, carpeta, lista, fps, bucle, ancla in geo:
         for im, eje, suelo in lista:
             bb = im.getbbox()
             if not bb:
@@ -225,11 +229,11 @@ def main():
     print('celda escalada %dx%d  pivote (%d, %d)' % (cw, ch, pivx, pivy))
 
     # --- 4. montar la rejilla ---
-    cols = max(len(lista) for _, _, lista, _, _ in geo)
+    cols = max(len(f[2]) for f in geo)
     rows = len(geo)
     hoja = Image.new('RGBA', (cols * cw, rows * ch), (0, 0, 0, 0))
     salida = []
-    for r, (anim_id, carpeta, lista, fps, bucle) in enumerate(geo):
+    for r, (anim_id, carpeta, lista, fps, bucle, ancla) in enumerate(geo):
         for c, (im, eje, suelo) in enumerate(lista):
             celda = Image.new('RGBA', (cw0, ch0), (0, 0, 0, 0))
             celda.alpha_composite(im, (int(round(IZQ - eje)), int(round(ARR - suelo))))

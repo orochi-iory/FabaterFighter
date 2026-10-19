@@ -150,24 +150,31 @@ filas 1, 2 y 3, unidas en una única animación.
 ### El stance: filas 1, 2 y 3 son un solo bucle
 
 No son tres animaciones ni tres partes: es **un bucle** que la hoja reparte en
-tres franjas. Se reproducen seguidas, fila 1 → fila 2 → fila 3 → fila 1.
+tres franjas. En el entregable **nunca** salen separadas: un directorio
+(`rows/01_stance`), un GIF (`gif/01_stance.gif`) y una animación en el juego
+(`stance`). El orden que se reproduce es **1 → 2 → 1 → 3**: la fila 1 vuelve en
+medio a propósito, porque con 1 → 2 → 3 el bucle se hacía repetitivo.
 
 | fila | figuras | x en la hoja | y en la hoja |
 |---|---|---|---|
-| 1 | 10 | 97–545 | 7–76 |
+| 1 (primera vuelta) | 10 | 97–545 | 7–76 |
 | 2 | 6 | 82–404 | 85–145 |
+| 1 (segunda vuelta) | 10 | 97–545 | 7–76 |
 | 3 | 7 | 12–347 | 152–219 |
-| **total** | **23** | | |
+| **total publicado** | **33 figuras** (23 distintas) | | |
 
-De esas 23 figuras salen 22 frames publicados. Se descarta **una** y no por
-criterio propio: la figura 1 de la fila 2 es **idéntica píxel a píxel** a la
-figura 10 de la fila 1 (mismo md5, `3ee56306`) — es la costura entre las dos
-franjas. Si se dejan las dos, el bucle se para dos ticks.
+De esas 33 figuras salen **32 frames a 10 fps** (3,2 s por vuelta). Se descarta
+**una** y no por criterio propio: la figura 1 de la fila 2 es **idéntica píxel a
+píxel** a la figura 10 de la fila 1 (mismo md5, `3ee56306`) — es la costura entre
+las dos franjas. Si se dejan las dos, el bucle se para dos ticks.
 
 El resto de repeticiones **se quedan**, porque son del dibujo original y están
 separadas en el bucle, no pegadas: `8d17596f` en 4 y 6 · `ba6e66c1` en 5 y 7 ·
 `3ee56306` en 10, 13 y 23 · `9f4fa603` en 12, 14 y 16 · `130461bd` en 17 y 21.
 En total 15 frames distintos de 23 figuras.
+
+Los 12 fps de la primera versión se leían como «muy acelerado»: el bucle va a
+**10 fps**, que es lo que se publica y lo que lleva la hoja de juego.
 
 Los frames se publican en un lienzo único de **54×70 px**: pies en la misma
 línea (no bota) y eje de la cabeza al centro (no se va de lado). Cada figura de
@@ -291,3 +298,49 @@ salen de medirlos (`tools/chunli_hitboxes.py`), no de copiarlos de Voltia.
 **Motor:** el personaje se elige en el menú (P1 y P2) y el motor ya no tiene un rival
 fijo. Se añadió `walk_back` como animación propia: si el personaje la tiene, andar hacia
 atrás usa su fila (Chun-Li la tiene; Voltia no y sigue con `walk`).
+
+## Chun-Li en el motor: tiempos, comando de la fila 15 y reloj
+
+**Lo que estaba mal y por qué.** El salto + patada estaba apuntando a la fila 15
+(voltereta). La fila 17 es la patada de salto y es la que va en los dos botones
+del aire: `air: { lp: jump_punch, hp: jump_punch, lk: jump_kick, hk: jump_kick }`.
+La fila 15 pasa a ser un comando de suelo.
+
+**El ataque en el aire salía medio segundo tarde** por dos cosas sumadas:
+
+1. El fps de la fila: `jump_punch` y `jump_kick` iban a 10 y 12 fps. Van a **16**.
+2. El frameo de entrada de la hoja (agacharse, cargar). `startMove` acepta ahora
+   `start: N`: salta los N primeros frames de la animación al arrancar el move.
+   `jump_punch` → `start 2`, `jump_kick` → `start 3`, `kick_fwd_down` → `start 3`.
+
+| move | antes | ahora |
+|---|---|---|
+| `jump_punch` (activo en el frame 5) | 5/10 fps = 0,50 s | (5−2)/16 = **0,19 s** |
+| `jump_kick` (activo en el frame 6) | 6/12 fps = 0,50 s | (6−3)/16 = **0,19 s** |
+| `kick_fwd_down` (activos 7-9) | 7/10 fps = 0,70 s | (7−3)/18 = **0,22 s** |
+
+Medido en el arnés `node /tmp/smoke/run.js` con un sondeo aparte: el salto sale
+en el **mismo frame** en que se pulsa arriba (`p.y` cambia y el estado pasa a
+`jump`), y el frame activo del aire llega a los **10 frames** de 60 Hz (0,17 s)
+tras pulsar el botón.
+
+**El salto de las filas largas.** `tickAnim` sólo usaba 3 frames (0, 1, 2 y el
+último) para el salto, que es como está dibujado Voltia (4 frames). Chun-Li trae
+10 y 11, así que con esa regla el dibujo se quedaba congelado y el salto parecía
+empezar tarde. Ahora, si la fila tiene más de 4 frames, el frame se reparte por
+la velocidad vertical: `u = (vy − jumpV) / (−2·jumpV)`, `frame = round(u·(n−1))`.
+Voltia (4 frames) sigue con la regla de siempre, sin tocarla.
+
+**Comando de la fila 15:** adelante + abajo a la vez (↘) **y patada fuerte**.
+En la ficha es `{ type: 'motion', move: 'kick_fwd_down', btn: 'kick', need: 'hk',
+window: 0.4, seq: [3] }`. El campo `need` es nuevo en el motor: el comando no
+sale con patada débil (verificado: abajo + LK saca `crouch_kick_weak`).
+La animación se ancla con la **sombra** como línea de suelo, no con los pies:
+la voltereta va en el aire y aplanarla al suelo la hundía.
+
+**Reloj: 99 segundos** (`ROUND_TIME = 99` en `preview/fight.js` y el `99` del HUD
+en `preview/fight.html`). Antes eran 60.
+
+**Nombres del HUD:** `placeFighters()` escribe en `#n1` / `#n2` el `def.name` del
+personaje elegido y los carteles de fin de ronda usan también ese nombre; antes
+ponían VOLTIA aunque jugaras con Chun-Li.

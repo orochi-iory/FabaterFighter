@@ -131,9 +131,11 @@ def main():
     a('<td class="n">Stance<br><span class="dim">un solo bucle, filas 1 + 2 + 3</span></td>')
     a('<td class="mono">%d figuras<br>→ %d frames</td>' % (stance['crudo'], stance['n']))
     a('<td class="mono">7–219</td>')
-    a('<td class="note">Las tres franjas seguidas: fila 1 (10 figuras) → fila 2 (6) → '
-      'fila 3 (7). En la hoja son 23; se publican 22 porque la figura 1 de la fila 2 es '
-      'idéntica píxel a píxel a la figura 10 de la fila 1 (la costura).</td>')
+    a('<td class="note">Un solo bucle con las tres franjas: fila 1 (10 figuras) → fila 2 (6) '
+      '→ <b>fila 1 otra vez</b> (10) → fila 3 (7) = 33 figuras. Se descarta 1, la figura 1 de '
+      'la fila 2, que es idéntica píxel a píxel a la figura 10 de la fila 1 (la costura) → '
+      '<b>32 frames</b>. La fila 1 vuelve en medio a propósito, para que el bucle no se '
+      'repita igual. En ningún sitio sale partido: es una entrada, un GIF y una animación.</td>')
     a('</tr>')
 
     # ---- filas 4-24: crudas, como estaban, salvo la 12 y la 22-23 ----
@@ -183,25 +185,21 @@ def main():
     a('</table>')
 
     a('<div class="box"><h2>El stance, con los números</h2>')
-    a('<p>Filas <b>1, 2 y 3</b> seguidas y en bucle: 10 + 6 + 7 = <b>23 figuras</b> en la hoja, '
-      '<b>%d frames</b> publicados. Se descarta <b>%d</b> frame porque está repetido '
-      'literalmente (mismo md5, <code>3ee56306</code>) en la costura entre las filas 1 y 2; '
-      'dejando las dos, el bucle se para dos ticks. El resto de repeticiones se quedan: son del '
-      'dibujo.</p>' % (stance['n'], stance['descartados']))
+    a('<p>El stance es <b>una sola animación</b> hecha con las filas 1, 2 y 3: 10 + 6 + 10 + 7 '
+      '= <b>33 figuras</b> (la fila 1 va dos veces), <b>%d frames</b> publicados a <b>10 fps</b> '
+      '= <b>3,2 s</b> por vuelta. Se descarta <b>%d</b> frame: el primero de la fila 2 es '
+      'idéntico píxel a píxel (mismo md5, <code>3ee56306</code>) al último de la fila 1, y con '
+      'los dos el bucle se para dos ticks en la costura. El resto de repeticiones se quedan: '
+      'son del dibujo.</p>' % (stance['n'], stance['descartados']))
     a('<p>Los %d frames van en un lienzo único de <b>%d×%d px</b>: pies en la misma línea y eje '
       'de la cabeza al centro, para que el bucle no bote ni se vaya de lado.</p>'
       % (stance['n'], stance['lienzo'][0], stance['lienzo'][1]))
     a('<img class="strip" src="../%s/stance_secuencia.png" alt="los %d frames del stance en orden">'
       % (BASE, stance['n']))
     a('<p class="dim">Los %d frames en orden, tal como se reproducen.</p>' % stance['n'])
-    a('<div class="tres">')
-    for n in (1, 2, 3):
-        a('<figure><img src="../%s/raw/fila_%02d.gif" alt="franja %d de la hoja">'
-          '<figcaption>franja %d · %d figuras</figcaption></figure>'
-          % (BASE, n, n, n, por_fila[n]['n']))
-    a('</div>')
-    a('<p class="dim">Las tres franjas de la hoja de las que sale el bucle, solo para contar. '
-      'En el juego no existen por separado.</p></div>')
+    a('<p class="dim">En la hoja de origen son tres franjas de fondo, pero son <b>un solo '
+      'bucle</b>: aquí no salen por separado en ningún sitio. Es una entrada, un GIF y una '
+      'animación en el juego (<code>stance</code>).</p></div>')
 
     a('<div class="box"><h2>Ya se puede elegir en ⚔ Pelea</h2>')
     a('<p>Chun-Li está en el juego como personaje jugable: en el menú de '
