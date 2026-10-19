@@ -173,37 +173,67 @@ El corte, además, hace dos cosas que costaron su intento:
 - **Tira el antialias del borde** (`strip_fringe`): esos píxeles son mezcla de
   tinta con el verde, no son de la paleta, y al llevarlos al color más cercano
   caían en el teal del traje. Ese era el «ruido verde» pegado a la coleta.
-- **Cierra el contorno** (`close_outline`): todo píxel opaco que toca el fondo
+- **Cierra el contorno** (`close_outline`, opcional con `--close`): todo píxel opaco que toca el fondo
   pasa a contorno. Regla de siempre, ahora en el script y no a mano.
 
-## La mitad contraria de un walk
+## Una pose por imagen (lo que funciona para las animaciones)
 
-El generador **no dibuja el paso contrario**: se le pida como se le pida,
-repite siempre la misma pierna delante (comprobado con hojas de 3 × 2, 4 × 2 y
-5 × 4, y con una pose por imagen). Lo que sí hace bien es una mitad del ciclo con
-la figura grande.
-
-Así que la segunda mitad se saca de la primera con
-`tools/opposite_half.py`, cambiando los **tonos de profundidad** en todo lo que
-queda por debajo del cuello: teal claro ↔ teal sombra, navy ↔ navy sombra, piel
-clara ↔ piel sombra. En un walk de perfil la silueta es la misma (siempre hay un
-pie delante y otro detrás); lo que distingue un medio ciclo del otro es **qué
-pierna y qué brazo van delante**, y eso en este modelo está cantado por el tono:
-la pierna cercana va en teal claro y la lejana en teal de sombra.
+La rejilla de 5 × 4 se usó para la stance y salió bien, pero **para el walk el
+generador no sabe ordenar las poses**: en siete formas de hoja distintas
+(3 × 2, 4 × 2, 4 celdas, 5 poses, dos poses sueltas, 3 × 2 espejada y 2 × 2)
+repite siempre la misma pierna delante. Así que las animaciones que necesitan
+poses distintas se hacen **una pose por imagen**, grande, y se recortan con
+`tools/build_pose.py`.
 
 ```
-PYTHONPATH=tools/pylibs python3 tools/opposite_half.py <carpeta> 0 1 2 --into 3 4 5 --y 100
+PYTHONPATH=tools/pylibs python3 tools/build_pose.py <pose.png> <salida.png> \
+    [--head 30] [--axis 128] [--ground 238] [--canvas 200 240] [--pick L|R]
 ```
 
-Lo que **no** arregla: la silueta de la segunda mitad es la de la primera, así
-que la alternancia se lee por el sombreado y no por el contorno. Si algún día
-hace falta que el contorno también cambie, hay que dibujar a mano la pierna
-lejana cruzada por delante.
+Hace lo mismo que la hoja, pero para una figura sola:
 
-`build_sheet.py` separa la hoja por los **pasillos verdes consecutivos** (no por
-el margen: si no, el margen de arriba cuenta como fila) y se queda con la **masa
-conectada mayor** de cada celda, que es lo que tira las coletas de las figuras
-vecinas que se cuelan en la celda.
+- verde → transparente y se queda la **masa conectada mayor**;
+- **una sola escala**: la máscara a `--head`, la talla de la stance,
+  independiente de lo grande que salga el dibujo;
+- suelo en `--ground` y **eje de la cabeza en `--axis`** (x=128);
+- `strip_fringe()` retira el antialias del borde;
+- **`seal_teal_edge()`**: los píxeles de traje que ya tocan el aire pasan a
+  contorno. No engorda nada, cierra la silueta y deja el borde en 71-82 % de
+  contorno, como la stance.
+
+`--pick L|R` separa dos figuras que compartan imagen, por si el modelo dibuja
+dos poses en una.
+
+### La paleta se mide, no se mira
+
+Medido: una pose generada de cero llega con **~105 000 colores** distintos;
+la stance aprobada tiene **15**. El generador sombrea con ruido, y al forzar la
+paleta ese ruido se reparte de otra manera: la proporción de tonos cambia y se
+nota a simple vista («algo ha pasado con la paleta»). Por eso se comprueba
+**antes** de dar nada por bueno:
+
+```
+PYTHONPATH=tools/pylibs python3 tools/palette_report.py voltia/nueva/walk
+```
+
+Tiene que dar **15 colores, 0 % fuera de paleta** y ningún tono alejado más de
+~1,5 puntos de la stance. La huella buena del walk nuevo: contorno 9,9 % (stance
+9,0), traje sombra 13,0 (11,4), traje 8,2 (9,6), pelo 11,6 (13,3).
+
+`close_outline()` **no** es el corte estándar: engorda la figura y sube el
+contorno del 8,9 % al 14,5 %. Queda detrás de `--close` en `build_sheet.py` y
+solo se usa si el corte limpio es imposible.
+
+### Reparto de trabajo que ha funcionado
+
+1. Un sprite aprobado (hoy `nueva/stance/00.png`) es la imagen 1 de todo.
+2. Para cada pose nueva se pide **una sola figura**, nombrando el sprite aprobado
+   como referencia y enumerando lo que NO se toca (máscara, visor, boca, coleta,
+   traje, cinturón, rayo, guantes, botas, 16 colores, grosor de línea).
+3. Se describe **solo** lo que cambia (las piernas) y se dice dónde queda todo lo
+   demás («misma altura de cabeza, misma línea de suelo, brazos colgando»).
+4. Nunca se pide «la otra mitad», ni espejar, ni cambiar tonos: eso ya se probó
+   y sale una figura distinta que además invierte la paleta.
 
 ## Recorte y reducción
 

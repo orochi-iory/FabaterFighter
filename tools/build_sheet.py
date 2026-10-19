@@ -17,6 +17,10 @@ Uso:
     Con alto_de_mascara (la stance aprobada usa 30) la escala de la hoja sale
     de la cabeza y no del alto total de la figura, que cambia con la pose.
 
+    El contorno NO se cierra por defecto: la stance aprobada se cortó sin eso y
+    su borde ya sale limpio (5% de teal en el borde). Con --close se tapa todo
+    píxel que toque el fondo, y entonces el contorno engorda (14% en vez de 9%).
+
 Después de recortar, si el brazo o el guante salen manchados, se pasa
 tools/fix_gloves.py (solo en los frames revisados a mano).
 
@@ -277,7 +281,7 @@ def close_outline(im):
     return len(out)
 
 
-def build(sheet, outdir, cw, ch, ground, ncol=5, nrows=4, write=True, head=0):
+def build(sheet, outdir, cw, ch, ground, ncol=5, nrows=4, write=True, head=0, close=False):
     im = Image.open(sheet)
     grid = rows_of_cells(im, ncol, nrows)
     if len(grid) > nrows:
@@ -304,7 +308,8 @@ def build(sheet, outdir, cw, ch, ground, ncol=5, nrows=4, write=True, head=0):
         frame = Image.new('RGBA', (cw, ch), (0, 0, 0, 0))
         off = (round(cw / 2 - cx), ground - h)
         frame.alpha_composite(fig, off)
-        close_outline(frame)
+        if close:
+            close_outline(frame)
         out.append(frame)
         if write:
             os.makedirs(outdir, exist_ok=True)
@@ -321,6 +326,7 @@ if __name__ == '__main__':
     ncol = int(args[5]) if len(args) > 5 else 5
     nrows = int(args[6]) if len(args) > 6 else 4
     head = int(args[7]) if len(args) > 7 else 0
-    frames = build(sheet, outdir, cw, ch, ground, ncol=ncol, nrows=nrows, head=head)
+    frames = build(sheet, outdir, cw, ch, ground, ncol=ncol, nrows=nrows,
+                   head=head, close='--close' in args)
     print('%s -> %s: %d frames de %dx%d, suelo %d'
           % (sheet, outdir, len(frames), cw, ch, ground))

@@ -231,7 +231,9 @@
   "2026-10-19. Lo que funcionó: hoja como estilo, diseño aparte, 'un solo sprite', margen en píxeles, guardia SF2, y reducir en código en vez de pedirle al modelo que se aleje.",
   "2026-10-19. La reducción a 120 con LANCZOS era el problema: se cargaba el detalle de un dibujo bueno. Probado el recorte nativo en el visor y en el escenario: mide 567 × 1022 y se sale de la placa, no cabe sin reescalar. Conclusión: no se puede usar el nativo sin escalar; hay que generar el sprite ya a tamaño de juego.",
   "2026-10-19. Tirada con rejilla exigida en el prompt (1024, bloques de 8, 120 bloques de alto). El modelo NO obedece: no hay ningún escalón de 8, y la figura mide 1014 px de alto, no 960. Lo que sí acierta son bloques de ~8. Se corta dividiendo por 8 entero: 95 × 126, sin interpolar, y se limpian 122 píxeles verdes de borde. Ese es el sprite de referencia.",
-  "2026-10-19. Conclusión para el escenario: la figura que ya juega mide 153 y esta 126, así que entra sin escalar. Si algún día hay que igualarla a 120, se genera a 120 bloques de 8 = 960 y se corta ÷8 exacto."
+  "2026-10-19. Conclusión para el escenario: la figura que ya juega mide 153 y esta 126, así que entra sin escalar. Si algún día hay que igualarla a 120, se genera a 120 bloques de 8 = 960 y se corta ÷8 exacto.",
+  "2026-10-19. Medido: una pose generada de cero llega con ~105.000 colores distintos y la stance aprobada tiene 15. Al forzar la paleta ese ruido se reparte de otra forma y cambia la proporcion de tonos: eso es «algo ha pasado con la paleta». Hay que medirlo ANTES de cortar (tools/palette_report.py), no mirarlo.",
+  "2026-10-19. El contorno solo se cierra donde el traje toca el aire (seal_teal_edge): convierte en contorno los pixeles teal que ya estan en el borde, sin engordar la silueta. Asi el borde queda 71-82 % contorno como la stance. close_outline engorda la figura y sube el contorno al 14 %: no se usa."
  ],
  "changelog": [
   "2026-10-19. El idle aprobado pasa a llamarse stance: carpeta nueva/stance, 24 frames, y se borra el bloque idle viejo de la primera pasada.",
@@ -248,7 +250,9 @@
   "2026-10-19. La hoja de Chun-Li entra como referencia de dibujo. El prompt se reescribe con pixelado, 16 colores, encuadre y traje teal entero.",
   "2026-10-19. Entra el walk: hoja de 20 poses nueva, recortada con el mismo lienzo 200 x 240, suelo 238 y eje de cabeza x=128. La hoja anterior se descarto.",
   "2026-10-19. Se apunta la tecnica de la hoja 4 x 2 (1024, bloques de 6, figura de 660 px) en sheetMethod/sheetPrompt: es la que aguanta el recorte. El walk anterior de 20 poses se tira y se rehace con 8 poses reales.",
-  "2026-10-19. Walk de 6 poses: una hoja de 3 x 2 con figura grande (mascara de 30 px de alto ya escalada), segunda mitad por cambio de tonos (tools/opposite_half.py). Se tira el walk de 8 y el de 20."
+  "2026-10-19. Walk de 6 poses: una hoja de 3 x 2 con figura grande (mascara de 30 px de alto ya escalada), segunda mitad por cambio de tonos (tools/opposite_half.py). Se tira el walk de 8 y el de 20.",
+  "2026-10-19. Se tira el walk entero (6 poses, hoja y scripts) y las herramientas de la segunda mitad. Solo quedan aprobadas la stance y la prueba del salto.",
+  "2026-10-19. Walk de cero con poses sueltas (tools/build_pose.py): 4 frames, 15 colores exactos y huella de paleta a menos de 2 puntos de la stance. Se descarta la rejilla para animaciones que el generador no sabe ordenar."
  ],
  "scale": {
   "rule": "El archivo NO se reduce nunca. Se guarda a la resolución a la que lo generó el modelo. Si hay que verlo más pequeño, se cambia el zoom de la vista, no el archivo.",
@@ -320,26 +324,6 @@
    ],
    "group": "animaciones"
   },
-  "walk": {
-   "title": "Walk",
-   "dir": "nueva/walk",
-   "count": 6,
-   "fps": 12,
-   "canvas": [
-    200,
-    240
-   ],
-   "note": "Ciclo de caminata de 6 poses: contacto, abajo y paso con una pierna, y las mismas tres con la otra. Mismo lienzo y suelo (238) que la stance, escala sacada de la cabeza (mascara de 30 px) y centro por el eje de la cabeza (x=128). La segunda mitad sale de la primera cambiando los tonos de profundidad (teal claro <-> teal sombra, navy <-> navy sombra): la silueta es la misma, lo que alterna es que pierna y que brazo van delante.",
-   "frames": [
-    "00.png",
-    "01.png",
-    "02.png",
-    "03.png",
-    "04.png",
-    "05.png"
-   ],
-   "group": "animaciones"
-  },
   "jump": {
    "title": "Salto · prueba",
    "dir": "nueva/jump",
@@ -373,18 +357,24 @@
     "19.png"
    ],
    "group": "pruebas"
+  },
+  "walk": {
+   "title": "Walk · propuesta",
+   "dir": "nueva/walk",
+   "count": 4,
+   "fps": 8,
+   "canvas": [
+    200,
+    240
+   ],
+   "note": "Cuatro poses dibujadas de cero, una por imagen y recortadas con build_pose.py: mismo lienzo 200 x 240, suelo 238, mascara a 30 px y eje de cabeza x=128. 00 contacto con la pierna cercana delante, 01 paso, 02 contacto con la pierna lejana delante, 03 paso. Paleta identica a la stance (15 colores, 0 fuera, contorno 9,9 % contra 9,0 %).",
+   "frames": [
+    "00.png",
+    "01.png",
+    "02.png",
+    "03.png"
+   ],
+   "group": "propuestas"
   }
- },
- "sheetMethod": {
-  "why": "La stance salio de una hoja con la figura grande y el contorno grueso. Las tiradas de 20 poses en 5x4 salieron con la figura mucho mas pequena y el contorno de 1 px de pantalla: al bajar a 200 px el NEAREST se comia el contorno y el recorte se veia sucio (46-75% del borde sin contorno, frente al 80% de la stance). La hoja que si aguanta es 4 x 2, 1024 x 1024, bloques de 6 y figura de 660 px de pantalla.",
-  "layout": "4 columnas x 2 filas, 8 poses",
-  "canvas": "1024 x 1024",
-  "block": "6 px de pantalla por pixel de sprite",
-  "figure": "110 px de sprite = 660 px de pantalla, de la suela a la punta del pelo",
-  "images": "imagen 1 = hoja aprobada (stance/src/sheet_idle.png), imagen 2 = el mismo sprite ampliado x4 (guide/ref/stance_x4.png)",
-  "measure": "el borde de la silueta tiene que salir con 78-83% de pixeles de contorno, como la stance (80%). Por debajo de 70%, la hoja no sirve: se ve el recorte.",
-  "cut": "PYTHONPATH=tools/pylibs python3 tools/build_sheet.py <hoja> <salida> 200 240 238 4 2",
-  "centre": "PYTHONPATH=tools/pylibs python3 tools/centre_by_head.py <salida> --target 128"
- },
- "sheetPrompt": "Image 1 is the approved sprite sheet of this character. Image 2 is the same sprite enlarged 4x. Together they define the drawing to keep exactly: magenta mask, teal eye visor, mouth, violet ponytail, teal bodysuit, gold belt, yellow chest bolt, navy gauntlets and navy boots, with the same colours, proportions and pixel size. Only the pose changes.\n\nDraw ONE sheet of 8 full-body arcade sprites of Voltia in the exact visual language of the 1991 CPS-1 Street Fighter II sprites.\n\nFIXED PIXEL GRID: the canvas is 1024 x 1024. Every sprite pixel is a solid 6 x 6 screen-pixel block, aligned from the top-left corner; no edge, outline or highlight may be finer than 6 pixels. The character is exactly 110 sprite pixels tall, which is 660 screen pixels from the sole of the lowest boot to the top of the hair. At least 40 screen pixels of clear green on all four sides of every figure.\n\nLAYOUT: 4 columns and 2 rows, 8 poses, read left to right, top to bottom. All 8 figures the same height, the same head size and the same scale, standing on the same ground line inside their cell. Torso upright, no forward lean, no rotation, no perspective: only the legs, the forearms and the ponytail change.\n\nTHE 8 POSES, walking to the right, in this order: 1 contact, 2 down, 3 passing, 4 up, 5 contact opposite, 6 down, 7 passing, 8 up. Pose 8 flows back into pose 1 so the cycle loops. At least one foot on the ground line in every pose.\n\nSTYLE: exactly 16 flat colours, thick 1-sprite-pixel near-black outline, three hard tones per material, chunky clusters, no gradients, no anti-aliasing, no dithering, no speckle, no soft shading, no glow, no anime look. Flat solid colour areas only, and the outline continuous all the way around the whole silhouette and around every separate shape, never dotted, never broken.\n\nCHARACTER: Voltia, slender masked luchadora, about 7.5 heads, side view facing right. Full magenta mask; teal eye visor with dark eye slit; readable mouth under the visor; one huge thick violet ponytail tied high, flowing back and left. Teal bodysuit down into the boots, no bare thighs, short trunks, thin gold belt, large fat angular yellow lightning bolt on the chest, long navy gauntlet gloves, navy boots with knee pads and dark soles. Fists loosely closed and never above the shoulders.\n\nBACKGROUND: flat solid bright green #11EF06 edge to edge, with the same green in clean full-width horizontal and full-height vertical corridors between the figures. No floor, no shadow, no text, no numbers, no logo, no border, no second character, no green halo on the sprite."
+ }
 }
