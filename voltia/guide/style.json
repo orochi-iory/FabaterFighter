@@ -1,0 +1,83 @@
+{
+  "title": "Guía de estilo",
+  "updated": "2026-10-19",
+  "character": "Voltia",
+  "anchor": "sf2/idle_0.png",
+  "anchorNote": "El primer frame de la última tirada. Todo lo demás sale de aquí. No se regenera el diseño.",
+  "facing": "derecha",
+  "standHeight": 120,
+  "key": {
+    "hex": "#00FF00",
+    "rgb": [0, 255, 0],
+    "hard": 60,
+    "exclude": 100,
+    "why": "Es el recorte más lejos de la paleta. El cian está a 113 del visor, el amarillo a 72 del rayo, el rojo a 143 de la máscara. El verde puro está a 183 de la tinta más cercana."
+  },
+  "nearest": {
+    "name": "teal claro",
+    "rgb": [14, 108, 108],
+    "pixels": 20,
+    "distance": 183
+  },
+  "visorDistance": 204,
+  "sacrifice": "Voltia no sacrifica ninguna tinta: ninguna entra en la bola de 100 alrededor del recorte. Si un personaje nuevo necesita un color dentro de esa bola, se mueve el color del personaje y se anota aquí. No se mueve el recorte.",
+  "clip": "No se recorta por canal verde alto. Un píxel es fondo si está a 60 o menos del #00FF00, o si está más cerca del recorte que de cualquier tinta. Lo que queda se encaja en la tinta más cercana. Así el visor no se come y el borde verde del antialias sí.",
+  "palette": [
+    {"name": "perfil", "rgb": [0, 0, 0], "distance": 255},
+    {"name": "coleta sombra", "rgb": [76, 36, 114], "distance": 258},
+    {"name": "navy sombra", "rgb": [16, 18, 46], "distance": 242},
+    {"name": "coleta", "rgb": [128, 70, 160], "distance": 276},
+    {"name": "navy", "rgb": [30, 34, 78], "distance": 236},
+    {"name": "visor y teal", "rgb": [40, 176, 184], "distance": 204},
+    {"name": "traje sombra", "rgb": [8, 72, 80], "distance": 200},
+    {"name": "sombra morada", "rgb": [42, 18, 70], "distance": 251},
+    {"name": "máscara", "rgb": [156, 28, 100], "distance": 293},
+    {"name": "traje profundo", "rgb": [6, 44, 54], "distance": 218},
+    {"name": "máscara sombra", "rgb": [96, 14, 68], "distance": 268},
+    {"name": "piel", "rgb": [236, 184, 142], "distance": 284},
+    {"name": "piel media", "rgb": [200, 132, 92], "distance": 252},
+    {"name": "piel sombra", "rgb": [148, 88, 60], "distance": 231},
+    {"name": "cinturón", "rgb": [188, 140, 28], "distance": 222},
+    {"name": "rayo", "rgb": [250, 210, 56], "distance": 260},
+    {"name": "rayo sombra", "rgb": [228, 184, 52], "distance": 244},
+    {"name": "teal claro", "rgb": [14, 108, 108], "distance": 183}
+  ],
+  "rules": [
+    "Una sola ancla. El frame de pie. No se promedia con el arte conceptual ni con la hoja vieja.",
+    "Se mira a la derecha. El juego ya espeja.",
+    "Tintas planas de esta paleta. Sin degradados, sin antialias, sin un verde nuevo.",
+    "Si el frame se puede sacar moviendo el ancla, no se regenera.",
+    "Una figura nueva, si hace falta generarla, va sola sobre #00FF00 plano, en PNG, con margen. Luego extract.py. Nada de JPEG.",
+    "No se hace una tira hasta que un frame suelto recortado coincida con el ancla.",
+    "Un frame partido en dos piezas no se entrega.",
+    "La pelea no cambia de hoja hasta que el ciclo sea coherente."
+  ],
+  "prompt": "One fighting-game pixel sprite of the reference character, full body, facing right. Match the reference exactly: same chunky pixels, same magenta mask, same teal visor, same long violet ponytail, same fat yellow lightning bolt, same proportions, same flat colors. No anti-aliasing, no gradients, no soft shadows. Background is exactly flat pure green #00FF00 edge to edge. No floor, no shadow, no green on the character. Keep the teal visor teal. At least 16 pixels of pure #00FF00 margin on every side. Nothing touches the edge. No text, no numbers, no border.",
+  "keys": [
+    {"id": "stand", "file": "00_stand.png", "use": "Aterrizaje, contacto del paso, fin de los golpes, inicio del bloqueo."},
+    {"id": "squash", "file": "04_squash.png", "use": "Anticipación del salto y entrada al agachado."},
+    {"id": "hop", "file": "06_hop1_peak.png", "use": "Saltito en el aire. Sirve para el salto corto atrás."},
+    {"id": "thighs", "file": "14_thighs.png", "use": "Manos en los muslos. Calentamiento, y luego un taunt si aguanta."}
+  ],
+  "idle": {
+    "fps": 8,
+    "note": "Saltito doble, se queda respirando y al final se sacude los muslos. 19 dibujos, el de pie cierra el bucle. Los brazos del calentamiento son la primera construcción: se corrigen desde aquí.",
+    "frames": [
+      "00_stand.png", "01_breath_in.png", "02_breath_hold.png", "03_breath_out.png",
+      "04_squash.png", "05_hop1.png", "06_hop1_peak.png", "07_hop1_down.png",
+      "08_land.png", "09_squash2.png", "10_hop2.png", "11_hop2_land.png",
+      "12_arms_mid.png", "13_arms_low.png", "14_thighs.png", "15_slap.png",
+      "16_rebound.png", "17_slap2.png", "18_arms_back.png", "00_stand.png"
+    ],
+    "captions": [
+      "de pie", "inspira", "aguanta", "suelta",
+      "se agacha", "saltito", "arriba", "cae",
+      "pisa", "otra vez", "segundo", "pisa",
+      "baja las manos", "hacia los muslos", "en los muslos", "se sacude",
+      "rebotan", "otra sacudida", "vuelve", "de pie"
+    ]
+  },
+  "changelog": [
+    "2026-10-19. Primera guía. El verde #00FF00 no estaba cerca: el fallo era recortar por canal verde y dejar el borde. Recorte por distancia, bola de exclusión 100, radio duro 60. Idle de 19 frames desde el ancla, sin tocar la pelea."
+  ]
+}

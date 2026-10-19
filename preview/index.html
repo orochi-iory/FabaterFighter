@@ -76,6 +76,22 @@
   .arena input[type=range] { width:140px; }
   .layers { color:#d8d6ea; font-size:13px; line-height:1.55; margin:12px 0 0; }
   .layers b { color:#96ffeb; }
+  section.guia { width:100%; max-width:1200px; padding:8px 16px 8px; }
+  section.guia h2 { color:#ffcb3d; letter-spacing:1px; margin:8px 0; }
+  section.guia h3 { color:#96ffeb; font-size:15px; margin:18px 0 8px; }
+  section.guia .box { background:#222033; border:2px solid #ffcb3d; border-radius:12px; padding:16px; }
+  section.guia p, section.guia li { color:#d8d6ea; font-size:14px; line-height:1.5; }
+  section.guia .swatches { display:flex; flex-wrap:wrap; gap:8px; }
+  section.guia .sw { width:78px; }
+  section.guia .sw i { display:block; height:28px; border:1px solid #4a4767; border-radius:4px; }
+  section.guia .sw b, section.guia .sw span { display:block; font-size:11px; color:#9d9ab5; margin-top:3px; font-weight:500; }
+  section.guia .sw b { color:#ffcb3d; }
+  section.guia pre { white-space:pre-wrap; background:#181624; color:#eee; padding:10px; border-radius:8px; font-size:12px; line-height:1.45; }
+  section.guia img.proof { max-width:100%; height:auto; image-rendering:pixelated; image-rendering:crisp-edges; border-radius:8px; background:#101018; }
+  canvas#guidecv, canvas#guidestrip { image-rendering:pixelated; image-rendering:crisp-edges; display:block; background:#101018; }
+  canvas#guidecv { width:min(100%, 448px); height:auto; margin:0 auto; border:1px solid #3a3752; border-radius:8px; }
+  canvas#guidestrip { max-width:100%; height:auto; margin-top:10px; }
+  section.guia .keyrow { display:flex; flex-wrap:wrap; gap:8px; }
 </style>
 </head>
 <body>
@@ -83,6 +99,7 @@
   <h1>⚡ VOLTIA ⚡</h1>
   <p id="ver">cargando…</p>
   <a class="play" href="fight.html">Probar pelea · Voltia vs Voltia</a>
+  <a class="play alt" href="#guia">Guía de estilo</a>
   <a class="play alt" href="#nueva">Ver versión nueva</a>
   <p class="notes" id="notes"></p>
   <p id="syncwarn"></p>
@@ -113,6 +130,31 @@
     <div class="info">Consejo: <b>magenta</b> y <b>verde</b> sirven para comprobar la transparencia y el chroma.</div>
   </div>
 </main>
+<section class="guia" id="guia">
+  <h2>Guía de estilo</h2>
+  <div class="box">
+    <p id="guideLead">Cargando la guía…</p>
+    <div class="swatches" id="guideKey"></div>
+    <h3>Recorte</h3>
+    <p id="guideClip"></p>
+    <img class="proof" id="guideProof" alt="El ancla sobre verde, y el mismo frame ya recortado" src="../voltia/guide/key_proof.png">
+    <h3>Paleta</h3>
+    <div class="swatches" id="guidePal"></div>
+    <h3>Idle nuevo</h3>
+    <canvas id="guidecv" width="112" height="150"></canvas>
+    <div class="controls" id="guideBtns"></div>
+    <p id="guideIdleNote"></p>
+    <canvas id="guidestrip" width="240" height="36"></canvas>
+    <h3>Sprites clave</h3>
+    <div class="keyrow" id="guideKeys"></div>
+    <h3>Reglas</h3>
+    <ol id="guideRules"></ol>
+    <h3>Prompt para generar</h3>
+    <pre id="guidePrompt"></pre>
+    <h3>Historial</h3>
+    <ul id="guideLog"></ul>
+  </div>
+</section>
 <section class="nueva" id="nueva">
   <h2>Versión nueva · no está en la pelea</h2>
   <div class="box">
@@ -775,6 +817,157 @@
       `Música: tema «Puerto Voltaje», cumbia electrónica a pulso fijo, en bucle.`;
     draw();
   })().catch(err => { note.textContent = 'No se pudo cargar el escenario: ' + err; });
+})();
+</script>
+<script>
+/* Guía de estilo. Lee voltia/guide/ y voltia/canon/. No toca la pelea. */
+(async () => {
+  const QB = '?v=' + Date.now();
+  const lead = document.getElementById('guideLead');
+  let guide;
+  try {
+    guide = await (await fetch('../voltia/guide/style.json' + QB, { cache: 'no-store' })).json();
+  } catch (err) {
+    lead.textContent = 'No pude cargar la guía.';
+    return;
+  }
+  const hex = (rgb) => '#' + rgb.map(n => n.toString(16).padStart(2, '0')).join('');
+  lead.textContent = guide.anchorNote + ' ' + guide.sacrifice;
+  document.getElementById('guideClip').textContent = guide.clip + ' ' + guide.key.why;
+  const keyBox = document.getElementById('guideKey');
+  const chips = [
+    { name: 'recorte', rgb: guide.key.rgb, extra: guide.key.hex },
+    { name: 'más cerca', rgb: guide.nearest.rgb, extra: guide.nearest.distance + ' de distancia' },
+    { name: 'visor', rgb: [40, 176, 184], extra: guide.visorDistance + ' de distancia' }
+  ];
+  chips.forEach(c => {
+    const d = document.createElement('div');
+    d.className = 'sw';
+    d.innerHTML = '<i></i><b></b><span></span>';
+    d.querySelector('i').style.background = hex(c.rgb);
+    d.querySelector('b').textContent = c.name;
+    d.querySelector('span').textContent = c.extra;
+    keyBox.appendChild(d);
+  });
+  const pal = document.getElementById('guidePal');
+  guide.palette.forEach(c => {
+    const d = document.createElement('div');
+    d.className = 'sw';
+    d.innerHTML = '<i></i><b></b><span></span>';
+    d.querySelector('i').style.background = hex(c.rgb);
+    d.querySelector('b').textContent = c.name;
+    d.querySelector('span').textContent = c.distance;
+    pal.appendChild(d);
+  });
+  document.getElementById('guidePrompt').textContent = guide.prompt;
+  const rules = document.getElementById('guideRules');
+  guide.rules.forEach(t => {
+    const li = document.createElement('li');
+    li.textContent = t;
+    rules.appendChild(li);
+  });
+  const log = document.getElementById('guideLog');
+  guide.changelog.forEach(t => {
+    const li = document.createElement('li');
+    li.textContent = t;
+    log.appendChild(li);
+  });
+  document.getElementById('guideProof').src = '../voltia/guide/key_proof.png' + QB;
+
+  const root = '../voltia/canon/';
+  const cache = {};
+  async function frame(name) {
+    if (cache[name]) return cache[name];
+    const img = new Image();
+    img.src = root + name + QB;
+    await img.decode();
+    cache[name] = img;
+    return img;
+  }
+  const names = guide.idle.frames.filter((n, i, all) => all.indexOf(n) === i);
+  await Promise.all(names.map(frame));
+  const cv = document.getElementById('guidecv');
+  const strip = document.getElementById('guidestrip');
+  const cx = cv.getContext('2d');
+  const sx = strip.getContext('2d');
+  cx.imageSmoothingEnabled = false;
+  sx.imageSmoothingEnabled = false;
+  const note = document.getElementById('guideIdleNote');
+  note.textContent = guide.idle.note;
+  let tick = 0;
+  let playing = true;
+  let shown = -1;
+  const buttons = document.getElementById('guideBtns');
+  const playBtn = document.createElement('button');
+  playBtn.type = 'button';
+  playBtn.textContent = 'Pausa';
+  playBtn.addEventListener('click', () => {
+    playing = !playing;
+    playBtn.textContent = playing ? 'Pausa' : 'Seguir';
+  });
+  buttons.appendChild(playBtn);
+  guide.keys.forEach(k => {
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.textContent = k.id;
+    b.title = k.use;
+    b.addEventListener('click', () => {
+      const i = guide.idle.frames.indexOf(k.file);
+      if (i >= 0) tick = i;
+      playing = false;
+      playBtn.textContent = 'Seguir';
+      draw();
+    });
+    buttons.appendChild(b);
+  });
+  const keyBox2 = document.getElementById('guideKeys');
+  guide.keys.forEach(k => {
+    const p = document.createElement('p');
+    p.innerHTML = '<b></b> ';
+    p.querySelector('b').textContent = k.id;
+    p.append(k.use);
+    keyBox2.appendChild(p);
+  });
+  function draw() {
+    const frames = guide.idle.frames;
+    const i = Math.floor(tick) % frames.length;
+    if (i === shown) return;
+    shown = i;
+    const img = cache[frames[i]];
+    cx.clearRect(0, 0, cv.width, cv.height);
+    cx.fillStyle = '#101018';
+    cx.fillRect(0, 0, cv.width, cv.height);
+    cx.drawImage(img, 0, 0);
+    cx.fillStyle = '#5a5040';
+    cx.fillRect(0, 139, cv.width, 1);
+    const cap = guide.idle.captions[i] || '';
+    note.textContent = (i + 1) + '/' + frames.length + ' · ' + cap + ' — ' + guide.idle.note;
+    const gap = 4;
+    const scale = 2;
+    const sw = frames.reduce((n, name) => n + cache[name].width * scale + gap, gap);
+    const sh = 150 * scale + 16;
+    if (strip.width !== sw) strip.width = sw;
+    if (strip.height !== sh) strip.height = sh;
+    sx.imageSmoothingEnabled = false;
+    sx.fillStyle = '#101018';
+    sx.fillRect(0, 0, sw, sh);
+    let x = gap;
+    frames.forEach((name, fi) => {
+      const fr = cache[name];
+      sx.drawImage(fr, x, 14, fr.width * scale, fr.height * scale);
+      if (fi === i) {
+        sx.strokeStyle = '#ffcb3d';
+        sx.strokeRect(x - 1, 13, fr.width * scale + 2, fr.height * scale + 2);
+      }
+      x += fr.width * scale + gap;
+    });
+  }
+  draw();
+  setInterval(() => {
+    if (!playing) return;
+    tick += guide.idle.fps / 60;
+    draw();
+  }, 1000 / 60);
 })();
 </script>
 </body>
