@@ -12,7 +12,10 @@ Uso:
     PYTHONPATH=tools/pylibs python3 tools/build_sheet.py \
         voltia/nueva/stance/src/sheet_stance.png voltia/nueva/stance 200 240 238
 
-    argumentos: <hoja> <carpeta_salida> <ancho> <alto> <fila_del_suelo> [columnas] [filas]
+    argumentos: <hoja> <carpeta_salida> <ancho> <alto> <fila_del_suelo> [columnas] [filas] [alto_de_mascara]
+
+    Con alto_de_mascara (la stance aprobada usa 30) la escala de la hoja sale
+    de la cabeza y no del alto total de la figura, que cambia con la pose.
 
 Después de recortar, si el brazo o el guante salen manchados, se pasa
 tools/fix_gloves.py (solo en los frames revisados a mano).
@@ -176,14 +179,121 @@ def cut_figure(cell):
     return cell.crop((min(xs), min(ys), max(xs) + 1, max(ys) + 1))
 
 
-def build(sheet, outdir, cw, ch, ground, ncol=5, nrows=4, write=True):
+MASK = {(190, 25, 130), (120, 16, 80)}
+
+
+def mask_height(fig):
+    """Alto en píxeles de la masa de máscara más grande (la talla de la cabeza).
+
+    Es la referencia de escala que comparten todas las hojas: el alto total
+    de la figura cambia con la pose (piernas abiertas, rodilla arriba), pero
+    la cabeza no. La stance aprobada tiene la máscara a 30 px.
+    """
+    px = fig.load()
+    w, h = fig.size
+    seen = set()
+    best = 0
+    for y in range(h):
+        for x in range(w):
+            p = px[x, y]
+            if (x, y) in seen or not p[3] or p[:3] not in MASK:
+                continue
+            comp = [(x, y)]
+            stack = [(x, y)]
+            seen.add((x, y))
+            while stack:
+                cx, cy = stack.pop()
+                for dx, dy in ((1, 0), (-1, 0), (0, 1), (0, -1)):
+                    n = (cx + dx, cy + dy)
+                    if not (0 <= n[0] < w and 0 <= n[1] < h) or n in seen:
+                        continue
+                    q = px[n[0], n[1]]
+                    if q[3] and q[:3] in MASK:
+                        seen.add(n)
+                        comp.append(n)
+                        stack.append(n)
+            ys = [c[1] for c in comp]
+            best = max(best, max(ys) - min(ys) + 1)
+    return best
+
+
+def strip_fringe(fig, tol=26):
+    """Tira el antialias del borde: píxeles opacos que no son de la paleta.
+
+    El modelo mezcla la tinta con el verde justo en el borde. Esas mezclas no
+    son un color de la paleta, y al llevarlas a la más cercana caen a veces en
+    el teal del traje: eso es el «ruido verde» que se ve pegado a la coleta y
+    a las botas. Se hacen transparentes solo si están pegados al fondo y solo
+    si no son un color de la paleta: uno o dos píxeles de la hoja, que no se
+    notan, y después el contorno se cierra sobre el borde limpio.
+    """
+    px = fig.load()
+    w, h = fig.size
+    drop = []
+    for y in range(h):
+        for x in range(w):
+            p = px[x, y]
+            if not p[3]:
+                continue
+            near_bg = False
+            for dx, dy in ((1, 0), (-1, 0), (0, 1), (0, -1)):
+                nx, ny = x + dx, y + dy
+                if not (0 <= nx < w and 0 <= ny < h) or px[nx, ny][3] == 0:
+                    near_bg = True
+                    break
+            if not near_bg:
+                continue
+            c = p[:3]
+            d = min((c[0] - q[0]) ** 2 + (c[1] - q[1]) ** 2 + (c[2] - q[2]) ** 2
+                    for q in PALETTE)
+            if d > tol * tol:
+                drop.append((x, y))
+    for (x, y) in drop:
+        px[x, y] = (0, 0, 0, 0)
+    return len(drop)
+
+
+def close_outline(im):
+    """Tapa con contorno cualquier píxel opaco que toque el fondo.
+
+    Es la regla de la guía desde el principio («los píxeles de borde que
+    salen verdosos se tapan con el contorno. Cero halo»).
+    """
+    px = im.load()
+    w, h = im.size
+    out = []
+    for y in range(h):
+        for x in range(w):
+            p = px[x, y]
+            if not p[3] or p[:3] == PALETTE[0]:
+                continue
+            for dx, dy in ((1, 0), (-1, 0), (0, 1), (0, -1)):
+                nx, ny = x + dx, y + dy
+                if not (0 <= nx < w and 0 <= ny < h) or px[nx, ny][3] == 0:
+                    out.append((x, y))
+                    break
+    for (x, y) in out:
+        px[x, y] = PALETTE[0] + (255,)
+    return len(out)
+
+
+def build(sheet, outdir, cw, ch, ground, ncol=5, nrows=4, write=True, head=0):
     im = Image.open(sheet)
     grid = rows_of_cells(im, ncol, nrows)
     if len(grid) > nrows:
         raise SystemExit('la hoja dio %d filas, se esperaban %d' % (len(grid), nrows))
     figs = [cut_figure(grid[j][i]) for j in range(nrows) for i in range(ncol)]
+    for f in figs:
+        strip_fringe(f)
     figs = [f for f in figs if f.width > 4 and f.height > 4]   # celdas vacías
-    factor = (cw * 0.0 + 200) / figs[0].height   # 200 px = 170 cm con coleta
+    if head:
+        # una sola escala por hoja, sacada de la cabeza (no del alto total)
+        mh = mask_height(snap(figs[0]))   # la máscara se mide ya en paleta
+        if not mh:
+            raise SystemExit('la primera figura no tiene máscara: no puedo medir la cabeza')
+        factor = head / mh
+    else:
+        factor = (cw * 0.0 + 200) / figs[0].height   # 200 px = 170 cm con coleta
     out = []
     for k, fig in enumerate(figs):
         w, h = max(1, round(fig.width * factor)), max(1, round(fig.height * factor))
@@ -192,7 +302,9 @@ def build(sheet, outdir, cw, ch, ground, ncol=5, nrows=4, write=True):
         feet = [x for y in range(max(0, h - 5), h) for x in range(w) if px[x, y][3]]
         cx = sum(feet) / len(feet) if feet else w / 2
         frame = Image.new('RGBA', (cw, ch), (0, 0, 0, 0))
-        frame.alpha_composite(fig, (round(cw / 2 - cx), ground - h))
+        off = (round(cw / 2 - cx), ground - h)
+        frame.alpha_composite(fig, off)
+        close_outline(frame)
         out.append(frame)
         if write:
             os.makedirs(outdir, exist_ok=True)
@@ -208,6 +320,7 @@ if __name__ == '__main__':
     cw, ch, ground = int(args[2]), int(args[3]), int(args[4])
     ncol = int(args[5]) if len(args) > 5 else 5
     nrows = int(args[6]) if len(args) > 6 else 4
-    frames = build(sheet, outdir, cw, ch, ground, ncol=ncol, nrows=nrows)
+    head = int(args[7]) if len(args) > 7 else 0
+    frames = build(sheet, outdir, cw, ch, ground, ncol=ncol, nrows=nrows, head=head)
     print('%s -> %s: %d frames de %dx%d, suelo %d'
           % (sheet, outdir, len(frames), cw, ch, ground))

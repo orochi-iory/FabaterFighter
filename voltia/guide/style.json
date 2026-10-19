@@ -247,7 +247,8 @@
   "2026-10-19. Se tira el idle de 20 frames entero y su recorte. Queda un solo sprite de referencia, sin aprobar. El script que comía píxeles está borrado.",
   "2026-10-19. La hoja de Chun-Li entra como referencia de dibujo. El prompt se reescribe con pixelado, 16 colores, encuadre y traje teal entero.",
   "2026-10-19. Entra el walk: hoja de 20 poses nueva, recortada con el mismo lienzo 200 x 240, suelo 238 y eje de cabeza x=128. La hoja anterior se descarto.",
-  "2026-10-19. Se apunta la tecnica de la hoja 4 x 2 (1024, bloques de 6, figura de 660 px) en sheetMethod/sheetPrompt: es la que aguanta el recorte. El walk anterior de 20 poses se tira y se rehace con 8 poses reales."
+  "2026-10-19. Se apunta la tecnica de la hoja 4 x 2 (1024, bloques de 6, figura de 660 px) en sheetMethod/sheetPrompt: es la que aguanta el recorte. El walk anterior de 20 poses se tira y se rehace con 8 poses reales.",
+  "2026-10-19. Walk de 6 poses: una hoja de 3 x 2 con figura grande (mascara de 30 px de alto ya escalada), segunda mitad por cambio de tonos (tools/opposite_half.py). Se tira el walk de 8 y el de 20."
  ],
  "scale": {
   "rule": "El archivo NO se reduce nunca. Se guarda a la resolución a la que lo generó el modelo. Si hay que verlo más pequeño, se cambia el zoom de la vista, no el archivo.",
@@ -322,22 +323,20 @@
   "walk": {
    "title": "Walk",
    "dir": "nueva/walk",
-   "count": 8,
+   "count": 6,
    "fps": 12,
    "canvas": [
     200,
     240
    ],
-   "note": "Ciclo de caminata de 8 poses reales (contacto, abajo, paso y arriba para cada pierna), de lado mirando a la derecha. Mismo lienzo y suelo (238) que la stance, centro por el eje de la cabeza (x=128). Sale de una hoja 4 x 2 con bloques de 6 px.",
+   "note": "Ciclo de caminata de 6 poses: contacto, abajo y paso con una pierna, y las mismas tres con la otra. Mismo lienzo y suelo (238) que la stance, escala sacada de la cabeza (mascara de 30 px) y centro por el eje de la cabeza (x=128). La segunda mitad sale de la primera cambiando los tonos de profundidad (teal claro <-> teal sombra, navy <-> navy sombra): la silueta es la misma, lo que alterna es que pierna y que brazo van delante.",
    "frames": [
     "00.png",
     "01.png",
     "02.png",
     "03.png",
     "04.png",
-    "05.png",
-    "06.png",
-    "07.png"
+    "05.png"
    ],
    "group": "animaciones"
   },

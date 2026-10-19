@@ -158,9 +158,47 @@ sirve y se tira: es exactamente el defecto que se ve como «recorte sucio».
 El corte, siempre con el mismo comando y el mismo lienzo:
 
 ```
-PYTHONPATH=tools/pylibs python3 tools/build_sheet.py <hoja> <salida> 200 240 238 4 2
+PYTHONPATH=tools/pylibs python3 tools/build_sheet.py <hoja> <salida> 200 240 238 3 2 30
 PYTHONPATH=tools/pylibs python3 tools/centre_by_head.py <salida> --target 128
 ```
+
+El último número (**30**) es el **alto de la máscara en píxeles del frame final**,
+o sea la talla de la cabeza. Es la escala que comparten todas las hojas: el alto
+total de la figura cambia con la pose (piernas abiertas, rodilla arriba) y la
+cabeza no. La stance aprobada tiene la máscara a 30 px; cualquier hoja nueva se
+corta con esa misma medida y así no hay deriva de tamaño entre animaciones.
+
+El corte, además, hace dos cosas que costaron su intento:
+
+- **Tira el antialias del borde** (`strip_fringe`): esos píxeles son mezcla de
+  tinta con el verde, no son de la paleta, y al llevarlos al color más cercano
+  caían en el teal del traje. Ese era el «ruido verde» pegado a la coleta.
+- **Cierra el contorno** (`close_outline`): todo píxel opaco que toca el fondo
+  pasa a contorno. Regla de siempre, ahora en el script y no a mano.
+
+## La mitad contraria de un walk
+
+El generador **no dibuja el paso contrario**: se le pida como se le pida,
+repite siempre la misma pierna delante (comprobado con hojas de 3 × 2, 4 × 2 y
+5 × 4, y con una pose por imagen). Lo que sí hace bien es una mitad del ciclo con
+la figura grande.
+
+Así que la segunda mitad se saca de la primera con
+`tools/opposite_half.py`, cambiando los **tonos de profundidad** en todo lo que
+queda por debajo del cuello: teal claro ↔ teal sombra, navy ↔ navy sombra, piel
+clara ↔ piel sombra. En un walk de perfil la silueta es la misma (siempre hay un
+pie delante y otro detrás); lo que distingue un medio ciclo del otro es **qué
+pierna y qué brazo van delante**, y eso en este modelo está cantado por el tono:
+la pierna cercana va en teal claro y la lejana en teal de sombra.
+
+```
+PYTHONPATH=tools/pylibs python3 tools/opposite_half.py <carpeta> 0 1 2 --into 3 4 5 --y 100
+```
+
+Lo que **no** arregla: la silueta de la segunda mitad es la de la primera, así
+que la alternancia se lee por el sombreado y no por el contorno. Si algún día
+hace falta que el contorno también cambie, hay que dibujar a mano la pierna
+lejana cruzada por delante.
 
 `build_sheet.py` separa la hoja por los **pasillos verdes consecutivos** (no por
 el margen: si no, el margen de arriba cuenta como fila) y se queda con la **masa
@@ -197,6 +235,9 @@ reducción de paleta, cuando toque, se revisa color a color.
 
 ## Historial
 
+- 2026-10-19. Walk de 6 poses con la hoja 3 × 2: escala por la máscara (30 px),
+  segunda mitad por cambio de tonos, corte con `strip_fringe` y
+  `close_outline`. Se tiran el walk de 20, el de 8 y las pruebas de pose única.
 - 2026-10-19. Se apunta la técnica de la hoja 4 × 2: 1024 × 1024, bloques de 6,
   figura de 660 px de pantalla, imagen 1 la hoja aprobada e imagen 2 el sprite
   ampliado ×4. Medida de control: 78–83 % de contorno en el borde. El walk de
