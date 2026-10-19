@@ -428,13 +428,13 @@
     "idle": {
       "title": "Idle",
       "dir": "nueva/idle",
-      "count": 20,
+      "count": 24,
       "fps": 8,
       "canvas": [
         200,
         240
       ],
-      "note": "Respiración: saltito corto de 5 poses y atusado de piernas x3 (frames 11-15 repetidos). Centrado por el eje de la cabeza (x=128).",
+      "note": "Respiracion y saltitos (00-10), palmadas de atusado 11-12 repetidas seguidas x3 (frames 11-16) y vuelta a la guardia (17-23). Centro por el eje de la cabeza, x=128.",
       "frames": [
         "00.png",
         "01.png",
@@ -455,7 +455,11 @@
         "16.png",
         "17.png",
         "18.png",
-        "19.png"
+        "19.png",
+        "20.png",
+        "21.png",
+        "22.png",
+        "23.png"
       ],
       "group": "animaciones"
     }
