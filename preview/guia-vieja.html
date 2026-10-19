@@ -25,9 +25,24 @@
   button { background:#35324e; color:#eee; border:1px solid #4a4767; border-radius:8px;
     padding:8px 12px; cursor:pointer; font-size:14px; }
   .warn { color:#96ffeb; }
+
+  nav.models { position:sticky; top:0; z-index:99; display:flex; gap:8px; justify-content:center;
+    padding:10px; background:#0e0a16ee; border-bottom:2px solid #3d3358; flex-wrap:wrap;
+    font-family:system-ui,sans-serif; }
+  nav.models a { text-decoration:none; padding:9px 16px; border-radius:10px; font-weight:700;
+    letter-spacing:.5px; font-size:14px; border:2px solid #3d3358; color:#cfc9e6; }
+  nav.models a:hover { border-color:#96ffeb; color:#96ffeb; }
+  nav.models a.on { background:#ffcb3d; color:#150f1f; border-color:#ffcb3d; }
 </style>
 </head>
 <body data-guide="../voltia/guide/vieja.json">
+<nav class="models">
+  <a href="index.html">① Modelo original</a>
+  <a href="nuevo.html">② Modelo nuevo</a>
+  <a href="fight.html">⚔ Pelea</a>
+  <a class="on" href="guia-vieja.html">📖 Guía del original</a>
+</nav>
+
 <header>
   <h1 id="guideTitle">Guía de estilo · personaje de la pelea</h1>
   <p class="warn">Solo reglas y prompt. Aquí no hay animación. Es el estilo de la hoja que ya juega.</p>

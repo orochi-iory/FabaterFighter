@@ -68,15 +68,29 @@
   .arena input[type=range] { width:140px; }
   .layers { color:#d8d6ea; font-size:13px; line-height:1.55; margin:12px 0 0; }
   .layers b { color:#96ffeb; }
+
+  nav.models { position:sticky; top:0; z-index:99; display:flex; gap:8px; justify-content:center;
+    padding:10px; background:#0e0a16ee; border-bottom:2px solid #3d3358; flex-wrap:wrap;
+    font-family:system-ui,sans-serif; }
+  nav.models a { text-decoration:none; padding:9px 16px; border-radius:10px; font-weight:700;
+    letter-spacing:.5px; font-size:14px; border:2px solid #3d3358; color:#cfc9e6; }
+  nav.models a:hover { border-color:#96ffeb; color:#96ffeb; }
+  nav.models a.on { background:#ffcb3d; color:#150f1f; border-color:#ffcb3d; }
 </style>
 </head>
 <body>
+<nav class="models">
+  <a class="on" href="index.html">① Modelo original</a>
+  <a href="nuevo.html">② Modelo nuevo</a>
+  <a href="fight.html">⚔ Pelea</a>
+  <a href="guia-vieja.html">📖 Guía del original</a>
+</nav>
 <header>
   <h1>⚡ VOLTIA ⚡</h1>
   <p id="ver">cargando…</p>
   <a class="play" href="fight.html">Probar pelea · Voltia vs Voltia</a>
   <a class="play alt" href="guia-vieja.html">Guía de este personaje</a>
-  <p class="notes">Este visor es el personaje de la pelea. El modelo nuevo está en otra página.</p>
+  <p class="notes">Estás en el <b>modelo original</b>: el que pelea. El modelo nuevo se abre desde el menú de arriba.</p>
   <p class="notes" id="notes"></p>
   <p id="syncwarn"></p>
 </header>

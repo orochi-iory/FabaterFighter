@@ -71,9 +71,23 @@
   .help { color:#9d9ab5; font-size:13px; line-height:1.55; margin:12px 0 0; }
   .help b { color:var(--gold); }
   #status { color:#ff7b7b; min-height:1.2em; font-size:14px; }
+
+  nav.models { position:sticky; top:0; z-index:99; display:flex; gap:8px; justify-content:center;
+    padding:10px; background:#0e0a16ee; border-bottom:2px solid #3d3358; flex-wrap:wrap;
+    font-family:system-ui,sans-serif; }
+  nav.models a { text-decoration:none; padding:9px 16px; border-radius:10px; font-weight:700;
+    letter-spacing:.5px; font-size:14px; border:2px solid #3d3358; color:#cfc9e6; }
+  nav.models a:hover { border-color:#96ffeb; color:#96ffeb; }
+  nav.models a.on { background:#ffcb3d; color:#150f1f; border-color:#ffcb3d; }
 </style>
 </head>
 <body>
+<nav class="models">
+  <a href="index.html">① Modelo original</a>
+  <a href="nuevo.html">② Modelo nuevo</a>
+  <a class="on" href="fight.html">⚔ Pelea</a>
+  <a href="guia-vieja.html">📖 Guía del original</a>
+</nav>
 <div class="wrap">
   <div class="stage">
     <div class="hud dim" id="hud">

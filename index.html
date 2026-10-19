@@ -3,45 +3,72 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>VOLTIA</title>
+<title>VOLTIA · elige modelo</title>
 <style>
-  * { box-sizing: border-box; }
-  body { margin:0; font-family: system-ui, sans-serif; background:#181624; color:#eee;
-    min-height:100vh; display:flex; align-items:center; justify-content:center; padding:24px; }
-  main { width:100%; max-width:720px; }
-  h1 { margin:0 0 8px; color:#ffcb3d; letter-spacing:2px; }
-  p { color:#d8d6ea; line-height:1.5; }
-  nav { display:grid; gap:12px; margin-top:22px; }
-  a { display:block; text-decoration:none; background:#222033; border:2px solid #3a3752;
-    border-radius:12px; padding:16px 18px; color:#eee; }
-  a strong { display:block; color:#ffcb3d; font-size:18px; margin-bottom:4px; }
-  a span { color:#9d9ab5; font-size:14px; line-height:1.4; }
-  a.main { border-color:#ffcb3d; }
-  a:hover { background:#2c2a40; }
+  * { box-sizing:border-box; }
+  body { margin:0; font-family:system-ui,sans-serif; background:#150f1f; color:#eee;
+         min-height:100vh; display:flex; align-items:center; justify-content:center; padding:28px 18px; }
+  main { width:100%; max-width:980px; }
+  h1 { margin:0 0 6px; color:#ffcb3d; letter-spacing:3px; font-size:34px; text-align:center; }
+  p.lead { margin:0 0 26px; color:#b7b0d0; text-align:center; line-height:1.5; }
+  .grid { display:grid; grid-template-columns:1fr 1fr; gap:18px; }
+  @media (max-width:760px) { .grid { grid-template-columns:1fr; } }
+  .opt { background:#211a33; border:2px solid #3d3358; border-radius:16px; padding:16px;
+         display:flex; flex-direction:column; gap:12px; text-decoration:none; color:inherit;
+         transition:border-color .15s, transform .15s; }
+  .opt:hover { transform:translateY(-2px); }
+  .opt.old:hover { border-color:#96ffeb; }
+  .opt.new:hover { border-color:#b98cff; }
+  .opt .thumb { height:200px; border-radius:10px; background:#181226; display:flex;
+                align-items:center; justify-content:center; overflow:hidden; }
+  .opt .thumb img { image-rendering:pixelated; max-height:190px; width:auto; }
+  .opt h2 { margin:0; font-size:19px; letter-spacing:1px; }
+  .opt.old h2 { color:#96ffeb; }
+  .opt.new h2 { color:#b98cff; }
+  .opt .tag { font-size:12px; font-weight:700; letter-spacing:.5px; padding:3px 8px;
+              border-radius:999px; align-self:flex-start; }
+  .opt.old .tag { background:#1c5e5e; color:#c8fff5; }
+  .opt.new .tag { background:#4a2a7a; color:#e2cfff; }
+  .opt p { margin:0; font-size:13px; color:#a9a2c4; line-height:1.5; }
+  .sub { display:flex; gap:8px; flex-wrap:wrap; margin-top:auto; padding-top:6px; }
+  .sub a { font-size:13px; text-decoration:none; color:#cfc9e6; border:1px solid #3d3358;
+           border-radius:8px; padding:6px 11px; }
+  .sub a:hover { border-color:#ffcb3d; color:#ffcb3d; }
+  footer { text-align:center; color:#6d6b85; font-size:12px; margin-top:22px; }
 </style>
 </head>
 <body>
 <main>
-  <h1>VOLTIA</h1>
-  <p>El personaje de la pelea y el modelo nuevo no comparten página. Las guías no animan nada: solo guardan cómo generar. El modelo nuevo ya es un juego de animaciones, no un solo sprite.</p>
-  <nav>
-    <a class="main" href="preview/index.html">
-      <strong>Visor del personaje actual</strong>
-      <span>El que ya está en la pelea. Animaciones, escenario y manual.</span>
-    </a>
-    <a href="preview/nueva.html">
-      <strong>Modelo nuevo · animaciones</strong>
-      <span>Las animaciones a 200 px nativos, el escenario y las reglas de escala.</span>
-    </a>
-    <a href="preview/guia.html">
-      <strong>Guía · modelo nuevo</strong>
-      <span>Dibujo, recorte y el prompt. Sin animación.</span>
-    </a>
-    <a href="preview/guia-vieja.html">
-      <strong>Guía · personaje de la pelea</strong>
-      <span>Por si hay que volver a este estilo. Reglas y prompt, sin animación.</span>
-    </a>
-  </nav>
+  <h1>⚡ VOLTIA ⚡</h1>
+  <p class="lead">Dos modelos separados. Elige cuál quieres ver.</p>
+
+  <div class="grid">
+    <div class="opt old">
+      <div class="thumb"><img src="voltia/frames/voltia_stance_0.png" alt="Voltia original"></div>
+      <span class="tag">TERMINADO · EN LA PELEA</span>
+      <h2>① Modelo original</h2>
+      <p>El Voltia que ya juega. 105 frames, escenario, voces y el combate
+         Voltia contra Voltia. Es la referencia de todo lo demás.</p>
+      <div class="sub">
+        <a href="preview/index.html">Visor</a>
+        <a href="preview/fight.html">Pelea</a>
+        <a href="preview/guia-vieja.html">Guía</a>
+      </div>
+    </div>
+
+    <div class="opt new">
+      <div class="thumb"><img src="voltia/nuevo/stance/stance.gif?v=1" alt="Modelo nuevo, stance"></div>
+      <span class="tag">EN CONSTRUCCIÓN</span>
+      <h2>② Modelo nuevo</h2>
+      <p>Empieza de cero aquí. De momento hay un stance de 8 frames mirando a
+         la referencia de R. Mika para las botas y la coleta.</p>
+      <div class="sub">
+        <a href="preview/nuevo.html">Ver el stance</a>
+      </div>
+    </div>
+  </div>
+
+  <footer>FabaterFighter · esta página es el menú principal</footer>
 </main>
 </body>
 </html>
