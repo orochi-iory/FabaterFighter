@@ -12,7 +12,7 @@ Uso:
     PYTHONPATH=tools/pylibs python3 tools/build_sheet.py \
         voltia/nueva/stance/src/sheet_stance.png voltia/nueva/stance 200 240 238
 
-    argumentos: <hoja> <carpeta_salida> <ancho> <alto> <fila_del_suelo>
+    argumentos: <hoja> <carpeta_salida> <ancho> <alto> <fila_del_suelo> [columnas] [filas]
 
 Después de recortar, si el brazo o el guante salen manchados, se pasa
 tools/fix_gloves.py (solo en los frames revisados a mano).
@@ -80,7 +80,7 @@ def _green_spans(flags):
     return out
 
 
-def rows_of_cells(im, ncol=5):
+def rows_of_cells(im, ncol=5, nrows=4):
     """Separa la hoja en filas y columnas usando los pasillos verdes.
 
     Los márgenes verdes de arriba y abajo NO son filas: son separadores. Las
@@ -93,8 +93,16 @@ def rows_of_cells(im, ncol=5):
     px = im.load()
     full_rows = [all(is_green(px[x, y]) for x in range(w)) for y in range(h)]
     spans = _green_spans(full_rows)
-    bands = [(spans[i][1] + 1, spans[i + 1][0] - 1) for i in range(len(spans) - 1)]
+    # los bordes de la hoja cuentan como pasillo: una tirada sin margen
+    # arriba o abajo sigue dando 4 filas
+    edges = [(-1, -1)] + spans + [(h, h)]
+    bands = [(edges[i][1] + 1, edges[i + 1][0] - 1) for i in range(len(edges) - 1)]
     bands = [(a, b) for a, b in bands if b - a >= 8]
+    # una hoja 4x2 (4 columnas, 2 filas) no lleva pasillo en medio: se parte
+    # por la mitad, así que el número de filas se puede forzar
+    if nrows and len(bands) < nrows:
+        hh = h / nrows
+        bands = [(round(i * hh), round((i + 1) * hh) - 1) for i in range(nrows)]
     if not bands:
         raise SystemExit('no encuentro filas de figuras en la hoja')
 
@@ -170,10 +178,11 @@ def cut_figure(cell):
 
 def build(sheet, outdir, cw, ch, ground, ncol=5, nrows=4, write=True):
     im = Image.open(sheet)
-    grid = rows_of_cells(im, ncol)
-    if len(grid) != nrows:
+    grid = rows_of_cells(im, ncol, nrows)
+    if len(grid) > nrows:
         raise SystemExit('la hoja dio %d filas, se esperaban %d' % (len(grid), nrows))
     figs = [cut_figure(grid[j][i]) for j in range(nrows) for i in range(ncol)]
+    figs = [f for f in figs if f.width > 4 and f.height > 4]   # celdas vacías
     factor = (cw * 0.0 + 200) / figs[0].height   # 200 px = 170 cm con coleta
     out = []
     for k, fig in enumerate(figs):
@@ -197,6 +206,8 @@ if __name__ == '__main__':
         raise SystemExit(__doc__)
     sheet, outdir = args[0], args[1]
     cw, ch, ground = int(args[2]), int(args[3]), int(args[4])
-    frames = build(sheet, outdir, cw, ch, ground)
+    ncol = int(args[5]) if len(args) > 5 else 5
+    nrows = int(args[6]) if len(args) > 6 else 4
+    frames = build(sheet, outdir, cw, ch, ground, ncol=ncol, nrows=nrows)
     print('%s -> %s: %d frames de %dx%d, suelo %d'
           % (sheet, outdir, len(frames), cw, ch, ground))

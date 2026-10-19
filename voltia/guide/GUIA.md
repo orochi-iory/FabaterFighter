@@ -134,6 +134,39 @@ Tres cosas que el prompt arregla y que hay que mantener:
   obedece «hazte más pequeño»; la reducción se hace en código.
 - **Puños con nudillos** y línea del pulgar. Si no, son manchas.
 
+## Técnica de la hoja (la que funciona)
+
+El recorte se ensucia cuando la hoja sale con el dibujo pequeño. La stance se
+generó con la figura **grande** y aguantó; las dos tiradas de 20 poses en 5 × 4
+salieron con la figura a la mitad de tamaño y el contorno de un píxel de
+pantalla, y al bajarlas a 200 px el NEAREST se comía justo ese contorno.
+
+La hoja que aguanta, y que hay que pedir siempre:
+
+- **4 columnas × 2 filas** (8 poses), lienzo **1024 × 1024**.
+- **Bloques de 6 px de pantalla** por píxel de sprite, y figura de **110 px de
+  sprite = 660 px de pantalla** de la suela a la punta del pelo.
+- Imagen 1 = **la hoja ya aprobada**; imagen 2 = **el mismo sprite ampliado ×4**
+  (`voltia/guide/ref/stance_x4.png`) para que copie la factura del contorno.
+- Los 8 poses van nombradas una a una en el prompt (contacto, abajo, paso,
+  arriba, y lo mismo con la otra pierna). Así no se inventa el ciclo.
+
+Antes de recortar, se mide: **el borde de la silueta tiene que dar 78–83 % de
+píxeles de contorno**, como la stance (80 %). Si da menos del 70 %, esa hoja no
+sirve y se tira: es exactamente el defecto que se ve como «recorte sucio».
+
+El corte, siempre con el mismo comando y el mismo lienzo:
+
+```
+PYTHONPATH=tools/pylibs python3 tools/build_sheet.py <hoja> <salida> 200 240 238 4 2
+PYTHONPATH=tools/pylibs python3 tools/centre_by_head.py <salida> --target 128
+```
+
+`build_sheet.py` separa la hoja por los **pasillos verdes consecutivos** (no por
+el margen: si no, el margen de arriba cuenta como fila) y se queda con la **masa
+conectada mayor** de cada celda, que es lo que tira las coletas de las figuras
+vecinas que se cuelan en la celda.
+
 ## Recorte y reducción
 
 El verde se mide en el borde de la imagen. Esta tirada dio `(28, 221, 8)`.
@@ -158,9 +191,17 @@ reducción de paleta, cuando toque, se revisa color a color.
 - Reutilizar es el frame entero en otro momento, no recortar un brazo.
 - La máscara lleva boca: abertura oscura y labio de piel, bajo el visor.
   Sin boca el frame no entra.
+- Bajar la figura con NEAREST es lo que rompe el contorno cuando el factor es
+  pequeño (0,70). Con la hoja 4 × 2 el factor es 0,30 y el contorno viene ya
+  grueso, así que el NEAREST no tiene que «adivinar» nada.
 
 ## Historial
 
+- 2026-10-19. Se apunta la técnica de la hoja 4 × 2: 1024 × 1024, bloques de 6,
+  figura de 660 px de pantalla, imagen 1 la hoja aprobada e imagen 2 el sprite
+  ampliado ×4. Medida de control: 78–83 % de contorno en el borde. El walk de
+  20 poses se tira y se rehace con 8 poses reales (contacto, abajo, paso, arriba
+  por cada pierna).
 - 2026-10-19. Se deja de reducir. El sprite de referencia es el PNG de 1024 × 1024
   tal cual, solo con el verde quitado. La resolución nativa se mide por bloques:
   ~127 de alto, ya en escala de juego.

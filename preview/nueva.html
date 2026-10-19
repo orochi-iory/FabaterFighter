@@ -117,7 +117,7 @@
 (() => {
   // El archivo no se toca y el escenario no lo escala: 200 nativos, 1:1.
   // ?v= para que el navegador no sirva el PNG viejo de esta misma ruta.
-  window.STAGE_FIGHTER = '../voltia/nueva/stance/00.png?v=19';
+  window.STAGE_FIGHTER = '../voltia/nueva/stance/00.png?v=20';
   // Suelo en el centro del rombo dibujado (spec.floorY es 408, el borde trasero).
   window.STAGE_FLOOR_Y = 426;
   window.STAGE_FIGHTER_SCALE = 1;
@@ -202,7 +202,7 @@
     note.textContent = anim.note || '';
     for (const f of anim.frames) {
       const im = new Image();
-      im.src = '../voltia/' + anim.dir + '/' + f + '?v=19';
+      im.src = '../voltia/' + anim.dir + '/' + f + '?v=20';
       await im.decode();
       imgs.push(im);
     }
@@ -210,7 +210,7 @@
     draw();
   }
   try {
-    const guide = await (await fetch('../voltia/guide/style.json?v=19',
+    const guide = await (await fetch('../voltia/guide/style.json?v=20',
       { cache: 'no-store' })).json();
     window.__GUIDE = guide;
     const entries = Object.entries(guide.anims || {});
