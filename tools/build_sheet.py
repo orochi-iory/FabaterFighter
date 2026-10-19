@@ -66,31 +66,68 @@ def snap(im):
     return im
 
 
+def _green_spans(flags):
+    """Devuelve (inicio, fin) de cada tramo True consecutivo."""
+    out, start = [], None
+    for i, v in enumerate(flags):
+        if v and start is None:
+            start = i
+        elif not v and start is not None:
+            out.append((start, i - 1))
+            start = None
+    if start is not None:
+        out.append((start, len(flags) - 1))
+    return out
+
+
 def rows_of_cells(im, ncol=5):
-    """Separa la hoja en filas usando los pasillos verdes completos."""
+    """Separa la hoja en filas y columnas usando los pasillos verdes.
+
+    Los márgenes verdes de arriba y abajo NO son filas: son separadores. Las
+    filas son el hueco entre pasillos consecutivos. Las columnas se sacan de
+    los pasillos verticales que están verdes en todas las filas; si la hoja no
+    los trae, se reparte a partes iguales.
+    """
     im = im.convert('RGB')
     w, h = im.size
     px = im.load()
-    solid = [all(is_green(px[x, y]) for x in range(w)) for y in range(h)]
-    spans, start = [], None
-    for y, green in enumerate(solid):
-        if green and start is None:
-            start = y
-        elif not green and start is not None:
-            if y - start >= 8:
-                spans.append((start, y - 1))
-            start = None
-    if start is not None and h - start >= 8:
-        spans.append((start, h - 1))
-    bounds = [0] + [(a + b) // 2 for a, b in spans] + [h]
-    step = w / ncol
-    xs = [round(i * step) for i in range(ncol + 1)]
-    return [[im.crop((xs[i], bounds[j], xs[i + 1], bounds[j + 1]))
-             for i in range(ncol)] for j in range(len(bounds) - 1)]
+    full_rows = [all(is_green(px[x, y]) for x in range(w)) for y in range(h)]
+    spans = _green_spans(full_rows)
+    bands = [(spans[i][1] + 1, spans[i + 1][0] - 1) for i in range(len(spans) - 1)]
+    bands = [(a, b) for a, b in bands if b - a >= 8]
+    if not bands:
+        raise SystemExit('no encuentro filas de figuras en la hoja')
+
+    # columnas: verde en todas las filas a la vez
+    cols = []
+    for x in range(w):
+        ok = True
+        for (a, b) in bands:
+            for y in range(a, b + 1, 2):
+                if not is_green(px[x, y]):
+                    ok = False
+                    break
+            if not ok:
+                break
+        cols.append(ok)
+    corridors = _green_spans(cols)
+    inner = [c for c in corridors if c[0] > 0 and c[1] < w - 1]
+    if len(inner) == ncol - 1:
+        bounds = [0] + [(a + b) // 2 for a, b in inner] + [w]
+    else:
+        step = w / ncol
+        bounds = [round(i * step) for i in range(ncol + 1)]
+    return [[im.crop((bounds[i], a, bounds[i + 1], b + 1)) for i in range(bounds.__len__() - 1)]
+            for (a, b) in bands]
 
 
 def cut_figure(cell):
-    """Recorta la figura dentro de su celda y deja verde -> transparente."""
+    """Recorta la figura de su celda: verde -> transparente y se queda la
+    masa conectada más grande.
+
+    Las coletas de las figuras vecinas se cuelan en la celda como islas
+    sueltas; quedarse con la masa más grande las tira sin tocar la figura.
+    """
     cell = cell.convert('RGBA')
     px = cell.load()
     w, h = cell.size
@@ -98,8 +135,37 @@ def cut_figure(cell):
         for x in range(w):
             if is_green(px[x, y]):
                 px[x, y] = (0, 0, 0, 0)
-    box = cell.getbbox()
-    return cell.crop(box) if box else cell
+    solid = [(x, y) for y in range(h) for x in range(w) if px[x, y][3]]
+    if not solid:
+        return cell
+    seen = set()
+    best = None
+    for seed in solid:
+        if seed in seen:
+            continue
+        comp = {seed}
+        stack = [seed]
+        seen.add(seed)
+        while stack:
+            cx, cy = stack.pop()
+            for dx in (-1, 0, 1):
+                for dy in (-1, 0, 1):
+                    n = (cx + dx, cy + dy)
+                    if n in seen or not (0 <= n[0] < w and 0 <= n[1] < h):
+                        continue
+                    if px[n[0], n[1]][3]:
+                        seen.add(n)
+                        comp.add(n)
+                        stack.append(n)
+        if best is None or len(comp) > len(best):
+            best = comp
+    # fuera todo lo que no sea la figura (islas de las figuras vecinas)
+    for (x, y) in solid:
+        if (x, y) not in best:
+            px[x, y] = (0, 0, 0, 0)
+    xs = [p[0] for p in best]
+    ys = [p[1] for p in best]
+    return cell.crop((min(xs), min(ys), max(xs) + 1, max(ys) + 1))
 
 
 def build(sheet, outdir, cw, ch, ground, ncol=5, nrows=4, write=True):

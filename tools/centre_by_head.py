@@ -15,6 +15,7 @@ solo traslada píxeles enteros.
 Uso:
     PYTHONPATH=tools/pylibs python3 tools/centre_by_head.py voltia/nueva/idle
     ... --target 128   # columna del eje (por defecto la mediana del propio set)
+    ... --belt         # usa el centro del cinturón en vez de la cabeza
     ... --dry-run      # solo informa, no escribe
 """
 
@@ -27,6 +28,20 @@ from PIL import Image
 
 # Máscara del casco: rosa y su sombra.
 MASK = {(190, 25, 130), (120, 16, 80)}
+# Cinturón: el otro eje posible (más estable en animaciones de piernas).
+BELT = (176, 112, 36)
+
+
+def torso_axis(im):
+    """x del centro del cinturón (la cintura), mucha más estable que la cabeza."""
+    px = im.load()
+    w, h = im.size
+    pts = [(x, y) for y in range(0, h)
+           for x in range(w) if px[x, y][3] and px[x, y][:3] == BELT]
+    if not pts:
+        return None
+    xs = [p[0] for p in pts]
+    return (min(xs) + max(xs)) / 2
 
 
 def head_axis(im):
@@ -81,9 +96,11 @@ def main(argv):
 
     names = sorted(n for n in os.listdir(folder) if n.endswith('.png'))
     ims = [Image.open(os.path.join(folder, n)).convert('RGBA') for n in names]
-    axes = [head_axis(im) for im in ims]
+    use_belt = '--belt' in argv
+    fn = torso_axis if use_belt else head_axis
+    axes = [fn(im) for im in ims]
     if any(a is None for a in axes):
-        raise SystemExit('hay frames sin máscara; revisa la carpeta')
+        raise SystemExit('hay frames sin el color de referencia; revisa la carpeta')
     if target is None:
         target = round(statistics.median(axes))
     print('eje objetivo: x=%s (mediana del set: %s)' % (target, round(statistics.median(axes))))
