@@ -75,6 +75,20 @@
     <p>Conclusión medida: el vídeo resolvería <em>el orden</em> de los frames, no <em>la geometría</em>. Y arrastra un problema nuevo: comprimirlo en pixel art limpio (GIF/MP4 traen ruido y suavizado) es más difícil que recortar una hoja.</p>
   </div>
 
+  <h2>0d · GIF animado (sí se puede)</h2>
+  <div class="box">
+    <p>Los GIF los monto yo desde los frames, no el modelo. 256 colores sin dithering sobre sprites de 22 colores = pérdida cero. Lienzo común y alineado por los pies para que el personaje no baile.</p>
+    <div class="row">
+      <figure><img src="../voltia/guide/ref/stance_b4.gif?v=6" alt="Stance 18 frames" width="240">
+        <figcaption>stance_b4.gif · 18 frames · 8 fps · 22 colores</figcaption></figure>
+      <figure><img src="../voltia/guide/ref/prueba_salto.gif?v=6" alt="Salto y agachada, 6 frames" width="240">
+        <figcaption>prueba_salto.gif · 6 frames · 6 fps</figcaption></figure>
+    </div>
+    <p><span class="ok">Verificado:</span> el GIF conserva los 22 colores exactos; extraje un frame y comparé. Es la mejor herramienta de revisión que tenemos: en movimiento se ve el baile y las poses repetidas al instante.</p>
+    <p><span class="bad">Lo que el GIF NO arregla:</span> el encuadre. En la prueba de salto cada figura sale a distinto tamaño (62×131 px la agachada, 63×172 px la del aire) porque el modelo no respeta el tamaño entre celdas. En un GIF eso se ve como un personaje que crece y decrece.</p>
+    <p class="tiny">Regla: el GIF sirve para <strong>revisar</strong>, no para corregir. La corrección sigue siendo recortar a tamaño nativo y pasar la huella.</p>
+  </div>
+
   <h2>1 · Recoloreo de la hoja GBA</h2>
   <div class="box">
     <img src="../voltia/guide/ref/voltia_half_cmp.png?v=2" alt="Cammy arriba, Voltia abajo, mismas poses y posiciones">
