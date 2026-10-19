@@ -40,7 +40,7 @@ SKIN = {(240, 176, 132), (196, 120, 84)}
 # Colores que nunca son legítimos sobre un brazo o un guante.
 JUNK = {(120, 16, 80), (176, 112, 36)}
 # Frames donde la mano venía abierta (piel dentro del guante), revisados a mano.
-GLOVE_FRAMES = {'09.png', '10.png', '12.png', '14.png', '16.png'}
+GLOVE_FRAMES = {'09.png'}
 NAVY = {GLOVE, GLOVE_SHADOW}
 
 
@@ -70,9 +70,12 @@ def _components(px, w, h, pred):
 
 
 def decontaminate(im, rounds=60):
-    """Pinta de piel o de guante los píxeles de máscara/cinturón que han
-    caído encima de un brazo. Solo toca píxeles pegados a piel o a marino,
-    así que el cinturón y la máscara reales no se mueven."""
+    """Pinta de piel o de guante los píxeles de máscara/cinturón sueltos.
+
+    NO se usa por defecto: en los frames 12-20 del idle repintaba la boca
+    (morado de máscara junto a la piel de la barbilla) y engordaba el guante
+    del brazo del fondo. Se conserva para poder mirarla frame a frame.
+    """
     px = im.load()
     w, h = im.size
     total = 0
@@ -222,17 +225,16 @@ def fix_dir(path):
     for name in names:
         full = os.path.join(path, name)
         im = Image.open(full).convert('RGBA')
-        junk = decontaminate(im)
-        # El cierre de guante automático acertaba en las manos, pero en los
-        # frames 01, 02, 05 y 17 tomaba el ribete del pecho por un guante y
-        # pintaba de marino el escote. Solo se aplica donde está comprobado.
+        # OJO: decontaminate() NO se llama por defecto. Sobre esta hoja
+        # repintaba el morado de la máscara (la boca) y agrandaba el guante
+        # del brazo que queda al fondo. Se deja solo como herramienta suelta.
         gloves = close_glove(im) if name in GLOVE_FRAMES else []
         if name == '09.png' and 'idle' in path.lower():
             # la mano de la cadera venía pintada con el verde del traje
             gloves.append(('caja', glove_box(im, (80, 122, 95, 155))))
-        if junk or gloves:
+        if gloves:
             im.save(full)
-        print('%s  suciedad=%3d  guantes=%s' % (name, junk, gloves))
+        print('%s  %s' % (name, gloves or 'sin cambios'))
 
 
 if __name__ == '__main__':
