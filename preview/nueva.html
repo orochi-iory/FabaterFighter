@@ -5,102 +5,96 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>VOLTIA · modelo nuevo, sin reducir</title>
 <style>
+  :root { --bg:#181624; --panel:#222033; --cyan:#96ffeb; }
   * { box-sizing: border-box; }
   body { margin:0; font-family: system-ui, sans-serif; background:#181624; color:#eee;
-    display:flex; flex-direction:column; align-items:center; min-height:100vh; }
-  header, section { width:100%; max-width:1200px; padding:16px; }
-  h1 { margin:0; color:#ffcb3d; letter-spacing:1px; }
-  h2 { color:#ffcb3d; letter-spacing:1px; margin:8px 0; }
-  p { color:#d8d6ea; line-height:1.5; }
-  a.play { display:inline-block; margin:10px 8px 0 0; background:#ffcb3d; color:#181624;
-    text-decoration:none; font-weight:700; padding:8px 14px; border-radius:8px; }
-  a.play.alt { background:transparent; color:#ffcb3d; border:2px solid #ffcb3d; }
-  .box { background:#222033; border:2px solid #ffcb3d; border-radius:12px; padding:16px; }
-  .scroller { overflow:auto; max-height:70vh; border:1px solid #3a3752; border-radius:8px;
-    background:#111018; margin:12px 0; }
+         display:flex; flex-direction:column; align-items:center; min-height:100vh; }
+  header { text-align:center; padding:20px 12px 8px; max-width:900px; }
+  header h1 { margin:0; color:#ffcb3d; letter-spacing:2px; }
+  header p { margin:6px 0 0; color:#96ffeb; }
+  header p.notes { color:#9d9ab5; font-size:14px; }
+  header p.notes b { color:#ffcb3d; }
+  header p.notes a { color:#96ffeb; }
+  a.play { display:inline-block; margin-top:10px; background:#ffcb3d; color:#181624;
+    text-decoration:none; font-weight:700; padding:8px 14px; border-radius:8px; letter-spacing:0.3px; }
+  a.play:hover { background:#ffe08a; }
+  a.play.alt { background:transparent; color:#ffcb3d; border:2px solid #ffcb3d; margin-left:8px; }
+  a.play.alt:hover { background:#ffcb3d; color:#181624; }
+  main { display:flex; gap:20px; flex-wrap:wrap; justify-content:center; padding:16px;
+         width:100%; max-width:1200px; }
+  .stage { background:var(--panel); border:2px solid #3a3752; border-radius:12px; padding:16px;
+           display:flex; flex-direction:column; align-items:center; gap:12px; }
+  .stage.arena { align-items:stretch; }
+  .scroller { overflow:auto; border:1px solid #3a3752; border-radius:8px;
+    background:#111018; }
   .scroller canvas { display:block; }
   .scroller canvas.px { image-rendering:pixelated; }
-  .scroller canvas.magenta { background:#c0c; }
-  .scroller canvas.light { background:#e9e6f5; }
-  .scroller canvas.green { background:#11ef06; }
-  .cap { color:#9d9ab5; font-size:12px; margin-top:6px; }
+  .cap { color:#9d9ab5; font-size:12px; margin:6px 0 0; }
   .controls { display:flex; gap:8px; flex-wrap:wrap; justify-content:center; align-items:center; }
   button, select { background:#35324e; color:#eee; border:1px solid #4a4767; border-radius:8px;
     padding:8px 12px; cursor:pointer; font-size:14px; }
-  button.active { background:#0e7c8c; border-color:#96ffeb; }
-  .note { min-height:1.4em; color:#ffcb3d; }
+  button:hover, select:hover { background:#454163; }
+  button.active { background:#0e7c8c; border-color:#96ffeb; color:#fff; }
+  .anims { display:grid; grid-template-columns:repeat(3, 1fr); gap:8px; width:100%; }
+  .info { color:#9d9ab5; font-size:14px; }
+  .info b { color:#ffcb3d; }
+  .note { min-height:1.2em; color:#ffcb3d; }
   .warn { color:#9d9ab5; font-size:14px; }
-  ul.facts { margin:8px 0 0; padding-left:22px; color:#d8d6ea; line-height:1.6; }
-  ul.facts b { color:#ffcb3d; }
+  table.moves { border-collapse:collapse; margin-top:12px; width:100%; font-size:14px; }
+  table.moves th, table.moves td { border:1px solid #3a3752; padding:5px 10px; text-align:left; }
+  table.moves th { background:#35324e; color:#96ffeb; }
+  section { width:100%; max-width:1200px; padding:0 16px 16px; }
+  section h2 { color:#ffcb3d; letter-spacing:1px; margin:8px 0; }
+  .box { background:var(--panel); border:2px solid #3a3752; border-radius:12px; padding:16px; }
   canvas#stagecv { image-rendering:pixelated; width:100%; max-width:960px; height:auto;
     background:#101018; border-radius:8px; display:block; margin:0 auto; }
   .arena label { color:#9d9ab5; font-size:13px; display:flex; align-items:center; gap:6px; }
   .arena input[type=range] { width:140px; }
   .layers { color:#d8d6ea; font-size:13px; line-height:1.55; }
-  footer { color:#6d6b85; font-size:13px; padding:16px; }
+  footer { color:#6d6b85; font-size:13px; padding:16px; text-align:center; }
 </style>
 </head>
 <body>
 <header>
-  <h1>Modelo nuevo · idle a 200 píxeles nativos</h1>
-  <p>Idle de <b>20 frames</b>, dibujado en bloques de 5 y entregado a
-    <b>200 píxeles nativos</b>. El escenario lo dibuja <b>1:1</b>: un píxel del
-    archivo, un píxel de mundo.</p>
-  <p><b>Regla de oro:</b> 170 cm con la coleta = 200 píxeles.</p>
-  <a class="play" href="guia.html">Guía de este modelo</a>
+  <h1>⚡ VOLTIA ⚡</h1>
+  <p id="ver">Modelo nuevo · cargando…</p>
+  <a class="play" href="fight.html">Probar pelea · Voltia vs Voltia</a>
   <a class="play alt" href="index.html">Visor del personaje actual</a>
-  <a class="play alt" href="guia-vieja.html">Guía del personaje actual</a>
+  <a class="play alt" href="guia.html">Guía de este modelo</a>
+  <p class="notes" id="notes"></p>
+  <p class="notes">Animaciones · Escenario · Reglas. El modelo nuevo ya no es solo
+    el sprite: aquí están las animaciones, el escenario a 1:1 y las reglas de escala.</p>
 </header>
-<section>
-  <div class="box">
+<main>
+  <div class="stage">
     <p class="warn" id="warn">Cargando…</p>
-    <div class="tabs" id="tabs"></div>
     <div class="scroller" id="scroller">
-      <canvas id="sprite" width="200" height="240"></canvas>
+      <canvas id="sprite" class="px" width="200" height="240"></canvas>
     </div>
     <p class="cap" id="cap"></p>
     <div class="controls">
-      <button id="play" type="button">Pausa</button>
-      <button id="step" type="button">Frame</button>
+      <button id="play" type="button">⏸ Pausar</button>
+      <button id="step" type="button">⏭ Frame</button>
       <button id="prev" type="button">◀</button>
       <button id="next" type="button">▶</button>
-      <button id="z100" type="button">1:1</button>
-      <button id="z50" type="button">50%</button>
-      <button id="z25" type="button">25%</button>
-      <button id="bg" type="button">Fondo magenta</button>
-      <button id="bg2" type="button">Fondo claro</button>
     </div>
     <p class="note" id="note"></p>
-    <p class="warn">Los botones solo cambian el zoom de la vista. Los PNG no se
-      tocan: cada frame mide 200 × 240.</p>
-    <ul class="facts">
-      <li>Sprite de juego: <b>150 × 200</b>, altura nativa. Se usa 1:1, sin escalar.</li>
-      <li>Maestro: <b>1024 × 1024</b>, el archivo del modelo, sin recortar. Solo se le quita el verde.</li>
-      <li>El maestro tiene bloques de <b>8</b> (127 nativos). El generador no baja de ahí: cuatro tiradas pidiendo 200 devolvieron el mismo raster.</li>
-      <li>Altura de ring: <b>200 px</b>. Suelo en <b>426</b>, el centro del rombo pintado.</li>
-      <li>Eso es lo que antes se estropeaba: en vez de leer 127 como resolución nativa, se tomaba 1022 como si fueran 1022 píxeles de sprite y se bajaba a 120.</li>
-      <li>Altura de ring: <b>200 px</b> de mundo. Suelo en <b>426</b>, el centro del rombo pintado; antes 408, que era el borde trasero del ring.</li>
-    </ul>
+    <p class="warn">Cada frame se ve a su tamaño nativo: un píxel del archivo, un píxel
+      de pantalla. No hay zoom ni fondos de prueba.</p>
   </div>
-</section>
+  <div class="stage">
+    <div class="anims" id="tabs"></div>
+    <div class="info" id="animinfo"></div>
+  </div>
+</main>
 <section class="arena" id="escenario">
   <h2>Escenario · el mismo de siempre</h2>
   <div class="box">
-    <p class="warn" id="modeNote"></p>
-    <div class="controls">
-      <button id="mBlocks" type="button">127 · un bloque = 1 píxel</button>
-      <button id="mFit153" type="button">153 · la figura vieja</button>
-      <button id="mNative200" type="button">200 nativo · 1:1</button>
-      <button id="mFit200" type="button">200 · escalado</button>
-      <button id="mFit254" type="button">254 · 2× exacto</button>
-      <button id="mFit300" type="button">300 · lo que pediste</button>
-      <button id="mFit381" type="button">381 · 3× exacto</button>
-    </div>
+    <p class="warn" id="modeNote">La figura se dibuja a 200 píxeles de alto, 1:1: un píxel
+      del archivo, un píxel de mundo. Suelo en 426, el centro del rombo.</p>
     <canvas id="stagecv" width="960" height="540"></canvas>
     <div class="controls">
       <label>Desplazamiento <input id="stageScroll" type="range" min="0" max="1000" value="500"></label>
-      <label>Zoom <input id="stageZoom" type="range" min="8" max="140" value="80"></label>
-      <label>Voltia de alto <input id="heroScale" type="range" min="64" max="1024" value="200"></label>
       <button id="stageJump" type="button">Simular salto</button>
       <button id="stageMusic" type="button" title="Puerto Voltaje. No suena solo.">▶ Música</button>
       <label>Volumen <input id="musicVol" type="range" min="0" max="100" value="75"></label>
@@ -119,71 +113,15 @@
 <footer>FabaterFighter · modelo nuevo, aparte de la pelea</footer>
 <script>
 (() => {
-  const q = new URLSearchParams(location.search).get('mode') || 'native200';
-  const H = 1024;
-  // ?v= para que el navegador no sirva el PNG viejo de esta misma ruta
-  // El sprite de juego: 150 x 200, la altura nativa del ring. Se dibuja 1:1.
-  window.STAGE_FIGHTER = '../voltia/nueva/idle/00.png?v=13';
+  // El archivo no se toca y el escenario no lo escala: 200 nativos, 1:1.
+  // ?v= para que el navegador no sirva el PNG viejo de esta misma ruta.
+  window.STAGE_FIGHTER = '../voltia/nueva/idle/00.png?v=14';
   // Suelo en el centro del rombo dibujado (spec.floorY es 408, el borde trasero).
   window.STAGE_FLOOR_Y = 426;
-  // El archivo no se toca. El escenario lo dibuja a la escala que se elija.
-  window.STAGE_FIGHTER_SCALE = q === 'blocks' ? 1 / 8 : 1;
-  window.__MODE = q;
+  window.STAGE_FIGHTER_SCALE = 1;
 })();
 </script>
-<script src="stage.js?v=7"></script>
-<script>
-(() => {
-  const note = document.getElementById('modeNote');
-  const H = 1024;
-  const presets = {
-    blocks: { scale: 1 / 8, text: 'El maestro de 1024 reducido a un bloque por píxel: ' +
-      '127 de alto. Ya no es el que se usa, solo queda para comparar.' },
-    fit153: { scale: 153 / H, text: '153 de alto, la figura vieja. ×1,2 sobre los 127 ' +
-      'nativos: los bloques no caen justos y se ve blando.' },
-    native200: { scale: 1, text: '200 nativos, dibujados 1:1. El archivo mide 150 × 200 ' +
-      'y el escenario lo pinta sin escalar: un píxel del archivo, un píxel de mundo.' },
-    fit200: { scale: 1, text: '200 de alto, igual que el anterior.' },
-    fit254: { scale: 254 / H, text: '254 de alto: ×2 exacto sobre los 127 nativos. Cada ' +
-      'bloque se convierte en 4 píxeles iguales, sin inventar nada. Es el tamaño de ring ' +
-      'más cercano a 300 que se puede hacer sin deformar.' },
-    fit300: { scale: 300 / H, text: '300 de alto, tal como lo pediste. Sobre 127 nativos ' +
-      'es ×2,37: los bloques salen de 2 y de 3 píxeles mezclados. Se ve aquí al lado de 254.' },
-    fit381: { scale: 381 / H, text: '381 de alto: ×3 exacto. Perfecto de píxel, pero ocupa ' +
-      'dos tercios de la placa: demasiado grande para el ring.' }
-  };
-  const map = { mNative200: 'native200', mBlocks: 'blocks', mFit153: 'fit153',
-    mFit254: 'fit254', mFit300: 'fit300', mFit381: 'fit381' };
-  function apply(name) {
-    const p = presets[name];
-    if (!p) return;
-    window.STAGE_FIGHTER_SCALE = p.scale;
-    note.textContent = p.text;
-    Object.entries(map).forEach(([id, m]) => {
-      const b = document.getElementById(id);
-      if (b) b.classList.toggle('active', m === name);
-    });
-    const sl = document.getElementById('heroScale');
-    if (sl) sl.value = String(Math.round(p.scale * 1024));
-  }
-  Object.entries(map).forEach(([id, m]) => {
-    const b = document.getElementById(id);
-    if (b) b.onclick = () => apply(m);
-  });
-  const sl = document.getElementById('heroScale');
-  if (sl) sl.oninput = () => {
-    const px = Number(sl.value);
-    window.STAGE_FIGHTER_SCALE = px / H;
-    note.textContent = 'Voltia dibujada a ' + px + ' px de alto. El archivo no se toca: ' +
-      'esto es solo cómo la pinta el escenario.';
-    Object.values(map).forEach(id => {
-      const b = document.getElementById(id);
-      if (b) b.classList.remove('active');
-    });
-  };
-  apply(presets[window.__MODE] ? window.__MODE : 'native200');
-})();
-</script>
+<script src="stage.js?v=8"></script>
 <script>
 (() => {
   const btn = document.getElementById('stageMusic');
@@ -227,12 +165,11 @@
   const warn = document.getElementById('warn');
   const note = document.getElementById('note');
   const cap = document.getElementById('cap');
+  const info = document.getElementById('animinfo');
   const cv = document.getElementById('sprite');
   const cx = cv.getContext('2d');
   const tabs = document.getElementById('tabs');
-  const cls = ['', 'magenta', 'light', 'green'];
-  const names = ['oscuro', 'magenta', 'claro', 'verde'];
-  let ci = 0, zoom = 1, i = 0, playing = true, anim = null, imgs = [], timer = null;
+  let i = 0, playing = true, anim = null, imgs = [], timer = null;
 
   function draw() {
     if (!anim) return;
@@ -240,13 +177,7 @@
     cx.clearRect(0, 0, cv.width, cv.height);
     if (imgs[i]) cx.drawImage(imgs[i], 0, 0);
     cap.textContent = anim.title + ' · frame ' + (i + 1) + '/' + imgs.length +
-      ' · ' + Math.round(zoom * 100) + '% · el archivo mide ' + cv.width + ' × ' + cv.height;
-  }
-  function applyZoom() {
-    cv.className = 'px ' + cls[ci];
-    cv.style.width = Math.round(cv.width * zoom) + 'px';
-    cv.style.height = Math.round(cv.height * zoom) + 'px';
-    draw();
+      ' · ' + cv.width + ' × ' + cv.height + ' nativo, 1:1';
   }
   function restartTimer() {
     if (timer) clearInterval(timer);
@@ -266,18 +197,18 @@
     document.querySelectorAll('#tabs button').forEach(b => {
       b.classList.toggle('active', b.dataset.name === name);
     });
-    note.textContent = anim.note;
+    note.textContent = anim.note || '';
     for (const f of anim.frames) {
       const im = new Image();
-      im.src = '../voltia/' + anim.dir + '/' + f + "?v=13";
+      im.src = '../voltia/' + anim.dir + '/' + f + '?v=14';
       await im.decode();
       imgs.push(im);
     }
     restartTimer();
-    applyZoom();
+    draw();
   }
   try {
-    const guide = await (await fetch('../voltia/guide/style.json?v=13',
+    const guide = await (await fetch('../voltia/guide/style.json?v=14',
       { cache: 'no-store' })).json();
     window.__GUIDE = guide;
     const entries = Object.entries(guide.anims || {});
@@ -285,41 +216,47 @@
       const b = document.createElement('button');
       b.type = 'button';
       b.dataset.name = name;
-      b.textContent = a.title + ' · ' + a.count;
+      b.textContent = a.title + ' · ' + a.count + ' frames';
       b.onclick = () => select(name);
       tabs.appendChild(b);
     });
-    warn.textContent = 'Cada animación se ve por separado. Todas a 200 px nativos.';
+
+    const nframes = entries.reduce((n, [, a]) => n + a.count, 0);
+    document.getElementById('ver').textContent =
+      'Modelo nuevo · ' + entries.length + ' animaciones · ' + nframes +
+      ' frames · paleta de ' + (guide.palette ? guide.palette.length : '—') + ' tintas';
+    document.getElementById('notes').innerHTML =
+      'Regla de oro: <b>170 cm con la coleta = 200 píxeles</b>. ' +
+      'Un píxel del archivo, un píxel de mundo.';
+
+    let rows = '<table class="moves"><tr><th>Animación</th><th>Frames</th>' +
+      '<th>FPS</th><th>Lienzo</th></tr>';
+    entries.forEach(([, a]) => {
+      rows += '<tr><td>' + a.title + '</td><td>' + a.count + 'f</td><td>' +
+        a.fps + '</td><td>' + a.canvas[0] + ' × ' + a.canvas[1] + '</td></tr>';
+    });
+    rows += '</table>';
+    info.innerHTML = rows;
+
+    warn.textContent = 'Cada animación se ve por separado, a tamaño nativo.';
     document.getElementById('play').onclick = () => {
       playing = !playing;
-      document.getElementById('play').textContent = playing ? 'Pausa' : 'Seguir';
+      document.getElementById('play').textContent = playing ? '⏸ Pausar' : '▶ Seguir';
     };
     document.getElementById('step').onclick = () => {
       playing = false;
-      document.getElementById('play').textContent = 'Seguir';
+      document.getElementById('play').textContent = '▶ Seguir';
       i = (i + 1) % imgs.length; draw();
     };
     document.getElementById('prev').onclick = () => {
       playing = false;
-      document.getElementById('play').textContent = 'Seguir';
+      document.getElementById('play').textContent = '▶ Seguir';
       i = (i - 1 + imgs.length) % imgs.length; draw();
     };
     document.getElementById('next').onclick = () => {
       playing = false;
-      document.getElementById('play').textContent = 'Seguir';
+      document.getElementById('play').textContent = '▶ Seguir';
       i = (i + 1) % imgs.length; draw();
-    };
-    const zooms = { z100: 1, z50: 0.5, z25: 0.25 };
-    Object.entries(zooms).forEach(([id, z]) => {
-      document.getElementById(id).onclick = () => { zoom = z; applyZoom(); };
-    });
-    document.getElementById('bg').onclick = () => {
-      ci = (ci + 1) % cls.length; applyZoom();
-      document.getElementById('bg').textContent = 'Fondo ' + names[ci];
-    };
-    document.getElementById('bg2').onclick = () => {
-      ci = (ci + 1) % cls.length; applyZoom();
-      document.getElementById('bg').textContent = 'Fondo ' + names[ci];
     };
     if (entries.length) select(entries[entries.length - 1][0]);
   } catch (err) {

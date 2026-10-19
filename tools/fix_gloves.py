@@ -39,8 +39,11 @@ HAIR = {(85, 21, 124), (186, 104, 232), (60, 15, 95), (190, 25, 130)}
 SKIN = {(240, 176, 132), (196, 120, 84)}
 # Colores que nunca son legítimos sobre un brazo o un guante.
 JUNK = {(120, 16, 80), (176, 112, 36)}
+JUNK_BELT = (176, 112, 36)
 # Frames donde la mano venía abierta (piel dentro del guante), revisados a mano.
 GLOVE_FRAMES = {'09.png'}
+# Frames con el guante del fondo manchado de marrón (revisados a mano).
+FAR_ARM_FRAMES = {'12.png', '13.png', '14.png', '15.png', '16.png'}
 NAVY = {GLOVE, GLOVE_SHADOW}
 
 
@@ -220,7 +223,128 @@ def glove_box(im, box):
     return len(mask)
 
 
-def fix_dir(path):
+# --- Brazo del fondo (el que queda detrás del cuerpo) ----------------------
+# En los frames 12 a 16 del idle ese brazo venía con manchas del marrón del
+# cinturón dentro del guante: se lee como una sombra rara. Se corrige solo
+# ahí, y solo en las masas de marrón pegadas a ese guante.
+
+def _components(px, w, h, pred):
+    seen = set()
+    out = []
+    for y in range(h):
+        for x in range(w):
+            if (x, y) in seen or not pred(px[x, y]):
+                continue
+            comp = {(x, y)}
+            q = deque([(x, y)])
+            seen.add((x, y))
+            while q:
+                cx, cy = q.popleft()
+                for dx, dy in ((1, 0), (-1, 0), (0, 1), (0, -1)):
+                    nx, ny = cx + dx, cy + dy
+                    if 0 <= nx < w and 0 <= ny < h and (nx, ny) not in seen \
+                            and pred(px[nx, ny]):
+                        seen.add((nx, ny))
+                        comp.add((nx, ny))
+                        q.append((nx, ny))
+            out.append(comp)
+    return out
+
+
+def _count8(px, x, y, w, h, pred):
+    n = 0
+    for dx in (-1, 0, 1):
+        for dy in (-1, 0, 1):
+            if dx == 0 and dy == 0:
+                continue
+            nx, ny = x + dx, y + dy
+            if 0 <= nx < w and 0 <= ny < h and px[nx, ny][3] and pred(px[nx, ny]):
+                n += 1
+    return n
+
+
+def _far_gloves(px, w, h):
+    """Masas marinas que pueden ser el guante del brazo del fondo."""
+    ground = h - 1
+    out = []
+    for c in _components(px, w, h, lambda p: p[3] > 0 and p[:3] in NAVY):
+        if len(c) < 25:
+            continue
+        xs = [p[0] for p in c]
+        ys = [p[1] for p in c]
+        if max(ys) > ground - 22:          # botas
+            continue
+        if max(xs) - min(xs) > 34 or max(ys) - min(ys) > 40:
+            continue                        # torso / pierna
+        if min(xs) < 100:                  # lado izquierdo del sprite
+            continue
+        out.append(c)
+    return out
+
+
+def clean_far_arm(im):
+    """Quita el marrón del cinturón del guante del fondo y las motas sueltas.
+
+    Devuelve (pixeles_piel, pixeles_guante, pixeles_ribete) para el informe.
+    """
+    px = im.load()
+    w, h = im.size
+    gloves = _far_gloves(px, w, h)
+    stats = {'piel': 0, 'guante': 0, 'ribete': 0}
+    for gl in gloves:
+        xs = [p[0] for p in gl]
+        ys = [p[1] for p in gl]
+        x0, x1 = min(xs) - 3, max(xs) + 3
+        y0, y1 = min(ys) - 6, max(ys) + 6
+        for c in _components(px, w, h, lambda p: p[3] > 0 and p[:3] == JUNK_BELT):
+            if len(c) > 400:
+                continue
+            if not any(x0 <= x <= x1 and y0 <= y <= y1 for (x, y) in c):
+                continue
+            big = len(c) >= 12
+            for (x, y) in c:
+                nskin = _count8(px, x, y, w, h, lambda p: p[:3] in SKIN)
+                nn = _count8(px, x, y, w, h, lambda p: p[:3] in NAVY)
+                if big and nskin >= 3 and nskin >= nn:
+                    # masa grande apoyada en piel: es antebrazo, no guante
+                    light = _count8(px, x, y, w, h, lambda p: p[:3] == (240, 176, 132))
+                    dark = _count8(px, x, y, w, h, lambda p: p[:3] == (196, 120, 84))
+                    px[x, y] = ((240, 176, 132) if light >= dark else (196, 120, 84)) + (255,)
+                    stats['piel'] += 1
+                else:
+                    px[x, y] = GLOVE + (255,)
+                    stats['guante'] += 1
+        # motas de piel atrapadas dentro del guante
+        for y in range(min(ys), max(ys) + 1):
+            for x in range(min(xs), max(xs) + 1):
+                q = px[x, y]
+                if not q[3] or q[:3] not in SKIN:
+                    continue
+                nn = _count8(px, x, y, w, h, lambda p: p[:3] in NAVY)
+                nsk = _count8(px, x, y, w, h, lambda p: p[:3] in SKIN)
+                if nn >= 4 and nsk <= 2:
+                    px[x, y] = GLOVE + (255,)
+                    stats['guante'] += 1
+    # ribete magenta suelto sobre el brazo o el guante -> contorno negro
+    for _ in range(40):
+        step = 0
+        for y in range(50, h - 10):
+            for x in range(95, w):
+                p = px[x, y]
+                if not p[3] or p[:3] != (120, 16, 80):
+                    continue
+                nn = _count8(px, x, y, w, h, lambda q: q[:3] in NAVY)
+                nsk = _count8(px, x, y, w, h, lambda q: q[:3] in SKIN)
+                if nn >= 2 and nsk == 0:
+                    px[x, y] = OUTLINE + (255,)
+                    step += 1
+        stats['ribete'] += step
+        if not step:
+            break
+    return stats
+
+
+def fix_dir(path, anim='idle'):
     names = sorted(n for n in os.listdir(path) if n.endswith('.png'))
     for name in names:
         full = os.path.join(path, name)
@@ -229,23 +353,31 @@ def fix_dir(path):
         # repintaba el morado de la máscara (la boca) y agrandaba el guante
         # del brazo que queda al fondo. Se deja solo como herramienta suelta.
         gloves = close_glove(im) if name in GLOVE_FRAMES else []
-        if name == '09.png' and 'idle' in path.lower():
+        if anim == 'idle' and name in FAR_ARM_FRAMES:
+            # brazo del fondo: marrón del cinturón dentro del guante
+            far = clean_far_arm(im)
+        else:
+            far = None
+        if anim == 'idle' and name == '09.png':
             # la mano de la cadera venía pintada con el verde del traje
             gloves.append(('caja', glove_box(im, (80, 122, 95, 155))))
-        if gloves:
+        if gloves or far:
             im.save(full)
-        print('%s  %s' % (name, gloves or 'sin cambios'))
+        print('%s  guantes=%s  fondo=%s' % (name, gloves or '—', far or '—'))
 
 
 if __name__ == '__main__':
     args = [a for a in sys.argv[1:] if not a.startswith('-')]
     force = '--force' in sys.argv
     target = args[0] if args else 'voltia/nueva/idle'
+    anim = args[1] if len(args) > 1 else os.path.basename(os.path.abspath(target))
+    if anim not in ('idle', 'jump'):
+        anim = 'idle'
     marker = os.path.join(target, '.fix_gloves')
     if os.path.exists(marker) and not force:
         print('%s ya está limpio (marca %s). Usa --force solo si has vuelto a'
               ' recortar desde la hoja.' % (target, marker))
         raise SystemExit(0)
-    fix_dir(target)
+    fix_dir(target, anim)
     with open(marker, 'w') as fh:
         fh.write('limpiado por tools/fix_gloves.py\n')

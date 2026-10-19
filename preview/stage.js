@@ -222,9 +222,12 @@
   }
 
   document.getElementById('stageScroll').oninput = e => { scroll = e.target.value / 1000; };
+  // El visor nuevo ya no tiene control de zoom: si no existe, se queda el fijo.
   const zoomEl = document.getElementById('stageZoom');
-  if (zoomEl) zoom = Number(zoomEl.value) / 100 || zoom;
-  zoomEl.oninput = e => { zoom = e.target.value / 100; };
+  if (zoomEl) {
+    zoom = Number(zoomEl.value) / 100 || zoom;
+    zoomEl.oninput = e => { zoom = e.target.value / 100; };
+  }
   document.getElementById('stageJump').onclick = () => {
     const t = performance.now();
     const step = (now) => {
