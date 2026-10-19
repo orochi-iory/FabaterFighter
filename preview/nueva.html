@@ -117,7 +117,7 @@
 (() => {
   // El archivo no se toca y el escenario no lo escala: 200 nativos, 1:1.
   // ?v= para que el navegador no sirva el PNG viejo de esta misma ruta.
-  window.STAGE_FIGHTER = '../voltia/nueva/stance/00.png?v=27';
+  window.STAGE_FIGHTER = '../voltia/nueva/stance/00.png?v=28';
   // Suelo en el centro del rombo dibujado (spec.floorY es 408, el borde trasero).
   window.STAGE_FLOOR_Y = 426;
   window.STAGE_FIGHTER_SCALE = 1;
@@ -202,7 +202,7 @@
     note.textContent = anim.note || '';
     for (const f of anim.frames) {
       const im = new Image();
-      im.src = '../voltia/' + anim.dir + '/' + f + '?v=27';
+      im.src = '../voltia/' + anim.dir + '/' + f + '?v=28';
       await im.decode();
       imgs.push(im);
     }
@@ -210,7 +210,7 @@
     draw();
   }
   try {
-    const guide = await (await fetch('../voltia/guide/style.json?v=27',
+    const guide = await (await fetch('../voltia/guide/style.json?v=28',
       { cache: 'no-store' })).json();
     window.__GUIDE = guide;
     const entries = Object.entries(guide.anims || {});
@@ -222,8 +222,9 @@
     Object.entries(groups).forEach(([gname, list]) => {
       const h = document.createElement('div');
       h.className = 'group';
-      h.textContent = gname === 'pruebas' ? 'Descartes y pruebas'
-        : gname.charAt(0).toUpperCase() + gname.slice(1);
+      const labels = {pruebas: 'Descartes y pruebas', propuestas: 'Propuestas',
+                      animaciones: 'Animaciones', hoja: 'Hoja completa'};
+      h.textContent = labels[gname] || (gname.charAt(0).toUpperCase() + gname.slice(1));
       tabs.appendChild(h);
       list.forEach(([name, a]) => {
         const b = document.createElement('button');

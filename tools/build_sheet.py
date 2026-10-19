@@ -281,7 +281,8 @@ def close_outline(im):
     return len(out)
 
 
-def build(sheet, outdir, cw, ch, ground, ncol=5, nrows=4, write=True, head=0, close=False):
+def build(sheet, outdir, cw, ch, ground, ncol=5, nrows=4, write=True, head=0,
+          close=False, per_cell=False):
     im = Image.open(sheet)
     grid = rows_of_cells(im, ncol, nrows)
     if len(grid) > nrows:
@@ -290,18 +291,36 @@ def build(sheet, outdir, cw, ch, ground, ncol=5, nrows=4, write=True, head=0, cl
     for f in figs:
         strip_fringe(f)
     figs = [f for f in figs if f.width > 4 and f.height > 4]   # celdas vacías
-    if head:
+    if head and not per_cell:
         # una sola escala por hoja, sacada de la cabeza (no del alto total)
         mh = mask_height(snap(figs[0]))   # la máscara se mide ya en paleta
         if not mh:
             raise SystemExit('la primera figura no tiene máscara: no puedo medir la cabeza')
         factor = head / mh
-    else:
+    elif not head:
         factor = (cw * 0.0 + 200) / figs[0].height   # 200 px = 170 cm con coleta
     out = []
     for k, fig in enumerate(figs):
-        w, h = max(1, round(fig.width * factor)), max(1, round(fig.height * factor))
-        fig = snap(fig.resize((w, h), Image.NEAREST))
+        if head and per_cell:
+            # cada celda a la misma cabeza, iterando para que mida EXACTA:
+            # el modelo no mantiene la escala entre filas de una hoja grande.
+            mh = mask_height(snap(fig))
+            if not mh:
+                continue
+            factor = head / mh
+            fig = snap(fig.resize((max(1, round(fig.width * factor)),
+                                   max(1, round(fig.height * factor))), Image.NEAREST))
+            for _ in range(6):
+                m = mask_height(fig)
+                if m == head:
+                    break
+                factor *= head / m
+                fig = snap(fig.resize((max(1, round(fig.width * factor)),
+                                       max(1, round(fig.height * factor))), Image.NEAREST))
+            w, h = fig.width, fig.height
+        else:
+            w, h = max(1, round(fig.width * factor)), max(1, round(fig.height * factor))
+            fig = snap(fig.resize((w, h), Image.NEAREST))
         px = fig.load()
         feet = [x for y in range(max(0, h - 5), h) for x in range(w) if px[x, y][3]]
         cx = sum(feet) / len(feet) if feet else w / 2
@@ -327,6 +346,7 @@ if __name__ == '__main__':
     nrows = int(args[6]) if len(args) > 6 else 4
     head = int(args[7]) if len(args) > 7 else 0
     frames = build(sheet, outdir, cw, ch, ground, ncol=ncol, nrows=nrows,
-                   head=head, close='--close' in args)
+                   head=head, close='--close' in args,
+                   per_cell='--per-cell' in args)
     print('%s -> %s: %d frames de %dx%d, suelo %d'
           % (sheet, outdir, len(frames), cw, ch, ground))
