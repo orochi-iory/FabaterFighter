@@ -224,6 +224,13 @@ Tiene que dar **15 colores, 0 % fuera de paleta** y ningún tono alejado más de
 contorno del 8,9 % al 14,5 %. Queda detrás de `--close` en `build_sheet.py` y
 solo se usa si el corte limpio es imposible.
 
+### Escala exacta: la máscara siempre a 30
+
+`build_pose.py` reescala hasta que la máscara mide **exactamente** 30 px. Antes
+se calculaba el factor una sola vez y el redondeo del remuestreo dejaba la
+cabeza en 28 o 29: el personaje cambiaba de tamaño sin tocar nada más. Ahora el
+corte itera (`mascara 174 px -> 30 px (real 30)`).
+
 ### Reparto de trabajo que ha funcionado
 
 1. Un sprite aprobado (hoy `nueva/stance/00.png`) es la imagen 1 de todo.
@@ -270,6 +277,29 @@ Lo que dicen esas tres filas, y lo que hay que copiar (sin plagiar el dibujo):
 
 Con esto, la alternancia ya no se pide como un truco de tonos: se pide como una
 pose más, con la pierna contraria delante y el mismo puño arriba.
+
+## REGLA DE ORO: la coleta se mueve
+
+La coleta es el 35 % de la tinta del personaje. Si se queda tiesa, la animación
+se lee como un recorte que se desplaza. Vale para todo lo que se anime:
+
+| Movimiento | Qué hace la coleta |
+| --- | --- |
+| Andar hacia adelante | Se separa de la espalda y se abre hacia atrás, la punta retrasada. |
+| Andar hacia atrás | Se pega al cuerpo y se comprime contra la espalda. |
+| Salto ascendente | Sube retrasada, arrastrada por debajo del cuerpo. |
+| Caída | Flota por encima y por detrás, más suelta. |
+| Aterrizaje | Cae después que el cuerpo, con un frame de retraso. |
+| Paso lateral | Bascula al lado contrario al que se desplaza el cuerpo. |
+
+Reglas de ejecución:
+
+1. La coleta va **uno o dos frames por detrás** del cuerpo: cuando el cuerpo ya
+   está en el contacto, la coleta sigue en el frame anterior.
+2. **Nunca la misma silueta** de coleta en todos los frames de una animación.
+   Si el set sale con la coleta idéntica, está mal aunque el cuerpo esté bien.
+3. El dibujo se mantiene: arco grande, cuatro o cinco líneas de mechón con el
+   tono de sombra y punta definida. Si sale una mancha lisa, se repite la pose.
 
 ## La plantilla de prompt (rocosa)
 

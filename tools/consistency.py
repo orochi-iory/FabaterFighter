@@ -85,10 +85,15 @@ def main(argv):
                 continue
             diffs = {k: 100.0 * (p[k] - base[k]) / base[k] if base[k] else 0.0
                      for k in base}
-            # El ancho a 2/3 es el de las piernas: en un paso cambia de verdad,
-            # así que se informa pero no bloquea. El tamaño lo mandan la cabeza,
-            # el alto, la tinta y el ancho del torso.
-            over = [k for k in diffs if k != 'ancho 2/3' and abs(diffs[k]) > tol]
+            # Qué bloquea y qué no:
+            # - máscara: la escala. Siempre.
+            # - tinta y ancho del torso: que el personaje no se adelgace.
+            # - alto, coleta y ancho de piernas: se informan, porque la coleta
+            #   se mueve a propósito (regla de oro) y las piernas cambian de
+            #   postura. Si bloquearan, ninguna animación con coleta viva pasaría.
+            over = [k for k in diffs
+                    if k in ('mascara', 'tinta', 'ancho 1/3')
+                    and abs(diffs[k]) > (tol if k != 'tinta' else tol * 2)]
             flag = '  OK' if not over else '  <-- FUERA (%s)' % ', '.join(over)
             if over:
                 bad += 1

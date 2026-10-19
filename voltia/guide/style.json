@@ -243,7 +243,8 @@
   "2026-10-19. El walk que se lee bien en lateral no separa las piernas: las mantiene juntas y cruza un pie por delante del otro (Cammy). Con zancada abierta la silueta se ensancha y el paso se ve tosco; con paso corto cruzado el ciclo aguanta con cuatro poses.",
   "2026-10-19. Un frame no puede quedar 'achatado': si al cruzar las piernas la silueta se estrecha o el cuerpo se ensancha, ese frame se tira. Se pide explicitamente 'mismo ancho de cuerpo y misma coleta en todos los frames'.",
   "2026-10-19. El fallo de 'el personaje cambia de tamano' era real y medible: los frames del walk anterior eran un 11 % mas estrechos de torso y un 12 % mas ligeros de tinta que la stance, aunque la cabeza midiera lo mismo. Ahora tools/consistency.py compara cabeza, alto total, coleta, tinta y ancho de torso contra la stance y bloquea lo que pase de +-5 %.",
-  "2026-10-19. El prompt que sostiene el tamano: imagen 1 = la stance aprobada; 'SIZE IS LOCKED' con los cinco anclajes (arriba de la coleta, barbilla, cinturon, suelas, borde izquierdo de la coleta) y el ancho de hombros; 'cambia SOLO las piernas'; y una frase aparte para la coleta, que es lo que el modelo acorta cuando se despista."
+  "2026-10-19. El prompt que sostiene el tamano: imagen 1 = la stance aprobada; 'SIZE IS LOCKED' con los cinco anclajes (arriba de la coleta, barbilla, cinturon, suelas, borde izquierdo de la coleta) y el ancho de hombros; 'cambia SOLO las piernas'; y una frase aparte para la coleta, que es lo que el modelo acorta cuando se despista.",
+  "2026-10-19. La coleta es el 35 % de la tinta del personaje: si se queda tiesa en todos los frames, la animacion se lee como un recorte moviendose. Entra como regla de oro con el comportamiento por direccion (adelante se abre, atras se pega, salto con gravedad)."
  ],
  "changelog": [
   "2026-10-19. El idle aprobado pasa a llamarse stance: carpeta nueva/stance, 24 frames, y se borra el bloque idle viejo de la primera pasada.",
@@ -262,7 +263,8 @@
   "2026-10-19. Se apunta la tecnica de la hoja 4 x 2 (1024, bloques de 6, figura de 660 px) en sheetMethod/sheetPrompt: es la que aguanta el recorte. El walk anterior de 20 poses se tira y se rehace con 8 poses reales.",
   "2026-10-19. Walk de 6 poses: una hoja de 3 x 2 con figura grande (mascara de 30 px de alto ya escalada), segunda mitad por cambio de tonos (tools/opposite_half.py). Se tira el walk de 8 y el de 20.",
   "2026-10-19. Se tira el walk entero (6 poses, hoja y scripts) y las herramientas de la segunda mitad. Solo quedan aprobadas la stance y la prueba del salto.",
-  "2026-10-19. Walk de cero con poses sueltas (tools/build_pose.py): 4 frames, 15 colores exactos y huella de paleta a menos de 2 puntos de la stance. Se descarta la rejilla para animaciones que el generador no sabe ordenar."
+  "2026-10-19. Walk de cero con poses sueltas (tools/build_pose.py): 4 frames, 15 colores exactos y huella de paleta a menos de 2 puntos de la stance. Se descarta la rejilla para animaciones que el generador no sabe ordenar.",
+  "2026-10-19. Entra el walk lateral de 4 frames con la coleta animada, y la regla de oro de la coleta en la guia. build_pose.py itera la escala hasta que la mascara mide exactamente 30 px (antes el redondeo la dejaba en 28-29)."
  ],
  "scale": {
   "rule": "El archivo NO se reduce nunca. Se guarda a la resolución a la que lo generó el modelo. Si hay que verlo más pequeño, se cambia el zoom de la vista, no el archivo.",
@@ -386,7 +388,29 @@
    ],
    "group": "propuestas",
    "status": "propuesta"
+  },
+  "walk_lateral": {
+   "title": "Walk lateral",
+   "dir": "nueva/walk_lateral",
+   "count": 4,
+   "fps": 8,
+   "canvas": [
+    200,
+    240
+   ],
+   "note": "Paso lateral: el cuerpo se desplaza de lado con la guardia mirando a la derecha. La coleta va un frame por detras: se abre al empujar (00), se recoge cuando el cuerpo la alcanza (01), vuelve a abrirse con el otro pie (02) y se asienta (03). Cuatro poses sueltas con promptTemplate, mascara 30 px en las cuatro, suelo 238, eje x=128, paleta a menos de 1,5 puntos de la stance.",
+   "frames": [
+    "00.png",
+    "01.png",
+    "02.png",
+    "03.png"
+   ],
+   "group": "propuestas"
   }
  },
- "promptTemplate": "Copy this sprite EXACTLY. Same character, same colours, same 16 flat inks, same thick dark outline, same torso, head, arms, guard, mask, visor, mouth, belt, bolt, gloves and ponytail.\n\nSIZE IS LOCKED. The new drawing must be the same size as the reference and stand in the same place: the top of the ponytail at the same height, the chin at the same height, the belt at the same height, the soles on the same ground line, the left edge of the ponytail at the same distance from the left, and the SAME width across the shoulders and the chest. Keep the ponytail FULL LENGTH and FULL THICKNESS: its tip level with the middle of the thigh. Do not slim the body, do not narrow the hips, do not shorten the ponytail, do not make the figure smaller or taller. Everything except {WHAT MOVES} stays pixel for pixel as it is.\n\nCHANGE ONLY {WHAT MOVES}: {POSE}.\n\nOne single sprite, side view facing right, alone on flat bright green with plenty of green all around, no second figure, no floor, no shadow, no text, no border, no dithering, no gradients, no anti-aliasing."
+ "promptTemplate": "Copy this sprite EXACTLY. Same character, same colours, same 16 flat inks, same thick dark outline, same torso, head, arms, guard, mask, visor, mouth, belt, bolt, gloves and ponytail.\n\nSIZE IS LOCKED. The new drawing must be the same size as the reference and stand in the same place: the top of the ponytail at the same height, the chin at the same height, the belt at the same height, the soles on the same ground line, the left edge of the ponytail at the same distance from the left, and the SAME width across the shoulders and the chest. Keep the ponytail FULL LENGTH and FULL THICKNESS: its tip level with the middle of the thigh. Do not slim the body, do not narrow the hips, do not shorten the ponytail, do not make the figure smaller or taller. Everything except {WHAT MOVES} stays pixel for pixel as it is.\n\nCHANGE ONLY {WHAT MOVES}: {POSE}.\n\nOne single sprite, side view facing right, alone on flat bright green with plenty of green all around, no second figure, no floor, no shadow, no text, no border, no dithering, no gradients, no anti-aliasing.",
+ "goldenRules": {
+  "ponytail": "REGLA DE ORO: la coleta se mueve. Es parte de la animacion, no un adorno fijo. Andando hacia adelante se separa de la espalda y se abre hacia atras; andando hacia atras se pega al cuerpo y se comprime; al saltar sube retrasada al ascender y flota al caer, y cae despues del aterrizaje. Va uno o dos frames por detras del cuerpo. Nunca la misma silueta de coleta en todos los frames.",
+  "ponytailDetail": "La coleta conserva su dibujo: arco grande, cuatro o cinco lineas de mechon marcadas con el tono de sombra y punta definida. Si sale como una mancha lisa, se repite."
+ }
 }

@@ -121,9 +121,22 @@ def main(argv):
     mh = B.mask_height(fig)
     if not mh:
         raise SystemExit('la figura no tiene máscara: no puedo medir la cabeza')
+
+    # Escala por la máscara, iterada: el redondeo del remuestreo cambia la
+    # cabeza 1-2 px, y de ahí venían frames con la cabeza a 28 en vez de 30.
+    # Se repite el reescalado desde el original hasta que la máscara mide
+    # exactamente lo pedido.
     k = head / mh
-    w, h = max(1, round(fig.width * k)), max(1, round(fig.height * k))
-    fig = B.snap(fig.resize((w, h), Image.NEAREST))
+    fig = B.snap(fig.resize((max(1, round(fig.width * k)), max(1, round(fig.height * k))),
+                            Image.NEAREST))
+    for _ in range(6):
+        m = B.mask_height(fig)
+        if m == head:
+            break
+        k *= head / m
+        base = cut_sprite(src, pick)
+        fig = B.snap(base.resize((max(1, round(base.width * k)),
+                                  max(1, round(base.height * k))), Image.NEAREST))
 
     B.strip_fringe(fig)
     sealed = seal_teal_edge(fig)
@@ -131,11 +144,11 @@ def main(argv):
     from centre_by_head import head_axis
     hax = head_axis(fig)
     frame = Image.new('RGBA', (cw, ch), (0, 0, 0, 0))
-    frame.alpha_composite(fig, (round(axis - hax), ground - h))
+    frame.alpha_composite(fig, (round(axis - hax), ground - fig.height))
     frame.save(dst)
-    print('%s -> %s  mascara %d px -> %d px  alto %d  lienzo %dx%d  suelo %d'
-          '  contorno sellado %d px'
-          % (src, dst, mh, head, h, cw, ch, ground, sealed))
+    print('%s -> %s  mascara %d px -> %d px (real %d)  alto %d  lienzo %dx%d'
+          '  suelo %d  contorno sellado %d px'
+          % (src, dst, mh, head, B.mask_height(fig), fig.height, cw, ch, ground, sealed))
 
 
 if __name__ == '__main__':
