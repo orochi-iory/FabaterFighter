@@ -42,11 +42,11 @@
 </head>
 <body>
 <header>
-  <h1>Modelo nuevo · 200 píxeles nativos</h1>
-  <p>El sprite de juego mide <b>150 × 200</b> y el escenario lo dibuja <b>1:1</b>:
-    un píxel del archivo, un píxel de mundo. Regla de escala: Voltia mide unos
-    <b>170 cm</b> con la coleta y son <b>200 píxeles</b>.</p>
-  <p>Debajo está también el maestro de 1024 del que sale, sin tocar.</p>
+  <h1>Modelo nuevo · idle a 200 píxeles nativos</h1>
+  <p>Idle de <b>20 frames</b>, dibujado en bloques de 5 y entregado a
+    <b>200 píxeles nativos</b>. El escenario lo dibuja <b>1:1</b>: un píxel del
+    archivo, un píxel de mundo.</p>
+  <p><b>Regla de oro:</b> 170 cm con la coleta = 200 píxeles.</p>
   <a class="play" href="guia.html">Guía de este modelo</a>
   <a class="play alt" href="index.html">Visor del personaje actual</a>
   <a class="play alt" href="guia-vieja.html">Guía del personaje actual</a>
@@ -55,10 +55,12 @@
   <div class="box">
     <p class="warn" id="warn">Cargando…</p>
     <div class="scroller" id="scroller">
-      <canvas id="sprite" width="1024" height="1024"></canvas>
+      <canvas id="sprite" width="190" height="212"></canvas>
     </div>
     <p class="cap" id="cap"></p>
     <div class="controls">
+      <button id="play" type="button">Pausa</button>
+      <button id="step" type="button">Frame</button>
       <button id="z100" type="button">1:1</button>
       <button id="z50" type="button">50%</button>
       <button id="z25" type="button">25%</button>
@@ -119,13 +121,11 @@
   const H = 1024;
   // ?v= para que el navegador no sirva el PNG viejo de esta misma ruta
   // El sprite de juego: 150 x 200, la altura nativa del ring. Se dibuja 1:1.
-  window.STAGE_FIGHTER = '../voltia/newref/ref_stand_200.png?v=1';
+  window.STAGE_FIGHTER = '../voltia/nueva/00_stand.png?v=1';
   // Suelo en el centro del rombo dibujado (spec.floorY es 408, el borde trasero).
   window.STAGE_FLOOR_Y = 426;
   // El archivo no se toca. El escenario lo dibuja a la escala que se elija.
-  window.STAGE_FIGHTER_SCALE =
-    q === 'native200' ? 1 : q === 'fit254' ? 254 / 200 : q === 'fit381' ? 381 / 200 :
-    q === 'fit300' ? 300 / 200 : q === 'fit153' ? 153 / 200 : 1 / 8;
+  window.STAGE_FIGHTER_SCALE = q === 'blocks' ? 1 / 8 : 1;
   window.__MODE = q;
 })();
 </script>
@@ -227,39 +227,64 @@
   const cap = document.getElementById('cap');
   const cv = document.getElementById('sprite');
   const cx = cv.getContext('2d');
-  const SRC = '../voltia/newref/ref_stand_200.png?v=1';
+  // Los frames se cargan de la guía: voltia/nueva/00_stand.png … 19_stand.png
   const zooms = { z100: 1, z50: 0.5, z25: 0.25, z12: 0.125 };
   const cls = ['', 'magenta', 'light', 'green'];
   const names = ['oscuro', 'magenta', 'claro', 'verde'];
-  let ci = 0, zoom = 1;
+  let ci = 0, zoom = 1, i = 0, playing = true, imgs = [], FRAMES = [];
   function applyZoom() {
     cv.className = 'px ' + cls[ci];
     cv.style.width = Math.round(cv.width * zoom) + 'px';
     cv.style.height = Math.round(cv.height * zoom) + 'px';
-    cap.textContent = 'Vista al ' + Math.round(zoom * 100) + '%. El archivo mide ' +
-      cv.width + ' × ' + cv.height + ', sin tocar.';
+    cap.textContent = 'Vista al ' + Math.round(zoom * 100) + '%. Frame ' +
+      cv.width + ' × ' + cv.height + ' del idle. El archivo no se toca.';
   }
-  try {
-    const img = new Image();
-    img.src = SRC + '?v=' + Date.now();
-    await img.decode();
+  function draw() {
+    const f = FRAMES[i % FRAMES.length];
     cx.imageSmoothingEnabled = false;
     cx.clearRect(0, 0, cv.width, cv.height);
-    cx.drawImage(img, 0, 0);
-    applyZoom();
-    warn.textContent = 'Este es el sprite, a resolución completa: ' + img.naturalWidth +
-      ' × ' + img.naturalHeight + '. Solo se le ha quitado el verde del fondo.';
-    note.textContent = 'Mira la máscara, el visor, la boca y el rayo. A 1:1 o al 50% ' +
-      'se ven todas las calidades del dibujo.';
+    if (f && imgs[i]) cx.drawImage(imgs[i], 0, -f.lift);
+    cap.textContent = (i + 1) + '/' + FRAMES.length + ' · ' + (f ? f.caption : '') +
+      ' · vista al ' + Math.round(zoom * 100) + '%.';
+  }
+  try {
+    const guide = await (await fetch('../voltia/guide/style.json?v=' + Date.now(),
+      { cache: 'no-store' })).json();
+    FRAMES = guide.idle.frames;
+    for (let k = 0; k < FRAMES.length; k++) {
+      const im = new Image();
+      im.src = '../voltia/nueva/' + FRAMES[k].file + '?v=1';
+      await im.decode();
+      imgs.push(im);
+    }
+    applyZoom(); draw();
+    warn.textContent = 'Idle de ' + FRAMES.length + ' frames a 200 px nativos, 1:1. ' +
+      'El saltito sube el frame entero; no se infla el personaje.';
+    note.textContent = 'Mira la máscara, el visor, la boca y el rayo en cada pose.';
+    setInterval(() => {
+      if (!playing) return;
+      i = (i + 1) % FRAMES.length;
+      draw();
+    }, 1000 / (guide.idle.fps || 8));
+    document.getElementById('play').onclick = () => {
+      playing = !playing;
+      document.getElementById('play').textContent = playing ? 'Pausa' : 'Seguir';
+    };
+    document.getElementById('step').onclick = () => {
+      playing = false;
+      document.getElementById('play').textContent = 'Seguir';
+      i = (i + 1) % FRAMES.length;
+      draw();
+    };
     Object.entries(zooms).forEach(([id, z]) => {
-      document.getElementById(id).onclick = () => { zoom = z; applyZoom(); };
+      document.getElementById(id).onclick = () => { zoom = z; applyZoom(); draw(); };
     });
     document.getElementById('bg').onclick = () => {
-      ci = (ci + 1) % cls.length; applyZoom();
+      ci = (ci + 1) % cls.length; applyZoom(); draw();
       document.getElementById('bg').textContent = 'Fondo ' + names[ci];
     };
     document.getElementById('bg2').onclick = () => {
-      ci = (ci + 1) % cls.length; applyZoom();
+      ci = (ci + 1) % cls.length; applyZoom(); draw();
       document.getElementById('bg').textContent = 'Fondo ' + names[ci];
     };
   } catch (err) {

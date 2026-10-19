@@ -35,6 +35,24 @@ bajarlos a 120. Eso es un remuestreo por 0,117: cada píxel del dibujo cae en un
 fracción de píxel, y el detalle se muere. Después se llegó a bajar por bloques a
 95 × 126: menos malo, pero seguía siendo reducir el archivo. Prohibido.
 
+## REGLA DE ORO
+
+> **170 cm de personaje, con la coleta incluida, son 200 píxeles de imagen.**
+> Se dibuja en **bloques de 5**: 200 píxeles × 5 = 1000 píxeles de lienzo.
+> 1,176 cm por píxel. 160 cm = 188 px; 150 cm = 128 px; 190 cm = 224 px.
+> El alto se mide de la suela más baja a la punta del pelo.
+> El sprite de juego mide 200 px y se dibuja **1:1**; el maestro a 1024 se
+> conserva, no se entrega.
+
+Con bloques de 5 el recorte sale perfecto: 200 nativos y el escenario lo pinta
+sin deformar. Con bloques de 8, 200 px obligaban a un ×1,57 y no cuadraba.
+
+## Zoom del escenario
+
+La escala se redondea a un **número entero** (1:1, 2:1, 3:1…). Si el mundo no
+cabe un número exacto de veces en el lienzo, cada píxel del escenario cae en una
+fracción y se deforma. El letrero del escenario dice la escala que está usando.
+
 **Regla de escala del proyecto: 170 cm, con la coleta, son 200 píxeles.**
 Un píxel son 1,176 cm. Un personaje de 160 cm son 188 px; uno de 190, 224 px. El
 alto se cuenta siempre con el pelo o el accesorio incluido, y el sprite se dibuja

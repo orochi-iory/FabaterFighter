@@ -128,6 +128,7 @@
     }
   ],
   "rules": [
+    "REGLA DE ORO: 170 cm con coleta = 200 píxeles. Bloques de 5. El sprite se dibuja 1:1.",
     "Escala: 170 cm con coleta = 200 px de alto. Todos los personajes se miden así y se dibujan 1:1 en el escenario.",
     "La altura de ring es 300 px de mundo. Si el dibujo nativo es 127, se llega con ×2 exacto (254) o se acepta el ×2,37 de 300. Nunca se genera un PNG derivado: se dibuja a esa escala.",
     "Primero se aprueba UN sprite. Hasta que el usuario lo apruebe no se generan las demás poses del idle.",
@@ -151,19 +152,156 @@
   "keys": [
     {
       "id": "stand",
-      "file": "newref/ref_stand_200.png",
-      "use": "De pie, 150 × 200, 1:1. Referencia única para todo lo que venga."
+      "file": "newref/ref_stand.png",
+      "use": "Maestro de pie, 1024, del que sale todo."
+    },
+    {
+      "id": "stand200",
+      "file": "nueva/00_stand.png",
+      "use": "De pie a 200, 1:1. Es el frame de referencia del idle."
+    },
+    {
+      "id": "groom",
+      "file": "nueva/11_stroke_low.png",
+      "use": "Manos en la caña. El gesto que define el idle."
     }
   ],
   "idle": {
-    "status": "pendiente",
+    "status": "primera pasada, sin aprobar",
     "fps": 8,
     "count": 20,
-    "note": "Veinte pasos: saltito doble y luego se atusa las piernas. No se genera nada hasta que el sprite de referencia esté aprobado.",
-    "frames": [],
-    "captions": []
+    "canvas": [
+      190,
+      212
+    ],
+    "height": 200,
+    "lift": "el saltito se dibuja subiendo el frame entero en el visor, no inflando el personaje",
+    "note": "Veinte pasos. Saltito con agachado, despegue, pico y aterrizaje; luego baja las manos, se atusa las piernas dos veces y vuelve a la guardia.",
+    "frames": [
+      {
+        "file": "00_stand.png",
+        "pose": "00_stand",
+        "lift": 0,
+        "caption": "de pie"
+      },
+      {
+        "file": "01_crouch.png",
+        "pose": "01_crouch",
+        "lift": 0,
+        "caption": "se agacha"
+      },
+      {
+        "file": "02_takeoff.png",
+        "pose": "02_takeoff",
+        "lift": 10,
+        "caption": "despega"
+      },
+      {
+        "file": "03_peak.png",
+        "pose": "03_peak",
+        "lift": 36,
+        "caption": "arriba"
+      },
+      {
+        "file": "04_takeoff.png",
+        "pose": "02_takeoff",
+        "lift": 10,
+        "caption": "cae"
+      },
+      {
+        "file": "05_land.png",
+        "pose": "04_land",
+        "lift": 0,
+        "caption": "pisa"
+      },
+      {
+        "file": "06_stand.png",
+        "pose": "00_stand",
+        "lift": 0,
+        "caption": "de pie"
+      },
+      {
+        "file": "07_hands_down.png",
+        "pose": "05_hands_down",
+        "lift": 0,
+        "caption": "baja las manos"
+      },
+      {
+        "file": "08_hands_down.png",
+        "pose": "05_hands_down",
+        "lift": 0,
+        "caption": "respira"
+      },
+      {
+        "file": "09_reach_thigh.png",
+        "pose": "06_reach_thigh",
+        "lift": 0,
+        "caption": "a los muslos"
+      },
+      {
+        "file": "10_stroke_high.png",
+        "pose": "07_stroke_high",
+        "lift": 0,
+        "caption": "se atusa"
+      },
+      {
+        "file": "11_stroke_low.png",
+        "pose": "08_stroke_low",
+        "lift": 0,
+        "caption": "baja por la pierna"
+      },
+      {
+        "file": "12_stroke_low.png",
+        "pose": "08_stroke_low",
+        "lift": 0,
+        "caption": "hasta la caña"
+      },
+      {
+        "file": "13_stroke_high.png",
+        "pose": "07_stroke_high",
+        "lift": 0,
+        "caption": "sube"
+      },
+      {
+        "file": "14_reach_thigh.png",
+        "pose": "06_reach_thigh",
+        "lift": 0,
+        "caption": "otra pasada"
+      },
+      {
+        "file": "15_straighten.png",
+        "pose": "09_straighten",
+        "lift": 0,
+        "caption": "se incorpora"
+      },
+      {
+        "file": "16_straighten.png",
+        "pose": "09_straighten",
+        "lift": 0,
+        "caption": "erguida"
+      },
+      {
+        "file": "17_hands_down.png",
+        "pose": "05_hands_down",
+        "lift": 0,
+        "caption": "vuelve"
+      },
+      {
+        "file": "18_stand.png",
+        "pose": "00_stand",
+        "lift": 0,
+        "caption": "de pie"
+      },
+      {
+        "file": "19_stand.png",
+        "pose": "00_stand",
+        "lift": 0,
+        "caption": "de pie"
+      }
+    ]
   },
   "lessons": [
+    "2026-10-19. La regla de 5 bloques funciona: figura de 1000 px de lienzo partido por 5 son 200 nativos, y el recorte queda perfecto. Es la escala de trabajo para todos los personajes.",
     "2026-10-19. Escala definitiva: 170 cm con coleta = 200 px. Cuatro intentos de sacar 200 nativos del generador (bloques de 5, zoom x5 declarado, figura pequeña a 1 px, referencia con bloques de 5) devuelven el mismo raster de 8. El sprite de juego se fija a 200 desde el maestro aprobado y se dibuja 1:1.",
     "2026-10-19. El suelo de la placa (408) era el borde trasero del ring, no el centro del rombo. Bajado a 426, los pies pisan el rombo. Solo en el visor nuevo: window.STAGE_FLOOR_Y.",
     "2026-10-19. Tres tiradas pidiendo 300 nativos (bloques de 3 en 960, lienzo pequeño de 320, y 300 px de alto explícito). Las tres devuelven 1024 con bloques de 8 y la figura de 1014: el techo nativo del modelo es ~127. Para el ring se dibuja a 254 (×2 exacto) o 300 si se acepta ×2,37.",
@@ -179,6 +317,7 @@
     "2026-10-19. Conclusión para el escenario: la figura que ya juega mide 153 y esta 126, así que entra sin escalar. Si algún día hay que igualarla a 120, se genera a 120 bloques de 8 = 960 y se corta ÷8 exacto."
   ],
   "changelog": [
+    "2026-10-19. Regla de oro guardada: 170 cm = 200 px, bloques de 5. El zoom del escenario pasa a escala entera para no deformar el píxel. Primera pasada del idle de 20 frames.",
     "2026-10-19. Regla de escala por altura real: 170 cm = 200 px. El sprite de juego queda en 150 × 200 y el escenario lo pinta 1:1.",
     "2026-10-19. Altura de ring a 200. Suelo del visor nuevo a 426, en el centro del rombo. El escenario acepta STAGE_FLOOR_Y por página.",
     "2026-10-19. Altura de ring a 300. Se mide el techo del generador: ~127 nativos. Se añaden los modos 254/300/381 en el escenario y la figura ya no puede tumbar la carga del ring.",
@@ -207,5 +346,15 @@
     "ratio": "170 cm = 200 px, o sea 1,176 cm por píxel. Un personaje de 160 cm serán 188 px; uno de 190 cm, 224 px. El alto se cuenta siempre con el pelo o el accesorio incluido.",
     "ring": "El suelo del escenario va en 426 px de la placa y la figura de 200 px ocupa el 33% del alto de la placa.",
     "check": "Antes de aprobar: el archivo mide 200 px de alto con la coleta y se dibuja 1:1."
+  },
+  "gold": {
+    "title": "REGLA DE ORO: la escala",
+    "rule": "170 cm de personaje, con coleta incluida, son 200 píxeles de imagen.",
+    "blocks": "Se dibuja en bloques de 5: 200 píxeles x 5 = 1000 píxeles de lienzo. El bloque 5 es la unidad de trabajo, no el 8.",
+    "ratio": "1,176 cm por píxel. 160 cm = 188 px; 150 cm = 128 px; 190 cm = 224 px.",
+    "height": "El alto se mide con el pelo o el accesorio incluido, de la suela más baja a la punta del pelo.",
+    "deliver": "El sprite de juego mide 200 px de alto y se dibuja 1:1. El maestro a 1024 se conserva, no se entrega.",
+    "why": "Con bloques de 5 el recorte queda perfecto: 200 nativos y el escenario lo pinta sin deformar. Con bloques de 8, 200 px obligaban a un x1,57 y no cuadraba.",
+    "check": "Antes de aprobar un sprite: alto = 200 px con coleta y misma escala de píxel que el resto de la hoja."
   }
 }

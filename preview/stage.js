@@ -20,9 +20,15 @@
     });
   }
 
-  function world() {
+  // Escala de píxel entera: si el mundo no cabe un número exacto de veces en el
+  // lienzo, cada píxel del escenario cae en una fracción y se deforma.
+  function pixelScale() {
     const v = spec.view;
-    return { w: v.w / zoom, h: v.h / zoom };
+    return Math.max(1, Math.min(12, Math.round(cv.width / (v.w / zoom))));
+  }
+  function world() {
+    const k = pixelScale();
+    return { w: Math.round(cv.width / k), h: Math.round(cv.height / k), k };
   }
   // El suelo se puede bajar por página sin tocar la placa ni el visor viejo.
   function floor() { return window.STAGE_FLOOR_Y || spec.floorY; }
@@ -261,7 +267,7 @@
       `<b>${spec.name}</b> · ${bg.width}×${bg.height} px. ` +
       `Voltia ${stance.width}×${stance.height}, dibujada a ${fs}× (1 = pixel de la imagen). ` +
       `Ocupa ${Math.round(stance.height * fs)} px de mundo, con ${floor()} px de suelo. ` +
-      `Zoom 100 = el pixel real.<br>` +
+      `Escala ${world().k}:1, entera, para que el escenario no deforme el píxel.<br>` +
       `${spec.note} ` +
       `Orden: fondo, neón, pantallas, público, ring, humo, Voltia, focos. ` +
       `Música: tema «Puerto Voltaje», cumbia electrónica a pulso fijo, en bucle.`;
