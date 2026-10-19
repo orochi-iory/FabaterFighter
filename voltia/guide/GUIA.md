@@ -343,6 +343,43 @@ recorte ampliado y enumerar los rasgos:
 Medido: en la stance buena la cabeza tiene 6 % de piel y visor; en la que salía
 como casco, 0 % de piel.
 
+## La huella visual: la puerta que faltaba (2026-10-19)
+
+Las puertas anteriores (paleta, mascara a 30 px, alto uniforme) dieron «OK» a
+frames que no se parecen **en nada** al objetivo. Medido con
+`tools/fingerprint.py` contra el frame de referencia de GBA (30 x 64 px):
+
+| metrica | referencia | recoloreo nativo | stance v3 | stance "aceptada" |
+|---|---|---|---|---|
+| alto | 64 | **71** | 145 | 200 |
+| ancho | 30 | 24 | 104 | 121 |
+| tinta | 940 | **947** | 8 776 (+834 %) | 11 013 (+1072 %) |
+| contorno | 7,1 % | 4,1 % | 18,6 % | 18,1 % |
+| colores | 21 | **21** | 15 | 15 |
+| pelo | 31,2 % | 28,8 % | 50,3 % | 35,6 % |
+| ancho de cabeza | 27 px | 16 | 79 | 88 |
+
+**El error de raiz es de RESOLUCION, no de estilo.** La referencia mide 64 px de
+alto. Todo lo generado mide entre 145 y 200 px: 3 veces mas alto y **10 veces
+mas tinta**. Al reducirlo a la pantalla, ese detalle de mas se convierte en
+papilla: ahi nacen el «estilo deformado», el contorno gordo y la cabeza de casco.
+
+Por que pasa: el generador devuelve siempre ~1 Mpx. Si la hoja pide 5 x 4
+figuras que llenan su celda, cada figura sale a ~150-200 px por construccion.
+Para que salga a 64 px hay que pedir **figuras pequenas en un lienzo grande**,
+que es justo como esta hecha la hoja de GBA (figuras de 60 px en un lienzo de
+3 399 px de alto: un 1,8 % de la altura).
+
+### Lo que hay que pedir a partir de ahora
+
+- lienzo de ~1200 x 900 y figuras de **64-72 px de alto (7-8 % de la altura)**;
+- 5 columnas con paso de ~200 px y verde de sobra entre ellas;
+- **recortar a tamano nativo, sin reescalar** nunca;
+- pasar `tools/fingerprint.py` contra el frame de referencia antes de mirarlo.
+
+Las puertas de paleta y de tamano uniforme **no miden parecido**; se quedan solo
+como comprobaciones de sanidad.
+
 ## Cómo camina un personaje (referencia fija)
 
 La referencia de animación está en el repo y no se toca:
