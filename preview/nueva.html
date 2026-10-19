@@ -117,7 +117,7 @@
 (() => {
   // El archivo no se toca y el escenario no lo escala: 200 nativos, 1:1.
   // ?v= para que el navegador no sirva el PNG viejo de esta misma ruta.
-  window.STAGE_FIGHTER = '../voltia/nueva/stance/00.png?v=23';
+  window.STAGE_FIGHTER = '../voltia/nueva/stance/00.png?v=24';
   // Suelo en el centro del rombo dibujado (spec.floorY es 408, el borde trasero).
   window.STAGE_FLOOR_Y = 426;
   window.STAGE_FIGHTER_SCALE = 1;
@@ -202,7 +202,7 @@
     note.textContent = anim.note || '';
     for (const f of anim.frames) {
       const im = new Image();
-      im.src = '../voltia/' + anim.dir + '/' + f + '?v=23';
+      im.src = '../voltia/' + anim.dir + '/' + f + '?v=24';
       await im.decode();
       imgs.push(im);
     }
@@ -210,7 +210,7 @@
     draw();
   }
   try {
-    const guide = await (await fetch('../voltia/guide/style.json?v=23',
+    const guide = await (await fetch('../voltia/guide/style.json?v=24',
       { cache: 'no-store' })).json();
     window.__GUIDE = guide;
     const entries = Object.entries(guide.anims || {});
@@ -272,9 +272,15 @@
       document.getElementById('play').textContent = '▶ Seguir';
       i = (i + 1) % imgs.length; draw();
     };
-    // Al abrir, la animación del grupo de animaciones (no las pruebas).
-    const first = entries.find(([, a]) => (a.group || '') !== 'pruebas') || entries[0];
+    // Al abrir: manda el hash (#walk, #stance...), si no la primera animación.
+    const wanted = (location.hash || '').replace('#', '');
+    const first = (wanted && guide.anims[wanted] ? [wanted] : null)
+      || entries.find(([, a]) => (a.group || '') !== 'pruebas') || entries[0];
     if (first) select(first[0]);
+    window.addEventListener('hashchange', () => {
+      const n = (location.hash || '').replace('#', '');
+      if (guide.anims[n]) select(n);
+    });
   } catch (err) {
     warn.textContent = 'No pude cargar el visor: ' + (err && err.message ? err.message : err);
   }
