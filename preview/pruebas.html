@@ -38,7 +38,25 @@
 
 <main>
 
-  <h2>1 · Recoloreo de la hoja GBA (lo más reciente)</h2>
+  <h2>0 · PRUEBA DE ESCALA (la que importa)</h2>
+  <div class="box warn">
+    <img src="../voltia/guide/ref/prueba_escala.png?v=3" alt="18 frames a tamano nativo, 68-74 px de alto">
+    <p><strong>Mismo encargo que antes, pero con el tamaño corregido.</strong> 18 frames nativos de 68-74 px de alto y 30-46 de ancho, 21 colores, sin reescalar. A la izquierda de la tabla, lo medido:</p>
+    <table>
+      <tr><th>métrica</th><th>tu referencia</th><th>frame 00 de esta prueba</th><th>stance v3 (lo anterior)</th></tr>
+      <tr><td>alto</td><td>64</td><td class="ok">68 (+6 %)</td><td class="bad">145 (+127 %)</td></tr>
+      <tr><td>ancho</td><td>30</td><td>37</td><td class="bad">104</td></tr>
+      <tr><td>tinta</td><td>940</td><td class="ok">1 167 (+24 %)</td><td class="bad">8 776 (+834 %)</td></tr>
+      <tr><td>contorno</td><td>7,1 %</td><td class="ok">6,8 %</td><td class="bad">18,6 %</td></tr>
+      <tr><td>colores</td><td>21</td><td class="ok">20</td><td>15</td></tr>
+      <tr><td>pelo</td><td>31,2 %</td><td class="ok">26,6 %</td><td class="bad">50,3 %</td></tr>
+      <tr><td>ancho de cabeza</td><td>27 px</td><td>22 px</td><td class="bad">79 px</td></tr>
+    </table>
+    <p><span class="ok">Lo que se arregla:</span> el píxel vuelve a ser gordo, el trazo fino, la silueta reconocible y las 18 poses son distintas de verdad.</p>
+    <p><span class="bad">Lo que sigue mal:</span> solo 1 de los 4 frames medidos pasa la huella entera; en los otros sobra tinta y contorno. La ropa aún no es la de la referencia (faldita y muslos descubiertos) y la coleta cambia de grosor entre frames.</p>
+  </div>
+
+  <h2>1 · Recoloreo de la hoja GBA</h2>
   <div class="box">
     <img src="../voltia/guide/ref/voltia_half_cmp.png?v=2" alt="Cammy arriba, Voltia abajo, mismas poses y posiciones">
     <p>Arriba Cammy original a resolución nativa. Abajo Voltia, <strong>misma pose y misma posición</strong>: no se redibuja nada, solo cambia el color de cada píxel. Sin IA y sin suavizado.</p>
