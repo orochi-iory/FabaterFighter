@@ -107,3 +107,30 @@ mano. Método que funciona, en `tools/sheet_bands.py`:
 Límite conocido: si una banda lleva dos animaciones seguidas, salen juntas; y
 una coleta muy separada puede contarse como frame. Los nombres no están en la
 hoja: se ponen mirando la postura y con columna de confianza.
+
+## Lecciones de trocear hojas ajenas
+
+Lo comprobado, con número:
+
+1. **La forma de la hoja manda.** R. Mika: figuras sueltas, sin rejilla, con
+   otro personaje y objetos mezclados → el troceado por bandas es lo mejor que
+   se puede hacer y los nombres son casi adivinanza. Chun-Li: fondo liso y una
+   animación por fila → el troceado sale limpio. Antes de prometer nada hay que
+   mirar la hoja.
+2. **El corte es fiable; el nombre no.** Separar 485 frames no falla. Decir
+   «esto es un puñetazo débil y no fuerte» sí: los píxeles no lo distinguen.
+3. **El frame data medible existe.** El alcance (distancia máxima de la tinta al
+   centro de los pies) localiza la extensión del brazo o la pierna, y de ahí
+   salen arranque / activo / recuperación. Ej.: patada alta 7 frames →
+   1 / 1 / 5.
+4. **Los frames repetidos son información, no error.** Un golpe vuelve a la
+   pose de guardia: el frame 1 y el 5 pueden ser idénticos (banda 7 de Chun-Li).
+5. **El IoU no prueba que el orden esté bien.** Un salto mortal baja a 0,17
+   porque el cuerpo gira 360°, y está en orden. Alinear por los pies solo vale
+   cuando hay contacto con el suelo; en el aire hay que alinear por la caja.
+   Conclusión: el IoU sirve para detectar saltos, no para validar secuencias.
+6. **La velocidad no está en el PNG.** Cualquier fps que pongamos es propuesta.
+
+Lo que sigue sin resolverse: filas con dos animaciones seguidas, y los golpes
+que se diferencian solo por la intención (débil/fuerte). Para eso hace falta el
+juego y la lista de movimientos del personaje, no el dibujo.
