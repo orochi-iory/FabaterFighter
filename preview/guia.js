@@ -15,6 +15,13 @@
   if (h) h.textContent = guide.title || 'Guía de estilo';
   const anchor = guide.anchor ? 'Ancla: ' + guide.anchor + '. ' : '';
   lead.textContent = anchor + [guide.anchorNote, guide.sacrifice].filter(Boolean).join(' ');
+  const scale = document.getElementById('guideScale');
+  if (scale) {
+    scale.textContent = guide.scale
+      ? [guide.scale.rule, guide.scale.fight, guide.scale.why, guide.scale.modelNote]
+        .filter(Boolean).join(' ')
+      : '';
+  }
   const clip = document.getElementById('guideClip');
   if (clip) clip.textContent = [guide.clip, guide.key && guide.key.why].filter(Boolean).join(' ');
 
@@ -79,6 +86,15 @@
       } catch (err) {
         copy.textContent = 'Selecciona el texto';
       }
+    });
+  }
+
+  const lessons = document.getElementById('guideLessons');
+  if (lessons) {
+    (guide.lessons || []).forEach(t => {
+      const li = document.createElement('li');
+      li.textContent = t;
+      lessons.appendChild(li);
     });
   }
 

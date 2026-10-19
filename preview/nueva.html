@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>VOLTIA · prueba 1:1 del recorte</title>
+<title>VOLTIA · modelo nuevo</title>
 <style>
   * { box-sizing: border-box; }
   body { margin:0; font-family: system-ui, sans-serif; background:#181624; color:#eee;
@@ -23,6 +23,7 @@
   .plate canvas.light { background:#e9e6f5; }
   .plate canvas.green { background:#11ef06; }
   .cap { color:#9d9ab5; font-size:12px; margin-top:6px; text-align:center; }
+  .row { display:flex; gap:18px; flex-wrap:wrap; justify-content:center; align-items:flex-end; }
   .controls { display:flex; gap:8px; flex-wrap:wrap; justify-content:center; align-items:center; }
   button, select { background:#35324e; color:#eee; border:1px solid #4a4767; border-radius:8px;
     padding:8px 12px; cursor:pointer; font-size:14px; }
@@ -37,14 +38,13 @@
   .arena input[type=range] { width:140px; }
   .layers { color:#d8d6ea; font-size:13px; line-height:1.55; }
   footer { color:#6d6b85; font-size:13px; padding:16px; }
-  .pick { display:flex; gap:8px; justify-content:center; margin:10px 0; }
 </style>
 </head>
 <body>
 <header>
-  <h1>Prueba 1:1 del recorte</h1>
-  <p>El recorte de la imagen generada, sin reducir nada: ni zoom, ni 120 de alto.
-    Se ve al tamaño real de sus píxeles, y se ve también cómo encaja en el escenario.</p>
+  <h1>Modelo nuevo · sprite de referencia</h1>
+  <p>Una sola imagen, de pie, todavía sin aprobar. Está cortada bajando por bloques
+    enteros de 8, así que no se ha escalado ni se ha mezclado ningún píxel.</p>
   <a class="play" href="guia.html">Guía de este modelo</a>
   <a class="play alt" href="index.html">Visor del personaje actual</a>
   <a class="play alt" href="guia-vieja.html">Guía del personaje actual</a>
@@ -52,7 +52,10 @@
 <section>
   <div class="box">
     <p class="warn" id="warn">Cargando…</p>
-    <div class="plate" id="plate"></div>
+    <div class="row">
+      <div class="plate" id="plateA"></div>
+      <div class="plate" id="plateB"></div>
+    </div>
     <div class="controls">
       <button id="bg" type="button">Fondo magenta</button>
       <button id="bg2" type="button">Fondo claro</button>
@@ -60,20 +63,20 @@
     </div>
     <p class="note" id="note"></p>
     <ul class="facts">
-      <li>Recorte nativo: <b>567 × 1022</b> píxeles. Sin escala.</li>
-      <li>La figura del escenario mide <b>153</b> de alto. La hoja de la pelea, <b>120</b>.</li>
-      <li>El fondo del ring mide <b>1344 × 604</b>. Con los pies en el suelo (y = 408), una figura de 1022 deja la cabeza <b>614 píxeles por encima</b> del borde de la placa.</li>
-      <li>Para que entre a la escala de la pelea habría que multiplicarla por <b>0,117</b>. Eso es lo que emborronaba: cada píxel del dibujo caía en una fracción de píxel.</li>
+      <li>Imagen generada: <b>1024 × 1024</b>, bloques de unos 8 píxeles.</li>
+      <li>Recorte: <b>95 × 126</b>, bajando por bloques de 8 enteros (÷8, sin interpolar). Ningún color se ha mezclado.</li>
+      <li>La figura del escenario mide <b>153</b> de alto. Esta mide <b>126</b>.</li>
+      <li>La prueba 1:1 del recorte nativo, sin tocar, está en <code>nueva.html?mode=native</code>.</li>
     </ul>
   </div>
 </section>
 <section class="arena" id="escenario">
-  <h2>Escenario · cómo encaja de verdad</h2>
+  <h2>Escenario · el mismo de siempre</h2>
   <div class="box">
     <p class="warn" id="modeNote"></p>
-    <div class="pick controls">
-      <button id="mNative" type="button">Nativo 1:1</button>
-      <button id="mFit" type="button">Escala de pelea</button>
+    <div class="controls">
+      <button id="mNative" type="button">Tamaño natural</button>
+      <button id="mFit" type="button">Igualar a la figura vieja (153)</button>
     </div>
     <canvas id="stagecv" width="960" height="540"></canvas>
     <div class="controls">
@@ -94,14 +97,12 @@
     <p class="layers" id="stageNote"></p>
   </div>
 </section>
-<footer>FabaterFighter · prueba de encuadre, aparte de la pelea</footer>
+<footer>FabaterFighter · modelo nuevo, aparte de la pelea</footer>
 <script>
 (() => {
-  const NATIVE = '../voltia/newref/ref_stand_native.png';
-  const H = 1022;
   const mode = new URLSearchParams(location.search).get('mode') === 'fit' ? 'fit' : 'native';
-  window.STAGE_FIGHTER = NATIVE;
-  window.STAGE_FIGHTER_SCALE = mode === 'fit' ? 120 / H : 1;
+  window.STAGE_FIGHTER = '../voltia/newref/ref_stand.png';
+  window.STAGE_FIGHTER_SCALE = mode === 'fit' ? 153 / 126 : 1;
   window.__MODE = mode;
 })();
 </script>
@@ -111,12 +112,12 @@
   const mode = window.__MODE;
   const note = document.getElementById('modeNote');
   if (mode === 'fit') {
-    note.textContent = 'Escala de pelea: la misma imagen reducida a 120 de alto ' +
-      '(×0,117). Así es como se veía antes: el detalle se pierde.';
+    note.textContent = 'Igualada a la figura vieja (153 de alto, ×1,21). Ese medio pixel de más ' +
+      'es el que estropea un sprite: aquí se ve si merece la pena.';
     document.getElementById('mFit').classList.add('active');
   } else {
-    note.textContent = 'Nativo 1:1: la imagen sin tocar. Con los pies en el suelo, ' +
-      'la figura se sale por arriba de la placa. Baja el zoom para ver más.';
+    note.textContent = 'Tamaño natural: 126 de alto, contra los 153 de la figura que ya juega. ' +
+      'El escenario no se toca.';
     document.getElementById('mNative').classList.add('active');
   }
   document.getElementById('mNative').onclick = () => { location.search = '?mode=native'; };
@@ -165,45 +166,55 @@
 (async () => {
   const warn = document.getElementById('warn');
   const note = document.getElementById('note');
-  const plate = document.getElementById('plate');
-  const SRC = '../voltia/newref/ref_stand_native.png';
+  const cls = { dark: '', magenta: 'magenta', light: 'light', green: 'green' };
+  const names = { dark: 'oscuro', magenta: 'magenta', light: 'claro', green: 'verde' };
+  let i = 0;
+  const order = ['dark', 'magenta', 'light', 'green'];
+  const canvases = [];
   try {
-    const img = new Image();
-    img.src = SRC + '?v=' + Date.now();
-    await img.decode();
-    const cv = document.createElement('canvas');
-    cv.width = img.naturalWidth;
-    cv.height = img.naturalHeight;
-    const cx = cv.getContext('2d');
-    cx.imageSmoothingEnabled = false;
-    cx.drawImage(img, 0, 0);
-    plate.appendChild(cv);
-    const cap = document.createElement('div');
-    cap.className = 'cap';
-    cap.textContent = '1:1 · ' + img.naturalWidth + ' × ' + img.naturalHeight +
-      '. Nada escalado: un píxel de la imagen, un píxel de pantalla.';
-    plate.appendChild(cap);
-    warn.textContent = 'Este es el recorte tal cual salió del modelo, solo con el verde quitado.';
-    note.textContent = 'Fíjate en la máscara, el visor, la boca y el rayo: aquí está todo el detalle que se perdía al reducir.';
-    const cls = { dark: '', magenta: 'magenta', light: 'light', green: 'green' };
-    let i = 0;
-    const order = ['dark', 'magenta', 'light', 'green'];
+    const add = async (id, src, scale, caption) => {
+      const img = new Image();
+      img.src = src + '?v=' + Date.now();
+      await img.decode();
+      const cv = document.createElement('canvas');
+      cv.width = img.naturalWidth * scale;
+      cv.height = img.naturalHeight * scale;
+      const cx = cv.getContext('2d');
+      cx.imageSmoothingEnabled = false;
+      cx.drawImage(img, 0, 0, cv.width, cv.height);
+      const holder = document.getElementById(id);
+      holder.appendChild(cv);
+      const cap = document.createElement('div');
+      cap.className = 'cap';
+      cap.textContent = caption + ' · ' + img.naturalWidth + ' × ' + img.naturalHeight +
+        ' a ' + scale + '×';
+      holder.appendChild(cap);
+      canvases.push(cv);
+      return img;
+    };
+    await add('plateA', '../voltia/newref/ref_stand.png', 4,
+      'Recorte nuevo, bloques enteros');
+    await add('plateB', '../voltia/stage/fighter.png', 3,
+      'La figura que ya juega, para comparar');
+    warn.textContent = 'Izquierda: el recorte nuevo. Derecha: la que ya juega. ' +
+      'Mismo tamaño de píxel en pantalla, distinto alto.';
+    note.textContent = 'Mira la máscara, el visor, la boca y el rayo. Si algo no cuadra, ' +
+      'este dibujo no vale y no salen las demás poses.';
     document.getElementById('bg').onclick = () => {
       i = (i + 1) % order.length;
-      cv.className = cls[order[i]];
-      document.getElementById('bg').textContent =
-        'Fondo ' + ({ dark: 'oscuro', magenta: 'magenta', light: 'claro', green: 'verde' })[order[i]];
+      canvases.forEach(cv => { cv.className = cls[order[i]]; });
+      document.getElementById('bg').textContent = 'Fondo ' + names[order[i]];
     };
     document.getElementById('bg2').onclick = () => {
-      cv.className = '';
+      canvases.forEach(cv => { cv.className = ''; });
       document.getElementById('bg').textContent = 'Fondo magenta';
     };
     document.getElementById('bg3').onclick = () => {
-      cv.className = 'green';
+      canvases.forEach(cv => { cv.className = 'green'; });
       document.getElementById('bg').textContent = 'Fondo magenta';
     };
   } catch (err) {
-    warn.textContent = 'No pude cargar el recorte: ' + (err && err.message ? err.message : err);
+    warn.textContent = 'No pude cargar el sprite: ' + (err && err.message ? err.message : err);
   }
 })();
 </script>
