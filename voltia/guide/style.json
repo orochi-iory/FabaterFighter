@@ -47,18 +47,26 @@
   "clip": "Un píxel es fondo solo si está más cerca del verde medido que de la paleta, con umbral 60 sobre la imagen grande. Después se reduce a 120 de alto con muestreo al centro (NEAREST), nunca LANCZOS, y se tapa con el contorno cualquier píxel de borde que salga verdoso. No hay halo.",
   "palette": [
     {
-      "name": "perfil",
+      "name": "contorno",
       "rgb": [
-        0,
-        0,
-        0
+        10,
+        8,
+        20
+      ]
+    },
+    {
+      "name": "navy sombra",
+      "rgb": [
+        16,
+        20,
+        54
       ]
     },
     {
       "name": "navy",
       "rgb": [
-        24,
-        24,
+        27,
+        34,
         80
       ]
     },
@@ -71,59 +79,99 @@
       ]
     },
     {
-      "name": "traje y visor",
+      "name": "traje",
       "rgb": [
-        16,
-        144,
-        144
+        23,
+        147,
+        141
+      ]
+    },
+    {
+      "name": "traje luz",
+      "rgb": [
+        31,
+        177,
+        164
       ]
     },
     {
       "name": "coleta sombra",
       "rgb": [
-        88,
-        8,
-        136
+        60,
+        15,
+        95
       ]
     },
     {
       "name": "coleta",
       "rgb": [
-        136,
-        64,
-        184
+        85,
+        21,
+        124
+      ]
+    },
+    {
+      "name": "coleta luz",
+      "rgb": [
+        186,
+        104,
+        232
+      ]
+    },
+    {
+      "name": "mascara sombra",
+      "rgb": [
+        120,
+        16,
+        80
+      ]
+    },
+    {
+      "name": "mascara",
+      "rgb": [
+        190,
+        25,
+        130
+      ]
+    },
+    {
+      "name": "piel sombra",
+      "rgb": [
+        196,
+        120,
+        84
       ]
     },
     {
       "name": "piel",
       "rgb": [
-        248,
+        240,
         176,
-        128
+        132
+      ]
+    },
+    {
+      "name": "cinturon",
+      "rgb": [
+        176,
+        112,
+        36
       ]
     },
     {
       "name": "rayo",
       "rgb": [
-        248,
-        208,
-        40
+        250,
+        210,
+        50
       ]
     },
     {
-      "name": "máscara",
+      "name": "blanco ojo",
       "rgb": [
-        200,
-        20,
-        130
-      ]
-    },
-    {
-      "name": "cinturón",
-      "rgb": [
-        224,
-        176,
-        32
+        255,
+        255,
+        255
       ]
     }
   ],
@@ -167,140 +215,141 @@
     }
   ],
   "idle": {
-    "status": "primera pasada, sin aprobar",
+    "status": "segunda pasada, sin aprobar",
     "fps": 8,
     "count": 20,
     "canvas": [
-      190,
-      212
+      195,
+      215
     ],
     "height": 200,
-    "lift": "el saltito se dibuja subiendo el frame entero en el visor, no inflando el personaje",
-    "note": "Veinte pasos. Saltito con agachado, despegue, pico y aterrizaje; luego baja las manos, se atusa las piernas dos veces y vuelve a la guardia.",
+    "note": "Una sola escala para todas las poses: mismo factor, mismas proporciones. Las poses agachadas son mas bajas a proposito. El saltito sube el frame entero.",
     "frames": [
       {
         "file": "00_stand.png",
-        "pose": "00_stand",
+        "pose": "stand",
         "lift": 0,
         "caption": "de pie"
       },
       {
         "file": "01_crouch.png",
-        "pose": "01_crouch",
+        "pose": "crouch",
         "lift": 0,
         "caption": "se agacha"
       },
       {
         "file": "02_takeoff.png",
-        "pose": "02_takeoff",
-        "lift": 10,
+        "pose": "takeoff",
+        "lift": 12,
         "caption": "despega"
       },
       {
         "file": "03_peak.png",
-        "pose": "03_peak",
-        "lift": 36,
+        "pose": "peak",
+        "lift": 38,
         "caption": "arriba"
       },
       {
-        "file": "04_takeoff.png",
-        "pose": "02_takeoff",
-        "lift": 10,
-        "caption": "cae"
-      },
-      {
-        "file": "05_land.png",
-        "pose": "04_land",
+        "file": "04_land.png",
+        "pose": "land",
         "lift": 0,
         "caption": "pisa"
       },
       {
-        "file": "06_stand.png",
-        "pose": "00_stand",
+        "file": "05_stand.png",
+        "pose": "stand",
         "lift": 0,
         "caption": "de pie"
       },
       {
-        "file": "07_hands_down.png",
-        "pose": "05_hands_down",
+        "file": "06_hands.png",
+        "pose": "hands",
         "lift": 0,
         "caption": "baja las manos"
       },
       {
-        "file": "08_hands_down.png",
-        "pose": "05_hands_down",
+        "file": "07_chest.png",
+        "pose": "chest",
         "lift": 0,
-        "caption": "respira"
+        "caption": "las sube al pecho"
       },
       {
-        "file": "09_reach_thigh.png",
-        "pose": "06_reach_thigh",
+        "file": "08_thigh.png",
+        "pose": "thigh",
         "lift": 0,
         "caption": "a los muslos"
       },
       {
-        "file": "10_stroke_high.png",
-        "pose": "07_stroke_high",
+        "file": "09_shin.png",
+        "pose": "shin",
         "lift": 0,
         "caption": "se atusa"
       },
       {
-        "file": "11_stroke_low.png",
-        "pose": "08_stroke_low",
+        "file": "10_shin.png",
+        "pose": "shin",
         "lift": 0,
-        "caption": "baja por la pierna"
+        "caption": "baja"
       },
       {
-        "file": "12_stroke_low.png",
-        "pose": "08_stroke_low",
+        "file": "11_thigh.png",
+        "pose": "thigh",
         "lift": 0,
-        "caption": "hasta la caña"
+        "caption": "a la caña"
       },
       {
-        "file": "13_stroke_high.png",
-        "pose": "07_stroke_high",
-        "lift": 0,
-        "caption": "sube"
-      },
-      {
-        "file": "14_reach_thigh.png",
-        "pose": "06_reach_thigh",
+        "file": "12_shin.png",
+        "pose": "shin",
         "lift": 0,
         "caption": "otra pasada"
       },
       {
-        "file": "15_straighten.png",
-        "pose": "09_straighten",
+        "file": "13_thigh.png",
+        "pose": "thigh",
         "lift": 0,
-        "caption": "se incorpora"
+        "caption": "sube"
       },
       {
-        "file": "16_straighten.png",
-        "pose": "09_straighten",
+        "file": "14_chest.png",
+        "pose": "chest",
         "lift": 0,
-        "caption": "erguida"
+        "caption": "al pecho"
       },
       {
-        "file": "17_hands_down.png",
-        "pose": "05_hands_down",
+        "file": "15_hands.png",
+        "pose": "hands",
         "lift": 0,
-        "caption": "vuelve"
+        "caption": "baja las manos"
+      },
+      {
+        "file": "16_stand.png",
+        "pose": "stand",
+        "lift": 0,
+        "caption": "de pie"
+      },
+      {
+        "file": "17_stand.png",
+        "pose": "stand",
+        "lift": 0,
+        "caption": "de pie"
       },
       {
         "file": "18_stand.png",
-        "pose": "00_stand",
+        "pose": "stand",
         "lift": 0,
         "caption": "de pie"
       },
       {
         "file": "19_stand.png",
-        "pose": "00_stand",
+        "pose": "stand",
         "lift": 0,
         "caption": "de pie"
       }
     ]
   },
   "lessons": [
+    "2026-10-19. El fallo de la coleta no era el dibujo: al normalizar CADA pose a 200 px de alto, cada frame cambiaba de escala. Ahora todas las poses se escalan con el mismo factor y el alto de cada pose es consecuencia de su postura. Se mide la proporcion de pixeles de coleta sobre el cuerpo, no el numero absoluto.",
+    "2026-10-19. La paleta se fija a 16 colores exactos y se aplica a todos los frames. Antes cada frame traia sus propios medios tonos y la sombra cambiaba.",
     "2026-10-19. La regla de 5 bloques funciona: figura de 1000 px de lienzo partido por 5 son 200 nativos, y el recorte queda perfecto. Es la escala de trabajo para todos los personajes.",
     "2026-10-19. Escala definitiva: 170 cm con coleta = 200 px. Cuatro intentos de sacar 200 nativos del generador (bloques de 5, zoom x5 declarado, figura pequeña a 1 px, referencia con bloques de 5) devuelven el mismo raster de 8. El sprite de juego se fija a 200 desde el maestro aprobado y se dibuja 1:1.",
     "2026-10-19. El suelo de la placa (408) era el borde trasero del ring, no el centro del rombo. Bajado a 426, los pies pisan el rombo. Solo en el visor nuevo: window.STAGE_FLOOR_Y.",
@@ -317,6 +366,7 @@
     "2026-10-19. Conclusión para el escenario: la figura que ya juega mide 153 y esta 126, así que entra sin escalar. Si algún día hay que igualarla a 120, se genera a 120 bloques de 8 = 960 y se corta ÷8 exacto."
   ],
   "changelog": [
+    "2026-10-19. Idle rehecho: escala unica, paleta de 16, y las poses que no mantenian la coleta, regeneradas con la hoja de 4 poses como referencia.",
     "2026-10-19. Regla de oro guardada: 170 cm = 200 px, bloques de 5. El zoom del escenario pasa a escala entera para no deformar el píxel. Primera pasada del idle de 20 frames.",
     "2026-10-19. Regla de escala por altura real: 170 cm = 200 px. El sprite de juego queda en 150 × 200 y el escenario lo pinta 1:1.",
     "2026-10-19. Altura de ring a 200. Suelo del visor nuevo a 426, en el centro del rombo. El escenario acepta STAGE_FLOOR_Y por página.",
