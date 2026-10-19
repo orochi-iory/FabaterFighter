@@ -89,7 +89,10 @@ CSS = """
 
 def main():
     filas = json.load(open(os.path.join(BASE, 'raw', 'filas.json')))
-    stance = [f for f in json.load(open(os.path.join(BASE, 'rows.json'))) if f['fila'] == 1][0]
+    limpias = json.load(open(os.path.join(BASE, 'rows.json')))
+    stance = [f for f in limpias if f['fila'] == 1][0]
+    sk = [f for f in limpias if f['fila'] == 12][0]
+    bs = [f for f in limpias if f['fila'] == 22][0]
     por_fila = {f['fila']: f for f in filas}
 
     h = []
@@ -109,9 +112,10 @@ def main():
     a('<p>Son <b>las 24 filas</b>, cortadas por la altura del suelo de cada figura, '
       'no por los huecos de fondo. De la 4 a la 24 salen <b>tal cual están en la hoja</b>: '
       'todas las figuras de cada fila, en su orden, sin recortar ciclos ni quitar repeticiones.</p>')
-    a('<p>El único cambio respecto a la tabla de antes es el que pediste: '
-      '<b>las filas 1, 2 y 3 no son tres animaciones, son un solo bucle</b>, y salen '
-      'como una sola entrada.</p>')
+    a('<p>Tres cosas van montadas porque son una sola animación en la hoja o porque '
+      'el efecto va en el frame, y están marcadas: <b>1–3</b> el stance es un solo bucle · '
+      '<b>12</b> el speed kick lleva sus estelas amarillas dentro · <b>22–23</b> defensa y '
+      'super son la misma animación, con todos los frames.</p>')
     a('<p style="margin-top:14px"><a href="../%s/raw/hoja_24_filas.png" '
       'style="color:#ffcb3d;font-weight:700">→ Las 24 filas juntas, numeradas, en una imagen</a></p>' % BASE)
     a('</header>')
@@ -132,10 +136,36 @@ def main():
       'idéntica píxel a píxel a la figura 10 de la fila 1 (la costura).</td>')
     a('</tr>')
 
-    # ---- filas 4-24: crudas, como estaban ----
+    # ---- filas 4-24: crudas, como estaban, salvo la 12 y la 22-23 ----
     for f in filas:
         n = f['fila']
         if n < 4:
+            continue
+        if n == 12:
+            a('<tr class="stance">')
+            a('<td class="b">12</td>')
+            a('<td><img class="mini" src="../%s/%s" alt="speed kick"></td>' % (BASE, sk['gif']))
+            a('<td class="n">Speed kick<br><span class="dim">poses + estelas en el frame</span></td>')
+            a('<td class="mono">%d poses<br>9 estelas</td>' % sk['n'])
+            a('<td class="mono">827–911</td>')
+            a('<td class="note">Cada estela va <b>dentro del frame, a la derecha del sprite</b>, '
+              'en el desfase que tiene en la hoja. Las dos que van sueltas (x 254–276 y x 339–359) '
+              'van con la pose de su izquierda, que es la que las genera.</td>')
+            a('</tr>')
+            continue
+        if n == 23:
+            continue
+        if n == 22:
+            a('<tr class="stance">')
+            a('<td class="b">22–23</td>')
+            a('<td><img class="mini" src="../%s/%s" alt="defensa y super"></td>' % (BASE, bs['gif']))
+            a('<td class="n">Defensa / onda de choque + super<br>'
+              '<span class="dim">una sola animación</span></td>')
+            a('<td class="mono">8 + 6 = 14<br>→ %d frames</td>' % bs['n'])
+            a('<td class="mono">1942–2157</td>')
+            a('<td class="note">Las filas 22 y 23 seguidas, <b>todos los frames</b>, sin quitar '
+              'ninguno. La onda de los golpes grandes y la esfera del super no están dibujadas.</td>')
+            a('</tr>')
             continue
         a('<tr>')
         a('<td class="b">%02d</td>' % n)
@@ -172,6 +202,24 @@ def main():
     a('</div>')
     a('<p class="dim">Las tres franjas de la hoja de las que sale el bucle, solo para contar. '
       'En el juego no existen por separado.</p></div>')
+
+    a('<div class="box"><h2>Speed kick: las %d poses con su estela, en orden</h2>' % sk['n'])
+    a('<p>Las estelas amarillas de la hoja no están pegadas a la pose: son trozos aparte, '
+      'a la derecha de cada patada. Aquí van <b>dentro del frame</b>, en el mismo desfase '
+      'que tienen en la hoja, así que acompañan al movimiento en vez de desaparecer.</p>')
+    a('<img class="strip" src="../%s/speed_kick_secuencia.png" alt="las %d poses del speed kick con su estela">'
+      % (BASE, sk['n']))
+    a('<p class="dim">Desfases usados, en x de la hoja: %s.</p>'
+      % ' · '.join(e for e in sk['estelas'] if e))
+    a('</div>')
+
+    a('<div class="box"><h2>Defensa + super: las filas 22 y 23, %d frames</h2>' % bs['n'])
+    a('<p>Ocho figuras de la fila 22 y seis de la fila 23, <b>seguidas y sin quitar ninguna</b>: '
+      'es una sola animación. Los frames van en el orden de la hoja, con los pies en la misma '
+      'línea y el eje de la cabeza al centro.</p>')
+    a('<img class="strip" src="../%s/block_super_secuencia.png" alt="los %d frames de defensa y super">'
+      % (BASE, bs['n']))
+    a('</div>')
 
     a('<div class="box"><h2>Por qué antes fallaba</h2>')
     a('<p>La fila 1 y la 2 están <b>en la misma franja de fondo</b>: el retrato de la izquierda '

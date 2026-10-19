@@ -47,7 +47,7 @@
 <header>
 <h1>Chun-Li · las filas de la hoja</h1>
 <p>Son <b>las 24 filas</b>, cortadas por la altura del suelo de cada figura, no por los huecos de fondo. De la 4 a la 24 salen <b>tal cual están en la hoja</b>: todas las figuras de cada fila, en su orden, sin recortar ciclos ni quitar repeticiones.</p>
-<p>El único cambio respecto a la tabla de antes es el que pediste: <b>las filas 1, 2 y 3 no son tres animaciones, son un solo bucle</b>, y salen como una sola entrada.</p>
+<p>Tres cosas van montadas porque son una sola animación en la hoja o porque el efecto va en el frame, y están marcadas: <b>1–3</b> el stance es un solo bucle · <b>12</b> el speed kick lleva sus estelas amarillas dentro · <b>22–23</b> defensa y super son la misma animación, con todos los frames.</p>
 <p style="margin-top:14px"><a href="../voltia/nuevo/chunli/raw/hoja_24_filas.png" style="color:#ffcb3d;font-weight:700">→ Las 24 filas juntas, numeradas, en una imagen</a></p>
 </header>
 <main><table>
@@ -124,13 +124,13 @@
 <td class="mono">749–806</td>
 <td class="note">El proyectil no está dibujado: usar la chispa de Voltia.</td>
 </tr>
-<tr>
+<tr class="stance">
 <td class="b">12</td>
-<td><img class="mini" src="../voltia/nuevo/chunli/raw/fila_12.gif" alt="fila 12"></td>
-<td class="n">Speed kick</td>
-<td class="mono">9</td>
+<td><img class="mini" src="../voltia/nuevo/chunli/gif/12_speed_kick.gif" alt="speed kick"></td>
+<td class="n">Speed kick<br><span class="dim">poses + estelas en el frame</span></td>
+<td class="mono">9 poses<br>9 estelas</td>
 <td class="mono">827–911</td>
-<td class="note">Poses rápidas; las estelas amarillas van aparte.</td>
+<td class="note">Cada estela va <b>dentro del frame, a la derecha del sprite</b>, en el desfase que tiene en la hoja. Las dos que van sueltas (x 254–276 y x 339–359) van con la pose de su izquierda, que es la que las genera.</td>
 </tr>
 <tr>
 <td class="b">13</td>
@@ -204,21 +204,13 @@
 <td class="mono">1888–1936</td>
 <td class="note">Golpe corto.</td>
 </tr>
-<tr>
-<td class="b">22</td>
-<td><img class="mini" src="../voltia/nuevo/chunli/raw/fila_22.gif" alt="fila 22"></td>
-<td class="n">Defensa / onda de choque</td>
-<td class="mono">8</td>
-<td class="mono">1942–2043</td>
-<td class="note">La onda de los golpes grandes va aparte.</td>
-</tr>
-<tr>
-<td class="b">23</td>
-<td><img class="mini" src="../voltia/nuevo/chunli/raw/fila_23.gif" alt="fila 23"></td>
-<td class="n">Super · esfera</td>
-<td class="mono">6</td>
-<td class="mono">2045–2157</td>
-<td class="note">La esfera no está dibujada.</td>
+<tr class="stance">
+<td class="b">22–23</td>
+<td><img class="mini" src="../voltia/nuevo/chunli/gif/22_block_super.gif" alt="defensa y super"></td>
+<td class="n">Defensa / onda de choque + super<br><span class="dim">una sola animación</span></td>
+<td class="mono">8 + 6 = 14<br>→ 14 frames</td>
+<td class="mono">1942–2157</td>
+<td class="note">Las filas 22 y 23 seguidas, <b>todos los frames</b>, sin quitar ninguno. La onda de los golpes grandes y la esfera del super no están dibujadas.</td>
 </tr>
 <tr>
 <td class="b">24</td>
@@ -240,6 +232,15 @@
 <figure><img src="../voltia/nuevo/chunli/raw/fila_03.gif" alt="franja 3 de la hoja"><figcaption>franja 3 · 7 figuras</figcaption></figure>
 </div>
 <p class="dim">Las tres franjas de la hoja de las que sale el bucle, solo para contar. En el juego no existen por separado.</p></div>
+<div class="box"><h2>Speed kick: las 9 poses con su estela, en orden</h2>
+<p>Las estelas amarillas de la hoja no están pegadas a la pose: son trozos aparte, a la derecha de cada patada. Aquí van <b>dentro del frame</b>, en el mismo desfase que tienen en la hoja, así que acompañan al movimiento en vez de desaparecer.</p>
+<img class="strip" src="../voltia/nuevo/chunli/speed_kick_secuencia.png" alt="las 9 poses del speed kick con su estela">
+<p class="dim">Desfases usados, en x de la hoja: 108-132 · 181-196 · 254-276 · 339-359 · 418-425 · 480-490 · 545-556 · 611-635.</p>
+</div>
+<div class="box"><h2>Defensa + super: las filas 22 y 23, 14 frames</h2>
+<p>Ocho figuras de la fila 22 y seis de la fila 23, <b>seguidas y sin quitar ninguna</b>: es una sola animación. Los frames van en el orden de la hoja, con los pies en la misma línea y el eje de la cabeza al centro.</p>
+<img class="strip" src="../voltia/nuevo/chunli/block_super_secuencia.png" alt="los 14 frames de defensa y super">
+</div>
 <div class="box"><h2>Por qué antes fallaba</h2>
 <p>La fila 1 y la 2 están <b>en la misma franja de fondo</b>: el retrato de la izquierda es alto y tapa el hueco que las separa, así que un corte por franjas las ve como una sola. Ahí se me desplazaba todo. Ahora se separan por la altura del suelo de cada figura: la fila 1 tiene los pies en y≈76 y la fila 2 en y≈145.</p>
 <p>En la tabla, de la 4 a la 24, no hay ninguna decisión mía: cada GIF lleva <b>todas</b> las figuras de su fila, incluidas las repeticiones. Los caminar llevan sus 12 figuras, como estaban.</p></div>

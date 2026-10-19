@@ -326,29 +326,46 @@
   "slug": "speed_kick",
   "nombre": "Speed kick",
   "bucle": false,
-  "nota": "Poses rapidas repetidas; las estelas van dibujadas aparte en la hoja.",
+  "nota": "Poses rapidas repetidas; las estelas van dibujadas aparte en la hoja. Cada frame lleva su estela amarilla a la derecha del sprite, en el mismo desfase que tiene en la hoja.",
   "n": 9,
   "gif": "gif/12_speed_kick.gif",
   "alto": [
-   61,
-   81
+   87,
+   87
   ],
   "ancho": [
-   32,
-   74
+   92,
+   92
   ],
   "activos": [
-   4,
    5
   ],
   "extension": "brazo",
   "aire": [],
   "de_pie": [
+   1,
    2,
+   3,
+   4,
+   5,
+   6,
+   7,
+   8,
    9
   ],
   "ataque": true,
-  "inclinacion": -3.5
+  "inclinacion": -3.5,
+  "estelas": [
+   null,
+   "108-132",
+   "181-196",
+   "254-276",
+   "339-359",
+   "418-425",
+   "480-490",
+   "545-556",
+   "611-635"
+  ]
  },
  {
   "fila": 13,
@@ -643,45 +660,19 @@
  },
  {
   "fila": 22,
-  "slug": "block",
-  "nombre": "Defensa / onda de choque",
-  "bucle": true,
-  "nota": "Guarda normal; con impactos grandes genera la onda. Arranca el super.",
-  "n": 8,
-  "gif": "gif/22_block.gif",
-  "alto": [
-   60,
-   74
-  ],
-  "ancho": [
-   46,
-   116
-  ],
-  "activos": [],
-  "extension": null,
-  "aire": [],
-  "de_pie": [
-   7,
-   8
-  ],
-  "ataque": false,
-  "inclinacion": 2.1
- },
- {
-  "fila": 23,
-  "slug": "super_sphere",
-  "nombre": "Super \u00b7 esfera envolvente",
+  "slug": "block_super",
+  "nombre": "Defensa / onda de choque + super",
   "bucle": false,
-  "nota": "La esfera no esta dibujada; son los frames de arranque.",
-  "n": 6,
-  "gif": "gif/23_super_sphere.gif",
+  "nota": "Filas 22 y 23 son la misma animacion: 8 + 6 = 14 frames, todos. La onda y la esfera no estan dibujadas.",
+  "n": 14,
+  "gif": "gif/22_block_super.gif",
   "alto": [
-   57,
-   69
+   78,
+   78
   ],
   "ancho": [
-   48,
-   116
+   142,
+   142
   ],
   "activos": [],
   "extension": null,
@@ -690,10 +681,22 @@
    1,
    2,
    3,
-   4
+   4,
+   5,
+   6,
+   7,
+   8,
+   9,
+   10,
+   11,
+   12,
+   13,
+   14
   ],
   "ataque": false,
-  "inclinacion": -1.1
+  "inclinacion": 0.7,
+  "filas": "22-23",
+  "crudo": 14
  },
  {
   "fila": 24,

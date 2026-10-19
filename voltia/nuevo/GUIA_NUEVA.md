@@ -174,9 +174,42 @@ línea (no bota) y eje de la cabeza al centro (no se va de lado). Cada figura de
 la hoja está en una x distinta, así que sin esto el GIF se mueve aunque el dibujo
 esté bien.
 
-El **speed kick** tiene 9 poses y estelas amarillas dibujadas como trozos sueltos.
-Se distinguen por tinta (una estela tiene menos de un tercio que una pose) y se
-pegan a su pose si están a menos de 16 px.
+El **speed kick** (fila 12) tiene 9 poses y estelas amarillas dibujadas aparte.
+La estela tiene que ir **dentro del frame, a la derecha del sprite**, en el mismo
+desfase que en la hoja; no es una capa de efectos suelta ni se descarta.
+
+Cómo se separa cuerpo de estela, sin mirar el dibujo:
+
+- Por columna se cuenta tinta total y tinta amarilla (`r>200, g>150, b<130`).
+- Una columna es **estela** si el 60 % o más de su tinta es amarilla. El corte
+  cuerpo/estela de un tramo es la primera de esas columnas (y solo si deja al
+  menos 5 columnas de cuerpo).
+- Un tramo con menos de **420 px de tinta** es una estela suelta: se pega a la
+  pose de su **izquierda**, que es la que la genera.
+
+Tramos de la fila 12 y a quién va cada estela:
+
+| pose | cuerpo | estela | cómo |
+|---|---|---|---|
+| 1 | 20–51 | — | sin estela |
+| 2 | 65–107 | 108–132 | pegada |
+| 3 | 138–180 | 181–196 | pegada |
+| 4 | 206–248 | 254–276 | suelta (185 px), se pega |
+| 5 | 286–328 | 339–359 | suelta (199 px), se pega |
+| 6 | 373–417 | 418–425 | pegada |
+| 7 | 433–479 | 480–490 | pegada |
+| 8 | 500–544 | 545–556 | pegada |
+| 9 | 568–610 | 611–635 | pegada |
+
+Montaje: el cuerpo se ancla como el stance (pies en la misma línea, eje de la
+cabeza al centro) y la estela se pega con su desfase exacto respecto al cuerpo.
+El lienzo se calcula con lo que sobresale: si una estela sube por encima de la
+cabeza o baja por debajo de los pies, el lienzo crece. Resultado: 9 frames de
+92×87 px, con la misma cantidad de amarillo que la hoja y sin recortes.
+
+**Filas 22 y 23 son una sola animación** (defensa / onda de choque + arranque del
+super): 8 + 6 = **14 frames, todos**, sin quitar repetidos. Van en el orden de la
+hoja, con los pies en la misma línea y el eje de la cabeza al centro.
 
 | Filas | Qué es |
 |---|---|
@@ -191,7 +224,7 @@ pegan a su pose si están a menos de 16 px.
 | 16 / 17 | salto + puño / salto + patada (misma animación para débil y fuerte) |
 | 18 | puño fuerte agachada (los frames de pie sirven de transición) |
 | 19 / 20 / 21 | patada fuerte, patada débil y puño débil agachada |
-| 22 / 23 | defensa y onda de choque / arranque del super |
+| 22-23 | defensa / onda de choque + super, una sola animación (14 frames) |
 | 24 | derribo y recuperación (frames según la altura) |
 
 Regla que se queda: **cuando una hoja tiene dos animaciones en la misma franja,

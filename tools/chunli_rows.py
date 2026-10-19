@@ -56,10 +56,9 @@ FILAS = [
     (19, 'crouch_kick_strong', 'Patada fuerte agachada', False, 'Sale desde el suelo.', 17),
     (20, 'crouch_kick_weak', 'Patada debil agachada', False, 'Extension corta.', 18),
     (21, 'crouch_punch_weak', 'Puno debil agachada', False, 'Golpe corto desde agachada.', 19),
-    (22, 'block', 'Defensa / onda de choque', True,
-     'Guarda normal; con impactos grandes genera la onda. Arranca el super.', 20),
-    (23, 'super_sphere', 'Super · esfera envolvente', False,
-     'La esfera no esta dibujada; son los frames de arranque.', 21),
+    (22, 'block_super', 'Defensa / onda de choque + super', False,
+     'Filas 22 y 23 son la misma animacion: 8 + 6 = 14 frames, todos. '
+     'La onda y la esfera no estan dibujadas.', 20),
     (24, 'knockdown', 'Derribo y recuperacion', False,
      'Se escogen frames segun la altura de la caida.', 22),
 ]
@@ -98,27 +97,122 @@ def runs_columna(im, y0, y1):
     return salida
 
 
-def tramos_con_estela(hoja, y0, y1, min_ink=420):
-    """Tramos de columna de una fila, separando poses de estelas.
+def grupos_con_estela(hoja, y0, y1, min_ink=420):
+    """Poses de una fila y la estela que le toca a cada una, a su derecha.
 
-    Una estela (el rastro amarillo del golpe) tiene mucha menos tinta que una
-    pose. Se pega a la pose anterior si esta a menos de 16 px.
+    La estela es amarilla lisa: se reconoce porque en esa columna casi toda la
+    tinta es amarilla (>=60 %). El corte entre cuerpo y estela se hace por la
+    primera de esas columnas dentro del tramo. Las estelas que van sueltas (mucha
+    menos tinta que una pose) se pegan a la pose de su izquierda, que es la que
+    las ha generado.
     """
-    runs = runs_columna(hoja, y0, y1)
-    piezas = []
-    for a, c in runs:
-        sub = limpiar(hoja.crop((a, y0, c + 1, y1)))
-        ink = sum(1 for p in sub.get_flattened_data() if p[3] > 0)
-        piezas.append({'x0': a, 'x1': c, 'ink': ink})
+    px = hoja.load()
+    cols = {}
+    for x in range(hoja.size[0]):
+        tot = am = 0
+        for y in range(y0, min(y1 + 1, hoja.size[1])):
+            r, g, b = px[x, y][:3]
+            if abs(r - BG[0]) <= TOL and abs(g - BG[1]) <= TOL and abs(b - BG[2]) <= TOL:
+                continue
+            tot += 1
+            if r > 200 and g > 150 and b < 130:
+                am += 1
+        cols[x] = (tot, am)
+
+    runs, ini = [], None
+    for x in range(hoja.size[0]):
+        if cols[x][0] and ini is None:
+            ini = x
+        elif not cols[x][0] and ini is not None:
+            runs.append((ini, x - 1)); ini = None
+    if ini is not None:
+        runs.append((ini, hoja.size[0] - 1))
+
     poses = []
-    for p in piezas:
-        if p['ink'] >= min_ink:
-            poses.append({'x0': p['x0'], 'x1': p['x1']})
-        elif poses and p['x0'] - poses[-1]['x1'] <= 16:
-            poses[-1]['x1'] = p['x1']          # estela de esa pose
+    for a, b in runs:
+        ink = sum(cols[x][0] for x in range(a, b + 1))
+        if ink < min_ink and poses:
+            # estela suelta: va con la pose de su izquierda
+            e = poses[-1]['estela']
+            poses[-1]['estela'] = (min(e[0], a), b) if e else (a, b)
+            continue
+        corte = next((x for x in range(a, b + 1)
+                      if cols[x][0] and cols[x][1] >= 0.6 * cols[x][0]), None)
+        if corte is not None and corte - a >= 5:
+            poses.append({'cuerpo': (a, corte - 1), 'estela': (corte, b)})
         else:
-            poses.append({'x0': p['x0'], 'x1': p['x1']})  # estela suelta
+            poses.append({'cuerpo': (a, b), 'estela': None})
     return poses
+
+
+def guardar_con_estela(hoja, carpeta, grupos, y0, y1, margen=2):
+    """Guarda cada pose con su estela dentro del mismo frame.
+
+    El cuerpo se ancla igual que el stance (pies en la misma linea, eje de la
+    cabeza al centro) y la estela se pega al desfase exacto que tiene en la hoja,
+    a la derecha del sprite. Asi el rastro acompana el movimiento en vez de
+    quedarse en el limbo.
+    """
+    os.makedirs(carpeta, exist_ok=True)
+    piezas = []
+    for g in grupos:
+        bx0, bx1 = g['cuerpo']
+        cuerpo = limpiar(hoja.crop((bx0, y0, bx1 + 1, y1 + 1)))
+        bb = cuerpo.getbbox()
+        if not bb:
+            continue
+        cuerpo = cuerpo.crop(bb)
+        ax, ay = bx0 + bb[0], y0 + bb[1]
+        estela = None
+        if g['estela']:
+            sx0, sx1 = g['estela']
+            ef = limpiar(hoja.crop((sx0, y0, sx1 + 1, y1 + 1)))
+            sb = ef.getbbox()
+            if sb:
+                estela = (ef.crop(sb), sx0 + sb[0] - ax, y0 + sb[1] - ay)
+        piezas.append((cuerpo, estela))
+
+    def eje_cabeza(im):
+        px = im.load()
+        w, h = im.size
+        xs = [x for y in range(max(2, h // 4)) for x in range(w) if px[x, y][3] > 0]
+        return (min(xs) + max(xs)) / 2.0 if xs else w / 2.0
+
+    ejes = [eje_cabeza(c) for c, _ in piezas]
+    derecha = 0.0
+    arriba, abajo = 0, 0
+    for (c, e), h in zip(piezas, ejes):
+        derecha = max(derecha, c.size[0] - h)
+        if e:
+            derecha = max(derecha, e[1] + e[0].size[0] - h)
+            # la estela puede sobresalir por encima de la cabeza o por debajo de
+            # los pies: el lienzo tiene que dar cabida a eso o se recorta
+            arriba = max(arriba, -e[2])
+            abajo = max(abajo, e[2] + e[0].size[1] - c.size[1])
+    CX = margen + int(round(max(ejes)))
+    W = CX + int(round(derecha)) + margen
+    H = max(c.size[1] for c, _ in piezas) + arriba + abajo + 2 * margen
+    suelo = H - margen - abajo
+    for k, ((c, e), h) in enumerate(zip(piezas, ejes)):
+        lienzo = Image.new('RGBA', (W, H), (0, 0, 0, 0))
+        px_, py_ = int(round(CX - h)), suelo - c.size[1]
+        lienzo.alpha_composite(c, (px_, py_))
+        if e:
+            lienzo.alpha_composite(e[0], (px_ + e[1], py_ + e[2]))
+        lienzo.save(os.path.join(carpeta, '%02d.png' % k))
+    return W, H
+
+
+def guardar_tira(carpeta, salida):
+    """Los frames en orden en una sola imagen, para revisar sin esperar al GIF."""
+    fs = sorted(f for f in os.listdir(carpeta) if f.endswith('.png'))
+    ims = [Image.open(os.path.join(carpeta, f)).convert('RGBA') for f in fs]
+    W = max(i.size[0] for i in ims); H = max(i.size[1] for i in ims)
+    out = Image.new('RGBA', (len(ims) * (W + 4) + 4, H + 4), (237, 237, 242, 255))
+    for i, im in enumerate(ims):
+        out.alpha_composite(im, (4 + i * (W + 4), 2))
+    out.resize((out.size[0] * 2, out.size[1] * 2), Image.NEAREST).save(salida)
+    return len(ims)
 
 
 def recortar_ciclo(carpeta):
@@ -334,17 +428,30 @@ def main():
         b = bandas[banda]
         carpeta = os.path.join(destino, '%02d_%s' % (num, slug))
         if num == 12:
-            poses = tramos_con_estela(hoja, b['y0'], b['y1'] + 1)
+            # cada pose con SU estela amarilla dentro del frame, a su derecha
+            grupos = grupos_con_estela(hoja, b['y0'], b['y1'] + 1)
+            guardar_con_estela(hoja, carpeta, grupos, b['y0'], b['y1'] + 1)
+            ficha(num, slug, nombre, bucle,
+                  nota + ' Cada frame lleva su estela amarilla a la derecha del sprite, '
+                  'en el mismo desfase que tiene en la hoja.', carpeta, None, num in ATAQUE)
+            salida[-1]['estelas'] = ['%d-%d' % tuple(g['estela']) if g['estela'] else None
+                                     for g in grupos]
+            guardar_tira(carpeta, os.path.join(base, 'speed_kick_secuencia.png'))
+            continue
+        if num == 22:
+            # filas 22 y 23: UNA animacion, todos los frames, sin quitar repetidos
             cajas = []
-            for p in poses:
-                sub = limpiar(hoja.crop((p['x0'], b['y0'], p['x1'] + 1, b['y1'] + 1)))
-                bb = sub.getbbox()
-                if bb:
-                    cajas.append((p['x0'] + bb[0], b['y0'] + bb[1],
-                                  p['x0'] + bb[2] - 1, b['y0'] + bb[3] - 1))
-        else:
-            cajas = [(f['x0'], f['y0'], f['x1'], f['y1'])
-                     for f in sorted(b['frames'], key=lambda f: f['x0'])]
+            for bb_ in (bandas[20], bandas[21]):
+                cajas += [(f['x0'], f['y0'], f['x1'], f['y1'])
+                          for f in sorted(bb_['frames'], key=lambda f: f['x0'])]
+            guardar_bucle(hoja, carpeta, cajas)
+            ficha(num, slug, nombre, bucle, nota, carpeta, None, False)
+            salida[-1]['filas'] = '22-23'
+            salida[-1]['crudo'] = len(cajas)
+            guardar_tira(carpeta, os.path.join(base, 'block_super_secuencia.png'))
+            continue
+        cajas = [(f['x0'], f['y0'], f['x1'], f['y1'])
+                 for f in sorted(b['frames'], key=lambda f: f['x0'])]
         ys = guardar(carpeta, cajas)
         if num in (4, 5):
             n = recortar_ciclo(carpeta)
