@@ -145,8 +145,34 @@ borde superior: un salto cambia el alto del dibujo pero no la fila.
 Error anterior, para no repetirlo: partir una fila de 12 frames en dos mitades
 suponiendo que eran «caminar adelante» y «caminar atrás». Son **filas distintas**.
 Y el «stance completo» metía la fila 4, que es caminar: el stance son solo las
-filas 1, 2 y 3, unidas en una única animación (22 frames, quitando el frame
-repetido de cada costura).
+filas 1, 2 y 3, unidas en una única animación.
+
+### El stance: filas 1, 2 y 3 son un solo bucle
+
+No son tres animaciones ni tres partes: es **un bucle** que la hoja reparte en
+tres franjas. Se reproducen seguidas, fila 1 → fila 2 → fila 3 → fila 1.
+
+| fila | figuras | x en la hoja | y en la hoja |
+|---|---|---|---|
+| 1 | 10 | 97–545 | 7–76 |
+| 2 | 6 | 82–404 | 85–145 |
+| 3 | 7 | 12–347 | 152–219 |
+| **total** | **23** | | |
+
+De esas 23 figuras salen 22 frames publicados. Se descarta **una** y no por
+criterio propio: la figura 1 de la fila 2 es **idéntica píxel a píxel** a la
+figura 10 de la fila 1 (mismo md5, `3ee56306`) — es la costura entre las dos
+franjas. Si se dejan las dos, el bucle se para dos ticks.
+
+El resto de repeticiones **se quedan**, porque son del dibujo original y están
+separadas en el bucle, no pegadas: `8d17596f` en 4 y 6 · `ba6e66c1` en 5 y 7 ·
+`3ee56306` en 10, 13 y 23 · `9f4fa603` en 12, 14 y 16 · `130461bd` en 17 y 21.
+En total 15 frames distintos de 23 figuras.
+
+Los frames se publican en un lienzo único de **54×70 px**: pies en la misma
+línea (no bota) y eje de la cabeza al centro (no se va de lado). Cada figura de
+la hoja está en una x distinta, así que sin esto el GIF se mueve aunque el dibujo
+esté bien.
 
 El **speed kick** tiene 9 poses y estelas amarillas dibujadas como trozos sueltos.
 Se distinguen por tinta (una estela tiene menos de un tercio que una pose) y se
@@ -154,7 +180,7 @@ pegan a su pose si están a menos de 16 px.
 
 | Filas | Qué es |
 |---|---|
-| 1-3 | bucle completo del stance (35 frames en total) |
+| 1-3 | el bucle del stance, uno solo: 23 figuras → 22 frames |
 | 4 / 5 | caminar adelante / atrás |
 | 6 / 7 / 8 / 9 | patada fuerte, puño fuerte, puño débil, patada débil |
 | 10 | especial ↓ ↓↘ → + patada |

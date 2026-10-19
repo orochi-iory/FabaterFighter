@@ -4,16 +4,16 @@
   "slug": "stance",
   "nombre": "Stance",
   "bucle": true,
-  "nota": "Filas 1, 2 y 3 son el mismo bucle: van juntas, sin repetir el frame de costura.",
+  "nota": "Filas 1, 2 y 3 son UN solo bucle de 22 frames (10 + 6 + 7 = 23 en la hoja; se descarta 1 porque esta repetido literalmente en la costura).",
   "n": 22,
   "gif": "gif/01_stance.gif",
   "alto": [
-   55,
-   66
+   70,
+   70
   ],
   "ancho": [
-   26,
-   46
+   54,
+   54
   ],
   "activos": [],
   "extension": null,
@@ -27,13 +27,54 @@
    6,
    7,
    8,
+   9,
+   10,
+   11,
+   12,
+   13,
+   14,
+   15,
    16,
+   17,
+   18,
+   19,
    20,
-   21
+   21,
+   22
   ],
   "ataque": false,
   "inclinacion": 0.6,
-  "filas": "1-3"
+  "filas": "1-3",
+  "crudo": 23,
+  "descartados": 1,
+  "lienzo": [
+   54,
+   70
+  ],
+  "origen": [
+   1,
+   1,
+   1,
+   1,
+   1,
+   1,
+   1,
+   1,
+   1,
+   1,
+   2,
+   2,
+   2,
+   2,
+   2,
+   3,
+   3,
+   3,
+   3,
+   3,
+   3,
+   3
+  ]
  },
  {
   "fila": 4,

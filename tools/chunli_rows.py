@@ -142,6 +142,36 @@ def recortar_ciclo(carpeta):
     return len(fs[:corte])
 
 
+def guardar_bucle(hoja, carpeta, cajas, margen=2):
+    """Recorta las figuras y las coloca en un lienzo comun.
+
+    Los pies van a la misma linea (no hay bote) y el eje de la cabeza al centro
+    (no hay vaiven lateral). Sin esto el bucle se mueve aunque la hoja este
+    perfectamente dibujada: cada figura de la hoja esta en una x distinta.
+    """
+    piezas = []
+    for (x0, y0, x1, y1) in cajas:
+        im = limpiar(hoja.crop((x0, y0, x1 + 1, y1 + 1)))
+        bb = im.getbbox()
+        piezas.append(im.crop(bb) if bb else im)
+
+    def eje_cabeza(im):
+        px = im.load()
+        w, h = im.size
+        xs = [x for y in range(max(2, h // 4)) for x in range(w) if px[x, y][3] > 0]
+        return (min(xs) + max(xs)) / 2.0 if xs else w / 2.0
+
+    os.makedirs(carpeta, exist_ok=True)
+    ejes = [eje_cabeza(p) for p in piezas]
+    W = 2 * int(max(max(e, p.size[0] - e) for p, e in zip(piezas, ejes))) + 2 * margen
+    H = max(p.size[1] for p in piezas) + 2 * margen
+    for k, (p, e) in enumerate(zip(piezas, ejes)):
+        lienzo = Image.new('RGBA', (W, H), (0, 0, 0, 0))
+        lienzo.alpha_composite(p, (int(round(W / 2 - e)), H - margen - p.size[1]))
+        lienzo.save(os.path.join(carpeta, '%02d.png' % k))
+    return W, H, ejes
+
+
 def medir(carpeta):
     fs = sorted(f for f in os.listdir(carpeta) if f.endswith('.png'))
     out = []
@@ -248,34 +278,56 @@ def main():
         return fila
 
     # ---------- stance: filas 1, 2 y 3 en UNA sola animacion ----------
+    # Orden real de la hoja: fila 1 (10 figuras) + fila 2 (6) + fila 3 (7) = 23.
+    # Se descarta UN frame y solo porque esta repetido literalmente: la figura 1
+    # de la fila 2 es identica a la figura 10 de la fila 1 (costura de la hoja).
+    # Si se dejan las dos, el bucle se queda parado dos ticks.
+    import hashlib
     b0 = bandas[0]['frames']
-    fila1 = sorted([f for f in b0 if f['y0'] < 80 and f['h'] < 100], key=lambda f: f['x0'])
-    fila2 = sorted([f for f in b0 if f['y0'] >= 80], key=lambda f: f['x0'])
-    fila3 = sorted(bandas[1]['frames'], key=lambda f: f['x0'])
-    cajas, ys = [], []
-    for grupo in (fila1, fila2, fila3):
+    grupos = [
+        sorted([f for f in b0 if f['y0'] < 80 and f['h'] < 100], key=lambda f: f['x0']),
+        sorted([f for f in b0 if f['y0'] >= 80], key=lambda f: f['x0']),
+        sorted(bandas[1]['frames'], key=lambda f: f['x0']),
+    ]
+    cajas, origen = [], []
+    for n_fila, grupo in enumerate(grupos, start=1):
         for f in grupo:
             cajas.append((f['x0'], f['y0'], f['x1'], f['y1']))
-    ys = guardar(os.path.join(destino, '01_stance'), cajas)
-    # quitar frames repetidos en las costuras entre filas
-    import hashlib
+            origen.append(n_fila)
     carpeta = os.path.join(destino, '01_stance')
-    previo, k = None, 0
-    for f in sorted(os.listdir(carpeta)):
-        ruta = os.path.join(carpeta, f)
-        h = hashlib.md5(open(ruta, 'rb').read()).hexdigest()
+    W, H, ejes = guardar_bucle(hoja, carpeta, cajas)
+    crudo = len(cajas)
+    previo, fuera = None, []
+    for k, f in enumerate(sorted(os.listdir(carpeta))):
+        h = hashlib.md5(open(os.path.join(carpeta, f), 'rb').read()).hexdigest()
         if h == previo:
-            os.remove(ruta)
-        else:
-            previo = h
+            fuera.append(k)
+        previo = h
+    for k in reversed(fuera):
+        os.remove(os.path.join(carpeta, '%02d.png' % k))
+    origen = [o for k, o in enumerate(origen) if k not in fuera]
     for i, f in enumerate(sorted(os.listdir(carpeta))):
-        os.rename(os.path.join(carpeta, f), os.path.join(carpeta, 'tmp%03d.png' % i))
+        os.rename(os.path.join(carpeta, f), os.path.join(carpeta, 'tmp%03d' % i))
     for f in sorted(os.listdir(carpeta)):
-        os.rename(os.path.join(carpeta, f), os.path.join(carpeta, f.replace('tmp', '')))
+        os.rename(os.path.join(carpeta, f), os.path.join(carpeta, '%02d.png' % int(f[3:])))
+    # tira de comprobacion: los frames en orden, con la fila de la hoja de cada uno
+    fs = sorted(f for f in os.listdir(carpeta) if f.endswith('.png'))
+    tira = Image.new('RGBA', (len(fs) * (W + 4) + 4, H + 14), (237, 237, 242, 255))
+    for i, f in enumerate(fs):
+        tira.alpha_composite(Image.open(os.path.join(carpeta, f)).convert('RGBA'), (4 + i * (W + 4), 12))
+    tira.resize((tira.size[0] * 2, tira.size[1] * 2), Image.NEAREST).save(
+        os.path.join(base, 'stance_secuencia.png'))
     ficha(1, 'stance', 'Stance', True,
-          'Filas 1, 2 y 3 son el mismo bucle: van juntas, sin repetir el frame de costura.',
+          'Filas 1, 2 y 3 son UN solo bucle de %d frames (10 + 6 + 7 = 23 en la hoja; '
+          'se descarta 1 porque esta repetido literalmente en la costura).' % len(fs),
           carpeta, None, False)
     salida[-1]['filas'] = '1-3'
+    salida[-1]['crudo'] = crudo
+    salida[-1]['descartados'] = len(fuera)
+    salida[-1]['lienzo'] = [W, H]
+    salida[-1]['origen'] = origen
+    print('stance: %d figuras en la hoja -> %d frames, lienzo %dx%d, restados %s'
+          % (crudo, len(fs), W, H, fuera))
 
     # ---------- filas 4 a 24 ----------
     for (num, slug, nombre, bucle, nota, banda) in FILAS:
