@@ -1,0 +1,29 @@
+{
+  "note": "Remake aparte. No entra en la pelea ni sustituye voltia/sheet_uniform.png.",
+  "anims": [
+    {
+      "id": "idle",
+      "label": "Idle",
+      "note": "Diseño aprobado. Esta es la máscara que tiene que repetirse en toda la serie.",
+      "fps": 6,
+      "frames": ["idle_0.png", "idle_1.png", "idle_2.png", "idle_3.png"],
+      "captions": ["1", "2", "3", "4"]
+    },
+    {
+      "id": "back",
+      "label": "Voltereta atrás",
+      "note": "Aprobada. En el segundo frame ya no está la coleta de más. El último es el idle: ahí aterriza.",
+      "fps": 8,
+      "frames": ["flip_back_0.png", "flip_back_1.png", "flip_back_2.png", "flip_back_3.png", "flip_back_4.png", "idle_0.png"],
+      "captions": ["despegue", "arco", "horizontal", "invertida", "sale", "idle"]
+    },
+    {
+      "id": "fwd",
+      "label": "Voltereta adelante",
+      "note": "Mismo personaje, no otro diseño. Se echa, pasa boca abajo y sale invertida con la coleta al otro lado. Falta el ovillo: las rodillas al pecho todavía no están, y no se enseña el frame viejo.",
+      "fps": 5,
+      "frames": ["flip_fwd_0.png", "flip_fwd_1.png", "flip_fwd_3.png", "idle_0.png"],
+      "captions": ["se echa", "boca abajo", "invertida", "idle"]
+    }
+  ]
+}

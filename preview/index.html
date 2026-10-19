@@ -18,6 +18,8 @@
   a.play { display:inline-block; margin-top:10px; background:#ffcb3d; color:#181624;
     text-decoration:none; font-weight:700; padding:8px 14px; border-radius:8px; letter-spacing:0.3px; }
   a.play:hover { background:#ffe08a; }
+  a.play.alt { background:transparent; color:#ffcb3d; border:2px solid #ffcb3d; margin-left:8px; }
+  a.play.alt:hover { background:#ffcb3d; color:#181624; }
   .controls a.play { margin-top:0; padding:8px 12px; font-size:14px; }
   main { display:flex; gap:20px; flex-wrap:wrap; justify-content:center; padding:16px;
          width:100%; max-width:1200px; }
@@ -39,6 +41,15 @@
   #say { color:#ffcb3d; margin-top:4px; min-height:1.2em; font-style:italic; }
   canvas#strip { image-rendering:pixelated; border-radius:8px; max-width:100%;
     background: repeating-conic-gradient(#2c2a40 0 25%, #242233 0 50%) 0 0/24px 24px; }
+  section.nueva { width:100%; max-width:1200px; padding:8px 16px 8px; }
+  section.nueva h2 { color:#ffcb3d; letter-spacing:1px; margin:8px 0; }
+  section.nueva .box { background:#222033; border:2px solid #ffcb3d; border-radius:12px; padding:16px; }
+  canvas#newcv, canvas#newstrip { image-rendering:pixelated; image-rendering:crisp-edges;
+    display:block; margin:0 auto; background:#101018; border-radius:8px; }
+  canvas#newcv { width:min(100%, 720px); height:auto; border:1px solid #3a3752; }
+  canvas#newstrip { max-width:100%; height:auto; margin-top:12px; }
+  section.nueva .warn { color:#ffcb3d; font-size:14px; margin:0 0 12px; }
+  section.nueva .note { color:#d8d6ea; font-size:14px; line-height:1.5; min-height:2.8em; }
   section.manual { width:100%; max-width:1200px; padding:0 16px 16px; }
   .card { background:#222033; border:2px solid #3a3752; border-radius:12px; padding:20px;
           display:flex; gap:20px; flex-wrap:wrap; }
@@ -72,6 +83,7 @@
   <h1>⚡ VOLTIA ⚡</h1>
   <p id="ver">cargando…</p>
   <a class="play" href="fight.html">Probar pelea · Voltia vs Voltia</a>
+  <a class="play alt" href="#nueva">Ver versión nueva</a>
   <p class="notes" id="notes"></p>
   <p id="syncwarn"></p>
 </header>
@@ -101,6 +113,16 @@
     <div class="info">Consejo: <b>magenta</b> y <b>verde</b> sirven para comprobar la transparencia y el chroma.</div>
   </div>
 </main>
+<section class="nueva" id="nueva">
+  <h2>Versión nueva · no está en la pelea</h2>
+  <div class="box">
+    <p class="warn">Esto no sustituye la hoja de la pelea. Voltia vs Voltia sigue con el personaje viejo.</p>
+    <canvas id="newcv" width="240" height="170"></canvas>
+    <div class="controls" id="newAnims"></div>
+    <p class="note" id="newNote">Cargando los frames nuevos…</p>
+    <canvas id="newstrip" width="240" height="40"></canvas>
+  </div>
+</section>
 <section class="arena" id="escenario">
   <h2>Escenario · Cyber Fist</h2>
   <div class="box">
@@ -139,6 +161,120 @@
   </div>
 </section>
 <footer id="foot">FabaterFighter</footer>
+<script>
+/* Visor del remake. Lee voltia/sf2/ y no toca la hoja de la pelea. */
+(async () => {
+  const QB = '?v=' + Date.now();
+  const root = '../voltia/sf2/';
+  const note = document.getElementById('newNote');
+  const buttons = document.getElementById('newAnims');
+  const cv = document.getElementById('newcv');
+  const strip = document.getElementById('newstrip');
+  const cx = cv.getContext('2d');
+  const sx = strip.getContext('2d');
+  cx.imageSmoothingEnabled = false;
+  sx.imageSmoothingEnabled = false;
+  let pack;
+  try {
+    pack = await (await fetch(root + 'viewer.json' + QB, { cache: 'no-store' })).json();
+  } catch (err) {
+    note.textContent = 'No pude cargar la versión nueva.';
+    return;
+  }
+  const cache = {};
+  async function frame(name) {
+    if (cache[name]) return cache[name];
+    const img = new Image();
+    img.src = root + name + QB;
+    await img.decode();
+    cache[name] = img;
+    return img;
+  }
+  await Promise.all(pack.anims.flatMap(a => a.frames).filter((n, i, all) => all.indexOf(n) === i).map(frame));
+  let anim = pack.anims[0];
+  let tick = 0;
+  let playing = true;
+  function draw() {
+    const imgs = anim.frames.map(n => cache[n]);
+    const i = Math.floor(tick) % imgs.length;
+    const img = imgs[i];
+    cx.clearRect(0, 0, cv.width, cv.height);
+    cx.fillStyle = '#101018';
+    cx.fillRect(0, 0, cv.width, cv.height);
+    cx.strokeStyle = '#3a3752';
+    cx.beginPath();
+    cx.moveTo(8, cv.height - 10);
+    cx.lineTo(cv.width - 8, cv.height - 10);
+    cx.stroke();
+    const x = Math.round((cv.width - img.width) / 2);
+    const y = cv.height - 12 - img.height;
+    cx.drawImage(img, x, y);
+    const caps = anim.captions || anim.frames.map((_, n) => String(n + 1));
+    const gap = 8;
+    const scale = 2;
+    const sw = imgs.reduce((n, im) => n + im.width * scale, 0) + gap * (imgs.length + 1);
+    const sh = Math.max(...imgs.map(im => im.height)) * scale + 22;
+    if (strip.width !== sw || strip.height !== sh) {
+      strip.width = sw;
+      strip.height = sh;
+      sx.imageSmoothingEnabled = false;
+    }
+    sx.fillStyle = '#101018';
+    sx.fillRect(0, 0, sw, sh);
+    let px = gap;
+    imgs.forEach((im, k) => {
+      const dw = im.width * scale;
+      const dh = im.height * scale;
+      const py = sh - 4 - dh;
+      if (k === i) {
+        sx.fillStyle = '#2a2410';
+        sx.fillRect(px - 3, py - 14, dw + 6, dh + 18);
+      }
+      sx.drawImage(im, px, py, dw, dh);
+      sx.fillStyle = k === i ? '#ffcb3d' : '#9d9ab5';
+      sx.font = '11px sans-serif';
+      sx.fillText(caps[k] || '', px, 12);
+      px += dw + gap;
+    });
+    note.textContent = anim.note + '  ·  frame ' + (i + 1) + ' de ' + imgs.length +
+      (caps[i] ? ' · ' + caps[i] : '');
+  }
+  function select(a, btn) {
+    anim = a;
+    tick = 0;
+    [...buttons.querySelectorAll('button')].forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    draw();
+  }
+  pack.anims.forEach((a, n) => {
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.textContent = a.label;
+    if (n === 0) b.classList.add('active');
+    b.addEventListener('click', () => select(a, b));
+    buttons.appendChild(b);
+  });
+  const pause = document.createElement('button');
+  pause.type = 'button';
+  pause.textContent = '⏸ Pausar';
+  pause.addEventListener('click', () => {
+    playing = !playing;
+    pause.textContent = playing ? '⏸ Pausar' : '▶ Seguir';
+  });
+  buttons.appendChild(pause);
+  draw();
+  let last = 0;
+  function loop(t) {
+    if (playing && t - last > 1000 / (anim.fps || 6)) {
+      tick += 1;
+      last = t;
+      draw();
+    }
+    requestAnimationFrame(loop);
+  }
+  requestAnimationFrame(loop);
+})();
+</script>
 <script>
 (async () => {
   // Anti-caché: hoja y datos siempre frescos y emparejados (evita el "carrusel").
