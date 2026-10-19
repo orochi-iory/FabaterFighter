@@ -6,9 +6,12 @@
  "anchor": "nueva/stance/00.png",
  "anchorNote": "Stance (ida y vuelta de la respiracion), 200 px de alto, lienzo de 200 x 240. Los 24 frames comparten lienzo, escala, suelo (238) y eje de cabeza (x=128).",
  "styleRef": {
-  "file": "ref/chunli_sf2_sheet.png",
-  "what": "Hoja de Chun-Li de Street Fighter II. Es la referencia de DIBUJO, no de personaje: se copia el pixelado, el grosor de línea, los tonos planos y la postura. No se copia su ropa ni su anatomía.",
-  "note": "La hoja está fuera del repo (no se versiona). Es local, para mirarla al generar."
+  "files": [
+   "ref/chunli_sf2_sheet.png",
+   "ref/blue_mary_sheet.png"
+  ],
+  "what": "Hojas fijas de referencia, dentro del repo y siempre a mano: Chun-Li (Street Fighter II) y Blue Mary (KOF). Definen el DIBUJO y la ANIMACION: pixel gordo, contorno grueso, tonos planos, y como se mueve un luchador de estos. No se copia su ropa ni su anatomia.",
+  "walk": "ref/walk_ref.png junta la fila Walking de SF2 con la stance aprobada de Voltia: es la referencia de la que se saca el walk."
  },
  "designRef": {
   "file": "ref_stance.png",
@@ -233,7 +236,9 @@
   "2026-10-19. Tirada con rejilla exigida en el prompt (1024, bloques de 8, 120 bloques de alto). El modelo NO obedece: no hay ningún escalón de 8, y la figura mide 1014 px de alto, no 960. Lo que sí acierta son bloques de ~8. Se corta dividiendo por 8 entero: 95 × 126, sin interpolar, y se limpian 122 píxeles verdes de borde. Ese es el sprite de referencia.",
   "2026-10-19. Conclusión para el escenario: la figura que ya juega mide 153 y esta 126, así que entra sin escalar. Si algún día hay que igualarla a 120, se genera a 120 bloques de 8 = 960 y se corta ÷8 exacto.",
   "2026-10-19. Medido: una pose generada de cero llega con ~105.000 colores distintos y la stance aprobada tiene 15. Al forzar la paleta ese ruido se reparte de otra forma y cambia la proporcion de tonos: eso es «algo ha pasado con la paleta». Hay que medirlo ANTES de cortar (tools/palette_report.py), no mirarlo.",
-  "2026-10-19. El contorno solo se cierra donde el traje toca el aire (seal_teal_edge): convierte en contorno los pixeles teal que ya estan en el borde, sin engordar la silueta. Asi el borde queda 71-82 % contorno como la stance. close_outline engorda la figura y sube el contorno al 14 %: no se usa."
+  "2026-10-19. El contorno solo se cierra donde el traje toca el aire (seal_teal_edge): convierte en contorno los pixeles teal que ya estan en el borde, sin engordar la silueta. Asi el borde queda 71-82 % contorno como la stance. close_outline engorda la figura y sube el contorno al 14 %: no se usa.",
+  "2026-10-19. El walk de un juego de pelea NO es un paseo: se anda en guardia, con los puños arriba, pasos cortos y la linea de la cabeza casi fija. Brazos colgando y zancada larga es lo que hacia que se viera ridiculo. Referencia fija: guide/ref/walk_ref.png.",
+  "2026-10-19. La hoja de referencia se recorta a la fila que toca y se junta con un frame aprobado (ref/walk_ref.png). Con esa imagen sola como imagen 1 el generador ya dibuja la fila entera en guardia: es la mejor forma de pedir una animacion, mejor que describirla con palabras."
  ],
  "changelog": [
   "2026-10-19. El idle aprobado pasa a llamarse stance: carpeta nueva/stance, 24 frames, y se borra el bloque idle viejo de la primera pasada.",
@@ -367,14 +372,15 @@
     200,
     240
    ],
-   "note": "Cuatro poses dibujadas de cero, una por imagen y recortadas con build_pose.py: mismo lienzo 200 x 240, suelo 238, mascara a 30 px y eje de cabeza x=128. 00 contacto con la pierna cercana delante, 01 paso, 02 contacto con la pierna lejana delante, 03 paso. Paleta identica a la stance (15 colores, 0 fuera, contorno 9,9 % contra 9,0 %).",
+   "note": "Walk en guardia, copiado de la fila Walking de SF2 (guide/ref/walk_ref.png): pasos cortos, pies bajos, torso erguido, puños arriba y vista lateral. Cuatro frames recortados de una sola tira con el mismo lienzo 200 x 240, suelo 238, mascara 30 px y eje de cabeza x=128. Paleta a menos de 2 puntos de la stance. PENDIENTE: la pierna que abre sigue siendo la misma en los cuatro y la bota de atras apunta hacia atras en algun frame; la referencia esta guardada para corregirlo.",
    "frames": [
     "00.png",
     "01.png",
     "02.png",
     "03.png"
    ],
-   "group": "propuestas"
+   "group": "propuestas",
+   "status": "propuesta"
   }
  }
 }
