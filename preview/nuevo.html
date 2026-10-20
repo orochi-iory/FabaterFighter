@@ -17,11 +17,11 @@
   nav.models a.on { background:#8c4dff; border-color:#8c4dff; color:#fff; }
   header { text-align:center; padding:22px 14px 4px; }
   header h1 { margin:0; color:var(--vio); letter-spacing:2px; font-size:28px; }
-  header p { margin:8px auto 0; max-width:900px; color:#cfc9e6; line-height:1.55; font-size:14px; }
+  header p { margin:8px auto 0; max-width:920px; color:#cfc9e6; line-height:1.55; font-size:14px; }
   header p b { color:var(--gold); }
   .reglas { max-width:1100px; margin:14px auto 0; display:flex; gap:10px; flex-wrap:wrap; justify-content:center; padding:0 14px; }
   .regla { background:#1d1730; border:1px solid #4a3f6b; border-radius:10px; padding:8px 12px;
-    font-size:12.5px; color:#cfc9e6; max-width:340px; }
+    font-size:12.5px; color:#cfc9e6; max-width:330px; }
   .regla b { color:var(--cyan); display:block; font-size:12px; letter-spacing:.5px; margin-bottom:2px; }
   main { max-width:1180px; margin:0 auto; padding:16px; display:grid; grid-template-columns:1fr 1fr; gap:16px; }
   @media (max-width:980px) { main { grid-template-columns:1fr; } }
@@ -36,25 +36,27 @@
   canvas#anim.magenta { background:#c0c; }
   canvas#anim.green { background:#00ff00; }
   .controls { display:flex; gap:7px; flex-wrap:wrap; justify-content:center; align-items:center; margin-top:10px; }
-  button, select, input { background:#35324e; color:#eee; border:1px solid #4a4767; border-radius:8px;
+  button, select { background:#35324e; color:#eee; border:1px solid #4a4767; border-radius:8px;
     padding:7px 11px; cursor:pointer; font-size:13px; }
   button:hover, select:hover { background:#454163; }
   button.on { background:#0e7c8c; border-color:#96ffeb; }
   button.peligro { border-color:#8a3b3b; color:#ffb3b3; }
   button.peligro:hover { background:#5c2222; }
-  .secuencia { display:flex; flex-wrap:wrap; gap:6px; min-height:54px; padding:8px;
+  #tira { display:block; margin:12px auto 0; max-width:100%; }
+  .secuencia { display:flex; flex-wrap:wrap; gap:8px; min-height:60px; padding:8px;
     background:#161022; border:1px dashed #4a4767; border-radius:10px; align-items:center; }
   .chip { position:relative; border-radius:7px; background:#241c38; border:1px solid #4a4767; padding:3px; }
-  .chip img { display:block; width:44px; height:auto; image-rendering:pixelated; }
+  .chip img { display:block; height:96px; width:auto; image-rendering:pixelated; }
   .chip span { position:absolute; top:-6px; left:-6px; background:#0e7c8c; color:#fff; font-size:10px;
     width:16px; height:16px; line-height:16px; text-align:center; border-radius:50%; }
-  .chip button { position:absolute; top:-7px; right:-7px; width:17px; height:17px; padding:0;
+  .chip button.x { position:absolute; top:-7px; right:-7px; width:17px; height:17px; padding:0;
     font-size:11px; line-height:1; border-radius:50%; background:#5c2222; border:0; }
-  .galeria { display:flex; flex-wrap:wrap; gap:6px; max-height:260px; overflow:auto; padding:4px; }
+  .chip .flechas { display:flex; gap:2px; justify-content:center; margin-top:2px; }
+  .chip .flechas button { padding:0 5px; font-size:11px; border-radius:5px; }
+  .galeria { display:flex; flex-wrap:wrap; gap:6px; max-height:280px; overflow:auto; padding:4px; }
   .galeria figure { margin:0; background:#161022; border:2px solid transparent; border-radius:8px; padding:4px; cursor:pointer; }
   .galeria figure:hover { border-color:#4a4767; }
-  .galeria figure.sel { border-color:var(--cyan); }
-  .galeria img { display:block; height:110px; width:auto; image-rendering:pixelated; }
+  .galeria img { display:block; height:104px; width:auto; image-rendering:pixelated; }
   .galeria figcaption { font-size:10px; color:#9b93b8; text-align:center; }
   .par { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
   figure.zoom { margin:0; }
@@ -69,6 +71,8 @@
   td.bad { color:#ff8f8f; font-weight:600; }
   .note { font-size:12.5px; color:#b7b0d0; line-height:1.6; }
   .note b { color:var(--gold); }
+  .formula { background:#120d1c; border-left:3px solid var(--cyan); padding:8px 12px; margin:8px 0;
+    font-family:ui-monospace,monospace; font-size:12.5px; color:#cfc9e6; border-radius:4px; }
   footer { text-align:center; color:#6d6b85; font-size:12px; padding:8px 10px 26px; }
 </style>
 </head>
@@ -84,40 +88,39 @@
 
 <header>
   <h1>CREADOR DE PERSONAJES</h1>
-  <p>Hojas nuevas con el modelo estilizado, fondo rojo puro y anclaje por cabeza. Aquí eliges
-     <b>qué sprites entran en cada movimiento y en qué orden</b>, y lo ves animado al momento.</p>
+  <p>Sprites <b>nativos</b> (sin reducir) y llevados al <b>tamaño del modelo original</b> (96 × 152)
+     para comparar. Borde rojo eliminado de raíz y selector de secuencias por movimiento.</p>
 </header>
 
 <div class="reglas">
-  <div class="regla"><b>REGLA DE ORO 1 · FONDO</b>
-    El fondo tiene que ser un color que no exista en la paleta del sprite. Aquí: rojo puro
-    (255,0,0). Solo se anula ese rojo, y el de su antialias; ningún otro tono se toca.</div>
-  <div class="regla"><b>REGLA DE ORO 2 · CABEZA</b>
-    El anclaje es el centro del casco, no la caja del sprite. La coleta manda si se centra por
-    la caja; por eso antes el personaje bailaba.</div>
-  <div class="regla"><b>REGLA DE ORO 3 · SIN RECONSTRUIR</b>
-    Nada de LANCZOS ni cuantizar a pocos colores: se conservan los tonos originales de la IA y
-    solo se baja a rejilla con NEAREST.</div>
+  <div class="regla"><b>1 · FONDO FUERA DE PALETA</b>Rojo puro (255,0,0), que no existe en Voltia.</div>
+  <div class="regla"><b>2 · ANCLAJE POR CABEZA</b>Centro del casco, no la caja del sprite.</div>
+  <div class="regla"><b>3 · NO RECONSTRUIR</b>Sin LANCZOS ni cuantizar al recortar.</div>
+  <div class="regla"><b>4 · SIN VELO ROJO</b>Se deshace la mezcla del antialias con el fondo.</div>
 </div>
 
 <main>
 
   <section class="card wide">
-    <h2>Visor · tu secuencia</h2>
-    <p class="sub">Lo que montas abajo se reproduce aquí. Elige el movimiento y monta su secuencia.</p>
-    <div class="big"><canvas id="anim"></canvas></div>
+    <h2>Visor</h2>
+    <p class="sub">Cambia entre el sprite nativo y el llevado al tamaño del modelo original. Las
+       guías marcan cabeza, altura de cabeza y línea de pies.</p>
+    <div class="big"><canvas id="anim"></canvas><canvas id="tira"></canvas></div>
     <div class="controls">
       <button id="play">⏸ Pausa</button>
       <select id="mov">
         <option value="stance">stance</option>
         <option value="walk">walk</option>
       </select>
+      <select id="resol">
+        <option value="oficial" selected>Tamaño oficial · 96×152</option>
+        <option value="nativo">Nativo · sin reducir</option>
+      </select>
       <select id="scale">
-        <option value="0.25">25 %</option>
-        <option value="0.35">35 %</option>
-        <option value="0.5" selected>50 % · nativo cómodo</option>
-        <option value="0.75">75 %</option>
-        <option value="1">100 % · tamaño real</option>
+        <option value="2">2×</option>
+        <option value="3">3×</option>
+        <option value="4" selected>4×</option>
+        <option value="6">6×</option>
       </select>
       <select id="bg">
         <option value="">Fondo ajedrez</option>
@@ -126,95 +129,85 @@
         <option value="green">Fondo verde</option>
       </select>
       <button id="tog-guia" class="on">Guías</button>
-      <label class="note"><input type="range" id="fps" min="4" max="20" value="10" style="vertical-align:middle;width:90px"> <span id="fps-v">10</span> fps</label>
+      <button id="tog-tira" class="on">Tira</button>
+      <label class="note"><input type="range" id="fps" min="4" max="20" value="10" style="vertical-align:middle;width:80px"> <span id="fps-v">10</span> fps</label>
       <span class="note" id="fstat">—</span>
     </div>
   </section>
 
   <section class="card wide">
     <h2>Secuencia del movimiento</h2>
-    <p class="sub">Pulsa un sprite de la galería para añadirlo al final. Quita con la ×, reordena
-       con ← →. Todo se guarda en tu navegador.</p>
+    <p class="sub">Pulsa un sprite de la galería para añadirlo. Quita con ×, reordena con ← →.
+       Se guarda por movimiento y resolución en tu navegador.</p>
     <div class="controls" style="justify-content:flex-start;margin:0 0 8px">
-      <button id="limpiar" class="peligro">Vaciar secuencia</button>
-      <button id="auto">Cargar la de la hoja (orden original)</button>
+      <button id="auto">Cargar orden original</button>
       <button id="quitar-ultimo">Quitar último</button>
+      <button id="limpiar" class="peligro">Vaciar</button>
     </div>
     <div class="secuencia" id="secuencia"></div>
     <div class="galeria" id="galeria" style="margin-top:10px"></div>
   </section>
 
   <section class="card wide">
-    <h2>Las hojas nuevas</h2>
-    <p class="sub">Una sola fila cada una, mismo diseño en todos los frames, fondo rojo puro y
-       modelo estilizado como la referencia de Cammy. El stance ya no mezcla dos hileras.</p>
-    <div class="par">
-      <figure class="zoom"><img src="../voltia/nuevo/creador/sheet_stance.png" alt="Hoja de stance">
-        <figcaption>stance · 8 sprites</figcaption></figure>
-      <figure class="zoom"><img src="../voltia/nuevo/creador/sheet_walk.png" alt="Hoja de walk">
-        <figcaption>walk · 6 sprites</figcaption></figure>
-    </div>
-  </section>
-
-  <section class="card wide">
-    <h2>Las referencias</h2>
-    <div class="refs par">
-      <figure><img src="../voltia/nuevo/creador/ref_voltia_diseno.png" alt="Diseño de Voltia">
-        <figcaption>Diseño final a conseguir para el juego</figcaption></figure>
-      <figure><img src="../voltia/nuevo/creador/ref_estilo_detalle.png" alt="Estilo Cammy">
-        <figcaption>Estilo a clonar</figcaption></figure>
-    </div>
-  </section>
-
-  <section class="card wide">
-    <h2>Por qué se veía sucio (medido)</h2>
-    <p class="sub">La imagen que devuelve la IA <b>parece</b> pixel art, pero no lo es. Estos son los
-       números de la hoja que acabas de darme:</p>
+    <h2>Por qué salía borde rojo (y cómo se quita)</h2>
+    <p class="sub">No era rojo puro: la IA <b>antialiasa</b> el personaje contra el rojo del fondo, y
+       deja bandas de 2-4 px de mezcla. Medido en el filo de un sprite antes de arreglarlo:</p>
     <table>
-      <tr><th>Medida de la hoja</th><th>Valor</th><th>Qué significa</th></tr>
-      <tr><td>Colores distintos</td><td class="bad">152 107</td><td>un sprite de verdad usa 16-24</td></tr>
-      <tr><td>Colores usados en un solo píxel</td><td class="bad">107 220</td><td>casi todos los tonos son ruido de suavizado</td></tr>
-      <tr><td>Bloques 2×2 uniformes</td><td class="bad">8,0 %</td><td>no hay rejilla de píxel debajo</td></tr>
-      <tr><td>Transiciones suaves</td><td class="bad">88,2 %</td><td>cada borde es una rampa de color, no un escalón</td></tr>
+      <tr><th>Color de filo</th><th>Qué es</th></tr>
+      <tr><td><code>(68, 0, 0)</code> · <code>(53, 0, 1)</code> · <code>(40, 0, 0)</code></td>
+          <td>negro de la silueta mezclado con rojo: 83 % del filo</td></tr>
+      <tr><td><code>(255, 0, 0)</code> puro</td><td>fondo, ese sí se eliminaba</td></tr>
     </table>
-    <div class="note" style="margin-top:10px">
-      <b>Y esto es lo que hacía mi recorte anterior:</b> reducía con un factor <b>fraccionario</b>
-      (3,83 a 4,28, distinto en cada frame) para forzar 120 px de cabeza a pies. Al reducir,
-      cada píxel de salida se lleva un trozo de bloque diferente: las líneas de 1 px —el filo
-      cian de las botas, el rayo del pecho— se rompen, y la imagen pierde 30 000 colores de golpe.
-      Eso es exactamente el «se ve reducido y sucio» que notabas.
+    <div class="formula">
+      p = a·color_real + (1−a)·rojo &nbsp;→&nbsp; exceso = p.r − máx(p.g, p.b) = 255·(1−a)
+      &nbsp;→&nbsp; a = 1 − exceso/255
+    </div>
+    <div class="note">
+      Mi primer umbral pedía <b>r &gt; 215</b> para considerar «rojo». Los píxeles de mezcla tienen
+      r entre 40 y 110, así que <b>ninguno</b> pasaba el filtro y se quedaban ahí: eso era el borde
+      rojo que veías.
       <br><br>
-      <b>Lo que hace ahora:</b> <b>nada de reducir</b>. Se convierte el rojo en transparencia pura
-      y se recorta a resolución nativa: 285 × 524 px de lienzo, sprite intacto, 32 000 colores
-      conservados. Si en el juego hace falta un tamaño menor, se reduce después y de una vez, con
-      factor entero, nunca dentro del recorte.
+      <b>Arreglo:</b> se mide el exceso de rojo de cada píxel, se calcula su opacidad real con la
+      fórmula de arriba, y si el píxel es del personaje se le pone <b>el color del interior más
+      cercano</b> (propagación desde el dibujo limpio). Nada de tonos inventados.
+      <b>Resultado: 0 píxeles rojizos en el filo</b>, antes 83 %.
     </div>
   </section>
 
   <section class="card wide">
-    <h2>Separación de sprites pegados</h2>
-    <p class="sub">Las hojas vienen con los sprites casi tocándose, así que cortar por columnas
-       cortaba cuerpos. Ahora cada píxel no-rojo se asigna a la <b>cabeza más cercana</b>
-       (recorrido en anchura desde cada casco):</p>
-    <div class="note">
-      · cada píxel pertenece a <b>un único</b> sprite: nadie se lleva un trozo del vecino<br>
-      · dos sprites que se tocan se reparten por el punto medio entre sus cabezas<br>
-      · lo que no cuelga de ninguna cabeza (una mota suelta) se descarta
+    <h2>Al tamaño del modelo original · 96 × 152</h2>
+    <p class="sub">Aquí sí se reduce (×0,26-0,28), y con filtro promediado a propósito: el dibujo de
+       la IA es una ilustración con antialias, y reducida con promedio queda limpia. Reducida con
+       NEAREST a factor fraccionario —lo que hacía antes— se rompe y sale sucia.</p>
+    <div class="par">
+      <figure class="zoom"><img src="../voltia/nuevo/creador/sheet_stance.png" alt="Hoja nueva de stance">
+        <figcaption>stance · nativo</figcaption></figure>
+      <figure class="zoom"><img src="../voltia/nuevo/creador/sheet_walk.png" alt="Hoja nueva de walk">
+        <figcaption>walk · nativo</figcaption></figure>
     </div>
-    <table style="margin-top:10px">
+    <div class="note" style="margin-top:10px">
+      <b>Tu idea funciona:</b> al bajarlo al tamaño del modelo original desaparece la sensación de
+      suciedad, porque el ruido de color de la ilustración se disuelve al promediar. Es el mismo
+      principio por el que una foto se ve mejor reducida con promedio que con «vecino más cercano».
+    </div>
+  </section>
+
+  <section class="card wide">
+    <h2>Medidas</h2>
+    <table>
       <tr><th>Métrica</th><th>Antes</th><th>Ahora</th></tr>
-      <tr><td>Rojo residual en los sprites</td><td class="bad">14 px</td><td class="ok">0 px</td></tr>
+      <tr><td>Píxeles rojizos en el filo</td><td class="bad">83 %</td><td class="ok">0 %</td></tr>
+      <tr><td>Rojo residual (tono puro)</td><td class="bad">14 px</td><td class="ok">0 px</td></tr>
       <tr><td>Frames cortados</td><td class="bad">algunos</td><td class="ok">0 de 14</td></tr>
-      <tr><td>Reducción</td><td class="bad">÷3,83-4,28 (fraccionaria)</td><td class="ok">ninguna (1:1)</td></tr>
-      <tr><td>Colores del sprite</td><td class="bad">~2 100</td><td class="ok">32 000 (los nativos)</td></tr>
-      <tr><td>stance / walk</td><td>8 / 6</td><td class="ok">8 / 6</td></tr>
+      <tr><td>Reducción al recortar</td><td class="bad">÷3,83-4,28 fraccionario</td><td class="ok">ninguna</td></tr>
+      <tr><td>Colors nativos del sprite</td><td class="bad">~2 100</td><td class="ok">32 000</td></tr>
+      <tr><td>Tamaño para el juego</td><td>—</td><td class="ok">96 × 152, cabeza y pies anclados</td></tr>
     </table>
     <div class="note" style="margin-top:10px">
-      <b>Pendiente honesto:</b> como no se reduce, el sprite mide 285-308 px de ancho. Para el
-      juego hay que bajarlo a la rejilla de arte (unos 94 × 151) y eso <b>sí</b> perderá detalle,
-      porque el dibujo de la IA no tiene rejilla propia. La solución de verdad es pedirle a la IA
-      la hoja con rejilla explícita (bloques de 4 px visibles) o redibujar los 14 sprites a mano
-      sobre esta base, que ya es el diseño que quieres.
+      <b>Lo que queda:</b> a 96 × 152 se pierde detalle fino (el rayo del pecho queda a 1-2 px), y
+      los sprites de la IA no tienen rejilla propia, así que al reducirlos no salen bloques
+      perfectos. Para eso hay que redibujar los 14 sprites sobre esta base, que ya es el diseño
+      bueno, o pedirle a la IA la hoja con rejilla explícita.
     </div>
   </section>
 
@@ -224,52 +217,44 @@
 
 <script>
 (async () => {
-  const datos = await (await fetch('../voltia/nuevo/creador/sprites/datos.json', { cache: 'no-store' })).json();
-  const BASE = '../voltia/nuevo/creador/sprites/';
+  const [nat, ofi] = await Promise.all([
+    fetch('../voltia/nuevo/creador/sprites/datos.json', { cache: 'no-store' }).then(r => r.json()),
+    fetch('../voltia/nuevo/creador/oficial/datos.json', { cache: 'no-store' }).then(r => r.json()),
+  ]);
   const cv = document.getElementById('anim');
   const cx = cv.getContext('2d');
+  const tv = document.getElementById('tira');
+  const tx = tv.getContext('2d');
   const cache = new Map();
-  let mov = 'stance', seq = [], idx = 0, playing = true, guias = true;
+  let mov = 'stance', resol = 'oficial', seq = [], idx = 0, playing = true, guias = true, tira = true;
   let last = performance.now(), acc = 0;
 
-  const meta = () => datos.anims[mov];
-  const clave = () => 'sec:' + mov;
+  const pack = () => (resol === 'oficial' ? ofi : nat);
+  const meta = () => pack().anims[mov];
+  const clave = () => `sec:${resol}:${mov}`;
+  const ruta = f => (resol === 'oficial' ? '../voltia/nuevo/creador/oficial/' : '../voltia/nuevo/creador/sprites/') + f.fichero;
 
-  const cargar = async i => {
-    const k = mov + ':' + i;
-    if (cache.has(k)) return cache.get(k);
-    const im = await new Promise(res => {
+  const cargar = i => {
+    const k = `${resol}:${mov}:${i}`;
+    if (cache.has(k)) return Promise.resolve(cache.get(k));
+    return new Promise(res => {
       const m = new Image();
-      m.onload = () => res(m);
+      m.onload = () => { cache.set(k, m); res(m); };
       m.onerror = () => res(null);
-      m.src = BASE + meta().frames[i].fichero;
+      m.src = ruta(meta().frames[i]);
     });
-    cache.set(k, im);
-    return im;
   };
 
-  async function cargarTodas() {
-    return Promise.all(meta().frames.map((f, i) => cargar(i)));
-  }
-
-  function guardar() {
-    try { localStorage.setItem(clave(), JSON.stringify(seq)); } catch (e) {}
-  }
-
-  function inicial() {
+  const inicial = () => {
     let s = null;
     try { s = JSON.parse(localStorage.getItem(clave()) || 'null'); } catch (e) {}
     const n = meta().frames.length;
-    if (!Array.isArray(s) || !s.length || s.some(i => i < 0 || i >= n)) {
-      s = meta().frames.map((_, i) => i);
-    }
+    if (!Array.isArray(s) || !s.length || s.some(i => i < 0 || i >= n)) s = [...Array(n).keys()];
     return s;
-  }
-
-  const z = () => {
-    const v = +document.getElementById('scale').value;
-    return v > 0 ? v : 0.5;
   };
+  const guardar = () => { try { localStorage.setItem(clave(), JSON.stringify(seq)); } catch (e) {} };
+
+  const z = () => +document.getElementById('scale').value || 4;
   const fps = () => +document.getElementById('fps').value || 10;
 
   async function pintar() {
@@ -279,8 +264,8 @@
     cv.width = Math.round(W * s); cv.height = Math.round(H * s);
     cx.imageSmoothingEnabled = false;
     cx.clearRect(0, 0, cv.width, cv.height);
-    const im = seq.length ? await cargar(seq[idx % seq.length]) : null;
-    // se dibuja a resolucion nativa sobre un canvas ya escalado: sale nitido, sin remuestreo
+    const i = seq.length ? seq[idx % seq.length] : null;
+    const im = i === null ? null : await cargar(i);
     if (im) cx.drawImage(im, 0, 0, W, H, 0, 0, cv.width, cv.height);
     if (guias) {
       const [ax, ay] = m.ancla;
@@ -288,12 +273,39 @@
       cx.beginPath(); cx.moveTo(ax * s + .5, 0); cx.lineTo(ax * s + .5, H * s); cx.stroke();
       cx.strokeStyle = 'rgba(60,230,130,.85)';
       cx.beginPath(); cx.moveTo(0, ay * s + .5); cx.lineTo(W * s, ay * s + .5); cx.stroke();
+      const py = m.pies_y !== undefined ? m.pies_y : H - 6;
       cx.strokeStyle = 'rgba(80,150,255,.9)';
-      cx.beginPath(); cx.moveTo(0, m.pies_y * s + .5); cx.lineTo(W * s, m.pies_y * s + .5); cx.stroke();
+      cx.beginPath(); cx.moveTo(0, py * s + .5); cx.lineTo(W * s, py * s + .5); cx.stroke();
     }
     document.getElementById('fstat').textContent = seq.length
-      ? `${mov} · ${seq.length} sprites · frame ${idx % seq.length + 1} · lienzo ${W}×${H}`
+      ? `${mov} · ${resol} · ${seq.length} sprites · ${W}×${H}`
       : `${mov} · secuencia vacía`;
+
+    tv.style.display = tira ? 'block' : 'none';
+    if (tira) {
+      const ims = await Promise.all(seq.map(k => cargar(k)));
+      const sm = Math.max(1, Math.round(s));
+      tv.width = W * sm * ims.length; tv.height = H * sm;
+      tx.imageSmoothingEnabled = false;
+      tx.clearRect(0, 0, tv.width, tv.height);
+      ims.forEach((im, p) => {
+        if (!im) return;
+        tx.drawImage(im, 0, 0, W, H, p * W * sm, 0, W * sm, H * sm);
+        if (guias) {
+          tx.strokeStyle = 'rgba(255,60,60,.45)';
+          tx.beginPath();
+          tx.moveTo(p * W * sm + m.ancla[0] * sm + .5, 0);
+          tx.lineTo(p * W * sm + m.ancla[0] * sm + .5, H * sm);
+          tx.stroke();
+        }
+      });
+      const sel = seq.length ? idx % seq.length : -1;
+      if (sel >= 0) {
+        tx.strokeStyle = 'rgba(150,255,235,.95)';
+        tx.lineWidth = 2;
+        tx.strokeRect(sel * W * sm, 0, W * sm, H * sm);
+      }
+    }
     dibujarSecuencia();
   }
 
@@ -308,26 +320,25 @@
       const d = document.createElement('div');
       d.className = 'chip';
       const im = document.createElement('img');
-      im.src = BASE + meta().frames[i].fichero;
+      im.src = ruta(meta().frames[i]);
       im.alt = 'sprite ' + (i + 1);
       const num = document.createElement('span');
       num.textContent = p + 1;
-      const quitar = document.createElement('button');
-      quitar.textContent = '×';
-      quitar.title = 'Quitar de la secuencia';
-      quitar.onclick = e => { e.stopPropagation(); seq.splice(p, 1); guardar(); pintar(); };
-      d.append(im, num, quitar);
-      d.onclick = () => { /* reordenar con los botones del teclado no aplica aquí */ };
+      const x = document.createElement('button');
+      x.className = 'x';
+      x.textContent = '×';
+      x.onclick = e => { e.stopPropagation(); seq.splice(p, 1); guardar(); pintar(); };
+      const flechas = document.createElement('div');
+      flechas.className = 'flechas';
       const izq = document.createElement('button');
       izq.textContent = '←';
-      izq.style.cssText = 'position:static;width:auto;height:auto;border-radius:5px;padding:0 4px;font-size:11px;background:#35324e';
       izq.onclick = e => {
         e.stopPropagation();
         if (p === 0) return;
         [seq[p - 1], seq[p]] = [seq[p], seq[p - 1]];
         guardar(); pintar();
       };
-      const der = izq.cloneNode(false);
+      const der = document.createElement('button');
       der.textContent = '→';
       der.onclick = e => {
         e.stopPropagation();
@@ -335,29 +346,34 @@
         [seq[p + 1], seq[p]] = [seq[p], seq[p + 1]];
         guardar(); pintar();
       };
-      const fila = document.createElement('div');
-      fila.style.cssText = 'display:flex;gap:2px;justify-content:center;margin-top:2px';
-      fila.append(izq, der);
-      d.appendChild(fila);
+      flechas.append(izq, der);
+      d.append(im, num, x, flechas);
       caja.appendChild(d);
     });
   }
 
-  async function dibujarGaleria() {
+  function dibujarGaleria() {
     const g = document.getElementById('galeria');
     g.innerHTML = '';
     const m = meta();
-    for (let i = 0; i < m.frames.length; i++) {
-      const f = document.createElement('figure');
-      const im = document.createElement('img');
-      im.src = BASE + m.frames[i].fichero;
-      im.alt = `sprite ${i + 1}`;
+    m.frames.forEach((f, i) => {
+      const fig = document.createElement('figure');
+      const img = document.createElement('img');
+      img.src = ruta(f);
+      img.alt = `sprite ${i + 1}`;
       const cap = document.createElement('figcaption');
       cap.textContent = i + 1;
-      f.append(im, cap);
-      f.onclick = () => { seq.push(i); guardar(); pintar(); };
-      g.appendChild(f);
-    }
+      fig.append(img, cap);
+      fig.onclick = () => { seq.push(i); guardar(); pintar(); };
+      g.appendChild(fig);
+    });
+  }
+
+  async function recargar() {
+    seq = inicial();
+    idx = 0;
+    dibujarGaleria();
+    await pintar();
   }
 
   function bucle(t) {
@@ -373,25 +389,18 @@
     playing = !playing;
     e.target.textContent = playing ? '⏸ Pausa' : '▶ Play';
   };
+  document.getElementById('mov').onchange = recargar;
+  document.getElementById('resol').onchange = e => { resol = e.target.value; recargar(); };
   document.getElementById('scale').onchange = pintar;
   document.getElementById('fps').oninput = e => { document.getElementById('fps-v').textContent = e.target.value; };
   document.getElementById('bg').onchange = e => { cv.className = e.target.value; };
   document.getElementById('tog-guia').onclick = e => { guias = !guias; e.target.classList.toggle('on', guias); pintar(); };
-  document.getElementById('limpiar').onclick = () => { seq = []; idx = 0; guardar(); pintar(); };
-  document.getElementById('auto').onclick = () => { seq = meta().frames.map((_, i) => i); idx = 0; guardar(); pintar(); };
+  document.getElementById('tog-tira').onclick = e => { tira = !tira; e.target.classList.toggle('on', tira); pintar(); };
+  document.getElementById('auto').onclick = () => { seq = [...Array(meta().frames.length).keys()]; idx = 0; guardar(); pintar(); };
   document.getElementById('quitar-ultimo').onclick = () => { seq.pop(); guardar(); pintar(); };
-  document.getElementById('mov').onchange = async e => {
-    mov = e.target.value;
-    seq = inicial(); idx = 0;
-    await cargarTodas();
-    dibujarGaleria();
-    pintar();
-  };
+  document.getElementById('limpiar').onclick = () => { seq = []; idx = 0; guardar(); pintar(); };
 
-  seq = inicial();
-  await cargarTodas();
-  dibujarGaleria();
-  await pintar();
+  await recargar();
   requestAnimationFrame(bucle);
 })();
 </script>

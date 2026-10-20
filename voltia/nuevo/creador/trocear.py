@@ -52,6 +52,62 @@ def alpha_de_rojo(im):
     return out
 
 
+def desmatar(im, exceso_limpio=45, corte=0.5):
+    """Elimina el velo rojo de la silueta propagando el color interior.
+
+    El problema: la IA antialiasa el personaje contra el rojo, y no deja un filo de 1 px
+    sino bandas de 2-4 px con tonos como (40,0,0) o (74,0,0). Mi umbral pedia rojo casi
+    puro (r>215), asi que todo eso sobrevivia y se veia como borde rojo.
+
+    Metodo, en dos pasos y sin inventar tonos:
+      1. `exceso = r - max(g,b)` mide cuanto rojo del fondo lleva el pixel. Si la mezcla es
+         con un color oscuro (la linea de la silueta), entonces exceso = 255*(1-a), asi que
+         a = 1 - exceso/255 es la opacidad real del pixel.
+      2. si a >= corte el pixel es del personaje: se le pone el color del interior mas
+         cercano (propagacion BFS), no una mezcla calculada. Si a < corte, era fondo: fuera.
+
+    Asi el borde queda con los colores del propio dibujo: cero rojo.
+    """
+    px = im.load()
+    W, H = im.size
+    opaco = [[bool(px[x, y][3]) for x in range(W)] for y in range(H)]
+
+    def exceso(c):
+        return c[0] - max(c[1], c[2])
+
+    limpio = [[opaco[y][x] and exceso(px[x, y][:3]) <= exceso_limpio for x in range(W)] for y in range(H)]
+    # propagar el color limpio mas cercano a todo lo opaco
+    color = [[None] * W for _ in range(H)]
+    cola = deque()
+    for y in range(H):
+        for x in range(W):
+            if limpio[y][x]:
+                color[y][x] = px[x, y][:3]
+                cola.append((x, y))
+    while cola:
+        cx, cy = cola.popleft()
+        for dx, dy in ((1, 0), (-1, 0), (0, 1), (0, -1)):
+            nx, ny = cx + dx, cy + dy
+            if 0 <= nx < W and 0 <= ny < H and opaco[ny][nx] and color[ny][nx] is None:
+                color[ny][nx] = color[cy][cx]
+                cola.append((nx, ny))
+    for y in range(H):
+        for x in range(W):
+            if not opaco[y][x]:
+                continue
+            p_ = px[x, y][:3]
+            e = exceso(p_)
+            if e <= exceso_limpio:
+                continue
+            a = 1.0 - e / 255.0
+            if a < corte or color[y][x] is None:
+                px[x, y] = (0, 0, 0, 0)
+            else:
+                c = color[y][x]
+                px[x, y] = (c[0], c[1], c[2], 255)
+    return im
+
+
 def es_casco(c):
     r, g, b = c
     return r > 110 and b > 80 and g < 0.65 * r and r - g > 45 and b > 0.4 * r
@@ -167,6 +223,7 @@ def procesar(anim, fichero, n_esperado):
         sp, caja = sprite_de(im, etiqueta, c['i'])
         if sp is None or sp.size[1] < 60:
             continue
+        sp = desmatar(sp)
         piezas.append({'lab': c['i'], 'sp': sp, 'caja': caja,
                        'hx': c['x'] - caja[0], 'hy': c['y'] - caja[1]})
     if not piezas:

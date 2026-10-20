@@ -1,0 +1,259 @@
+{
+ "lienzo": [
+  96,
+  152
+ ],
+ "filtro": "LANCZOS (reduccion de ilustracion)",
+ "anims": {
+  "stance": {
+   "lienzo": [
+    96,
+    152
+   ],
+   "ancla": [
+    48,
+    26
+   ],
+   "pies_y": 146,
+   "frames": [
+    {
+     "i": 0,
+     "fichero": "stance/f00.png",
+     "escala": 0.275,
+     "sprite": [
+      78,
+      144
+     ],
+     "bbox": [
+      3,
+      5,
+      76,
+      148
+     ],
+     "cortado": false
+    },
+    {
+     "i": 1,
+     "fichero": "stance/f01.png",
+     "escala": 0.275,
+     "sprite": [
+      78,
+      144
+     ],
+     "bbox": [
+      8,
+      6,
+      76,
+      149
+     ],
+     "cortado": false
+    },
+    {
+     "i": 2,
+     "fichero": "stance/f02.png",
+     "escala": 0.275,
+     "sprite": [
+      78,
+      144
+     ],
+     "bbox": [
+      8,
+      6,
+      80,
+      148
+     ],
+     "cortado": false
+    },
+    {
+     "i": 3,
+     "fichero": "stance/f03.png",
+     "escala": 0.275,
+     "sprite": [
+      78,
+      144
+     ],
+     "bbox": [
+      3,
+      5,
+      76,
+      148
+     ],
+     "cortado": false
+    },
+    {
+     "i": 4,
+     "fichero": "stance/f04.png",
+     "escala": 0.276,
+     "sprite": [
+      79,
+      145
+     ],
+     "bbox": [
+      6,
+      6,
+      80,
+      149
+     ],
+     "cortado": false
+    },
+    {
+     "i": 5,
+     "fichero": "stance/f05.png",
+     "escala": 0.275,
+     "sprite": [
+      78,
+      144
+     ],
+     "bbox": [
+      7,
+      6,
+      81,
+      148
+     ],
+     "cortado": false
+    },
+    {
+     "i": 6,
+     "fichero": "stance/f06.png",
+     "escala": 0.272,
+     "sprite": [
+      78,
+      143
+     ],
+     "bbox": [
+      4,
+      5,
+      73,
+      148
+     ],
+     "cortado": false
+    },
+    {
+     "i": 7,
+     "fichero": "stance/f07.png",
+     "escala": 0.275,
+     "sprite": [
+      78,
+      144
+     ],
+     "bbox": [
+      7,
+      6,
+      79,
+      148
+     ],
+     "cortado": false
+    }
+   ]
+  },
+  "walk": {
+   "lienzo": [
+    96,
+    152
+   ],
+   "ancla": [
+    48,
+    26
+   ],
+   "pies_y": 146,
+   "frames": [
+    {
+     "i": 0,
+     "fichero": "walk/f00.png",
+     "escala": 0.261,
+     "sprite": [
+      80,
+      157
+     ],
+     "bbox": [
+      0,
+      6,
+      80,
+      149
+     ],
+     "cortado": true
+    },
+    {
+     "i": 1,
+     "fichero": "walk/f01.png",
+     "escala": 0.26,
+     "sprite": [
+      80,
+      156
+     ],
+     "bbox": [
+      7,
+      5,
+      74,
+      149
+     ],
+     "cortado": false
+    },
+    {
+     "i": 2,
+     "fichero": "walk/f02.png",
+     "escala": 0.259,
+     "sprite": [
+      80,
+      156
+     ],
+     "bbox": [
+      1,
+      6,
+      69,
+      149
+     ],
+     "cortado": false
+    },
+    {
+     "i": 3,
+     "fichero": "walk/f03.png",
+     "escala": 0.26,
+     "sprite": [
+      80,
+      156
+     ],
+     "bbox": [
+      6,
+      5,
+      79,
+      149
+     ],
+     "cortado": false
+    },
+    {
+     "i": 4,
+     "fichero": "walk/f04.png",
+     "escala": 0.234,
+     "sprite": [
+      72,
+      140
+     ],
+     "bbox": [
+      9,
+      7,
+      67,
+      147
+     ],
+     "cortado": false
+    },
+    {
+     "i": 5,
+     "fichero": "walk/f05.png",
+     "escala": 0.261,
+     "sprite": [
+      80,
+      157
+     ],
+     "bbox": [
+      3,
+      6,
+      79,
+      149
+     ],
+     "cortado": false
+    }
+   ]
+  }
+ }
+}

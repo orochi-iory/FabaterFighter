@@ -97,34 +97,36 @@ nativo, no con filtros.
 
 Tamaño medido del stance: **94 × 151 px de arte** (antes, con la erosión, 95 × 150).
 
-## Regla de oro 4 · no reducir (2026-10-20)
+## Regla de oro 5 · quitar el velo rojo (2026-10-20)
 
-**El problema:** la IA entrega imágenes que *parecen* pixel art pero no lo son. Medido en la
-hoja de walk nueva (1408 × 768):
+**Por qué salía borde rojo aunque el fondo se hiciera transparente:** no era rojo puro. La IA
+antialiasa el personaje contra el fondo, y deja **bandas de 2-4 px** de mezcla. Medido en el filo:
 
-| medida | valor | qué significa |
-|---|---|---|
-| colores distintos | **152 107** | un sprite real usa 16-24 |
-| colores usados en 1 píxel | **107 220** | casi todos son ruido de suavizado |
-| bloques 2×2 uniformes | **8,0 %** | no hay rejilla debajo |
-| transiciones suaves | **88,2 %** | los bordes son rampas, no escalones |
+| color de filo | qué es |
+|---|---|
+| `(68,0,0)`, `(53,0,1)`, `(40,0,0)` | negro de la silueta mezclado con rojo: **83 % del filo** |
+| `(255,0,0)` puro | fondo, ese sí se eliminaba |
 
-**El error que lo estropeaba:** reducir con factor **fraccionario** (3,83-4,28, distinto en cada
-frame) para cuadrar los 120 px de cabeza a pies. Al reducir, cada píxel de salida coge un trozo
-de bloque distinto: las líneas de 1 px (filo cian de las botas, rayo del pecho) se rompen y se
-pierden unos 30 000 colores. Eso era el «se ve reducido y sucio».
+Mi umbral pedía `r > 215` para considerar «rojo»; las mezclas tienen r entre 40 y 110, así que
+ninguna pasaba el filtro y se quedaban ahí.
 
-**La regla:** al recortar **no se reduce**. Rojo → transparencia pura y listo; el sprite queda a
-resolución nativa. Si hace falta un tamaño menor para el juego, se reduce después, una sola vez y
-con **factor entero**, nunca dentro del recorte.
+**Arreglo** (`desmatar` en `trocear.py`): la mezcla cumple
 
-### Separación de sprites pegados
+```
+p = a·color_real + (1−a)·rojo   →   exceso = p.r − máx(p.g, p.b) = 255·(1−a)
+                                →   a = 1 − exceso/255
+```
 
-Cada píxel no-rojo se asigna a la **cabeza más cercana** (BFS multi-fuente desde cada casco). Así
-cada píxel pertenece a un único sprite, los que se tocan se reparten por el punto medio y ninguna
-mota suelta se cuela. Resultado: 0 px de rojo residual, 0 frames cortados de 14.
+Si `a ≥ 0,5` el píxel es del personaje y se le pone **el color del interior más cercano**
+(propagación BFS desde el dibujo limpio); si no, era fondo y se descarta. **0 píxeles rojizos en
+el filo**, antes 83 %.
 
-Lienzos: stance 285 × 524 (ancla de cabeza 165, 76), walk 308 × 600 (184, 80). Sin escalar.
+## Llevar al tamaño del modelo original
+
+`encajar.py` reduce los sprites nativos (285-308 px) a la rejilla oficial **96 × 152** con anclaje
+de cabeza (48, 26) y pies en 146. Aquí **sí** se reduce, y con filtro promediado a propósito: el
+dibujo de la IA es una ilustración con antialias, y promediada queda limpia; reducida con NEAREST
+a factor fraccionario se rompe (eso era el aspecto sucio). Resultado en `voltia/nuevo/creador/oficial/`.
 
 ## Chun-Li
 
