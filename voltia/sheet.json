@@ -1,11 +1,11 @@
 {
  "sprite": "sheet_uniform.png",
  "version": "1.2",
- "notes": "Modelo oficial reconstruido desde voltia/frames (rejilla 4x): /4 NEAREST a 1x de arte, limpieza de grano por masa local e islas de color, silueta de 1 px limpia, -1 px de arte de contorno y x2 NEAREST a la hoja. Sin LANCZOS en ningun paso. 18 colores.",
+ "notes": "Reconstruida desde los frames nativos SIN filtros: ÷4 NEAREST a 1x de arte (los nativos son un x4 exacto, 0.00% de bloques 4x4 no uniformes) y ×2 NEAREST a la hoja. Ni limpieza, ni islas, ni silueta, ni erosion: el pixel nativo tal cual. Sin LANCZOS en ningun paso.",
  "date": "2026-10-20",
  "canon": 1.2,
  "art": {
-  "height_px": 148,
+  "height_px": 151,
   "export_scale": 4,
   "uniform_scale": 2,
   "palette_version": 1
@@ -421,5 +421,5 @@
    "status": "done"
   }
  ],
- "rev": "3442d4d8a0"
+ "rev": "cbb0893173"
 }

@@ -32,7 +32,10 @@ mucho y el navegador cacheando HTML/PNG ya nos costó tres veces «los cambios n
 | fuente | `voltia/frames/voltia_<anim>_<n>.png`, **rejilla de píxel exacta de 4×** |
 | animaciones | **25** · **102** frames |
 
-El modelo oficial es **borde verde + contorno comido −1 px de arte + grano limpiado**.
+El modelo oficial es **el dibujo nativo tal cual**: borde verde, **0 filtros de
+reconstrucción**. No se limpia el grano, no se erosiona el contorno, no se rellena la
+silueta. Cualquier filtro que se aplique después inventa píxeles y borra dibujo (el brillo del
+ojo, la punta de la coleta): por eso se quitaron.
 La hoja se genera entera con:
 
 ```bash
@@ -40,9 +43,12 @@ python3 tools/voltia_reconstruir.py            # hoja + sheet.json + fighter del
 python3 tools/voltia_reconstruir.py --solo-ver # solo comparaciones, no escribe
 ```
 
-Pipeline, por frame: `÷4 NEAREST` a 1× de arte → limpieza de grano por masa local
-(protegiendo el negro de línea y el cian del borde) → `−1 px` de arte de contorno →
-`×2 NEAREST` a la hoja, pegado alineado a par.
+Pipeline, por frame: `÷4 NEAREST` a 1× de arte → `×2 NEAREST` a la hoja, pegado alineado a
+par. Nada más. Los frames nativos son un ×4 exacto (0,00 % de bloques 4×4 no uniformes), así
+que ÷4 recupera el píxel original: los 102 frames de la hoja son **idénticos píxel a píxel**
+al nativo (comprobado, 0 diferencias visibles).
+
+Los filtros siguen en el código detrás de `--filtros 1` solo para comparar; no son el modelo.
 
 > **Regla que no se negocia:** al pixel art **nunca** se le aplica un reescalado con
 > interpolación (LANCZOS/BILINEAR) ni un factor fraccionario. Eso inventa medios píxeles,

@@ -193,7 +193,11 @@ def fuente(tam):
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument('--comer', type=int, default=0, help='px de ARTE erosionados del contorno')
+    ap.add_argument('--filtros', type=int, default=0, choices=(0, 1),
+                    help='0 = solo geometria (÷4 y ×2 NEAREST), el pixel nativo tal cual; '
+                         '1 = limpieza de grano, islas y silueta (inventa pixeles)')
+    ap.add_argument('--comer', type=int, default=0, help='px de ARTE erosionados del contorno (solo con --filtros 1)')
+    ap.add_argument('--volcar', default='', help='escribe la hoja de prueba en esa ruta en vez de en el repositorio')
     ap.add_argument('--pasadas', type=int, default=3)
     ap.add_argument('--islas', type=int, default=3, help='tamano maximo de isla de color que se funde')
     ap.add_argument('--solo-ver', action='store_true', help='mide y no escribe la hoja')
@@ -212,10 +216,11 @@ def main():
             p = os.path.join(FRAMES, 'voltia_%s_%d.png' % (a['id'], i))
             nativo = Image.open(p).convert('RGBA')
             uno = nativo.resize((nativo.size[0] // NATIVO, nativo.size[1] // NATIVO), Image.NEAREST)
-            uno = limpiar(uno, args.pasadas)
-            uno = islas_de_color(uno, args.islas, 2)
-            uno = silueta_limpia(uno, 1)
-            if args.comer:
+            if args.filtros:
+                uno = limpiar(uno, args.pasadas)
+                uno = islas_de_color(uno, args.islas, 2)
+                uno = silueta_limpia(uno, 1)
+            if args.filtros and args.comer:
                 al = uno.split()[3]
                 for _ in range(args.comer):
                     al = al.filter(ImageFilter.MinFilter(3))
@@ -292,12 +297,23 @@ def main():
         print('(--solo-ver: no se ha tocado la hoja)')
         return
 
+    if args.volcar:
+        nueva.save(args.volcar)
+        print('hoja de prueba en %s (repositorio intacto)' % args.volcar)
+        return
+
     nueva.save(HOJA)
     rev = hashlib.md5(open(HOJA, 'rb').read()).hexdigest()[:10]
     meta['rev'] = rev
-    meta['notes'] = ('Reconstruida desde los frames nativos: ÷4 a 1x de arte con NEAREST, grano '
-                     'quitado por masa local (negro y cian protegidos), %d px de arte comidos del '
-                     'contorno, y ×2 NEAREST a la hoja. Sin LANCZOS en ningun paso.' % args.comer)
+    if args.filtros:
+        meta['notes'] = ('Reconstruida desde los frames nativos: ÷4 a 1x de arte con NEAREST, grano '
+                         'quitado por masa local (negro y cian protegidos), %d px de arte comidos del '
+                         'contorno, y ×2 NEAREST a la hoja. Sin LANCZOS en ningun paso.' % args.comer)
+    else:
+        meta['notes'] = ('Reconstruida desde los frames nativos SIN filtros: ÷4 NEAREST a 1x de arte '
+                         '(los nativos son un x4 exacto, 0.00% de bloques 4x4 no uniformes) y ×2 '
+                         'NEAREST a la hoja. Ni limpieza, ni islas, ni silueta, ni erosion: el pixel '
+                         'nativo tal cual. Sin LANCZOS en ningun paso.')
     json.dump(meta, open(META, 'w'), indent=1)
     nueva.crop((0, 0, cw, ch)).crop(CAJA_FIGHTER).resize(FIGHTER, Image.NEAREST).save(STAGE)
     print('hoja %s rev %s | fighter %s' % (HOJA, rev, STAGE))

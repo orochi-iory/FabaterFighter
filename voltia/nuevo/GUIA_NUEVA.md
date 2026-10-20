@@ -50,7 +50,8 @@ ninguno de sus 8 vecinos):
 | el mismo, a 1× de arte (97 × 153) | **7,13 %** |
 
 O sea: la rejilla 4× es perfecta, pero un nivel por debajo el dibujo ya trae color suelto.
-Por eso limpiar «tal cual» no sirve: hay que limpiar **en la resolución real de arte**.
+**Ese color suelto es dibujo, no un fallo del proceso**, y por eso el modelo oficial no lo
+toca: se entrega el nativo tal cual (`--filtros 0`).
 
 ## Pipeline oficial de Voltia
 
@@ -61,31 +62,40 @@ python3 tools/voltia_reconstruir.py
 Por frame, cero LANCZOS:
 
 1. **÷4 NEAREST** del nativo → 1× de arte (el píxel real del dibujo);
-2. **limpieza por masa local**: si el color de un píxel aparece **≤ 3 veces** en su
-   entorno 5×5, pasa al color mayoritario de sus 8 vecinos. Se **protegen** el negro de
-   línea `(1,1,2)` y el cian del borde `(5,176,157)` (sin protegerlos se borra el borde
-   verde, que es intencionado);
-3. **islas de color**: toda región conexa de **≤ 3 px** de un mismo color se funde con el
-   color mayoritario de su contorno. Es lo que quita el cuadradito suelto en la cara o en
-   la coleta, que la masa local no ve (ese color sí tiene vecinos, solo que en otro sitio);
-4. **silueta limpia**: cierra muescas de 1 px y quita salientes de 1 px. La muesca recién
-   rellenada **hereda el color de su vecino**; si no, queda un `(0,0,0)` suelto y la paleta
-   pasa de 18 a 2715 colores (pasó, y se vio en la comprobación de colores, no a ojo);
-5. **−1 px de arte de contorno**: ajusta el grosor y quita la dentadura que deja la
-   protección del cian;
-6. **×2 NEAREST** a la hoja y pegado **alineado a par**.
+2. **×2 NEAREST** a la hoja, pegado alineado a par.
 
-Resultado medido en el stance a 1× de arte:
+**Eso es todo.** Ni limpieza, ni islas, ni silueta, ni erosión: **0 filtros de
+reconstrucción**. Los frames nativos son un ×4 exacto (0,00 % de bloques 4×4 no uniformes),
+así que ÷4 NEAREST recupera el píxel original y el sprite es **el dibujo nativo tal cual**.
 
-| | nativo | antes de la limpieza final | ahora |
+Comprobado frame a frame: los 102 frames de la hoja son **idénticos píxel a píxel** al nativo
+÷4 (0 diferencias visibles; solo cambia el RGB de los píxeles con alfa 0, que no se ven).
+
+### Lo que ya no se hace, y por qué
+
+Las versiones anteriores pasaban tres filtros (masa local, islas de color, silueta de 1 px) y
+luego comían 1 px de arte del contorno. Bajaban el «grano» medido de 7,13 % a 0,45 %, pero
+**borraban dibujo**: el brillo del ojo, el tono de la nariz, la punta de la coleta y 949
+píxeles del solo stance. Ese número bajo no era calidad, era detalle perdido. Se quedan en el
+código detrás de `--filtros 1` solo para poder comparar; **el modelo oficial se hace con
+`--filtros 0`**, que es el valor por defecto.
+
+### Las medidas, sin maquillar
+
+| stance a 1× de arte | nativo | con filtros (`--filtros 1`) | **oficial (0 filtros)** |
 |---|---|---|---|
-| píxeles aislados | 7,13 % | 1,47 % | **0,45 %** |
-| islas de color ≤ 4 px | 876 | 213 | **115** |
+| «grano» (aislados) | 7,13 % | 0,45 % | **7,13 %** |
+| islas de color ≤ 4 px | 876 | 115 | **876** |
 | bloques 2×2 sucios | — | 0,00 % | **0,00 %** |
 | colores opacos | 18 | 18 | **18** |
+| píxeles inventados | — | 949 | **0** |
 
-Referencia de arte real en el repo (Chun-Li): **2,85 %** de píxeles aislados. Voltia está
-por debajo.
+El «grano» de 7,13 % es del dibujo, no del proceso: a 4× es 0,00 % porque cada píxel de arte
+ocupa un bloque 4×4. Referencia de arte real en el repo (Chun-Li, SF2): 2,85 %. Es decir,
+Voltia dibuja más suelto que el arte original de SF2; eso solo se arregla redibujando el
+nativo, no con filtros.
+
+Tamaño medido del stance: **94 × 151 px de arte** (antes, con la erosión, 95 × 150).
 
 ## Chun-Li
 
