@@ -97,6 +97,32 @@ nativo, no con filtros.
 
 Tamaño medido del stance: **94 × 151 px de arte** (antes, con la erosión, 95 × 150).
 
+## Prueba de reconstrucción por IA (2026-10-20)
+
+Se le pasó la hoja a un modelo de imagen pidiendo la misma rejilla, las mismas poses y
+colores planos. Resultado medido, no opinado:
+
+| | original | IA · media hoja (1 312 × 1 079) | IA · bloque 4×4 (2 px por píxel de arte) | IA + paleta |
+|---|---|---|---|---|
+| colores distintos | **20** | 86 163 | 157 466 | **19** |
+| colores con ≤ 20 px | **0** | 85 751 | 156 258 | **0** |
+| transiciones suaves | 6,9 % | 91,7 % | 82,0 % | plano |
+| rejilla | exacta | conservada | conservada | exacta |
+| poses | las 25 | reconocibles | **inventadas** | inventadas |
+| tamaño del sprite | 94 × 151 px de arte | ~40 × 65 px | 145 × 230 px | 145 × 230 px |
+
+Conclusiones:
+- La IA **no devuelve píxeles planos**: 86 000–157 000 colores y 82–92 % de transiciones
+  suaves. Lo parece a tamaño pequeño, pero no lo es.
+- Aplanar a la paleta sí funciona (`quantize` sin dither, cada píxel al color más cercano):
+  19 colores, ninguna mezcla. Pero **aplanar no devuelve las poses**.
+- A escala de media hoja pierde resolución (40 px por personaje): no sirve para recortar.
+- A 2 px por píxel de arte sí es nítido, pero **redibuja** (la última fila pasa de caminar a
+  correr). Habría que ir bloque a bloque y validar pose por pose, y aun así la IA decide.
+
+Todo esto está en el visor: `preview/nuevo.html` (visor de frames + hoja de la IA).
+El modelo oficial (`--filtros 0`) sigue intacto; la prueba vive en `voltia/nuevo/ia/`.
+
 ## Chun-Li
 
 - Las **filas 1, 2 y 3 de la hoja original son el mismo stance**: van juntas en **una**
