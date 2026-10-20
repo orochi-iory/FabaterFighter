@@ -97,31 +97,41 @@ nativo, no con filtros.
 
 Tamaño medido del stance: **94 × 151 px de arte** (antes, con la erosión, 95 × 150).
 
-## Stance y walk rehechos por IA (2026-10-20)
+## Stance y walk v2 · centrado por cabeza (2026-10-20)
 
-Se le dio cada animación por trozos (stance en 3 trozos de 5 frames, walk de 6 en uno),
-pidiéndole pixel art real y **resolución libre** —podía trabajar más grande—. Resultado: son
-**más limpios que el original**, pero no vienen pixelados; hay que bajarlos.
+Intento nuevo usando dos referencias: una **imagen de diseño de Voltia** (casco magenta, traje
+teal, rayo, cinturón dorado, coleta morada) y la **hoja de sprites de Cammy** como estilo a clonar
+(píxel plano, paleta corta, línea negra, proporciones de sprite de pelea).
 
-| | original | IA tal cual | bajado a píxel (`pixelar.py`) |
+### El problema del centrado
+
+Centrar por la caja del sprite **no vale**: la coleta ocupa más que el cuerpo y cambia de forma en
+cada frame, así que ella mandaba y el personaje saltaba y se cortaba. Método nuevo
+(`voltia/nuevo/ia/recortar.py`):
+
+1. localizar el **casco magenta** (blob del tono rosa más grande de la mitad superior);
+2. medir **centro del casco → línea de pies** (píxel más bajo);
+3. escalar cada frame para que esa distancia sea **120 px de arte** en todos;
+4. pegar en un lienzo común con la cabeza clavada en el mismo píxel;
+5. bajar a rejilla con NEAREST y paleta cerrada sin dithering.
+
+Resultado: **0 frames cortados**. Stance con lienzo 142 × 172, ancla de cabeza (86, 48); walk
+96 × 154, ancla (59, 30). Los pies quedan en la misma línea en los 16 frames.
+
+### Medidas
+
+| | original | IA tal cual | recortado |
 |---|---|---|---|
-| colores | 18 | 16 300-27 700 | **18-19** |
-| bordes suavizados | 5,7 % | 91,5 % | **16,7 %** |
-| rejilla de píxel | 2 px exactos | **no hay** (11 % bloques) | píxel entero |
-| tamaño del sprite | 94 × 151 | 243 × 394 | 81 × 131 |
-| frames | 15 + 6 | 15 + 6 | 15 + 6 |
+| colores | 18 | 156 834-182 196 | 32 (paleta cerrada) |
+| rejilla | 2 px exactos | no hay (5-23 %) | píxel entero |
+| frames cortados | — | — | **0** |
+| stance / walk | 15 / 6 | 10 / 6 | 10 / 6 |
 
-Cómo se baja a píxel (`voltia/nuevo/ia/pixelar.py`): recorte del sprite → divisor **entero**
-(÷3, NEAREST, nunca LANCZOS) → `quantize` a la paleta de 18 colores **sin dithering** → fondo
-transparente. Nada de inventar píxeles.
+Pendiente: la IA devolvió **10 frames de stance** (no 15), los pies bailan 1-2 px entre frames y
+falta igualar el tamaño a la rejilla oficial (94 × 151) con pivote medido.
 
-Pendiente antes de usarlo en el juego: el sprite queda en 81 × 131 (no 94 × 151), así que hay
-que reescalarlo a la rejilla y volver a medir el pivote. Al bajar de 243 a 81 se pierde detalle
-fino (el rayo del pecho queda a 1-2 px) y la IA cambia detalles del diseño: cinturón dorado
-doble, pecho más marcado, visera distinta.
-
-Ficheros: `voltia/nuevo/ia/{ref,ia}_{stance_a,stance_b,stance_c,walk}.png`,
-`voltia/nuevo/ia/prueba/{raw,pixel}/<anim>_NN.png`. Visor: `preview/nuevo.html`.
+Ficheros: `voltia/nuevo/ia/{ref_voltia_diseno,ref_estilo_sf2,ref_estilo_detalle,ia_stance,ia_walk}.png`,
+`voltia/nuevo/ia/frames/<anim>_NN.png`, `datos.json`. Visor: `preview/nuevo.html`.
 
 ## Chun-Li
 

@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>VOLTIA · Modelo nuevo (stance y walk pixelados)</title>
+<title>VOLTIA · Modelo nuevo (centrado por cabeza)</title>
 <style>
   :root { --bg:#150f1f; --panel:#211a33; --line:#3d3358; --cyan:#96ffeb; --gold:#ffcb3d; --vio:#b98cff; }
   * { box-sizing:border-box; }
@@ -27,20 +27,25 @@
   .card h2 { margin:0 0 4px; font-size:16px; letter-spacing:1px; color:var(--gold); }
   .card p.sub { margin:0 0 12px; font-size:13px; color:#9b93b8; line-height:1.5; }
   .big { background:#1a1528; border-radius:10px; padding:10px; text-align:center; }
-  figure.zoom { margin:0; }
-  figure.zoom img { width:100%; height:auto; image-rendering:pixelated; display:block;
-    background:#1a1528; border-radius:8px; }
-  figure.zoom figcaption { font-size:12px; color:#9b93b8; text-align:center; margin-top:5px; }
-  .par { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
   canvas#anim { image-rendering:pixelated; border-radius:8px; display:block; margin:0 auto;
     background: repeating-conic-gradient(#2c2a40 0 25%, #242233 0 50%) 0 0/32px 32px; }
   canvas#anim.solid { background:#101018; }
   canvas#anim.magenta { background:#c0c; }
   canvas#anim.green { background:#00ff00; }
+  canvas#guia { image-rendering:pixelated; border-radius:8px; display:block; margin:14px auto 0; max-width:100%; }
   .controls { display:flex; gap:8px; flex-wrap:wrap; justify-content:center; align-items:center; margin-top:12px; }
   button, select { background:#35324e; color:#eee; border:1px solid #4a4767; border-radius:8px;
     padding:8px 12px; cursor:pointer; font-size:14px; }
   button:hover, select:hover { background:#454163; }
+  button.on { background:#0e7c8c; border-color:#96ffeb; }
+  .par { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+  figure.zoom { margin:0; }
+  figure.zoom img { width:100%; height:auto; image-rendering:pixelated; display:block;
+    background:#1a1528; border-radius:8px; }
+  figure.zoom figcaption { font-size:12px; color:#9b93b8; text-align:center; margin-top:5px; }
+  .refs img { width:100%; height:auto; border-radius:8px; display:block; }
+  .refs figure { margin:0; }
+  .refs figcaption { font-size:12px; color:#9b93b8; text-align:center; margin-top:5px; }
   table { border-collapse:collapse; width:100%; font-size:13px; }
   th, td { border:1px solid var(--line); padding:6px 9px; text-align:left; }
   th { background:#2c2442; color:var(--cyan); }
@@ -62,34 +67,30 @@
 </nav>
 
 <header>
-  <h1>MODELO NUEVO · STANCE Y WALK</h1>
-  <p>Solo estas dos animaciones. Se le dio cada una por trozos, pidiendo <b>pixel art de verdad</b>
-     a la resolución que quisiera. Y sí: <b>salen más limpios que el original</b>, como decías.
-     El modelo oficial no se ha tocado.</p>
+  <h1>MODELO NUEVO · CENTRADO POR CABEZA</h1>
+  <p>Intento nuevo con tu <b>imagen de diseño de Voltia</b> y la <b>hoja de Cammy</b> como estilo a
+     clonar. Solo stance y walk. Cada frame se centra por el <b>centro del casco</b> y se normaliza
+     la distancia cabeza-pies, así que ya no se corta ni baila. El modelo oficial no se toca.</p>
 </header>
 
 <main>
 
   <section class="card wide">
-    <h2>Visor · stance (15 frames) y walk (6)</h2>
-    <p class="sub">Conmutador entre <b>lo que devuelve la IA</b> (ilustración suave, 27 734 colores)
-       y <b>el sprite pasado a píxel real</b> (18 colores, rejilla entera, sin dithering).</p>
-    <div class="big"><canvas id="anim" width="600" height="560"></canvas></div>
+    <h2>Visor · stance y walk, ya alineados</h2>
+    <p class="sub">Línea roja = centro de la cabeza (idéntico en todos los frames). Línea verde = pies
+       (misma altura en todos). Cambia escala, fondo y las guías.</p>
+    <div class="big"><canvas id="anim"></canvas><canvas id="guia"></canvas></div>
     <div class="controls">
       <button id="play">⏸ Pausa</button>
       <select id="anim-sel">
-        <option value="stance">stance · 15 frames</option>
+        <option value="stance">stance · 10 frames</option>
         <option value="walk">walk · 6 frames</option>
       </select>
-      <select id="modo">
-        <option value="pixel">Píxel real (18 colores)</option>
-        <option value="raw">IA tal cual (suave)</option>
-      </select>
       <select id="scale">
-        <option value="2">2×</option>
-        <option value="3" selected>3×</option>
-        <option value="4">4×</option>
+        <option value="3">3×</option>
+        <option value="4" selected>4×</option>
         <option value="6">6×</option>
+        <option value="8">8×</option>
       </select>
       <select id="bg">
         <option value="">Fondo ajedrez</option>
@@ -97,124 +98,156 @@
         <option value="magenta">Fondo magenta</option>
         <option value="green">Fondo verde</option>
       </select>
+      <button id="tog-guia" class="on">Guías</button>
+      <button id="tog-tira" class="on">Tira de frames</button>
       <span class="note" id="fstat">—</span>
     </div>
   </section>
 
   <section class="card wide">
-    <h2>Las hojas · stance en 3 trozos</h2>
-    <p class="sub">Arriba lo que le di (original, a 2 px por píxel de arte), abajo lo que devolvió.
-       Mantiene los 5 frames de cada trozo y la pose de guardia.</p>
-    <div class="par">
-      <figure class="zoom"><img src="../voltia/nuevo/ia/ref_stance_a.png" alt="Stance 1-5 original">
-        <figcaption>Original · frames 1-5</figcaption></figure>
-      <figure class="zoom"><img src="../voltia/nuevo/ia/ia_stance_a.png" alt="Stance 1-5 por la IA">
-        <figcaption>IA · 2 233 × 464</figcaption></figure>
-    </div>
-    <div class="par" style="margin-top:10px">
-      <figure class="zoom"><img src="../voltia/nuevo/ia/ref_stance_b.png" alt="Stance 6-10 original">
-        <figcaption>Original · frames 6-10</figcaption></figure>
-      <figure class="zoom"><img src="../voltia/nuevo/ia/ia_stance_b.png" alt="Stance 6-10 por la IA">
-        <figcaption>IA · 2 233 × 464</figcaption></figure>
-    </div>
-    <div class="par" style="margin-top:10px">
-      <figure class="zoom"><img src="../voltia/nuevo/ia/ref_stance_c.png" alt="Stance 11-15 original">
-        <figcaption>Original · frames 11-15</figcaption></figure>
-      <figure class="zoom"><img src="../voltia/nuevo/ia/ia_stance_c.png" alt="Stance 11-15 por la IA">
-        <figcaption>IA · 2 233 × 464</figcaption></figure>
+    <h2>Cómo se centra (el método)</h2>
+    <p class="sub">El problema anterior: centrar por la caja del sprite. La coleta es enorme y cambia
+       de forma en cada frame, así que mandaba ella y el personaje saltaba. Ahora:</p>
+    <div class="note">
+      <b>1.</b> Se busca el casco magenta: el bloque de píxeles del tono rosa de la máscara, el
+      más grande de la mitad superior. Su centro es el ancla.<br>
+      <b>2.</b> Se mide la distancia <b>centro del casco → línea de pies</b> (el píxel más bajo del
+      sprite) y se escala cada frame para que esa distancia sea <b>120 px de arte</b> en todos.<br>
+      <b>3.</b> Se pega cada frame en un lienzo común con el centro del casco clavado en el mismo
+      píxel. Resultado: mismo punto de cabeza y misma línea de pies en los 16 frames.<br>
+      <b>4.</b> Bajada a rejilla con NEAREST y paleta cerrada sin dithering: sin LANCZOS.<br>
+      <b>Comprobado:</b> 0 frames cortados en stance (lienzo 142 × 172) y en walk (96 × 154).
     </div>
   </section>
 
   <section class="card wide">
-    <h2>Las hojas · walk en 1 trozo</h2>
-    <p class="sub">Aquí la IA se soltó en resolución y salió lo mejor de toda la prueba: ciclo de
-       caminar completo, 6 poses, 1 408 × 768. Los 6 sprites caben en el mismo ancho del original.</p>
+    <h2>Las dos referencias que diste</h2>
+    <div class="refs par">
+      <figure>
+        <img src="../voltia/nuevo/ia/ref_voltia_diseno.png" alt="Diseño de Voltia">
+        <figcaption>Diseño a copiar: casco magenta, traje teal, rayo, cinturón dorado, coleta morada</figcaption>
+      </figure>
+      <figure>
+        <img src="../voltia/nuevo/ia/ref_estilo_detalle.png" alt="Estilo Cammy, detalle">
+        <figcaption>Estilo a clonar: pixel art plano, paleta corta, línea negra, sprite pequeño</figcaption>
+      </figure>
+    </div>
+  </section>
+
+  <section class="card wide">
+    <h2>Lo que devolvió la IA</h2>
     <div class="par">
-      <figure class="zoom"><img src="../voltia/nuevo/ia/ref_walk.png" alt="Walk original">
-        <figcaption>Original · frames 1-6 · 2 140 × 372</figcaption></figure>
+      <figure class="zoom"><img src="../voltia/nuevo/ia/ia_stance.png" alt="Stance por la IA">
+        <figcaption>stance · 1 376 × 768 · 10 frames</figcaption></figure>
       <figure class="zoom"><img src="../voltia/nuevo/ia/ia_walk.png" alt="Walk por la IA">
-        <figcaption>IA · 1 408 × 768 · ciclo completo</figcaption></figure>
+        <figcaption>walk · 1 859 × 560 · 6 frames</figcaption></figure>
     </div>
   </section>
 
   <section class="card wide">
-    <h2>Medidas: lo bueno y lo que hay que corregir</h2>
+    <h2>Medidas</h2>
     <table>
-      <tr><th>Métrica</th><th>Original</th><th>IA tal cual</th><th>Pasado a píxel</th></tr>
-      <tr><td>Colores</td><td class="ok">18</td><td class="bad">16 300-27 700</td><td class="ok">18-19</td></tr>
-      <tr><td>Bordes suavizados</td><td class="ok">5,7 %</td><td class="bad">91,5 %</td><td class="ok">16,7 %</td></tr>
-      <tr><td>Rejilla de píxel</td><td class="ok">2 px exactos</td><td class="bad">no hay (11 % bloques)</td><td class="ok">píxel entero</td></tr>
-      <tr><td>Tamaño del sprite</td><td class="ok">94 × 151 px</td><td>243 × 394 px</td><td>81 × 131 px</td></tr>
-      <tr><td>Stance</td><td>15 frames</td><td class="ok">15</td><td class="ok">15</td></tr>
-      <tr><td>Walk</td><td>6 frames</td><td class="ok">6 · ciclo completo</td><td class="ok">6</td></tr>
-      <tr><td>Contorno exterior</td><td>sí (borde verde)</td><td class="ok">ninguno</td><td class="ok">ninguno</td></tr>
+      <tr><th>Métrica</th><th>Original (oficial)</th><th>IA tal cual</th><th>Recortado y centrado</th></tr>
+      <tr><td>Colores</td><td class="ok">18</td><td class="bad">156 834-182 196</td><td class="ok">32 · paleta cerrada</td></tr>
+      <tr><td>Rejilla de píxel</td><td class="ok">2 px exactos</td><td class="bad">no hay (5-23 % bloques)</td><td class="ok">píxel entero</td></tr>
+      <tr><td>Centrado</td><td>por caja</td><td>—</td><td class="ok">por cabeza + pies</td></tr>
+      <tr><td>Frames cortados</td><td>—</td><td>—</td><td class="ok">0</td></tr>
+      <tr><td>Cabeza-pies</td><td>—</td><td>variable</td><td class="ok">120 px en todos</td></tr>
+      <tr><td>Stance / walk</td><td>15 / 6</td><td class="ok">10 / 6</td><td class="ok">10 / 6</td></tr>
+      <tr><td>Diseño</td><td>original</td><td>muy fiel</td><td>muy fiel</td></tr>
     </table>
     <div class="note" style="margin-top:12px">
-      <b>Lo bueno:</b> estas dos animaciones son <b>más limpias que el original</b>. La pose es más
-      legible, la coleta tiene volumen de verdad y el dibujo no arrastra el grano del arte viejo.
-      El walk es el mejor resultado de todas las pruebas: 6 poses coherentes, un ciclo completo.
+      <b>Lo mejor de esta tanda:</b> el diseño sale muy fiel a tu referencia —casco magenta con
+      detalles teal, rayo amarillo, cinturón con hebilla, coleta morada— y el estilo se acerca al de
+      Cammy: píxel plano, línea negra, proporciones de sprite de pelea.
       <br><br>
-      <b>Lo que hay que corregir antes de usarlo:</b> el sprite pasado a píxel mide
-      <b>81 × 131 px</b> frente a los 94 × 151 del original, así que hay que reescalarlo y volver a
-      medir su pivote. Al bajar de 243 px a 81 con NEAREST se pierden detalles finos (el rayo del
-      pecho queda a 1-2 px y la cara se simplifica). Y la IA cambia el diseño en detalles: el cinturón
-      pasa a dorado doble, el pecho se marca más y la visera cambia de forma.
-      <br><br>
-      <b>0 filtrado en el recorte</b>: los sprites son lo que devolvió la IA, solo recortados y
-      bajados con NEAREST a una rejilla entera, aplanados a la paleta de 18 sin dithering.
+      <b>Lo que sigue pendiente:</b> la IA no entrega la rejilla (hay que bajarla), el stance vino
+      en <b>10 frames</b> en vez de los 15 originales, y los pies aún se mueven 1-2 px entre frames
+      porque la IA no dibuja el mismo suelo. El siguiente paso es igualar el tamaño a la rejilla
+      oficial (94 × 151) y comprobar pivote contra el juego.
     </div>
   </section>
 
 </main>
 
-<footer>FabaterFighter · modelo nuevo · stance y walk pixelados · 2026-10-20</footer>
+<footer>FabaterFighter · modelo nuevo · centrado por cabeza · 2026-10-20</footer>
 
 <script>
-(() => {
+(async () => {
+  const datos = await (await fetch('../voltia/nuevo/ia/frames/datos.json', { cache: 'no-store' })).json();
   const cv = document.getElementById('anim');
   const cx = cv.getContext('2d');
+  const gv = document.getElementById('guia');
+  const gx = gv.getContext('2d');
   const cache = new Map();
-  let anim = 'stance', modo = 'pixel', frames = [], idx = 0, playing = true;
-  let last = performance.now(), acc = 0;
-  const FPS = { stance: 10, walk: 10 };
-  const N = { stance: 15, walk: 6 };
+  let anim = 'stance', frames = [], idx = 0, playing = true;
+  let guias = true, tira = true, last = performance.now(), acc = 0;
+  const FPS = 10;
 
-  const cargar = async (a, m) => {
-    const key = a + ':' + m;
-    if (cache.has(key)) return cache.get(key);
-    const lista = [];
-    for (let i = 0; i < N[a]; i++) {
-      lista.push(new Promise(res => {
-        const im = new Image();
-        im.onload = () => res(im);
-        im.onerror = () => res(null);
-        im.src = '../voltia/nuevo/ia/prueba/' + m + '/' + a + '_' + String(i).padStart(2, '0') + '.png';
-      }));
-    }
-    const ok = (await Promise.all(lista)).filter(Boolean);
-    cache.set(key, ok);
+  const meta = () => datos.anims[anim];
+
+  async function cargar(a) {
+    if (cache.has(a)) return cache.get(a);
+    const m = datos.anims[a];
+    const l = await Promise.all(m.frames.map(f => new Promise(res => {
+      const im = new Image();
+      im.onload = () => res(im);
+      im.onerror = () => res(null);
+      im.src = '../voltia/nuevo/ia/frames/' + a + '_' + String(f.i).padStart(2, '0') + '.png';
+    })));
+    const ok = l.filter(Boolean);
+    cache.set(a, ok);
     return ok;
-  };
+  }
 
-  const z = () => +document.getElementById('scale').value || 3;
+  const z = () => +document.getElementById('scale').value || 4;
 
   function pintar() {
     const im = frames[idx];
     if (!im) return;
     const s = z();
-    const W = Math.max(...frames.map(f => f.width)) * s;
-    const H = Math.max(...frames.map(f => f.height)) * s;
-    cv.width = W; cv.height = H;
+    const [W, H] = meta().lienzo;
+    cv.width = W * s; cv.height = H * s;
     cx.imageSmoothingEnabled = false;
-    cx.clearRect(0, 0, W, H);
-    cx.drawImage(im, Math.round((W - im.width * s) / 2), Math.round((H - im.height * s) / 2),
-                 im.width * s, im.height * s);
+    cx.clearRect(0, 0, cv.width, cv.height);
+    cx.drawImage(im, 0, 0, W, H, 0, 0, W * s, H * s);
+
+    if (guias) {
+      const [ax, ay] = meta().ancla;
+      gx.lineWidth = 1;
+      cx.strokeStyle = 'rgba(255,60,60,.85)';
+      cx.beginPath(); cx.moveTo(ax * s + .5, 0); cx.lineTo(ax * s + .5, H * s); cx.stroke();
+      cx.strokeStyle = 'rgba(60,230,130,.85)';
+      cx.beginPath(); cx.moveTo(0, ay * s + .5); cx.lineTo(W * s, ay * s + .5); cx.stroke();
+      cx.strokeStyle = 'rgba(80,150,255,.9)';
+      cx.beginPath(); cx.moveTo(0, (ay + 120) * s + .5); cx.lineTo(W * s, (ay + 120) * s + .5); cx.stroke();
+    }
     document.getElementById('fstat').textContent =
-      `${anim} · frame ${idx + 1}/${frames.length} · ${im.width}×${im.height} px · ${modo === 'pixel' ? 'píxel real' : 'IA suave'}`;
+      `${anim} · frame ${idx + 1}/${frames.length} · lienzo ${meta().lienzo.join(' × ')} · cabeza ${meta().ancla.join(',')}`;
+
+    // tira de frames
+    gv.style.display = tira ? 'block' : 'none';
+    if (tira) {
+      const sm = Math.max(1, Math.round(s / 2));
+      gv.width = W * sm * frames.length; gv.height = H * sm;
+      gx.imageSmoothingEnabled = false;
+      gx.clearRect(0, 0, gv.width, gv.height);
+      frames.forEach((f, i) => {
+        gx.drawImage(f, 0, 0, W, H, i * W * sm, 0, W * sm, H * sm);
+        if (guias) {
+          gx.strokeStyle = 'rgba(255,60,60,.5)';
+          gx.beginPath(); gx.moveTo(i * W * sm + meta().ancla[0] * sm + .5, 0);
+          gx.lineTo(i * W * sm + meta().ancla[0] * sm + .5, H * sm); gx.stroke();
+        }
+      });
+      gx.strokeStyle = 'rgba(150,255,235,.9)';
+      gx.lineWidth = 2;
+      gx.strokeRect(idx * W * sm, 0, W * sm, H * sm);
+    }
   }
 
   async function recargar() {
-    frames = await cargar(anim, modo);
+    frames = await cargar(anim);
     idx = 0;
     pintar();
   }
@@ -223,7 +256,7 @@
     const dt = (t - last) / 1000; last = t;
     if (playing && frames.length) {
       acc += dt;
-      if (acc >= 1 / (FPS[anim] || 10)) { acc = 0; idx = (idx + 1) % frames.length; pintar(); }
+      if (acc >= 1 / FPS) { acc = 0; idx = (idx + 1) % frames.length; pintar(); }
     }
     requestAnimationFrame(bucle);
   }
@@ -233,11 +266,13 @@
     e.target.textContent = playing ? '⏸ Pausa' : '▶ Play';
   };
   document.getElementById('anim-sel').onchange = async e => { anim = e.target.value; await recargar(); };
-  document.getElementById('modo').onchange = async e => { modo = e.target.value; await recargar(); };
   document.getElementById('scale').onchange = pintar;
   document.getElementById('bg').onchange = e => { cv.className = e.target.value; };
+  document.getElementById('tog-guia').onclick = e => { guias = !guias; e.target.classList.toggle('on', guias); pintar(); };
+  document.getElementById('tog-tira').onclick = e => { tira = !tira; e.target.classList.toggle('on', tira); pintar(); };
 
-  recargar().then(() => requestAnimationFrame(bucle));
+  await recargar();
+  requestAnimationFrame(bucle);
 })();
 </script>
 </body>
