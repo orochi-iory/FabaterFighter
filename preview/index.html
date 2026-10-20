@@ -182,30 +182,39 @@
   const meta = await (await fetch('../voltia/sheet.json' + QB, { cache: 'no-store' })).json();
   document.getElementById('ver').textContent = `Vista v${meta.version || 'dev'} · cargando la hoja…`;
   const sheet = new Image();
-  sheet.src = '../voltia/' + meta.sprite + QB;
-  // La hoja uniforme es enorme. Si no entra, el visor sigue con los frames sueltos.
-  const sheetOk = await Promise.race([
-    sheet.decode().then(() => sheet.naturalWidth > 100).catch(() => false),
-    new Promise(res => setTimeout(() => res(false), 8000)),
-  ]);
-
   const cell = meta.cell;              // {w,h} en px de hoja (uniform_scale)
-  const unit = meta.art.uniform_scale; // px-hoja por px-arte
 
-  // Guardia de sincronía: si la hoja no cubre la parrilla, avisar en vez de descuadrar.
-  const needW = Math.max(...meta.animations.map(a => a.frames)) * cell.w;
-  const needH = meta.rows * cell.h;
-  if (!sheetOk) {
-    const w = document.getElementById('syncwarn');
-    w.style.display = 'block';
-    w.textContent = 'La hoja completa no entró: el visor sigue con los frames nativos, que es el mismo dibujo.';
-    const f = document.getElementById('fuente');
-    if (f) f.value = 'nativo';
-  } else if (sheet.naturalWidth < needW - 2 || sheet.naturalHeight < needH - 2) {
-    const w = document.getElementById('syncwarn');
-    w.style.display = 'block';
-    w.textContent = `⚠️ Hoja y datos desincronizados (${sheet.naturalWidth}×${sheet.naturalHeight} ` +
-      `vs ${needW}×${needH} necesarios): haz recarga fuerte (Ctrl+F5).`;
+  // La hoja uniforme pesa mucho (5250x8300). Solo se carga si se elige como fuente: el
+  // visor arranca con los frames nativos, que es el dibujo sin tocar.
+  let sheetOk = false, sheetCargando = null;
+  function cargarHoja() {
+    if (sheetOk) return Promise.resolve(true);
+    if (sheetCargando) return sheetCargando;
+    document.getElementById('ver').textContent = 'Cargando la hoja de juego…';
+    sheetCargando = (async () => {
+      sheet.src = '../voltia/' + meta.sprite + QB;
+      const ok = await Promise.race([
+        sheet.decode().then(() => sheet.naturalWidth > 100).catch(() => false),
+        new Promise(res => setTimeout(() => res(false), 30000)),
+      ]);
+      const w = document.getElementById('syncwarn');
+      const needW = Math.max(...meta.animations.map(a => a.frames)) * cell.w;
+      const needH = meta.rows * cell.h;
+      if (!ok) {
+        w.style.display = 'block';
+        w.textContent = 'La hoja completa no entró: el visor sigue con los frames nativos, ' +
+          'que es el mismo dibujo.';
+        const f = document.getElementById('fuente');
+        if (f) f.value = 'nativo';
+      } else if (sheet.naturalWidth < needW - 2 || sheet.naturalHeight < needH - 2) {
+        w.style.display = 'block';
+        w.textContent = `⚠️ Hoja y datos desincronizados (${sheet.naturalWidth}×${sheet.naturalHeight} ` +
+          `vs ${needW}×${needH} necesarios): haz recarga fuerte (Ctrl+F5).`;
+      }
+      sheetOk = ok;
+      return ok;
+    })();
+    return sheetCargando;
   }
 
   const total = meta.animations.reduce((n, a) => n + a.frames, 0);
@@ -342,6 +351,7 @@
   document.getElementById('fuente').onchange = async e => {
     fuente = e.target.value;
     if (fuente === 'nativo') await cargarNativo(meta.animations[cur]);
+    else await cargarHoja();
     aplicarEscala(); pintarTira(); comprobar();
   };
   window.addEventListener('resize', () => { aplicarEscala(); pintarTira(); comprobar(); });
