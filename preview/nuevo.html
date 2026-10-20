@@ -261,23 +261,29 @@
   const guardar = () => { try { localStorage.setItem(clave(), JSON.stringify(seq)); } catch (e) {} };
 
   let ajustar = true;
-  // Escala SIEMPRE entera: si el canvas se encoge por CSS a un factor fraccionario,
-  // `image-rendering:pixelated` se salta filas y salen rayas horizontales (se notaba
-  // en la piel, que es zona lisa). Mejor bajar de escala entera que encoger.
-  function z(W) {
-    let s = +document.getElementById('scale').value || 3;
-    if (!ajustar) return s;
-    const caja = cv.parentElement.clientWidth || 1120;
-    while (s > 1 && W * s > caja) s--;
-    return s;
+  const dpr = () => window.devicePixelRatio || 1;
+  // Escala en pixeles de PANTALLA, no de CSS. El canvas se mide en px de dispositivo y el
+  // CSS se pone a M/dpr px, de manera que el navegador no reescala nada. Con dpr 1,25
+  // incluso una escala CSS "entera" (3x) da 3,75 px reales: el navegador se salta filas y
+  // salen rayas horizontales en la piel. La escala se elige entera EN PANTALLA.
+  function z(W, H) {
+    const d = dpr();
+    const pedida = +document.getElementById('scale').value || 0;
+    if (!ajustar && pedida) return pedida;
+    const caja = Math.max(200, cv.parentElement.clientWidth || 1120);
+    const porAncho = Math.floor((caja * d) / W);
+    const porAlto = H ? Math.floor(((window.innerHeight || 800) * d * 0.78) / H) : 99;
+    return Math.max(1, Math.min(pedida || 99, porAncho, porAlto));
   }
   const fps = () => +document.getElementById('fps').value || 10;
 
   async function pintar() {
     const m = meta();
     const [W, H] = m.lienzo;
-    const s = z(W);
+    const s = z(W, H);
     cv.width = W * s; cv.height = H * s;
+    cv.style.width = (W * s / dpr()) + 'px';
+    cv.style.height = (H * s / dpr()) + 'px';
     cx.imageSmoothingEnabled = false;
     cx.clearRect(0, 0, cv.width, cv.height);
     const i = seq.length ? seq[idx % seq.length] : null;
@@ -302,6 +308,8 @@
       const ims = await Promise.all(seq.map(k => cargar(k)));
       const sm = s;
       tv.width = W * sm * ims.length; tv.height = H * sm;
+      tv.style.width = (tv.width / dpr()) + 'px';
+      tv.style.height = (tv.height / dpr()) + 'px';
       tx.imageSmoothingEnabled = false;
       tx.clearRect(0, 0, tv.width, tv.height);
       ims.forEach((im, p) => {

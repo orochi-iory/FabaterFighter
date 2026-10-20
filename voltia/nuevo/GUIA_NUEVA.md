@@ -150,6 +150,61 @@ Cada serie de 3 es una fila perdida: eso son las rayas.
   una altura fija el factor no es entero y `pixelated` produce el mismo defecto;
 - aplicado a los tres visores: `index.html`, `nuevo.html` y `chunli.html`.
 
+## Regla de oro 7 · la hoja NO cuantiza: se midió (2026-10-20)
+
+La duda era razonable —«la hoja se ve cuantizada»— así que se midió en vez de opinar.
+`tools/voltia_nativo_coloc.py` baja cada frame nativo ÷4 y busca su sitio dentro de la
+celda oficial, y después **compara píxel a píxel**:
+
+| comprobación | resultado |
+|---|---|
+| frames nativos ÷4 colocados en la celda vs. celda de la hoja | **102 de 102 idénticos**, 0 px distintos |
+| colores del dibujo (frame nativo opaco) | **18** |
+| colores del dibujo (celda de la hoja) | **18** |
+
+O sea: los 18 colores son del dibujo, no de un paso de conversión. La hoja es un
+**reempaquetado** (×2 NEAREST) de los mismos píxeles, no un filtro. Lo que cambia el
+aspecto no es la hoja: es cómo lo pinta la pantalla.
+
+## Regla de oro 8 · escalar en píxeles de PANTALLA, no de CSS (2026-10-20)
+
+La regla 6 (escala entera en CSS) **no bastaba**. En una pantalla con
+`devicePixelRatio` 1,25 —lo normal en Windows— un canvas de 700 px CSS ocupa 875 px
+reales, y el navegador lo reescala por 1,25: otra vez filas perdidas y colores
+mezclados, con el canvas «bien» dimensionado.
+
+Medido, contando series de filas idénticas en una zona lisa:
+
+| cómo se pinta | series |
+|---|---|
+| 4× exacto en píxeles reales | `{4: 501}` |
+| escalado a 0,8× (no cabía) | `{3: 106, 4: 395}` |
+| escala CSS entera × 1,25 de densidad | mezcla equivalente |
+
+**Cómo se pinta ahora (los tres visores):**
+
+- el canvas se mide en **píxeles de dispositivo**: `ancho = W·M`, con `M` entero;
+- el CSS se pone a `W·M / devicePixelRatio` px, aunque salga decimal: así 1 px de
+  lienzo = `M` px reales y el navegador **no toca nada**;
+- `imageSmoothingEnabled = false` y ninguna regla `max-width` sobre el canvas (si no
+  cabe, scroll horizontal);
+- `M` se elige por «Ajustar a la ventana» con el ancho **y el alto** de la ventana.
+
+**Comprobación en la propia página:** el botón *🔍 Comprobar píxeles* lee el canvas con
+`getImageData`, lo compara con el PNG de origen píxel a píxel y escribe el resultado:
+`0 de N px de pantalla distintos (0,00 %) · DPR · escala · tamaño CSS`.
+
+Con `devicePixelRatio` 1,25 y escala 1×: canvas **700×664** px de dispositivo = **560×531,2**
+px CSS. Antes: canvas 700 px CSS → 875 px reales → reescalado.
+
+**El visor del modelo original** ahora abre con la fuente **frames nativos 4×** (el PNG tal
+cual, sin escalar) y deja la hoja de juego como segunda fuente, avisando de que es el mismo
+dibujo. La tira de frames y el escenario (`960×540` → CSS `768×432` a DPR 1,25) van igual.
+
+**Chun-Li:** las tiras ya no se estiran con `width:100%` (van a tamaño nativo con scroll) y
+las miniaturas dejaron de usar `image-rendering:pixelated`, que a altura fija producía el
+mismo defecto.
+
 ## Chun-Li
 
 - Las **filas 1, 2 y 3 de la hoja original son el mismo stance**: van juntas en **una**

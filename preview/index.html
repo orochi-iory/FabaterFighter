@@ -41,7 +41,11 @@
   #say { color:#ffcb3d; margin-top:4px; min-height:1.2em; font-style:italic; }
   canvas#strip { image-rendering:pixelated; border-radius:8px;
     background: repeating-conic-gradient(#2c2a40 0 25%, #242233 0 50%) 0 0/24px 24px; }
-  .lienzo { max-width:100%; overflow-x:auto; }
+  .lienzo { max-width:100%; overflow-x:auto; overflow-y:hidden; }
+  .lienzo canvas { display:block; }
+  #chk { color:#9d9ab5; font-size:13px; }
+  #chk b { color:#96ffeb; }
+  #chk .mal { color:#ff7b7b; }
 
   section.manual { width:100%; max-width:1200px; padding:0 16px 16px; }
   .card { background:#222033; border:2px solid #3a3752; border-radius:12px; padding:20px;
@@ -62,7 +66,7 @@
   section.arena { width:100%; max-width:1200px; padding:0 16px 24px; }
   section.arena h2 { color:#ffcb3d; letter-spacing:1px; margin:8px 0; }
   section.arena .box { background:#222033; border:2px solid #3a3752; border-radius:12px; padding:16px; }
-  canvas#stagecv { image-rendering:pixelated; width:100%; max-width:960px; height:auto;
+  canvas#stagecv { image-rendering:pixelated; width:auto; height:auto;
     background:#101018; border-radius:8px; display:block; margin:0 auto; }
   .arena .controls { margin-top:12px; }
   .arena label { color:#9d9ab5; font-size:13px; display:flex; align-items:center; gap:6px; }
@@ -89,7 +93,7 @@
 </nav>
 <header>
   <h1>⚡ VOLTIA ⚡</h1>
-  <p style="margin:0 0 8px"><b style="color:#96ffeb">v1.2 · modelo oficial</b> — el dibujo nativo tal cual: sin LANCZOS y sin ningún filtro de reconstrucción.</p>
+  <p style="margin:0 0 8px"><b style="color:#96ffeb">v1.2 · modelo oficial</b> — el dibujo nativo tal cual: sin LANCZOS, sin filtros y sin escalado por CSS.</p>
   <p id="ver">cargando…</p>
   <a class="play" href="fight.html">Probar pelea · Voltia vs Voltia</a>
   <a class="play alt" href="guia-vieja.html">Guía de este personaje</a>
@@ -104,11 +108,17 @@
     <div class="controls">
       <button id="play">⏸ Pausar</button>
       <button id="step">⏭ Frame</button>
-      <select id="scale">
-        <option value="1">1× · 350 px</option>
-        <option value="2" selected>2× · 700 px</option>
-        <option value="3">3× · 1050 px</option>
+      <select id="fuente">
+        <option value="nativo" selected>Fuente: frames nativos 4× (sin tocar)</option>
+        <option value="hoja">Fuente: hoja de juego 2× (mismo dibujo)</option>
       </select>
+      <select id="scale">
+        <option value="0" selected>Ajustar a la ventana</option>
+        <option value="1">1 px de imagen = 1 px de pantalla</option>
+        <option value="2">2 px de pantalla por píxel</option>
+        <option value="3">3 px de pantalla por píxel</option>
+      </select>
+      <button id="chkbtn" title="Compara lo que hay en el canvas con el PNG de origen, píxel a píxel">🔍 Comprobar píxeles</button>
       <select id="bg">
         <option value="">Fondo: cuadrícula</option>
         <option value="solid">Fondo: oscuro</option>
@@ -117,6 +127,7 @@
       </select>
     </div>
     <div class="info" id="info"></div>
+    <div id="chk">Sin comprobar todavía.</div>
     <div class="lienzo"><canvas id="strip"></canvas></div>
   </div>
   <div class="stage">
@@ -127,7 +138,7 @@
 <section class="arena" id="escenario">
   <h2>Escenario · Cyber Fist</h2>
   <div class="box">
-    <canvas id="stagecv" width="960" height="540"></canvas>
+    <div class="lienzo"><canvas id="stagecv" width="960" height="540"></canvas></div>
     <div class="controls">
       <label>Desplazamiento <input id="stageScroll" type="range" min="0" max="1000" value="500"></label>
       <label>Zoom (100 = 1:1) <input id="stageZoom" type="range" min="45" max="140" value="70"></label>
@@ -177,7 +188,6 @@
     sheet.decode().then(() => sheet.naturalWidth > 100).catch(() => false),
     new Promise(res => setTimeout(() => res(false), 8000)),
   ]);
-  const looseCache = {};
 
   const cell = meta.cell;              // {w,h} en px de hoja (uniform_scale)
   const unit = meta.art.uniform_scale; // px-hoja por px-arte
@@ -188,9 +198,9 @@
   if (!sheetOk) {
     const w = document.getElementById('syncwarn');
     w.style.display = 'block';
-    w.textContent = 'La hoja completa no entró. Se usan los frames sueltos: es el mismo personaje.';
-    const scale = document.getElementById('scale');
-    if (scale) scale.value = '4';
+    w.textContent = 'La hoja completa no entró: el visor sigue con los frames nativos, que es el mismo dibujo.';
+    const f = document.getElementById('fuente');
+    if (f) f.value = 'nativo';
   } else if (sheet.naturalWidth < needW - 2 || sheet.naturalHeight < needH - 2) {
     const w = document.getElementById('syncwarn');
     w.style.display = 'block';
@@ -237,29 +247,87 @@
   }
 
   const cv = document.getElementById('anim');
-  cv.width = cell.w; cv.height = cell.h;
   const cx = cv.getContext('2d');
-  cx.imageSmoothingEnabled = false;
   const strip = document.getElementById('strip');
   const sx = strip.getContext('2d');
-  sx.imageSmoothingEnabled = false;
   const info = document.getElementById('info');
   const box = document.getElementById('anims');
+  const dpr = () => window.devicePixelRatio || 1;
+
+  // Lienzo logico: la celda oficial a 4x (175x166 de arte x4). El frame nativo ya viene a
+  // 4x, asi que entra 1:1; la hoja viene a 2x y entra con un x2 exacto (NEAREST).
+  const LOGW = 700, LOGH = 664;
 
   let cur = 0, frame = 0, playing = true, last = performance.now(), acc = 0;
+  let fuente = 'nativo', M = 1;
 
-  // Escala siempre entera y aplicada al canvas, nunca por CSS a un factor fraccionario:
-  // encoger un canvas `pixelated` a 0,5x hace que el navegador se salte filas y salgan
-  // rayas horizontales (se notaban en la piel). Si no cabe, se baja de escala entera.
-  function setScale() {
-    let m = +document.getElementById('scale').value;
-    const caja = (cv.parentElement && cv.parentElement.clientWidth) || 700;
-    while (m > 1 && cv.width * m > caja) m--;
-    cv.style.width = (cv.width * m) + 'px';
-    cv.style.height = (cv.height * m) + 'px';
+  // Cada frame nativo dentro de la celda (tools/voltia_nativo_coloc.py): los 102 frames
+  // coinciden pixel a pixel con la hoja, asi que se puede enseñar el nativo sin tocar
+  // nada y cambiar de fuente sin que salte el encuadre.
+  const coloc = await (await fetch('../voltia/frames/coloc.json' + QB, { cache: 'no-store' })).json();
+  const nativo = {};
+
+  async function cargarNativo(a) {
+    if (nativo[a.id] && nativo[a.id].imgs.length === a.frames) return nativo[a.id];
+    const imgs = [];
+    for (let i = 0; i < a.frames; i++) {
+      const im = new Image();
+      im.src = `../voltia/frames/voltia_${a.id}_${i}.png` + QB;
+      try { await im.decode(); } catch (e) { /* se pinta lo que haya */ }
+      imgs.push(im);
+    }
+    return (nativo[a.id] = { imgs, c: coloc.frames[a.id] || [] });
   }
-  document.getElementById('scale').onchange = setScale;
-  setScale();
+
+  // --- Escala: SIEMPRE en pixeles de PANTALLA, enteros -------------------------------
+  // Un pixel del lienzo se convierte en M x M pixeles reales de pantalla y el CSS se pone
+  // a M/dpr px, de modo que el navegador no reescala el canvas. Encogerlo por CSS a un
+  // factor fraccionario (porque no cabe, o por la densidad de pantalla: 700 px CSS en una
+  // pantalla de dpr 1,25 son 875 px reales) es lo que se saltaba filas y sacaba rayas.
+  function escala() {
+    const pedida = +document.getElementById('scale').value;
+    if (pedida) return Math.max(1, pedida | 0);
+    const d = dpr();
+    const caja = Math.max(200, (cv.parentElement && cv.parentElement.clientWidth) || 700);
+    const porAncho = Math.floor((caja * d) / LOGW);
+    const porAlto = Math.floor(((window.innerHeight || 800) * d * 0.78) / LOGH);
+    return Math.max(1, Math.min(porAncho, porAlto) | 0);
+  }
+
+  function aplicarEscala() {
+    M = escala();
+    cv.width = LOGW * M;
+    cv.height = LOGH * M;
+    cx.imageSmoothingEnabled = false;
+    cv.style.width = (LOGW * M / dpr()) + 'px';
+    cv.style.height = (LOGH * M / dpr()) + 'px';
+    // El escenario se pinta en 960x540: mismo criterio, CSS = px de dispositivo / dpr,
+    // para que el navegador no tenga que reescalarlo tampoco.
+    const st = document.getElementById('stagecv');
+    if (st) {
+      st.style.width = (st.width / dpr()) + 'px';
+      st.style.height = (st.height / dpr()) + 'px';
+    }
+  }
+
+  function pintarFrame(f) {
+    const a = meta.animations[cur];
+    cx.imageSmoothingEnabled = false;
+    cx.clearRect(0, 0, cv.width, cv.height);
+    if (fuente === 'nativo') {
+      const n = nativo[a.id];
+      const im = n && n.imgs[f], c = n && n.c[f];
+      if (!im || !im.width || !c) return false;
+      cx.drawImage(im, 0, 0, im.width, im.height,
+                   c[0] * 4 * M, c[1] * 4 * M, im.width * M, im.height * M);
+      return true;
+    }
+    if (!sheetOk) return false;
+    cx.drawImage(sheet, f * cell.w, a.row * cell.h, cell.w, cell.h,
+                 0, 0, LOGW * M, LOGH * M);
+    return true;
+  }
+
   document.getElementById('bg').onchange = e => { cv.className = e.target.value; };
   document.getElementById('play').onclick = e => {
     playing = !playing;
@@ -270,6 +338,13 @@
     document.getElementById('play').textContent = '▶ Reproducir';
     frame = (frame + 1) % meta.animations[cur].frames;
   };
+  document.getElementById('scale').onchange = () => { aplicarEscala(); pintarTira(); comprobar(); };
+  document.getElementById('fuente').onchange = async e => {
+    fuente = e.target.value;
+    if (fuente === 'nativo') await cargarNativo(meta.animations[cur]);
+    aplicarEscala(); pintarTira(); comprobar();
+  };
+  window.addEventListener('resize', () => { aplicarEscala(); pintarTira(); comprobar(); });
 
   meta.animations.forEach((a, i) => {
     const b = document.createElement('button');
@@ -278,44 +353,103 @@
     box.appendChild(b);
   });
 
-  async function framesOf(a) {
-    const imgs = [];
-    for (let i = 0; i < a.frames; i++) {
-      const im = new Image();
-      im.src = `../voltia/frames/voltia_${a.id}_${i}.png` + QB;
-      await im.decode();
-      imgs.push(im);
-    }
-    return imgs;
-  }
+  const chk = document.getElementById('chk');
 
-  function drawStrip() {
+  // Tira de frames: a resolucion de ARTE (la celda, 175x166). El nativo baja ÷4 y la
+  // hoja ÷2: las dos divisiones son exactas, asi que no hay filtro ni perdida.
+  let ultimoPintado = -1;
+  function pintarTira() {
     const a = meta.animations[cur];
-    const loose = looseCache[cur];
-    if (!sheetOk && loose && loose[0]) {
-      const sc = 0.35;
-      strip.width = Math.round(a.frames * loose[0].width * sc);
-      strip.height = Math.round(loose[0].height * sc);
-      sx.imageSmoothingEnabled = false;
-      sx.clearRect(0, 0, strip.width, strip.height);
-      loose.forEach((im, f) => {
-        sx.drawImage(im, Math.round(f * loose[0].width * sc), 0,
-          Math.round(loose[0].width * sc), Math.round(loose[0].height * sc));
+    const AW = coloc.celda[0], AH = coloc.celda[1];
+    strip.width = a.frames * AW;
+    strip.height = AH;
+    sx.imageSmoothingEnabled = false;
+    sx.clearRect(0, 0, strip.width, strip.height);
+    if (fuente === 'nativo') {
+      const q = nativo[a.id];
+      if (q) q.imgs.forEach((im, f) => {
+        const c = q.c[f];
+        if (!im || !im.width || !c) return;
+        sx.drawImage(im, 0, 0, im.width, im.height,
+                     f * AW + c[0], c[1], im.width / 4, im.height / 4);
       });
     } else if (sheetOk) {
-      strip.width = a.frames * cell.w;
-      strip.height = cell.h;
-      sx.clearRect(0, 0, strip.width, strip.height);
       for (let f = 0; f < a.frames; f++)
-        sx.drawImage(sheet, f * cell.w, a.row * cell.h, cell.w, cell.h,
-                     f * cell.w, 0, cell.w, cell.h);
+        sx.drawImage(sheet, f * cell.w, a.row * cell.h, cell.w, cell.h, f * AW, 0, AW, AH);
     }
-    strip.style.width = Math.min(strip.width, 560) + 'px';
-    strip.style.height = 'auto';
+    strip.style.width = (strip.width / dpr()) + 'px';
+    strip.style.height = (strip.height / dpr()) + 'px';
+    sx.strokeStyle = 'rgba(150,255,235,.95)';
+    sx.lineWidth = 2;
+    sx.strokeRect(frame * AW + 1, 1, AW - 2, AH - 2);
     info.innerHTML = `<b>${a.label}</b> · fila ${a.row} · ${a.frames} frames @ ${a.fps}fps · ` +
-      `${a.loop ? 'loop' : 'una vez'} · frame <b id="fcount">1/${a.frames}</b>` +
+      `${a.loop ? 'loop' : 'una vez'} · frame <b id="fcount">${frame + 1}/${a.frames}</b>` +
       `<div id="say"></div>`;
   }
+
+  // Comprobacion honesta: se lee lo que hay EN el canvas y se compara con el PNG de
+  // origen pixel a pixel. Si el visor filtrara, mezclara colores o se comiera filas,
+  // aqui saldria. Se pinta el frame justo antes de leer: no hay carrera con el bucle.
+  function comprobar() {
+    const a = meta.animations[cur];
+    const f = frame;
+    if (!pintarFrame(f)) { chk.textContent = 'Sin datos todavía.'; return; }
+    let src, sw, sh, div, OX, OY, etiqueta;
+    if (fuente === 'nativo') {
+      const n = nativo[a.id];
+      if (!n) { chk.textContent = 'Cargando frames nativos…'; return; }
+      const im = n.imgs[f], c = n.c[f];
+      if (!im || !c || !im.width) { chk.textContent = 'Ese frame no está.'; return; }
+      const off = document.createElement('canvas');
+      off.width = im.width; off.height = im.height;
+      const g = off.getContext('2d', { willReadFrequently: true });
+      g.drawImage(im, 0, 0);                       // 1:1, sin escalar: el PNG tal cual
+      src = g.getImageData(0, 0, im.width, im.height).data;
+      sw = im.width; sh = im.height; div = 1;
+      OX = c[0] * 4; OY = c[1] * 4;
+      etiqueta = `frames nativos ${im.width}×${im.height}`;
+    } else {
+      if (!sheetOk) { chk.textContent = 'La hoja completa no cargó.'; return; }
+      const off = document.createElement('canvas');
+      off.width = cell.w; off.height = cell.h;
+      const g = off.getContext('2d', { willReadFrequently: true });
+      g.drawImage(sheet, f * cell.w, a.row * cell.h, cell.w, cell.h, 0, 0, cell.w, cell.h);
+      src = g.getImageData(0, 0, cell.w, cell.h).data;
+      sw = cell.w; sh = cell.h; div = 2; OX = 0; OY = 0;
+      etiqueta = `hoja ${cell.w}×${cell.h}`;
+    }
+    const datos = cx.getImageData(0, 0, cv.width, cv.height).data;
+    let comp = 0, mal = 0;
+    const paso = Math.max(1, Math.round(Math.sqrt((LOGW * LOGH) / 90000)));
+    for (let ly = 0; ly < LOGH; ly += paso) {
+      const sy = Math.floor((ly - OY) / div);
+      if (sy < 0 || sy >= sh) continue;
+      for (let lx = 0; lx < LOGW; lx += paso) {
+        const sxp = Math.floor((lx - OX) / div);
+        if (sxp < 0 || sxp >= sw) continue;
+        const q = ((sy * sw) + sxp) * 4;
+        for (let j = 0; j < M; j++) {
+          for (let k = 0; k < M; k++) {
+            const d = (((ly * M + j) * cv.width) + (lx * M + k)) * 4;
+            comp++;
+            const ea = src[q + 3], ga = datos[d + 3];
+            if (ea === 0) { if (ga > 8) mal++; continue; }
+            if (Math.abs(datos[d] - src[q]) > 1 ||
+                Math.abs(datos[d + 1] - src[q + 1]) > 1 ||
+                Math.abs(datos[d + 2] - src[q + 2]) > 1 ||
+                Math.abs(ga - ea) > 1) mal++;
+          }
+        }
+      }
+    }
+    const pct = comp ? (100 * mal / comp) : 0;
+    chk.innerHTML = (mal ? `<span class="mal">${mal} de ${comp} px de pantalla distintos</span>`
+                         : `<b>${mal} de ${comp} px de pantalla distintos</b>`) +
+      ` (${pct.toFixed(2)} %) · fuente: ${etiqueta} · DPR ${dpr()} · escala ${M}× · ` +
+      `canvas ${cv.width}×${cv.height} px de dispositivo = ` +
+      `${(cv.width / dpr()).toFixed(1)}×${(cv.height / dpr()).toFixed(1)} px CSS`;
+  }
+  document.getElementById('chkbtn').onclick = comprobar;
 
   // Golpes normales en silencio (el gruñido de esfuerzo queda para más
   // adelante). Salto sí. Frase en especiales, derrota y victoria.
@@ -424,14 +558,17 @@
   }
 
   async function select(i) {
-    cur = i; frame = 0; acc = 0;
+    cur = i; frame = 0; acc = 0; ultimoPintado = -1;
     [...box.children].forEach((b, j) => b.classList.toggle('active', j === i));
-    if (!sheetOk && !looseCache[i]) {
-      info.textContent = 'Cargando frames…';
-      looseCache[i] = await framesOf(meta.animations[i]);
-      setScale();
+    if (fuente === 'nativo') {
+      info.textContent = 'Cargando frames nativos…';
+      await cargarNativo(meta.animations[i]);
     }
-    drawStrip();
+    aplicarEscala();
+    pintarFrame(0);
+    ultimoPintado = 0;
+    pintarTira();
+    comprobar();
     playVoice(meta.animations[i].id);
   }
 
@@ -447,22 +584,10 @@
       }
     }
     last = t;
-    // Cine, no carrusel: cada frame sustituye al anterior fijo en la celda.
-    if (sheetOk) {
-      cx.clearRect(0, 0, cell.w, cell.h);
-      cx.drawImage(sheet, frame * cell.w, a.row * cell.h, cell.w, cell.h,
-                   0, 0, cell.w, cell.h);
-    } else {
-      const im = (looseCache[cur] || [])[frame];
-      if (im) {
-        if (cv.width !== im.width || cv.height !== im.height) {
-          cv.width = im.width;
-          cv.height = im.height;
-          cx.imageSmoothingEnabled = false;
-        }
-        cx.clearRect(0, 0, cv.width, cv.height);
-        cx.drawImage(im, 0, 0);
-      }
+    if (frame !== ultimoPintado) {
+      pintarFrame(frame);
+      pintarTira();
+      ultimoPintado = frame;
     }
     const fc = document.getElementById('fcount');
     if (fc && fc._v !== frame) { fc._v = frame; fc.textContent = (frame + 1) + '/' + a.frames; }
