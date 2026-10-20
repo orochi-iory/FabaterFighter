@@ -30,7 +30,8 @@
   .card h2 { margin:0 0 4px; font-size:15px; letter-spacing:1px; color:var(--gold); }
   .card p.sub { margin:0 0 10px; font-size:12.5px; color:#9b93b8; line-height:1.5; }
   .big { background:#1a1528; border-radius:10px; padding:10px; text-align:center; }
-  canvas#anim { image-rendering:pixelated; display:block; margin:0 auto; max-width:100%;
+  .lienzo { overflow-x:auto; }
+  canvas#anim { image-rendering:pixelated; display:block; margin:0 auto;
     background: repeating-conic-gradient(#2c2a40 0 25%, #242233 0 50%) 0 0/32px 32px; border-radius:8px; }
   canvas#anim.solid { background:#101018; }
   canvas#anim.magenta { background:#c0c; }
@@ -42,11 +43,14 @@
   button.on { background:#0e7c8c; border-color:#96ffeb; }
   button.peligro { border-color:#8a3b3b; color:#ffb3b3; }
   button.peligro:hover { background:#5c2222; }
-  #tira { display:block; margin:12px auto 0; max-width:100%; }
+  #tira { display:block; margin:12px auto 0; }
   .secuencia { display:flex; flex-wrap:wrap; gap:8px; min-height:60px; padding:8px;
     background:#161022; border:1px dashed #4a4767; border-radius:10px; align-items:center; }
   .chip { position:relative; border-radius:7px; background:#241c38; border:1px solid #4a4767; padding:3px; }
-  .chip img { display:block; height:96px; width:auto; image-rendering:pixelated; }
+  /* miniaturas: se dejan suavizar. Reducir con `pixelated` a un factor que no es entero
+     hace que el navegador se salte filas y salgan rayas. El canvas grande es el que muestra
+     el pixel exacto. */
+  .chip img { display:block; height:96px; width:auto; }
   .chip span { position:absolute; top:-6px; left:-6px; background:#0e7c8c; color:#fff; font-size:10px;
     width:16px; height:16px; line-height:16px; text-align:center; border-radius:50%; }
   .chip button.x { position:absolute; top:-7px; right:-7px; width:17px; height:17px; padding:0;
@@ -56,11 +60,11 @@
   .galeria { display:flex; flex-wrap:wrap; gap:6px; max-height:280px; overflow:auto; padding:4px; }
   .galeria figure { margin:0; background:#161022; border:2px solid transparent; border-radius:8px; padding:4px; cursor:pointer; }
   .galeria figure:hover { border-color:#4a4767; }
-  .galeria img { display:block; height:104px; width:auto; image-rendering:pixelated; }
+  .galeria img { display:block; height:104px; width:auto; }
   .galeria figcaption { font-size:10px; color:#9b93b8; text-align:center; }
   .par { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
   figure.zoom { margin:0; }
-  figure.zoom img { width:100%; height:auto; image-rendering:pixelated; display:block; border-radius:8px; background:#1a1528; }
+  figure.zoom img { width:100%; height:auto; display:block; border-radius:8px; background:#1a1528; }
   figure.zoom figcaption, .refs figcaption { font-size:12px; color:#9b93b8; text-align:center; margin-top:4px; }
   .refs img { width:100%; height:auto; border-radius:8px; display:block; }
   .refs figure { margin:0; }
@@ -105,7 +109,7 @@
     <h2>Visor</h2>
     <p class="sub">Cambia entre el sprite nativo y el llevado al tamaño del modelo original. Las
        guías marcan cabeza, altura de cabeza y línea de pies.</p>
-    <div class="big"><canvas id="anim"></canvas><canvas id="tira"></canvas></div>
+    <div class="big"><div class="lienzo"><canvas id="anim"></canvas></div><div class="lienzo"><canvas id="tira"></canvas></div></div>
     <div class="controls">
       <button id="play">⏸ Pausa</button>
       <select id="mov">
@@ -117,11 +121,13 @@
         <option value="nativo">Nativo · sin reducir</option>
       </select>
       <select id="scale">
+        <option value="1">1×</option>
         <option value="2">2×</option>
-        <option value="3">3×</option>
-        <option value="4" selected>4×</option>
+        <option value="3" selected>3×</option>
+        <option value="4">4×</option>
         <option value="6">6×</option>
       </select>
+      <button id="ajustar" class="on">Ajustar a la ventana</button>
       <select id="bg">
         <option value="">Fondo ajedrez</option>
         <option value="solid">Fondo negro</option>
@@ -254,14 +260,24 @@
   };
   const guardar = () => { try { localStorage.setItem(clave(), JSON.stringify(seq)); } catch (e) {} };
 
-  const z = () => +document.getElementById('scale').value || 4;
+  let ajustar = true;
+  // Escala SIEMPRE entera: si el canvas se encoge por CSS a un factor fraccionario,
+  // `image-rendering:pixelated` se salta filas y salen rayas horizontales (se notaba
+  // en la piel, que es zona lisa). Mejor bajar de escala entera que encoger.
+  function z(W) {
+    let s = +document.getElementById('scale').value || 3;
+    if (!ajustar) return s;
+    const caja = cv.parentElement.clientWidth || 1120;
+    while (s > 1 && W * s > caja) s--;
+    return s;
+  }
   const fps = () => +document.getElementById('fps').value || 10;
 
   async function pintar() {
     const m = meta();
     const [W, H] = m.lienzo;
-    const s = z();
-    cv.width = Math.round(W * s); cv.height = Math.round(H * s);
+    const s = z(W);
+    cv.width = W * s; cv.height = H * s;
     cx.imageSmoothingEnabled = false;
     cx.clearRect(0, 0, cv.width, cv.height);
     const i = seq.length ? seq[idx % seq.length] : null;
@@ -284,7 +300,7 @@
     tv.style.display = tira ? 'block' : 'none';
     if (tira) {
       const ims = await Promise.all(seq.map(k => cargar(k)));
-      const sm = Math.max(1, Math.round(s));
+      const sm = s;
       tv.width = W * sm * ims.length; tv.height = H * sm;
       tx.imageSmoothingEnabled = false;
       tx.clearRect(0, 0, tv.width, tv.height);
@@ -395,6 +411,12 @@
   document.getElementById('fps').oninput = e => { document.getElementById('fps-v').textContent = e.target.value; };
   document.getElementById('bg').onchange = e => { cv.className = e.target.value; };
   document.getElementById('tog-guia').onclick = e => { guias = !guias; e.target.classList.toggle('on', guias); pintar(); };
+  document.getElementById('ajustar').onclick = e => {
+    ajustar = !ajustar;
+    e.target.classList.toggle('on', ajustar);
+    pintar();
+  };
+  window.addEventListener('resize', () => pintar());
   document.getElementById('tog-tira').onclick = e => { tira = !tira; e.target.classList.toggle('on', tira); pintar(); };
   document.getElementById('auto').onclick = () => { seq = [...Array(meta().frames.length).keys()]; idx = 0; guardar(); pintar(); };
   document.getElementById('quitar-ultimo').onclick = () => { seq.pop(); guardar(); pintar(); };

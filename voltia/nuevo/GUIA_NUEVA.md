@@ -128,6 +128,28 @@ de cabeza (48, 26) y pies en 146. Aquí **sí** se reduce, y con filtro promedia
 dibujo de la IA es una ilustración con antialias, y promediada queda limpia; reducida con NEAREST
 a factor fraccionario se rompe (eso era el aspecto sucio). Resultado en `voltia/nuevo/creador/oficial/`.
 
+## Regla de oro 6 · no escalar por CSS (2026-10-20)
+
+**Síntoma:** rayas horizontales dentro del sprite, sobre todo en la piel (zona lisa).
+
+**Causa:** el `<canvas>` medía 1140 px (285 × 4) y no cabía en la columna, así que el CSS lo
+encogía a ~1080 por `max-width:100%`. Con `image-rendering:pixelated` y un factor **fraccionario**
+el navegador se salta filas de forma irregular. Medido:
+
+| versión | series de filas idénticas |
+|---|---|
+| 4× exacto | `{4: 501}` — todas de 4 filas |
+| encogido por CSS | `{3: 106, 4: 395}` — mezcla |
+
+Cada serie de 3 es una fila perdida: eso son las rayas.
+
+**Arreglo:**
+- los canvas **nunca** se escalan por CSS (`max-width` fuera); la escala es **siempre entera** y se
+  elige la mayor que quepa (botón «Ajustar a la ventana»), con scroll horizontal si hace falta;
+- las miniaturas y las hojas de referencia se dejan **suavizar** (sin `pixelated`): al reducirlas a
+  una altura fija el factor no es entero y `pixelated` produce el mismo defecto;
+- aplicado a los tres visores: `index.html`, `nuevo.html` y `chunli.html`.
+
 ## Chun-Li
 
 - Las **filas 1, 2 y 3 de la hoja original son el mismo stance**: van juntas en **una**

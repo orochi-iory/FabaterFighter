@@ -25,7 +25,7 @@
          width:100%; max-width:1200px; }
   .stage { background:#222033; border:2px solid #3a3752; border-radius:12px; padding:16px;
            display:flex; flex-direction:column; align-items:center; gap:12px; }
-  canvas#anim { image-rendering:pixelated; border-radius:8px;
+  canvas#anim { image-rendering:pixelated; border-radius:8px; display:block;
     background: repeating-conic-gradient(#2c2a40 0 25%, #242233 0 50%) 0 0/32px 32px; }
   canvas#anim.solid { background:#101018; }
   canvas#anim.magenta { background:#c0c; }
@@ -39,8 +39,9 @@
   .info { color:#9d9ab5; font-size:14px; }
   .info b { color:#ffcb3d; }
   #say { color:#ffcb3d; margin-top:4px; min-height:1.2em; font-style:italic; }
-  canvas#strip { image-rendering:pixelated; border-radius:8px; max-width:100%;
+  canvas#strip { image-rendering:pixelated; border-radius:8px;
     background: repeating-conic-gradient(#2c2a40 0 25%, #242233 0 50%) 0 0/24px 24px; }
+  .lienzo { max-width:100%; overflow-x:auto; }
 
   section.manual { width:100%; max-width:1200px; padding:0 16px 16px; }
   .card { background:#222033; border:2px solid #3a3752; border-radius:12px; padding:20px;
@@ -99,14 +100,14 @@
 </header>
 <main>
   <div class="stage">
-    <canvas id="anim"></canvas>
+    <div class="lienzo"><canvas id="anim"></canvas></div>
     <div class="controls">
       <button id="play">⏸ Pausar</button>
       <button id="step">⏭ Frame</button>
       <select id="scale">
-        <option value="1">Escala 1x (arte)</option>
-        <option value="2" selected>Escala 2x</option>
-        <option value="4">Escala 4x</option>
+        <option value="1">1× · 350 px</option>
+        <option value="2" selected>2× · 700 px</option>
+        <option value="3">3× · 1050 px</option>
       </select>
       <select id="bg">
         <option value="">Fondo: cuadrícula</option>
@@ -116,7 +117,7 @@
       </select>
     </div>
     <div class="info" id="info"></div>
-    <canvas id="strip"></canvas>
+    <div class="lienzo"><canvas id="strip"></canvas></div>
   </div>
   <div class="stage">
     <div class="anims" id="anims"></div>
@@ -247,16 +248,15 @@
 
   let cur = 0, frame = 0, playing = true, last = performance.now(), acc = 0;
 
+  // Escala siempre entera y aplicada al canvas, nunca por CSS a un factor fraccionario:
+  // encoger un canvas `pixelated` a 0,5x hace que el navegador se salte filas y salgan
+  // rayas horizontales (se notaban en la piel). Si no cabe, se baja de escala entera.
   function setScale() {
-    const s = +document.getElementById('scale').value;
-    const loose = looseCache[cur];
-    if (!sheetOk && loose && loose[0]) {
-      cv.style.width = (loose[0].width * s / 4) + 'px';
-      cv.style.height = (loose[0].height * s / 4) + 'px';
-      return;
-    }
-    cv.style.width = (cell.w * s / unit) + 'px';
-    cv.style.height = (cell.h * s / unit) + 'px';
+    let m = +document.getElementById('scale').value;
+    const caja = (cv.parentElement && cv.parentElement.clientWidth) || 700;
+    while (m > 1 && cv.width * m > caja) m--;
+    cv.style.width = (cv.width * m) + 'px';
+    cv.style.height = (cv.height * m) + 'px';
   }
   document.getElementById('scale').onchange = setScale;
   setScale();
