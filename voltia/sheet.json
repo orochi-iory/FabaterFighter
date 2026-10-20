@@ -1,7 +1,7 @@
 {
  "sprite": "sheet_uniform.png",
  "version": "0.6.0",
- "notes": "Modelo de Voltia con borde verde y el contorno adelgazado 2 px de hoja (= 1.0 px de arte). Se erosiona SOLO el alfa: no se recolorea nada y el dibujo de dentro no se mueve. Alfa del original con filete: voltia/versions/sheet_borde_verde.png. | Saneado: pixel limpio a resolucion de arte (mayoria por bloque 2x2, umbral de alfa 2/4, filtro de ruido 2 pasadas).",
+ "notes": "Reconstruida desde los frames nativos de voltia/frames (rejilla exacta 4x) bajando /2 con NEAREST: sin LANCZOS, sin factor fraccionario, sin colores nuevos. Bloques 2x2 no uniformes 0,00 %.",
  "date": "2026-10-20",
  "canon": 1.2,
  "art": {
@@ -421,5 +421,5 @@
    "status": "done"
   }
  ],
- "rev": "1bf5387187"
+ "rev": "30490c2717"
 }

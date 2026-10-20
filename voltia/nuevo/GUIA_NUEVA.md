@@ -743,3 +743,43 @@ píxeles lo estaban, así que se rellenan las esquinas. Es lo que deja el contor
 Respaldo del estado anterior: `voltia/versions/sheet_contorno2.png` (borde verde + contorno
 fuera, sin sanear). Control: `hoja_saneada.png`, `limpieza_cara.png`, `limpieza_cuerpo.png`,
 `limpieza_antes_despues.png`.
+
+## La causa de los artefactos: LANCZOS con factor no entero (2026-10-20)
+
+El usuario, mirando la cara al 800 %: «los bordes no son lisos, hay cuadrados sueltos, el azul se
+diluye con el rosa en morado… juraría que en algún momento estuvo todo bien». **Tenía razón.**
+
+Medido sobre todas las versiones históricas de la hoja (5250×8300, rejilla 2×):
+
+| versión | bloques 2×2 no uniformes |
+|---|---|
+| `4e0f930` | 54,38 % |
+| `fff5dc0` (borde verde) | 53,56 % |
+| `35b40ca` | 48,30 % |
+| `24ecf51` / `3dba241` | 54,55 % / 53,93 % |
+
+**Ninguna** hoja entregada estuvo limpia. No fue un cambio nuestro reciente: venía del montaje.
+
+**El origen**: `voltia/frames/voltia_<anim>_<i>.png` tiene **rejilla de píxel exacta de 4×**
+(0,00 % de bloques 4×4 sucios, comprobado en los 105 frames). `voltia/normalize.py → art_image()`
+los reescalaba con **`Image.LANCZOS` y un factor no entero** (`scale` que iguala la altura de la
+cabeza). LANCZOS sobre pixel art **inventa medios píxeles**: de ahí el morado (azul + rosa
+mezclados), los cuadrados sueltos y los bordes poco lisos.
+
+**El arreglo** (`tools/voltia_rebuild.py`): reconstruir la hoja desde los nativos bajando
+**÷2 exacto con NEAREST** (4× → 2×), alineando cada pegado a coordenada **par** (si se pega en
+impar, el bloque 2×2 cae a caballo y vuelve el ruido: pasó, y dio 23,19 % hasta corregirlo).
+Después, los dos arreglos que ya teníamos, porque **los nativos traen el filete cian sin quitar**:
+quitar el cian de dentro y comer 2 px de hoja de contorno.
+
+| | hoja vieja (LANCZOS) | reconstruida |
+|---|---|---|
+| bloques 2×2 no uniformes | 52,85 % | **0,50 %** |
+| colores opacos | 17 | **17** |
+| tinta del stance (frame 0) | 180 × 298 | **184 × 298** |
+
+El 0,50 % que queda es de la erosión del contorno en los bordes de celda, no del montaje.
+
+**Regla para no repetirlo:** si un sprite nace en rejilla N×, para pasarlo a otra rejilla se baja
+con **NEAREST a un divisor entero**. Nunca LANCZOS, nunca un factor fraccionario. Y el pegado en la
+hoja va **alineado al bloque**.
