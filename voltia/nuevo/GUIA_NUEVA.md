@@ -783,3 +783,39 @@ El 0,50 % que queda es de la erosión del contorno en los bordes de celda, no de
 **Regla para no repetirlo:** si un sprite nace en rejilla N×, para pasarlo a otra rejilla se baja
 con **NEAREST a un divisor entero**. Nunca LANCZOS, nunca un factor fraccionario. Y el pegado en la
 hoja va **alineado al bloque**.
+
+## Reconstrucción desde cero: limpiar el grano en la resolución real (2026-10-20)
+
+Después de reconstruir desde los nativos, el usuario seguía viéndolo sucio. Se buscó algo mejor
+que rescatar y **no hay nada**:
+
+| fuente | tamaño | grano (color sin vecino de su color) |
+|---|---|---|
+| `voltia/frames/*.png` (nativo) | 4× | **0,00 %** |
+| el mismo, a 1× de arte | 97 × 153 | **7,13 %** |
+| `assets/voltia_spritesheet.png` | 64 × 64 | 0,54 % — **otro diseño, 48 colores: no sirve** |
+| `voltia/cells/*.png` | 154 × 153 | 62,79 % |
+| `voltia/newref/src/master_*.png` | 1024² | 38-45 % |
+
+Conclusión: **el grano no lo metió el reescalado, está dentro del dibujo**, un nivel por debajo
+de la rejilla 4×. Por eso ninguna reconstrucción «tal cual» lo puede quitar.
+
+**`tools/voltia_reconstruir.py`** (por frame, cero LANCZOS):
+
+1. **÷4 NEAREST** a 1× de arte (el píxel real del dibujo);
+2. **limpieza por masa local**: si el color de un píxel aparece **3 veces o menos** en su entorno
+   5×5, pasa al color mayoritario de sus 8 vecinos. Se **protegen** el negro de línea `(1,1,2)` y
+   el cian del borde `(5,176,157)`, que son trazos finos de verdad (sin protegerlos se borraba el
+   borde verde, que es justo lo que el usuario quería conservar);
+3. **−1 px de arte de contorno** (`--comer 1`): además de ajustar el grosor, quita la dentadura
+   que deja la protección del cian (puntos y huecos en el filo);
+4. **×2 NEAREST** a la hoja (bloques 2×2 uniformes por construcción) y pegado **alineado a par**.
+
+| | antes (LANCZOS) | reconstruida |
+|---|---|---|
+| grano del stance a 1× | 5,51 % | **1,47 %** |
+| bloques 2×2 no uniformes | 52,85 % | **0,00 %** |
+| colores opacos | 18 | **18** |
+
+Respaldo del paso anterior: `voltia/versions/sheet_nativa_sin_limpiar.png`.
+Controles: `rebuild_cara.png` (8×), `rebuild_cuerpo.png`, `hoja_reconstruida.png`.

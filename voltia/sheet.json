@@ -1,7 +1,7 @@
 {
  "sprite": "sheet_uniform.png",
  "version": "0.6.0",
- "notes": "Reconstruida desde los frames nativos de voltia/frames (rejilla exacta 4x) bajando /2 con NEAREST: sin LANCZOS, sin factor fraccionario, sin colores nuevos. Bloques 2x2 no uniformes 0,00 %.",
+ "notes": "Reconstruida desde los frames nativos: \u00f74 a 1x de arte con NEAREST, grano quitado por masa local (negro y cian protegidos), 1 px de arte comidos del contorno, y \u00d72 NEAREST a la hoja. Sin LANCZOS en ningun paso.",
  "date": "2026-10-20",
  "canon": 1.2,
  "art": {
@@ -421,5 +421,5 @@
    "status": "done"
   }
  ],
- "rev": "30490c2717"
+ "rev": "3532e60521"
 }

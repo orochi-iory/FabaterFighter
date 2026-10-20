@@ -98,7 +98,7 @@
 </nav>
 <header>
   <h1>⚡ VOLTIA ⚡</h1>
-  <p style="margin:0 0 8px"><b style="color:#96ffeb">v1.1 · reconstruido desde los frames nativos</b> — el modelo reconstruido de los frames nativos: píxel limpio de verdad, sin LANCZOS.</p>
+  <p style="margin:0 0 8px"><b style="color:#96ffeb">v1.2 · reconstruido y limpio desde cero</b> — el modelo reconstruido desde cero: sin LANCZOS, sin grano y sin colores mezclados.</p>
   <p id="ver">cargando…</p>
   <a class="play" href="fight.html">Probar pelea · Voltia vs Voltia</a>
   <a class="play alt" href="guia-vieja.html">Guía de este personaje</a>
@@ -138,6 +138,31 @@
       <tr><td>cian dentro del traje</td><td>337 px</td><td>0 px</td><td><b>0 px</b></td></tr>
       <tr><td>contorno, a 1×</td><td>1-2 px</td><td>3-4 px de negro</td><td><b>contorno fuera</b> (−2 px de hoja)</td></tr>
     </table>
+
+    <p class="layers"><b>Reconstrucción desde cero (la buena).</b> Buscando algo más limpio que rescatar:
+      <b>no hay nada</b>. El frame nativo a 4× tiene 0,00 % de grano, pero al bajarlo a su resolución real
+      de arte (97×153) tiene <b>7,13 %</b>: el ruido no lo metió el reescalado, <b>está dentro del dibujo</b>,
+      un nivel por debajo. Y <code>assets/voltia_spritesheet.png</code> (lo más limpio del repo, 0,54 %) es
+      <b>otro diseño y otro tamaño</b>, no sirve. Así que la hoja se reconstruye así, por frame:
+      <b>÷4 NEAREST a 1× de arte</b> → <b>limpieza de grano por masa local</b> (el color que aparece 3 veces o
+      menos en su entorno 5×5 pasa al mayoritario de al lado, protegiendo el negro de línea y el cian del
+      borde) → <b>−1 px de arte de contorno</b> → <b>×2 NEAREST a la hoja</b>. Cero LANCZOS en todo el camino.
+      Grano del stance: <b>5,51 % → 1,47 %</b>, bloques sucios <b>0,00 %</b>, y los mismos 18 colores.</p>
+
+    <div class="aro-grid">
+      <figure class="wide">
+        <img src="../voltia/versions/rebuild_cara.png" alt="La cara antes y después de la reconstrucción limpia">
+        <figcaption>La cara a 8×: antes (LANCZOS) y después (reconstruida y limpia).</figcaption>
+      </figure>
+      <figure class="wide">
+        <img src="../voltia/versions/rebuild_cuerpo.png" alt="El sprite antes y después de la reconstrucción limpia">
+        <figcaption>El sprite entero, mismo criterio.</figcaption>
+      </figure>
+      <figure class="wide">
+        <img src="../voltia/versions/hoja_reconstruida.png" alt="Las 25 filas reconstruidas y limpias">
+        <figcaption>Las 25 filas reconstruidas y limpias, mismas animaciones y frames.</figcaption>
+      </figure>
+    </div>
 
     <p class="layers"><b>Y la causa de todo, encontrada.</b> La hoja no nació sucia: <b>la ensuciamos al
       montarla</b>. Los frames de <code>voltia/frames/</code> tienen <b>rejilla de píxel exacta de 4×</b>
