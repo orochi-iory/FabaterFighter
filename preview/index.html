@@ -97,6 +97,7 @@
 </nav>
 <header>
   <h1>⚡ VOLTIA ⚡</h1>
+  <p style="margin:0 0 8px"><b style="color:#96ffeb">v0.6.1 · prueba del aro negro</b> — el apartado está justo debajo, con la comparación y el GIF.</p>
   <p id="ver">cargando…</p>
   <a class="play" href="fight.html">Probar pelea · Voltia vs Voltia</a>
   <a class="play alt" href="guia-vieja.html">Guía de este personaje</a>
@@ -105,32 +106,6 @@
   <p class="notes" id="notes"></p>
   <p id="syncwarn"></p>
 </header>
-<main>
-  <div class="stage">
-    <canvas id="anim"></canvas>
-    <div class="controls">
-      <button id="play">⏸ Pausar</button>
-      <button id="step">⏭ Frame</button>
-      <select id="scale">
-        <option value="1">Escala 1x (arte)</option>
-        <option value="2" selected>Escala 2x</option>
-        <option value="4">Escala 4x</option>
-      </select>
-      <select id="bg">
-        <option value="">Fondo: cuadrícula</option>
-        <option value="solid">Fondo: oscuro</option>
-        <option value="magenta">Fondo: magenta</option>
-        <option value="green">Fondo: verde (chroma)</option>
-      </select>
-    </div>
-    <div class="info" id="info"></div>
-    <canvas id="strip"></canvas>
-  </div>
-  <div class="stage">
-    <div class="anims" id="anims"></div>
-    <div class="info">Consejo: <b>magenta</b> y <b>verde</b> sirven para comprobar la transparencia y el chroma.</div>
-  </div>
-</main>
 <section class="arena" id="aro">
   <h2>Prueba · quitarle el aro negro</h2>
   <div class="box">
@@ -169,6 +144,33 @@
       herramienta: <code>tools/voltia_outline.py</code>.</p>
   </div>
 </section>
+
+<main>
+  <div class="stage">
+    <canvas id="anim"></canvas>
+    <div class="controls">
+      <button id="play">⏸ Pausar</button>
+      <button id="step">⏭ Frame</button>
+      <select id="scale">
+        <option value="1">Escala 1x (arte)</option>
+        <option value="2" selected>Escala 2x</option>
+        <option value="4">Escala 4x</option>
+      </select>
+      <select id="bg">
+        <option value="">Fondo: cuadrícula</option>
+        <option value="solid">Fondo: oscuro</option>
+        <option value="magenta">Fondo: magenta</option>
+        <option value="green">Fondo: verde (chroma)</option>
+      </select>
+    </div>
+    <div class="info" id="info"></div>
+    <canvas id="strip"></canvas>
+  </div>
+  <div class="stage">
+    <div class="anims" id="anims"></div>
+    <div class="info">Consejo: <b>magenta</b> y <b>verde</b> sirven para comprobar la transparencia y el chroma.</div>
+  </div>
+</main>
 <section class="arena" id="escenario">
   <h2>Escenario · Cyber Fist</h2>
   <div class="box">
