@@ -233,13 +233,18 @@ def split_strip(img, expected, rows=1):
 
 
 def scale_h(img, th):
-    """Reescala a altura th; NEAREST si el factor es entero (pixel perfecto)."""
+    """Reescala a altura th. Solo NEAREST y solo con factor entero.
+
+    Antes caia a LANCZOS cuando el factor no era entero, y eso metia medios
+    pixeles (color mezclado) en las miniaturas. Ahora: si el factor es entero se
+    escala; si no, se devuelve la imagen tal cual. Mejor pequena y nitida que
+    suave y sucia.
+    """
     if img.height == th:
         return img
     if img.height % th == 0 or th % img.height == 0:
         return img.resize((max(1, round(img.width * th / img.height)), th), Image.NEAREST)
-    w = max(1, round(img.width * th / img.height))
-    return img.resize((w, th), Image.LANCZOS)
+    return img
 
 
 def hue_shift(img, deg):

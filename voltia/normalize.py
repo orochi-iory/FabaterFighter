@@ -167,15 +167,28 @@ def strip_scale(frames, spec, strip_s, fixed_height=None, height_target=None):
 
 
 def art_image(frame, scale, strip_s):
-    """Arte suavizado a escala canonica (sin paleta aun)."""
+    """Arte a escala canonica (sin paleta aun). NUNCA interpola.
+
+    Regla aprendida a base de romperlo: esta funcion usaba Image.LANCZOS con el
+    `scale` que iguala la altura de la cabeza, que casi nunca es entero. LANCZOS
+    sobre pixel art inventa medios pixeles y de ahi salieron el 52 % de bloques
+    2x2 sucios, los cuadrados sueltos y el morado de la cara. El arte se baja a su
+    rejilla con NEAREST (divisor entero) y solo se vuelve a subir con NEAREST.
+    """
     img = frame
     if strip_s > 1:
         img = frame.resize((max(1, frame.width // strip_s), max(1, frame.height // strip_s)),
-                           Image.BOX)
+                           Image.NEAREST)
     nw, nh = max(1, round(img.width * scale)), max(1, round(img.height * scale))
     if (nw, nh) == img.size:
         return img.convert("RGBA")
-    return img.resize((nw, nh), Image.LANCZOS).convert("RGBA")
+    if nw < img.width or nh < img.height:
+        # reducir: solo por divisor entero, si no, se queda como esta
+        k = min(img.width // max(nw, 1), img.height // max(nh, 1))
+        if k >= 2:
+            return img.resize((img.width // k, img.height // k), Image.NEAREST).convert("RGBA")
+        return img.convert("RGBA")
+    return img.resize((nw, nh), Image.NEAREST).convert("RGBA")
 
 
 def _classify_unique(uniq, master, mat_of):

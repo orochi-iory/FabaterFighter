@@ -1,7 +1,7 @@
 {
  "sprite": "sheet_uniform.png",
- "version": "0.6.0",
- "notes": "Reconstruida desde los frames nativos: \u00f74 a 1x de arte con NEAREST, grano quitado por masa local (negro y cian protegidos), 1 px de arte comidos del contorno, y \u00d72 NEAREST a la hoja. Sin LANCZOS en ningun paso.",
+ "version": "1.2",
+ "notes": "Reconstruida desde los frames nativos: ÷4 a 1x de arte con NEAREST, grano quitado por masa local (negro y cian protegidos), 1 px de arte comidos del contorno, y ×2 NEAREST a la hoja. Sin LANCZOS en ningun paso.",
  "date": "2026-10-20",
  "canon": 1.2,
  "art": {

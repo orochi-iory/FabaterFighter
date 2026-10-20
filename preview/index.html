@@ -67,15 +67,6 @@
   .arena label { color:#9d9ab5; font-size:13px; display:flex; align-items:center; gap:6px; }
   .arena input[type=range] { width:140px; }
   .layers { color:#d8d6ea; font-size:13px; line-height:1.55; margin:12px 0 0; }
-  .aro-grid { display:flex; gap:14px; flex-wrap:wrap; justify-content:center; margin:14px 0 4px; }
-  .aro-grid figure { margin:0; max-width:560px; }
-  .aro-grid figure.wide { flex:1 1 100%; max-width:100%; }
-  .aro-grid img { width:100%; height:auto; image-rendering:pixelated; border-radius:8px;
-    display:block; background:#101018; }
-  .aro-grid figcaption { color:#9d9ab5; font-size:12px; margin-top:6px; line-height:1.45; }
-  .aro-nums { border-collapse:collapse; font-size:13px; margin:10px 0 0; color:#d8d6ea; }
-  .aro-nums th, .aro-nums td { border-bottom:1px solid #3a3752; padding:5px 10px; text-align:left; }
-  .aro-nums th { color:#ffcb3d; }
   .layers b { color:#96ffeb; }
 
   nav.models { position:sticky; top:0; z-index:99; display:flex; gap:8px; justify-content:center;
@@ -93,159 +84,19 @@
   <a href="nuevo.html">② Modelo nuevo</a>
   <a href="chunli.html">③ Chun-Li</a>
   <a href="fight.html">⚔ Pelea</a>
-  <a href="aro.html">⚡ Borde verde</a>
   <a href="guia-vieja.html">📖 Guía del original</a>
 </nav>
 <header>
   <h1>⚡ VOLTIA ⚡</h1>
-  <p style="margin:0 0 8px"><b style="color:#96ffeb">v1.2 · reconstruido y limpio desde cero</b> — el modelo reconstruido desde cero: sin LANCZOS, sin grano y sin colores mezclados.</p>
+  <p style="margin:0 0 8px"><b style="color:#96ffeb">v1.2 · modelo oficial</b> — reconstruido desde los frames nativos, sin LANCZOS y sin grano.</p>
   <p id="ver">cargando…</p>
   <a class="play" href="fight.html">Probar pelea · Voltia vs Voltia</a>
   <a class="play alt" href="guia-vieja.html">Guía de este personaje</a>
-  <a class="play alt" id="togaro" href="?aro=0">Ver el modelo de negro grueso (antes)</a>
   <p class="notes">Estás en el <b>modelo original</b>: el que pelea. El modelo nuevo se abre desde el menú de arriba.
-  Esta página, la pelea y el escenario usan ya el <b>borde verde con el contorno fuera</b>. Detalles <a href="#aro" style="color:#96ffeb">aquí abajo ↓</a>.</p>
+  Esta página, la pelea y el escenario usan la <b>misma hoja</b> (<code>voltia/sheet_uniform.png</code>).</p>
   <p class="notes" id="notes"></p>
   <p id="syncwarn"></p>
 </header>
-<section class="arena" id="aro">
-  <h2>El modelo vuelve al borde verde</h2>
-  <div class="box">
-    <p class="layers">Durante semanas el contorno de Voltia fue engordando sin querer. El punto bueno es
-      <b>«Voltia pierde el contorno»</b>: el sprite tenía un filo de <b>1 px y tres tonos</b> (negro fino,
-      cian <code>5,176,157</code> y azul <code>22,81,104</code>). El commit siguiente lo cambió a
-      <b>negro macizo</b> y de ahí ya no volvimos. <b>Ahora la hoja que sirve todo el proyecto es la del borde
-      verde</b>, con una sola cosa corregida: el <b>filete cian</b> que cruzaba la cadera y el muslo, fuera.</p>
-
-    <div class="aro-grid">
-      <figure class="wide">
-        <img src="../voltia/versions/linea_evolucion.png" alt="Las cuatro versiones del sprite, comparadas">
-        <figcaption>Las cuatro versiones, de izquierda a derecha: <b>borde verde</b> → negro fino con el
-          filete cian → <b>negro grueso</b> (lo que se servía) → el aro quitado. La tercera es la que
-          engordó la silueta; la elegida es la primera, sin el filete.</figcaption>
-      </figure>
-      <figure class="wide">
-        <img src="../voltia/versions/hoja_verde_completa.png" alt="Las 25 filas del modelo con el borde verde">
-        <figcaption>El modelo completo con el borde verde: 25 filas, 375 celdas, todas revisadas.</figcaption>
-      </figure>
-    </div>
-
-    <table class="aro-nums">
-      <tr><th>medido en el frame 0 del stance</th><th>borde verde</th><th>negro grueso</th><th>ahora</th></tr>
-      <tr><td>píxeles opacos (silueta)</td><td>31 301</td><td>32 644</td><td>31 301 — <b>la silueta fina</b></td></tr>
-      <tr><td>píxeles casi negros</td><td>7 236</td><td>9 388</td><td>7 386</td></tr>
-      <tr><td>aro: de qué está hecho</td><td>969 negro + <b>396 cian</b> + 379 azul</td><td>1 612 todo negro</td><td>igual que el verde, sin filete</td></tr>
-      <tr><td>cian dentro del traje</td><td>337 px</td><td>0 px</td><td><b>0 px</b></td></tr>
-      <tr><td>contorno, a 1×</td><td>1-2 px</td><td>3-4 px de negro</td><td><b>contorno fuera</b> (−2 px de hoja)</td></tr>
-    </table>
-
-    <p class="layers"><b>Reconstrucción desde cero (la buena).</b> Buscando algo más limpio que rescatar:
-      <b>no hay nada</b>. El frame nativo a 4× tiene 0,00 % de grano, pero al bajarlo a su resolución real
-      de arte (97×153) tiene <b>7,13 %</b>: el ruido no lo metió el reescalado, <b>está dentro del dibujo</b>,
-      un nivel por debajo. Y <code>assets/voltia_spritesheet.png</code> (lo más limpio del repo, 0,54 %) es
-      <b>otro diseño y otro tamaño</b>, no sirve. Así que la hoja se reconstruye así, por frame:
-      <b>÷4 NEAREST a 1× de arte</b> → <b>limpieza de grano por masa local</b> (el color que aparece 3 veces o
-      menos en su entorno 5×5 pasa al mayoritario de al lado, protegiendo el negro de línea y el cian del
-      borde) → <b>−1 px de arte de contorno</b> → <b>×2 NEAREST a la hoja</b>. Cero LANCZOS en todo el camino.
-      Grano del stance: <b>5,51 % → 1,47 %</b>, bloques sucios <b>0,00 %</b>, y los mismos 18 colores.</p>
-
-    <div class="aro-grid">
-      <figure class="wide">
-        <img src="../voltia/versions/rebuild_cara.png" alt="La cara antes y después de la reconstrucción limpia">
-        <figcaption>La cara a 8×: antes (LANCZOS) y después (reconstruida y limpia).</figcaption>
-      </figure>
-      <figure class="wide">
-        <img src="../voltia/versions/rebuild_cuerpo.png" alt="El sprite antes y después de la reconstrucción limpia">
-        <figcaption>El sprite entero, mismo criterio.</figcaption>
-      </figure>
-      <figure class="wide">
-        <img src="../voltia/versions/hoja_reconstruida.png" alt="Las 25 filas reconstruidas y limpias">
-        <figcaption>Las 25 filas reconstruidas y limpias, mismas animaciones y frames.</figcaption>
-      </figure>
-    </div>
-
-    <p class="layers"><b>Y la causa de todo, encontrada.</b> La hoja no nació sucia: <b>la ensuciamos al
-      montarla</b>. Los frames de <code>voltia/frames/</code> tienen <b>rejilla de píxel exacta de 4×</b>
-      (0,00 % de bloques sucios), pero <code>voltia/normalize.py</code> los reescalaba con
-      <b>LANCZOS y un factor no entero</b> para igualar la altura de la cabeza. Eso inventa medios
-      píxeles: de ahí los cuadrados sueltos, los bordes poco lisos y el morado donde el azul se mezcla
-      con el rosa. Ahora la hoja se <b>reconstruye desde los frames nativos</b> bajando ÷2 exacto con
-      NEAREST (4× → 2×), sin colores nuevos y sin interpolación: <b>0,00 % de bloques no uniformes</b>.
-      Se le vuelven a aplicar los dos arreglos de arriba (filete cian fuera y contorno −2 px), que en
-      esos frames nativos estaban sin hacer.</p>
-
-    <div class="aro-grid">
-      <figure class="wide">
-        <img src="../voltia/versions/nativo_cara.png" alt="La cara antes (LANCZOS) y ahora (reconstruida de los nativos)">
-        <figcaption>La cara a 8×. Izquierda: la hoja vieja, con el morado de mezcla y los cuadrados
-          sueltos. Derecha: reconstruida de los nativos, píxel limpio y detalle recuperado.</figcaption>
-      </figure>
-      <figure class="wide">
-        <img src="../voltia/versions/nativo_cuerpo.png" alt="El sprite antes y después de reconstruirlo">
-        <figcaption>El sprite entero, mismo criterio.</figcaption>
-      </figure>
-      <figure class="wide">
-        <img src="../voltia/versions/hoja_nativa.png" alt="Las 25 filas reconstruidas desde los nativos">
-        <figcaption>Las 25 filas reconstruidas de los nativos, mismas animaciones y frames.</figcaption>
-      </figure>
-    </div>
-
-    <p class="layers"><b>Y encima, el pixel saneado.</b> La hoja ya usaba solo 18 colores, así que la paleta
-      estaba bien: el problema era que <b>el 52,85 % de los bloques 2×2 no eran uniformes</b> — había color a
-      medio píxel, y a 1× el <b>5,21 %</b> de los píxeles (33 714) no tenía ni un vecino de su color. Eso es el
-      ruido de la cara: una mota cian, un magenta suelto en la máscara, un amarillo en la coleta. Ahora:
-      <b>bloques no uniformes 0,00 %</b> y <b>ruido 0,00 %</b>, con los mismos 18 colores y las mismas
-      animaciones. Los trazos oscuros (el ojo, la boca, la línea del mentón) <b>se protegen</b> al bajar a 1×,
-      porque si no la mayoría por bloque se come la cara. Efecto secundario: la silueta engorda un
-      <b>+3,2 %</b> (el umbral de alfa 2 de 4 rellena las esquinas), que es lo que la deja más maciza.</p>
-
-    <p class="layers"><b>Y encima, el contorno adelgazado.</b> En la hoja el dibujo va a 2 px por px de arte, así
-      que el contorno medía 1-2 px: quitarle <b>2 px de hoja = 1 px de arte</b> lo elimina entero y deja el azul
-      del traje haciendo de borde. Efecto medido en las 25 filas: silueta <b>−11,9 % a −15,8 %</b> (31 301 → 27 567 px
-      en el stance), alto <b>300 → 296</b>, y <b>ninguna fila se despieza</b> (1 pieza por celda; la fila 3 deja
-      4, que es el rayo y su sombra). Se quitaron también los 36 puntitos sueltos que arrastraba el original.</p>
-
-    <div class="aro-grid">
-      <figure class="wide">
-        <img src="../voltia/versions/prueba_contorno_elegido.png" alt="Original, contorno a −2 px y referencia a −4 px">
-        <figcaption><b>Original</b> (con su contorno) · <b>ahora: −2 px de hoja</b> · referencia de −4 px, que ya
-          abre hueco entre el brazo y el costado. Ahí se ve por qué se paró en 2.</figcaption>
-      </figure>
-      <figure class="wide">
-        <img src="../voltia/versions/hoja_contorno_2px.png" alt="Las 25 filas con el contorno adelgazado">
-        <figcaption>Las 25 filas con el contorno fuera, una por una.</figcaption>
-      </figure>
-    </div>
-
-    <p class="layers">Cómo se ha hecho, sin tocar el alfa (idéntico byte a byte en las 375 celdas):</p>
-    <ol class="layers">
-      <li>se parte del sprite del borde verde y se busca el cian <code>5,176,157</code>;</li>
-      <li>el cian que <b>toca la transparencia</b> es el borde → <b>se queda</b> (29 176 px en la hoja);</li>
-      <li>el cian <b>rodeado de dibujo</b> es el filete → se pinta con el <b>color del trazo más cercano</b>
-        (chamfer 1 / 1,4), 31 277 px, sin cambiar la silueta;</li>
-      <li>nada más se toca: ni el negro, ni el rayo, ni el traje.</li>
-    </ol>
-    <p class="layers"><b>Se aplicó a todo:</b> al <b>visor</b> de esta página, a la <b>pelea</b>
-      (<code>⚔ Pelea</code>, que lee la hoja del mismo <code>sheet.json</code>) y al <b>escenario</b>
-      (<code>voltia/stage/fighter.png</code>, rehecho con la misma receta exacta: recorte
-      (78,19)–(272,325) del frame 0 a la mitad, 97×153). La versión de negro grueso queda guardada en
-      <code>voltia/versions/sheet_negro_grueso.png</code> y se puede ver aquí con
-      <a href="?aro=0" style="color:#96ffeb">?aro=0</a>. La prueba de quitar el aro entero sigue en
-      <a href="?aro=1" style="color:#96ffeb">?aro=1</a>.</p>
-
-    <div class="aro-grid">
-      <figure class="wide">
-        <img src="../voltia/versions/limpieza_antes_despues.png" alt="Antes y después del saneado del pixel">
-        <figcaption><b>Antes</b> y <b>después</b> del saneado. No se redibuja nada: se fuerza el píxel a
-          resolución de arte, que es lo que quita el color mezclado de la cara.</figcaption>
-      </figure>
-      <figure class="wide">
-        <img src="../voltia/versions/hoja_saneada.png" alt="Las 25 filas saneadas">
-        <figcaption>Las 25 filas saneadas, mismas animaciones y mismos frames.</figcaption>
-      </figure>
-    </div>
-  </div>
-</section>
 <main>
   <div class="stage">
     <canvas id="anim"></canvas>
@@ -315,20 +166,8 @@
   try {
   // Anti-caché: hoja y datos siempre frescos y emparejados (evita el "carrusel").
   const QB = '?v=' + Date.now();
-  // Hoja por defecto: la copia sin el aro negro. El original sigue intacto en
-  // voltia/sheet_uniform.png y se ve con ?aro=0 (botón en la cabecera).
-  const QS = new URLSearchParams(location.search);
-  // ?aro=1 mira la prueba del aro negro quitado; ?aro=0 la version de negro grueso.
-  const aro = QS.get('aro');
-  const META_URL = aro === '1' ? '../voltia/sheet_sin_aro.json'
-                 : aro === '0' ? '../voltia/versions/sheet_negro_grueso.json'
-                 : '../voltia/sheet.json';
-  const meta = await (await fetch(META_URL + QB, { cache: 'no-store' })).json();
-  const tog = document.getElementById('togaro');
-  if (tog) {
-    tog.textContent = 'Ver el modelo de negro grueso (antes)';
-    tog.href = '?aro=0';
-  }
+  // Una sola hoja para todo el proyecto: la que dice sheet.json.
+  const meta = await (await fetch('../voltia/sheet.json' + QB, { cache: 'no-store' })).json();
   document.getElementById('ver').textContent = `Vista v${meta.version || 'dev'} · cargando la hoja…`;
   const sheet = new Image();
   sheet.src = '../voltia/' + meta.sprite + QB;

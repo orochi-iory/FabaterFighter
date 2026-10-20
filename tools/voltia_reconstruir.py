@@ -9,8 +9,9 @@ Medido sobre `voltia/frames/voltia_stance_0.png` (rejilla exacta 4x):
   - a 1x de arte (97x153): **7,13 %** de grano.
 
 O sea: el ruido no lo metio el reescalado, esta **dentro del dibujo**, un nivel por
-debajo. Es el "colores mezclados" de la cara. En el repo no hay nada mas limpio que
-rescatar (`assets/voltia_spritesheet.png` es otro diseno, 48 colores, 64x64).
+debajo. Es el "colores mezclados" de la cara. En el repo no habia nada mas limpio que
+rescatar (la vieja hoja de `assets/`, 64x64 y 48 colores, era otro diseno y ya no
+esta), asi que hay que limpiarlo en la resolucion real de arte.
 
 Lo que hace este script, por frame
 ----------------------------------
@@ -111,7 +112,9 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument('--comer', type=int, default=0, help='px de ARTE erosionados del contorno')
     ap.add_argument('--pasadas', type=int, default=3)
-    ap.add_argument('--solo-ver', action='store_true')
+    ap.add_argument('--solo-ver', action='store_true', help='mide y no escribe la hoja')
+    ap.add_argument('--comparar', action='store_true',
+                    help='escribe las imagenes de comparacion en /tmp (no en el repositorio)')
     args = ap.parse_args()
 
     meta = json.load(open(META))
@@ -181,7 +184,10 @@ def main():
     f2 = fuente(12)
     BG = (238, 238, 242, 255)
     cajas = (('cara', (196, 28, 268, 108), 8), ('cuerpo', (60, 10, 300, 332), 2.4))
-    for nombre, caja, z in cajas:
+    salida = os.path.join(os.environ.get('TMPDIR', '/tmp'), 'voltia_control')
+    if args.comparar:
+        os.makedirs(salida, exist_ok=True)
+    for nombre, caja, z in (cajas if args.comparar else ()):
         w, h = caja[2] - caja[0], caja[3] - caja[1]
         tw, th = int(w * z), int(h * z)
         sal = Image.new('RGBA', (2 * tw + 30, th + 46), BG)
@@ -194,7 +200,7 @@ def main():
             d.text((12 + i * (tw + 10), 10), rot, font=f, fill=(20, 20, 40))
         d.text((12, th + 32), 'grano a 1x: %.2f %% -> %.2f %%' % (100 * g0[0] / g0[1], 100 * g1[0] / g1[1]),
                font=f2, fill=(90, 90, 115))
-        sal.convert('RGB').save(os.path.join(BASE, 'voltia/versions/rebuild_%s.png' % nombre))
+        sal.convert('RGB').save(os.path.join(salida, 'rebuild_%s.png' % nombre))
 
     if args.solo_ver:
         print('(--solo-ver: no se ha tocado la hoja)')
@@ -210,6 +216,9 @@ def main():
     nueva.crop((0, 0, cw, ch)).crop(CAJA_FIGHTER).resize(FIGHTER, Image.NEAREST).save(STAGE)
     print('hoja %s rev %s | fighter %s' % (HOJA, rev, STAGE))
 
+    if not args.comparar:
+        print('hecho. Con --comparar deja las imagenes de control en %s' % salida)
+        return
     nom = {a['row']: a['id'] for a in meta['animations']}
     esca = 0.30
     tw2, th2 = int(nueva.size[0] * esca), int(nueva.size[1] * esca)
@@ -224,8 +233,8 @@ def main():
         y = 36 + int(r * ch * esca)
         dh.text((8, y + int(ch * esca / 2) - 14), '%02d' % r, font=f, fill=(20, 20, 40))
         dh.text((8, y + int(ch * esca / 2) + 1), nom.get(r, '')[:19], font=f2, fill=(60, 60, 90))
-    hs.convert('RGB').save(os.path.join(BASE, 'voltia/versions/hoja_reconstruida.png'))
-    print('control: voltia/versions/hoja_reconstruida.png')
+    hs.convert('RGB').save(os.path.join(salida, 'hoja_reconstruida.png'))
+    print('control: %s' % salida)
 
 
 if __name__ == '__main__':
