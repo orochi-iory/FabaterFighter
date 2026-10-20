@@ -97,31 +97,31 @@ nativo, no con filtros.
 
 Tamaño medido del stance: **94 × 151 px de arte** (antes, con la erosión, 95 × 150).
 
-## Prueba de reconstrucción por IA (2026-10-20)
+## Hoja recreada por IA (2026-10-20)
 
-Se le pasó la hoja a un modelo de imagen pidiendo la misma rejilla, las mismas poses y
-colores planos. Resultado medido, no opinado:
+Se le dio la hoja **mitad y mitad**, a 1 px por píxel de arte (2 625 px de ancho cada mitad),
+pidiendo: mantener las animaciones, el diseño de Voltia, los sprites al mismo tamaño (1:1) y
+**sin contorno exterior**. Se admitía reinterpretar poses para mejorarlas.
 
-| | original | IA · media hoja (1 312 × 1 079) | IA · bloque 4×4 (2 px por píxel de arte) | IA + paleta |
+| | original | IA · mitad arriba | IA · mitad abajo | IA · prueba 6×4 |
 |---|---|---|---|---|
-| colores distintos | **20** | 86 163 | 157 466 | **19** |
-| colores con ≤ 20 px | **0** | 85 751 | 156 258 | **0** |
-| transiciones suaves | 6,9 % | 91,7 % | 82,0 % | plano |
-| rejilla | exacta | conservada | conservada | exacta |
-| poses | las 25 | reconocibles | **inventadas** | inventadas |
-| tamaño del sprite | 94 × 151 px de arte | ~40 × 65 px | 145 × 230 px | 145 × 230 px |
+| resolución devuelta | 2 625 × 2 158 | **1 129 × 928** (43 %) | **1 181 × 896** (45 %) | **1 290 × 816** (123 %) |
+| sprite | 94 × 151 px | ~51 × 64 px | ~51 × 64 px | agrandado |
+| colores | **20** | 77 950 | 95 395 | 136 653 |
+| transiciones suaves | 6,1 % | 91,2 % | 91,5 % | suave |
+| contorno verde | 5 557 px | 1 px | 0 px | 0 px |
+| rejilla | 25 × 15 | 13 × 15 | 12 × 15 | 4 × 6 |
+| frames recortables | 102 | 123 en 25 animaciones | | 24 |
 
-Conclusiones:
-- La IA **no devuelve píxeles planos**: 86 000–157 000 colores y 82–92 % de transiciones
-  suaves. Lo parece a tamaño pequeño, pero no lo es.
-- Aplanar a la paleta sí funciona (`quantize` sin dither, cada píxel al color más cercano):
-  19 colores, ninguna mezcla. Pero **aplanar no devuelve las poses**.
-- A escala de media hoja pierde resolución (40 px por personaje): no sirve para recortar.
-- A 2 px por píxel de arte sí es nítido, pero **redibuja** (la última fila pasa de caminar a
-  correr). Habría que ir bloque a bloque y validar pose por pose, y aun así la IA decide.
+Qué se cumple y qué no:
+- **Sí**: la rejilla y el número de filas, las celdas vacías, y el **contorno exterior eliminado**
+  (el borde verde desaparece, como se pidió). El diseño se reconoce.
+- **No**: el 1:1. A media hoja baja a la mitad; en un recorte de 6×4 sube un 23 %. Para 1:1 real
+  harían falta ~6 frames por pasada (~17 pasadas).
+- **No**: colores planos. 77 000-136 000 colores y ~91 % de bordes suaves.
+- **No**: las poses. La fila de los rayos se queda sin personaje y varias filas cambian el orden.
 
-Todo esto está en el visor: `preview/nuevo.html` (visor de frames + hoja de la IA).
-El modelo oficial (`--filtros 0`) sigue intacto; la prueba vive en `voltia/nuevo/ia/`.
+Recorte: 123 frames en `voltia/nuevo/ia/frames/<anim>/`, visor en `preview/nuevo.html`.
 
 ## Chun-Li
 
