@@ -428,3 +428,52 @@ En la fila 0 casi no se nota (10 px de deriva por frame); en la fila 24
 
 **Regla para la próxima:** nunca poner una versión fija en la URL de una imagen
 generada. O sale del propio fichero (rev/hash), o se comprueba la medida.
+
+## Quitar el contorno negro de Voltia (prueba, sólo fila 0 del stance)
+
+Voltia viene con un aro negro alrededor de la silueta. Medido en el frame 0 del
+stance de `voltia/sheet_uniform.png` (celda 350×332):
+
+| medida | valor |
+|---|---|
+| px casi negros (`max(r,g,b) ≤ 6`) | **9388 de 32644 opacos (29 %)** |
+| grosor del aro | 1-2 px en la cara, **hasta 10-12 px en la cola** |
+| px negros a más de 6 px del borde | **2124** → dentro del negro también hay líneas de dibujo |
+
+Ese 2124 es lo que hunde los atajos. Probado y descartado:
+
+1. **Rellenar todo el negro con el color de al lado, y volver a poner borde.**
+   Se van las líneas internas (brazo sobre torso, rodilla) y queda pegatina.
+2. **Relleno por difusión (BFS) desde el borde.** La onda corre *por dentro* del
+   aro, que es un tubo: el primer color que entra lo inunda. En la prueba el cian
+   del traje se comió la cola entera y salió un halo.
+3. **Relleno en línea recta (8 direcciones) desde el aro.** El color es el
+   correcto, pero salta de un trozo a otro: moteado.
+
+Lo que funciona es separar el negro **por topología, no por grosor**:
+
+- `externo` = negro **conectado con la transparencia** (el aro). Se borra.
+- `interno` = negro **encerrado por color** (líneas de dibujo). Se queda intacto.
+
+Después, 1 px de borde oscurecido al 55 % sobre la silueta que queda (si no, el
+personaje flota) y se tiran las islas de menos de 12 px que deja el corte.
+
+Resultado en la fila 0 (15 frames), medido:
+
+| | original | sin el aro |
+|---|---|---|
+| px negros | 143 371 | **0** |
+| px opacos | 486 676 | 328 615 (**−32,5 %**) |
+| alto de tinta (mediana) | 294 px | **287 px** (−7) |
+| ancho de tinta | 186-240 px | **158-228 px** (hasta −26) |
+
+El precio, dicho claro: **el personaje adelgaza** exactamente lo que medía el
+aro (7 px de alto, hasta 26 de ancho), y las piezas que sólo estaban separadas
+por negro quedan con 1 px de aire (la zapatilla se separa un poco de la pierna).
+No se inventa dibujo: lo que se ve es el sprite original sin el aro.
+
+    PYTHONPATH=tools/pylibs python3 tools/voltia_outline.py --celdas 0   # fila 0
+    PYTHONPATH=tools/pylibs python3 tools/voltia_outline.py              # hoja entera
+
+Escribe `voltia/outline_fila0.png` (+ `.gif` y `outline_comparacion.png`). La
+hoja original **no se toca**.
