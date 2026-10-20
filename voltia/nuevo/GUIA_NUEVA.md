@@ -616,3 +616,28 @@ El truco que funciona es **topológico**, no de color:
 Descartado con números: **borrar todo el negro** deja la silueta en **328 615 px opacos
 (−32,5 %)** y el alto mediano en **287 (−7 px)**, y despieza el dibujo (mano separada del
 brazo, cinturón y bota partidos). **Pintar el aro de un color plano** deja un halo de 10 px.
+
+## El modelo entero sin el aro negro (2026-10-20, definitivo)
+
+Lo que se entrega es **la hoja completa**, no solo el stance: `voltia/sheet_sin_aro.png` +
+`sheet_sin_aro.json`, generados con `tools/voltia_outline.py` (sin argumentos, 375 celdas,
+~17 s). Medido:
+
+| | original | sin el aro |
+|---|---|---|
+| píxeles casi negros (`max(r,g,b) ≤ 6`) | **958 595** | **24 602** (2,6 %) |
+| píxeles opacos | **3 107 116** | **3 107 116** (idéntico) |
+| canal alfa | — | **idéntico byte a byte** en las 375 celdas |
+| alto × ancho de tinta (stance f0) | 302 × 188 | 302 × 188 |
+
+- **Ninguna fila se despieza**: revisadas las 25 a ojo (`voltia/outline_hoja_completa.png`) y
+  los frames con más tinta de las filas 1, 4, 7, 10, 13, 14, 17, 22 y 24.
+- Los **24 602 px negros** que quedan son todos trazos de dentro. La fila 16 (el rayo) pasa de
+  1 960 a 0 px negros y aun así conserva su filo oscuro: el borde exterior al 32 % basta.
+- **El original no se toca**: `voltia/sheet_uniform.png` y `sheet.json` siguen como estaban.
+- El visor (`preview/index.html`) carga **la versión limpia por defecto** leyendo
+  `sheet_sin_aro.json`; con **`?aro=0`** (botón «Ver la hoja CON el aro negro») vuelve a la
+  original sin tocar ficheros. El juego (`fight.js` → `chars/voltia.js`) **sigue usando la
+  original** hasta que se pida el cambio.
+- Comprobación de sincronía: `needW = 15 × 350 = 5250`, `needH = 25 × 332 = 8300`, y la hoja
+  mide exactamente 5250 × 8300, así que el guardia del visor no salta.

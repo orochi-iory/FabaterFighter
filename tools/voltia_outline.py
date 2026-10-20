@@ -243,10 +243,10 @@ def main():
         m = dict(meta)
         m['sprite'] = os.path.basename(args.salida)
         m['notes'] = (meta.get('notes', '') +
-                      ' Aro negro adelgazado: contorno de %d px al %d %%, resto del aro al %d %%, '
-                      'lineas internas al %d %%. Alfa sin tocar.'
-                      % (args.contorno, round(args.oscuro * 100), round(args.relleno * 100),
-                         round(args.linea * 100))).strip()
+                      ' Aro negro separado del dibujo: el aro toma el color del trozo de dibujo '
+                      'mas cercano (chamfer), el borde de fuera (%d px) se queda al %d %% de ese '
+                      'color y los trazos de dentro no se tocan. Alfa sin tocar.'
+                      % (args.contorno, round(args.oscuro * 100))).strip()
         json.dump(m, open(os.path.splitext(args.salida)[0] + '.json', 'w'), indent=1)
 
 
