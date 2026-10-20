@@ -641,3 +641,40 @@ Lo que se entrega es **la hoja completa**, no solo el stance: `voltia/sheet_sin_
   original** hasta que se pida el cambio.
 - Comprobación de sincronía: `needW = 15 × 350 = 5250`, `needH = 25 × 332 = 8300`, y la hoja
   mide exactamente 5250 × 8300, así que el guardia del visor no salta.
+
+## Vuelta al borde verde (2026-10-20, decisión del usuario)
+
+«Cada cambio hecho ha ido ensuciando los sprites para mal.» Medido, tenía razón: el
+contorno **solo engordó**.
+
+| commit | qué hizo | opacos f0 | casi negros | borde |
+|---|---|---|---|---|
+| `fff5dc0` | *Voltia pierde el contorno* | 31 301 | 7 236 | 969 negro fino + 396 cian + 379 azul |
+| `35b40ca` | *«El borde verde pasa a negro con silueta gruesa»* | 32 644 | 9 388 | 1 612 todo negro |
+| `24ecf51` | contorno = trazo original | 32 644 | 9 388 | 1 612 todo negro |
+| `3dba241` | quita el filete cian (**todo** el cian) | 32 644 | 9 388 | 1 612 todo negro |
+
+**Lo que se sirve ahora**: `fff5dc0` + el filete cian quitado, con este criterio:
+
+- cian `5,176,157` que **toca la transparencia** = borde → se queda: **29 176 px** en la hoja;
+- cian **rodeado de dibujo** = filete → se pinta con el color del trazo más cercano
+  (chamfer 1 / 1,4): **31 277 px** sustituidos, **0** quedan dentro de una celda;
+- **alfa idéntico byte a byte** en las 375 celdas.
+
+Efecto en la silueta: tinta del frame 0 **188 × 302 → 188 × 300** (−2 px de alto: el negro
+grueso metía 1 px por arriba y por abajo). La altura del arte no cambia, así que la escala
+del juego sigue igual.
+
+**Aplicado a los tres sitios**: visor (`preview/index.html`), pelea (`⚔ Pelea`: lee
+`voltia/sheet.json` → `sheet_uniform.png`, con `rev` = md5 de la hoja) y escenario
+(`voltia/stage/fighter.png`, rehecho con la receta exacta del original: recorte
+(78,19)–(272,325) del frame 0 reducido a la mitad → 97 × 153).
+
+**Trampa propia, para no repetirla**: `op − crecer(op)` sale **vacío** por construcción; el
+filo se saca **erosionando** (`op − MinFilter(op)`). Con la versión mala se comieron los
+60 453 px de cian, borde incluido.
+
+Versiones guardadas: `voltia/versions/sheet_negro_grueso.png` (+ `.json`),
+`sheet_verde.png` (= `fff5dc0` puro, con filete), `stage_fighter_negro.png`,
+`linea_evolucion.png` y `hoja_verde_completa.png`. En el visor: `?aro=0` negro grueso,
+`?aro=1` el aro quitado.

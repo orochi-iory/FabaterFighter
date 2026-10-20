@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Voltia · el modelo sin el aro negro</title>
+<title>VOLTIA - Visor y manual</title>
 <style>
   :root { --bg:#181624; --panel:#222033; --cyan:#96ffeb; }
   * { box-sizing: border-box; }
@@ -89,76 +89,70 @@
 </head>
 <body>
 <nav class="models">
-  <a href="index.html">① Modelo</a>
+  <a class="on" href="index.html">① Modelo original</a>
   <a href="nuevo.html">② Modelo nuevo</a>
   <a href="chunli.html">③ Chun-Li</a>
   <a href="fight.html">⚔ Pelea</a>
-  <a href="aro.html" class="on">⚡ Sin el aro negro</a>
+  <a href="aro.html" class="on">⚡ Borde verde</a>
   <a href="guia-vieja.html">📖 Guía del original</a>
 </nav>
 <header>
   <h1>⚡ VOLTIA ⚡</h1>
-  <p style="margin:0 0 8px"><b style="color:#96ffeb">v0.7 · el modelo entero sin el aro negro</b> — el modelo completo está limpio; el apartado de abajo lo explica.</p>
+  <p style="margin:0 0 8px"><b style="color:#96ffeb">v0.8 · el modelo vuelve al borde verde</b> — el modelo completo, con el contorno fino de antes y sin el filete cian.</p>
   <p id="ver">cargando…</p>
   <a class="play" href="fight.html">Probar pelea · Voltia vs Voltia</a>
   <a class="play alt" href="guia-vieja.html">Guía de este personaje</a>
-  <a class="play alt" id="togaro" href="?aro=0">Ver la hoja CON el aro negro</a>
+  <a class="play alt" id="togaro" href="?aro=0">Ver el modelo de negro grueso (antes)</a>
   <p class="notes">Estás en el <b>modelo original</b>: el que pelea. El modelo nuevo se abre desde el menú de arriba.
-  Esta página ya muestra la hoja <b>sin el aro negro</b>; detalles <a href="#aro" style="color:#96ffeb">aquí abajo ↓</a>.</p>
+  Esta página, la pelea y el escenario usan ya la hoja del <b>borde verde</b>. Detalles <a href="#aro" style="color:#96ffeb">aquí abajo ↓</a>.</p>
   <p class="notes" id="notes"></p>
   <p id="syncwarn"></p>
 </header>
 <section class="arena" id="aro">
-  <h2>El modelo sin el aro negro</h2>
+  <h2>El modelo vuelve al borde verde</h2>
   <div class="box">
-    <p class="layers">El <b>modelo original entero</b> —las 25 filas, 375 celdas— está pasado por el mismo
-      proceso: el aro negro pegado a la silueta desaparece, el dibujo no se mueve. <b>El visor de esta
-      página ya carga esa versión</b>: lo que ves en el escenario de arriba es la hoja sin el aro.
-      El fichero original <code>voltia/sheet_uniform.png</code> <b>sigue intacto</b>; la versión limpia es
-      una copia, <code>voltia/sheet_sin_aro.png</code>, y puedes volver a la de antes con el botón
-      <b>«Ver la hoja CON el aro negro»</b>.</p>
+    <p class="layers">Durante semanas el contorno de Voltia fue engordando sin querer. El punto bueno es
+      <b>«Voltia pierde el contorno»</b>: el sprite tenía un filo de <b>1 px y tres tonos</b> (negro fino,
+      cian <code>5,176,157</code> y azul <code>22,81,104</code>). El commit siguiente lo cambió a
+      <b>negro macizo</b> y de ahí ya no volvimos. <b>Ahora la hoja que sirve todo el proyecto es la del borde
+      verde</b>, con una sola cosa corregida: el <b>filete cian</b> que cruzaba la cadera y el muslo, fuera.</p>
 
     <div class="aro-grid">
       <figure class="wide">
-        <img src="../voltia/outline_hoja_completa.png" alt="Las 25 filas del modelo entero, sin el aro negro">
-        <figcaption>El modelo completo, 25 filas numeradas con su animación. Es la hoja que carga el visor.</figcaption>
+        <img src="../voltia/versions/linea_evolucion.png" alt="Las cuatro versiones del sprite, comparadas">
+        <figcaption>Las cuatro versiones, de izquierda a derecha: <b>borde verde</b> → negro fino con el
+          filete cian → <b>negro grueso</b> (lo que se servía) → el aro quitado. La tercera es la que
+          engordó la silueta; la elegida es la primera, sin el filete.</figcaption>
       </figure>
       <figure class="wide">
-        <img src="../voltia/outline_comparacion.png" alt="Original y versión limpia a 2x, y los 15 frames del stance en las dos versiones">
-        <figcaption>Detalle a 2×: original (izquierda) y limpia (derecha). Abajo, los 15 frames del stance
-          en las dos versiones, para ver que el dibujo no se despieza en ninguno.</figcaption>
-      </figure>
-      <figure>
-        <img src="../voltia/outline_fila0.gif" alt="GIF de los 15 frames del stance sin el aro negro">
-        <figcaption>El stance entero, a 10 fps.</figcaption>
+        <img src="../voltia/versions/hoja_verde_completa.png" alt="Las 25 filas del modelo con el borde verde">
+        <figcaption>El modelo completo con el borde verde: 25 filas, 375 celdas, todas revisadas.</figcaption>
       </figure>
     </div>
 
     <table class="aro-nums">
-      <tr><th>medido en la hoja entera (25 filas, 375 celdas)</th><th>original</th><th>sin el aro</th></tr>
-      <tr><td>píxeles casi negros</td><td>958 595</td><td><b>24 602</b> (2,6 %)</td></tr>
-      <tr><td>píxeles opacos (la silueta)</td><td>3 107 116</td><td>3 107 116 — <b>igual</b></td></tr>
-      <tr><td>canal alfa</td><td colspan="2">byte a byte <b>idéntico</b> en las 375 celdas (comprobado con <code>ImageChops.difference</code>)</td></tr>
-      <tr><td>alto × ancho de tinta (stance, f0)</td><td>302 × 188 px</td><td>302 × 188 px — <b>igual</b></td></tr>
-      <tr><td>filas con el aro quitado</td><td>—</td><td><b>25 de 25</b>, sin una sola celda despiezada</td></tr>
+      <tr><th>medido en el frame 0 del stance</th><th>borde verde</th><th>negro grueso</th><th>ahora</th></tr>
+      <tr><td>píxeles opacos (silueta)</td><td>31 301</td><td>32 644</td><td>31 301 — <b>la silueta fina</b></td></tr>
+      <tr><td>píxeles casi negros</td><td>7 236</td><td>9 388</td><td>7 386</td></tr>
+      <tr><td>aro: de qué está hecho</td><td>969 negro + <b>396 cian</b> + 379 azul</td><td>1 612 todo negro</td><td>igual que el verde, sin filete</td></tr>
+      <tr><td>cian dentro del traje</td><td>337 px</td><td>0 px</td><td><b>0 px</b></td></tr>
     </table>
 
-    <p class="layers">Cómo se hace, sin tocar un solo píxel de alfa ni un borde de la silueta:</p>
+    <p class="layers">Cómo se ha hecho, sin tocar el alfa (idéntico byte a byte en las 375 celdas):</p>
     <ol class="layers">
-      <li>se separa el negro <b>conectado con la transparencia</b> (el aro de fuera) del negro
-        <b>encerrado por color</b> (el dibujo: brazo sobre torso, costuras de la bota, cinturón);</li>
-      <li>el aro se pinta con el <b>color del trozo de dibujo más cercano</b> (distancia de chamfer
-        1 / 1,4: no se difunde, porque la difusión inunda la coleta entera con un solo color);</li>
-      <li>el <b>borde de fuera (2 px)</b> se deja a un <b>32 % de ese color</b>: queda un contorno
-        fino del tono del dibujo, que es lo que hace falta para que se lea sobre el fondo;</li>
-      <li>los <b>trazos de dentro</b> no se tocan, y son los <b>24 602 px negros</b> que quedan:
-        brazo sobre torso, costuras de la bota, cinturón, el filo del rayo de la fila 16.</li>
+      <li>se parte del sprite del borde verde y se busca el cian <code>5,176,157</code>;</li>
+      <li>el cian que <b>toca la transparencia</b> es el borde → <b>se queda</b> (29 176 px en la hoja);</li>
+      <li>el cian <b>rodeado de dibujo</b> es el filete → se pinta con el <b>color del trazo más cercano</b>
+        (chamfer 1 / 1,4), 31 277 px, sin cambiar la silueta;</li>
+      <li>nada más se toca: ni el negro, ni el rayo, ni el traje.</li>
     </ol>
-    <p class="layers">Se probó también <b>borrar el negro</b> y sale peor: la silueta pierde
-      <b>32,5 % de sus píxeles</b> (−7 px de alto) y el dibujo se despieza (mano separada del brazo,
-      cinturón y bota partidos). Ficheros: <code>voltia/sheet_sin_aro.png</code> + <code>.json</code>,
-      <code>outline_hoja_completa.png</code>, <code>outline_comparacion.png</code>,
-      <code>outline_fila0.gif</code>; herramienta: <code>tools/voltia_outline.py</code>.</p>
+    <p class="layers"><b>Se aplicó a todo:</b> al <b>visor</b> de esta página, a la <b>pelea</b>
+      (<code>⚔ Pelea</code>, que lee la hoja del mismo <code>sheet.json</code>) y al <b>escenario</b>
+      (<code>voltia/stage/fighter.png</code>, rehecho con la misma receta exacta: recorte
+      (78,19)–(272,325) del frame 0 a la mitad, 97×153). La versión de negro grueso queda guardada en
+      <code>voltia/versions/sheet_negro_grueso.png</code> y se puede ver aquí con
+      <a href="?aro=0" style="color:#96ffeb">?aro=0</a>. La prueba de quitar el aro entero sigue en
+      <a href="?aro=1" style="color:#96ffeb">?aro=1</a>.</p>
   </div>
 </section>
 <main>
@@ -233,13 +227,16 @@
   // Hoja por defecto: la copia sin el aro negro. El original sigue intacto en
   // voltia/sheet_uniform.png y se ve con ?aro=0 (botón en la cabecera).
   const QS = new URLSearchParams(location.search);
-  const sinAro = QS.get('aro') !== '0';
-  const META_URL = sinAro ? '../voltia/sheet_sin_aro.json' : '../voltia/sheet.json';
+  // ?aro=1 mira la prueba del aro negro quitado; ?aro=0 la version de negro grueso.
+  const aro = QS.get('aro');
+  const META_URL = aro === '1' ? '../voltia/sheet_sin_aro.json'
+                 : aro === '0' ? '../voltia/versions/sheet_negro_grueso.json'
+                 : '../voltia/sheet.json';
   const meta = await (await fetch(META_URL + QB, { cache: 'no-store' })).json();
   const tog = document.getElementById('togaro');
   if (tog) {
-    tog.href = sinAro ? '?aro=0' : '?aro=1';
-    tog.textContent = sinAro ? 'Ver la hoja CON el aro negro' : 'Ver la hoja SIN el aro negro';
+    tog.textContent = 'Ver el modelo de negro grueso (antes)';
+    tog.href = '?aro=0';
   }
   document.getElementById('ver').textContent = `Vista v${meta.version || 'dev'} · cargando la hoja…`;
   const sheet = new Image();
