@@ -78,6 +78,7 @@ CSS = """
   .box p, .box li { color:#b9cad6; line-height:1.6; font-size:14px; }
   .box code { color:var(--cyan); }
   .box b { color:var(--gold); }
+  .box table { width:100%; }
   .tres { display:flex; gap:10px; flex-wrap:wrap; margin:10px 0 4px; }
   .tres figure { margin:0; }
   .tres img { image-rendering:pixelated; height:56px; width:auto; background:#22333f; border-radius:6px; display:block; }
@@ -212,7 +213,11 @@ def main():
       '(× 0,5 de scale) = <b>147 px de mundo</b>. Chun-Li mide 58 px de tinta de stance '
       '(mediana de sus 39 frames, sin la sombra del suelo) → horneada a <b>×2,53</b> = <b>147 px de mundo</b>. No son '
       '200 px: son 147, los que mide Voltia de verdad.</p>')
-    a('<p>Su hoja de juego son <b>29 animaciones</b> en celdas de 294×223, pivote (146, 203), '
+    a('<p><b>Salto:</b> 176 px de mundo medidos en el motor (punto más alto medido por sonda, '
+      'no calculado). Voltia salta 103. Los frames de salto se anclan por el <b>centro de masa</b> '
+      'de la tinta, no por los pies: con los pies, la voltereta se aplastaba contra el suelo y '
+      'pegaba tirones.</p>')
+    a('<p>Su hoja de juego son <b>29 animaciones</b> en celdas de 294×231, pivote (146, 203), '
       'scale 1: la escala va horneada en el PNG con NEAREST, así el navegador no reescala nada.</p>')
     a('<p class="dim">Aviso honesto: sus píxeles son 2,53 veces los del dibujo original, así que '
       'se ve más gruesa que Voltia. No es un fallo del montaje: Voltia viene de una hoja de 294 px '

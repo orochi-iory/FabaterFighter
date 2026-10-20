@@ -93,6 +93,11 @@
     letter-spacing:.5px; font-size:14px; border:2px solid #3d3358; color:#cfc9e6; }
   nav.models a:hover { border-color:#96ffeb; color:#96ffeb; }
   nav.models a.on { background:#ffcb3d; color:#150f1f; border-color:#ffcb3d; }
+  .boxbtn { position:fixed; left:12px; bottom:12px; z-index:7; font:600 13px system-ui,sans-serif;
+    padding:8px 12px; border-radius:10px; border:2px solid #3a3752; background:#1b1a2bef;
+    color:#cfc9e6; cursor:pointer; }
+  .boxbtn:hover { border-color:#96ffeb; color:#96ffeb; }
+  .boxbtn.on { background:#96ffeb; color:#101018; border-color:#96ffeb; }
 </style>
 </head>
 <body>
@@ -163,6 +168,7 @@
         <button class="act" type="button" id="pause-boxes" title="Ver las cajas de golpe (H)">Cajas</button>
       </div>
     </div>
+    <button class="boxbtn" type="button" id="boxes-btn" title="Ver las cajas de golpe (H)">Cajas (H)</button>
     <div class="endbar" id="endcard" hidden>
       <button class="act gold" type="button" id="rematch">Revancha</button>
       <button class="act" type="button" id="to-menu">Menú</button>
@@ -175,12 +181,12 @@
     Rayo: ↓↘→ + puño. El leve va más lento. Solo uno en pantalla y se apaga a media pista: desde el fondo no llega.
     Gancho: →↓↘ o →↓→ + puño. Si el movimiento lleva el gancho, sale el gancho y no el rayo. Giratoria: ↓↙← + patada. Los dos pegan dos veces y derriban si entran ambos.
     <b>Chun-Li</b> ↓↘→ + puño kikoken · ↓↘→ + patada speed kick · ↓↙← + patada giratoria.
-    Doble adelante: dash corto. Si mantienes el segundo adelante, corres hasta soltar. Doble atrás: salto corto atrás. ↓↘ + patada fuerte: voltereta (fila 15). H o el botón «Cajas» de la pausa enseña las cajas de golpe. Esc pausa. El reloj son 99 segundos reales, como el original.
+    Doble adelante: dash corto. Si mantienes el segundo adelante, corres hasta soltar. Doble atrás: salto corto atrás. ↓↘ + patada fuerte: voltereta (fila 15). El botón «Cajas (H)» de la esquina, o la H, enseña las cajas de golpe (verde = lo que le pueden tocar, rojo = golpe activo). Esc pausa. El reloj son 99 segundos reales, como el original.
   </p>
   <p id="status"></p>
 </div>
 <script src="chars/voltia.js?v=4"></script>
-<script src="chars/chunli.js?v=3"></script>
-<script src="fight.js?v=13"></script>
+<script src="chars/chunli.js?v=4"></script>
+<script src="fight.js?v=14"></script>
 </body>
 </html>

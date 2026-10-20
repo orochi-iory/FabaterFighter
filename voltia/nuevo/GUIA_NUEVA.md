@@ -477,3 +477,49 @@ No se inventa dibujo: lo que se ve es el sprite original sin el aro.
 
 Escribe `voltia/outline_fila0.png` (+ `.gif` y `outline_comparacion.png`). La
 hoja original **no se toca**.
+
+## Chun-Li: el salto que se aplastaba, la altura y el stance
+
+**Síntoma:** los frames de salto "pegaban tirones" y el salto se veía corto.
+
+**Causa, medida en la hoja de origen:** la fila 14 (salto adelante) **no está dibujada
+con los pies en el suelo**. Cada figura sube dentro de la franja:
+
+| frame | 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 |
+|---|---|---|---|---|---|---|---|---|---|---|---|
+| alto sobre el suelo de la franja | 1 | 1 | 47 | 72 | 80 | 84 | 85 | 79 | 60 | 37 | 1 |
+
+Es decir, el artista ya dibujó el arco (hasta **85 px**, que a escala 2,53 son 215 px
+de mundo). Al cortar cada figura a su caja y clavarle los pies en el pivote, esa
+información se tira y la voltereta gira **alrededor del pie equivocado**: el cuerpo
+salta de postura en postura.
+
+**Arreglo:** en las filas de aire (`jump`, `fwdjump`, `jump_punch`, `jump_kick`) el
+punto que se clava en el pivote es el **centro de masa de la tinta**, a la altura que
+tiene en el primer frame (el de despegue, con los pies en el suelo). Así el giro es
+sobre el cuerpo y la altura la pone el motor con `p.y`, como en Voltia. Efecto
+secundario: la celda pasa de **294×223 a 294×231** (pivote igual, (146, 203)) porque
+hace falta sitio por debajo.
+
+Antes de eso se probaron dos cosas y se descartaron: anclar por el **centro de la
+caja** (la caja cambia cuando las piernas salen y la cabeza entra: sigue bailando) y
+dejar la altura de la hoja tal cual (el salto se duplica: sube el sprite y sube `p.y`).
+
+**Altura del salto, medida con sonda en el motor** (no calculada): `jumpV -14.2`,
+`gravity 0.55` → **176 px** de mundo, **51 frames** de aire. Voltia: `-9.3` / `0.42`
+→ **103 px**. El salto de Chun-Li es **1,7 veces** el de Voltia.
+
+## El stance: 2-1-2-2-3-2, en el visor y en la hoja de juego
+
+Las tres franjas de stance (filas 1, 2 y 3) son **un solo bucle**, en el orden
+`2 1 2 2 3 2` y vuelta a empezar: 6 + 10 + 6 + 6 + 7 + 6 = **41 figuras**. Se quitan
+**2**, y solo porque están repetidas píxel a píxel justo en las costuras (mismo md5:
+la primera de la fila 2 tras la fila 1, y la última de la fila 3 con la primera de la
+fila 2) → **39 frames a 10 fps** (3,9 s por vuelta). Es **una** animación: una entrada
+en la tabla, un GIF y una fila de la hoja de juego.
+
+## Ver las cajas de golpe
+
+Botón fijo **«Cajas (H)»** abajo a la izquierda (no hay que pausar) y tecla **H**.
+Verde = caja de daño recibido, rojo = caja del golpe activo en ese frame, amarillo =
+proyectil, cruz blanca = pivote (los pies). Se recuerda entre partidas.

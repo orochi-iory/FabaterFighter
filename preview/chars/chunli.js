@@ -26,9 +26,9 @@
       run: 5.4,
       // salto mas alto que Voltia: 12.3^2 / (2*0.44) = 172 px de subida
       // (Voltia sube 105 con 9.3^2 / (2*0.42)), y 56 frames de aire
-      jumpV: -12.3,
+      jumpV: -14.2,   // salto alto: 180 px medidos (Voltia salta 103)
       jumpX: 2.4,
-      gravity: 0.44,
+      gravity: 0.55,
       airAccel: 0.06,
       airMax: 3.2,
       backHopV: -5.2,

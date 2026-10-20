@@ -296,11 +296,21 @@ def main():
                 im = quitar_fragmentos(im)
             suelo_sombra = quitar_sombra(im)   # fuera la sombra del suelo
             if ancla == 'centro':
+                # el centro de MASA de la tinta, no el de la caja: en la voltereta
+                # las piernas salen y la cabeza entra, y la caja se mueve aunque el
+                # cuerpo no. Con el centro de masa el giro no baila.
                 bb = im.getbbox()
+                px = im.load()
+                sx = sy = n = 0
+                for yy in range(bb[1], bb[3]):
+                    for xx in range(bb[0], bb[2]):
+                        if px[xx, yy][3] > 0:
+                            sx += xx; sy += yy; n += 1
+                cx, cy = sx / n, sy / n
                 if centro_h is None:
-                    centro_h = (bb[3] - bb[1]) / 2.0
-                eje = (bb[0] + bb[2]) / 2.0
-                lista.append((im, eje, bb[1] + (bb[3] - bb[1]) / 2.0 + centro_h))
+                    centro_h = bb[3] - cy          # altura del centro sobre los pies
+                eje = cx
+                lista.append((im, eje, cy + centro_h))
                 continue
             # anclaje por los pies, no por la sombra ni por la caja del dibujo:
             # la altura del salto y del derribo la mueve el motor con p.y, asi

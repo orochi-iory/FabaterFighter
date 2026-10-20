@@ -85,8 +85,10 @@
   const BOX_KEY = 'fabater_cajas';
   function setBoxes(on, save) {
     showBoxes = !!on;
-    const b = document.getElementById('pause-boxes');
-    if (b) b.classList.toggle('on', showBoxes);
+    ['pause-boxes', 'boxes-btn'].forEach((id) => {
+      const b = document.getElementById(id);
+      if (b) b.classList.toggle('on', showBoxes);
+    });
     if (save !== false) {
       try { localStorage.setItem(BOX_KEY, showBoxes ? '1' : '0'); } catch (err) { /* sin permiso */ }
     }
@@ -1782,6 +1784,8 @@
   document.getElementById('pause-menu').onclick = () => toMenu();
   document.getElementById('pause-music').onclick = () => toggleMusic();
   document.getElementById('pause-boxes').onclick = (e) => { e.currentTarget.blur(); setBoxes(!showBoxes); };
+  const boxesBtn = document.getElementById('boxes-btn');
+  if (boxesBtn) boxesBtn.onclick = (e) => { e.currentTarget.blur(); setBoxes(!showBoxes); };
   document.getElementById('rematch').onclick = () => again();
   document.getElementById('to-menu').onclick = () => toMenu();
   try { if (localStorage.getItem(BOX_KEY) === '1') setBoxes(true, false); } catch (err) { /* sin permiso */ }
