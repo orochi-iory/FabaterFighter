@@ -1,221 +1,297 @@
 {
- "fondo": [
-  255,
-  0,
-  0
- ],
- "cabeza_pies": 120,
- "reglas": [
-  "fondo fuera de la paleta",
-  "anclaje por cabeza"
- ],
+ "sin_escalar": true,
+ "fondo": "rojo puro -> transparencia",
  "anims": {
   "stance": {
    "lienzo": [
-    86,
-    147
+    285,
+    524
    ],
    "ancla": [
-    48,
-    23
+    165,
+    76
    ],
-   "pies_y": 143,
    "esperado": 8,
+   "escala": 1,
    "frames": [
     {
      "i": 0,
      "fichero": "stance/f00.png",
-     "origen": [
-      268,
-      503
+     "nativo": [
+      252,
+      502
      ],
-     "k": 3.64,
-     "casco": true,
-     "rojo": 0,
-     "casco_encontrado": true,
+     "caja_en_hoja": [
+      13,
+      54,
+      265,
+      556
+     ],
+     "cabeza": [
+      159.4,
+      66.5
+     ],
      "cortado": false
     },
     {
      "i": 1,
      "fichero": "stance/f01.png",
-     "origen": [
-      218,
-      502
+     "nativo": [
+      231,
+      500
      ],
-     "k": 3.65,
-     "casco": true,
-     "rojo": 0,
-     "casco_encontrado": true,
+     "caja_en_hoja": [
+      250,
+      56,
+      481,
+      556
+     ],
+     "cabeza": [
+      137.9,
+      62.7
+     ],
      "cortado": false
     },
     {
      "i": 2,
      "fichero": "stance/f02.png",
-     "origen": [
-      234,
-      502
+     "nativo": [
+      243,
+      500
      ],
-     "k": 3.64,
-     "casco": true,
-     "rojo": 0,
-     "casco_encontrado": true,
+     "caja_en_hoja": [
+      471,
+      56,
+      714,
+      556
+     ],
+     "cabeza": [
+      137.8,
+      63.7
+     ],
      "cortado": false
     },
     {
      "i": 3,
      "fichero": "stance/f03.png",
-     "origen": [
-      239,
-      503
+     "nativo": [
+      249,
+      502
      ],
-     "k": 3.64,
-     "casco": true,
-     "rojo": 0,
-     "casco_encontrado": true,
+     "caja_en_hoja": [
+      697,
+      54,
+      946,
+      556
+     ],
+     "cabeza": [
+      157.7,
+      66.0
+     ],
      "cortado": false
     },
     {
      "i": 4,
      "fichero": "stance/f04.png",
-     "origen": [
-      228,
-      499
+     "nativo": [
+      250,
+      498
      ],
-     "k": 3.64,
-     "casco": true,
-     "rojo": 0,
-     "casco_encontrado": true,
+     "caja_en_hoja": [
+      946,
+      58,
+      1196,
+      556
+     ],
+     "cabeza": [
+      140.5,
+      62.6
+     ],
      "cortado": false
     },
     {
      "i": 5,
      "fichero": "stance/f05.png",
-     "origen": [
-      228,
-      502
+     "nativo": [
+      254,
+      500
      ],
-     "k": 3.64,
-     "casco": true,
-     "rojo": 0,
-     "casco_encontrado": true,
+     "caja_en_hoja": [
+      1172,
+      56,
+      1426,
+      556
+     ],
+     "cabeza": [
+      140.1,
+      64.2
+     ],
      "cortado": false
     },
     {
      "i": 6,
      "fichero": "stance/f06.png",
-     "origen": [
-      222,
-      513
+     "nativo": [
+      231,
+      512
      ],
-     "k": 3.69,
-     "casco": true,
-     "rojo": 0,
-     "casco_encontrado": true,
+     "caja_en_hoja": [
+      1392,
+      45,
+      1623,
+      557
+     ],
+     "cabeza": [
+      149.8,
+      69.7
+     ],
      "cortado": false
     },
     {
      "i": 7,
      "fichero": "stance/f07.png",
-     "origen": [
-      210,
-      500
+     "nativo": [
+      242,
+      499
      ],
-     "k": 3.64,
-     "casco": true,
-     "rojo": 0,
-     "casco_encontrado": true,
+     "caja_en_hoja": [
+      1617,
+      57,
+      1859,
+      556
+     ],
+     "cabeza": [
+      139.9,
+      63.3
+     ],
      "cortado": false
     }
    ]
   },
   "walk": {
    "lienzo": [
-    85,
-    155
+    308,
+    600
    ],
    "ancla": [
-    51,
-    31
+    184,
+    80
    ],
-   "pies_y": 151,
    "esperado": 6,
+   "escala": 1,
    "frames": [
     {
      "i": 0,
      "fichero": "walk/f00.png",
-     "origen": [
-      295,
-      530
+     "nativo": [
+      296,
+      528
      ],
-     "k": 3.84,
-     "casco": true,
-     "rojo": 0,
-     "casco_encontrado": true,
+     "caja_en_hoja": [
+      13,
+      157,
+      309,
+      685
+     ],
+     "cabeza": [
+      177.8,
+      68.3
+     ],
      "cortado": false
     },
     {
      "i": 1,
      "fichero": "walk/f01.png",
-     "origen": [
-      227,
-      538
+     "nativo": [
+      240,
+      537
      ],
-     "k": 3.86,
-     "casco": true,
-     "rojo": 0,
-     "casco_encontrado": true,
+     "caja_en_hoja": [
+      276,
+      149,
+      516,
+      686
+     ],
+     "cabeza": [
+      147.8,
+      73.6
+     ],
      "cortado": false
     },
     {
      "i": 2,
      "fichero": "walk/f02.png",
-     "origen": [
-      214,
-      530
+     "nativo": [
+      242,
+      528
      ],
-     "k": 3.87,
-     "casco": true,
-     "rojo": 0,
-     "casco_encontrado": true,
+     "caja_en_hoja": [
+      476,
+      157,
+      718,
+      685
+     ],
+     "cabeza": [
+      169.1,
+      64.9
+     ],
      "cortado": false
     },
     {
      "i": 3,
      "fichero": "walk/f03.png",
-     "origen": [
-      209,
-      564
+     "nativo": [
+      260,
+      532
      ],
-     "k": 3.85,
-     "casco": true,
-     "rojo": 0,
-     "casco_encontrado": true,
+     "caja_en_hoja": [
+      702,
+      152,
+      962,
+      684
+     ],
+     "cabeza": [
+      149.3,
+      70.2
+     ],
      "cortado": false
     },
     {
      "i": 4,
      "fichero": "walk/f04.png",
-     "origen": [
-      214,
+     "nativo": [
+      230,
       586
      ],
-     "k": 4.28,
-     "casco": true,
-     "rojo": 0,
-     "casco_encontrado": true,
+     "caja_en_hoja": [
+      905,
+      100,
+      1135,
+      686
+     ],
+     "cabeza": [
+      157.9,
+      72.0
+     ],
      "cortado": false
     },
     {
      "i": 5,
      "fichero": "walk/f05.png",
-     "origen": [
-      217,
+     "nativo": [
+      270,
       527
      ],
-     "k": 3.83,
-     "casco": true,
-     "rojo": 0,
-     "casco_encontrado": true,
+     "caja_en_hoja": [
+      1118,
+      158,
+      1388,
+      685
+     ],
+     "cabeza": [
+      160.6,
+      67.0
+     ],
      "cortado": false
     }
    ]

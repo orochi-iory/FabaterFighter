@@ -54,7 +54,7 @@
   .galeria figure { margin:0; background:#161022; border:2px solid transparent; border-radius:8px; padding:4px; cursor:pointer; }
   .galeria figure:hover { border-color:#4a4767; }
   .galeria figure.sel { border-color:var(--cyan); }
-  .galeria img { display:block; width:58px; height:auto; image-rendering:pixelated; }
+  .galeria img { display:block; height:110px; width:auto; image-rendering:pixelated; }
   .galeria figcaption { font-size:10px; color:#9b93b8; text-align:center; }
   .par { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
   figure.zoom { margin:0; }
@@ -113,10 +113,11 @@
         <option value="walk">walk</option>
       </select>
       <select id="scale">
-        <option value="3">3×</option>
-        <option value="4" selected>4×</option>
-        <option value="6">6×</option>
-        <option value="8">8×</option>
+        <option value="0.25">25 %</option>
+        <option value="0.35">35 %</option>
+        <option value="0.5" selected>50 % · nativo cómodo</option>
+        <option value="0.75">75 %</option>
+        <option value="1">100 % · tamaño real</option>
       </select>
       <select id="bg">
         <option value="">Fondo ajedrez</option>
@@ -166,24 +167,54 @@
   </section>
 
   <section class="card wide">
-    <h2>Medidas</h2>
+    <h2>Por qué se veía sucio (medido)</h2>
+    <p class="sub">La imagen que devuelve la IA <b>parece</b> pixel art, pero no lo es. Estos son los
+       números de la hoja que acabas de darme:</p>
     <table>
-      <tr><th>Métrica</th><th>Hoja nueva</th><th>Comprobado</th></tr>
-      <tr><td>Fondo</td><td>(251, 2, 0) rojo puro</td><td class="ok">fuera de la paleta de Voltia</td></tr>
-      <tr><td>Rojo residual en los sprites</td><td>—</td><td class="ok">0 px</td></tr>
-      <tr><td>Frames cortados</td><td>—</td><td class="ok">0</td></tr>
-      <tr><td>Cabeza / pies</td><td>—</td><td class="ok">anclados en los 14 sprites</td></tr>
-      <tr><td>Colores</td><td>24 598 (stance) · 17 433 (walk)</td><td class="bad">sigue siendo ilustración, no paleta cerrada</td></tr>
-      <tr><td>stance / walk</td><td>8 / 6 sprites</td><td class="ok">una sola fila, mismo diseño</td></tr>
+      <tr><th>Medida de la hoja</th><th>Valor</th><th>Qué significa</th></tr>
+      <tr><td>Colores distintos</td><td class="bad">152 107</td><td>un sprite de verdad usa 16-24</td></tr>
+      <tr><td>Colores usados en un solo píxel</td><td class="bad">107 220</td><td>casi todos los tonos son ruido de suavizado</td></tr>
+      <tr><td>Bloques 2×2 uniformes</td><td class="bad">8,0 %</td><td>no hay rejilla de píxel debajo</td></tr>
+      <tr><td>Transiciones suaves</td><td class="bad">88,2 %</td><td>cada borde es una rampa de color, no un escalón</td></tr>
     </table>
     <div class="note" style="margin-top:10px">
-      <b>Lo arreglado:</b> el fondo ya no se come el color —antes cuantizaba a 24 colores y el
-      dorado del cinturón salía crema—; el stance ya no mezcla dos hileras de diseño; y el
-      centrado por cabeza está en los 14 sprites. El walk no tiene sprites repetidos.
+      <b>Y esto es lo que hacía mi recorte anterior:</b> reducía con un factor <b>fraccionario</b>
+      (3,83 a 4,28, distinto en cada frame) para forzar 120 px de cabeza a pies. Al reducir,
+      cada píxel de salida se lleva un trozo de bloque diferente: las líneas de 1 px —el filo
+      cian de las botas, el rayo del pecho— se rompen, y la imagen pierde 30 000 colores de golpe.
+      Eso es exactamente el «se ve reducido y sucio» que notabas.
       <br><br>
-      <b>Lo que queda:</b> la IA sigue entregando ilustración suave (24 000 colores), así que al
-      bajar a rejilla se pierde algo de filo. El modelo ya es el estilizado que querías, pero para
-      que sea paleta cerrada de verdad hay que redibujar sobre esta base, no filtrarla.
+      <b>Lo que hace ahora:</b> <b>nada de reducir</b>. Se convierte el rojo en transparencia pura
+      y se recorta a resolución nativa: 285 × 524 px de lienzo, sprite intacto, 32 000 colores
+      conservados. Si en el juego hace falta un tamaño menor, se reduce después y de una vez, con
+      factor entero, nunca dentro del recorte.
+    </div>
+  </section>
+
+  <section class="card wide">
+    <h2>Separación de sprites pegados</h2>
+    <p class="sub">Las hojas vienen con los sprites casi tocándose, así que cortar por columnas
+       cortaba cuerpos. Ahora cada píxel no-rojo se asigna a la <b>cabeza más cercana</b>
+       (recorrido en anchura desde cada casco):</p>
+    <div class="note">
+      · cada píxel pertenece a <b>un único</b> sprite: nadie se lleva un trozo del vecino<br>
+      · dos sprites que se tocan se reparten por el punto medio entre sus cabezas<br>
+      · lo que no cuelga de ninguna cabeza (una mota suelta) se descarta
+    </div>
+    <table style="margin-top:10px">
+      <tr><th>Métrica</th><th>Antes</th><th>Ahora</th></tr>
+      <tr><td>Rojo residual en los sprites</td><td class="bad">14 px</td><td class="ok">0 px</td></tr>
+      <tr><td>Frames cortados</td><td class="bad">algunos</td><td class="ok">0 de 14</td></tr>
+      <tr><td>Reducción</td><td class="bad">÷3,83-4,28 (fraccionaria)</td><td class="ok">ninguna (1:1)</td></tr>
+      <tr><td>Colores del sprite</td><td class="bad">~2 100</td><td class="ok">32 000 (los nativos)</td></tr>
+      <tr><td>stance / walk</td><td>8 / 6</td><td class="ok">8 / 6</td></tr>
+    </table>
+    <div class="note" style="margin-top:10px">
+      <b>Pendiente honesto:</b> como no se reduce, el sprite mide 285-308 px de ancho. Para el
+      juego hay que bajarlo a la rejilla de arte (unos 94 × 151) y eso <b>sí</b> perderá detalle,
+      porque el dibujo de la IA no tiene rejilla propia. La solución de verdad es pedirle a la IA
+      la hoja con rejilla explícita (bloques de 4 px visibles) o redibujar los 14 sprites a mano
+      sobre esta base, que ya es el diseño que quieres.
     </div>
   </section>
 
@@ -235,18 +266,22 @@
     return s;
   }
 
-  const z = () => +document.getElementById('scale').value || 4;
+  const z = () => {
+    const v = +document.getElementById('scale').value;
+    return v > 0 ? v : 0.5;
+  };
   const fps = () => +document.getElementById('fps').value || 10;
 
   async function pintar() {
     const m = meta();
     const [W, H] = m.lienzo;
     const s = z();
-    cv.width = W * s; cv.height = H * s;
+    cv.width = Math.round(W * s); cv.height = Math.round(H * s);
     cx.imageSmoothingEnabled = false;
     cx.clearRect(0, 0, cv.width, cv.height);
     const im = seq.length ? await cargar(seq[idx % seq.length]) : null;
-    if (im) cx.drawImage(im, 0, 0, W, H, 0, 0, W * s, H * s);
+    // se dibuja a resolucion nativa sobre un canvas ya escalado: sale nitido, sin remuestreo
+    if (im) cx.drawImage(im, 0, 0, W, H, 0, 0, cv.width, cv.height);
     if (guias) {
       const [ax, ay] = m.ancla;
       cx.strokeStyle = 'rgba(255,60,60,.85)';

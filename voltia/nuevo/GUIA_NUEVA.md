@@ -97,46 +97,34 @@ nativo, no con filtros.
 
 Tamaño medido del stance: **94 × 151 px de arte** (antes, con la erosión, 95 × 150).
 
-## Creador de personajes · reglas de oro (2026-10-20)
+## Regla de oro 4 · no reducir (2026-10-20)
 
-La página `preview/nuevo.html` pasa a ser un **creador de personajes**: galería de sprites de
-cada movimiento, secuencia editable (añadir, quitar, reordenar) y visor en vivo. Las secuencias
-se guardan en el navegador (`localStorage`), por movimiento.
+**El problema:** la IA entrega imágenes que *parecen* pixel art pero no lo son. Medido en la
+hoja de walk nueva (1408 × 768):
 
-### Las tres reglas de oro
-
-1. **FONDO**: el fondo tiene que ser un color que **no exista** en la paleta del sprite. Aquí
-   rojo puro `(255,0,0)`. Se anula solo ese rojo y el de su antialias; ningún otro tono se toca.
-   Si hay que sacrificar un tono del sprite para extraerlo sin ruido, se sacrifica.
-2. **CABEZA**: el anclaje es el centro del casco magenta, no la caja del sprite. Centrar por la
-   caja hace que la coleta mande y el personaje baile. Se normaliza la distancia cabeza-pies.
-3. **SIN RECONSTRUIR**: nada de LANCZOS y **nada de cuantizar** a pocos colores al recortar.
-   Cuantizar a 24 colores apagaba el dibujo (el dorado del cinturón salía crema). Se bajan los
-   tonos originales y solo se anula el fondo.
-
-### Errores corregidos en esta vuelta
-
-| problema | causa | arreglo |
+| medida | valor | qué significa |
 |---|---|---|
-| el color se apagaba | `quantize` a 24 colores y dithering | sin cuantizar: se conservan los tonos |
-| sprites mutilados | cortes por columnas fijas | corte a mitad de camino entre **cabezas** |
-| sprites repetidos en el walk | huecos falsos, trozos de sprites vecinos | corte por cabeza + limpieza de piezas sueltas |
-| stance incoherente | dos hileras de diseño mezcladas | hoja nueva en **una sola fila** |
+| colores distintos | **152 107** | un sprite real usa 16-24 |
+| colores usados en 1 píxel | **107 220** | casi todos son ruido de suavizado |
+| bloques 2×2 uniformes | **8,0 %** | no hay rejilla debajo |
+| transiciones suaves | **88,2 %** | los bordes son rampas, no escalones |
 
-### Medidas
+**El error que lo estropeaba:** reducir con factor **fraccionario** (3,83-4,28, distinto en cada
+frame) para cuadrar los 120 px de cabeza a pies. Al reducir, cada píxel de salida coge un trozo
+de bloque distinto: las líneas de 1 px (filo cian de las botas, rayo del pecho) se rompen y se
+pierden unos 30 000 colores. Eso era el «se ve reducido y sucio».
 
-| | valor |
-|---|---|
-| fondo | `(251, 2, 0)` rojo puro, fuera de la paleta de Voltia |
-| rojo residual en los sprites | **0 px** |
-| frames cortados | **0** de 14 |
-| cabeza / pies | anclados en los 14 sprites |
-| stance / walk | 8 / 6 sprites, una fila, mismo diseño |
-| colores | 24 598 / 17 433 (sigue siendo ilustración) |
+**La regla:** al recortar **no se reduce**. Rojo → transparencia pura y listo; el sprite queda a
+resolución nativa. Si hace falta un tamaño menor para el juego, se reduce después, una sola vez y
+con **factor entero**, nunca dentro del recorte.
 
-Ficheros: `voltia/nuevo/creador/{sheet_stance,sheet_walk,ref_voltia_diseno,ref_estilo_cammy,
-ref_estilo_detalle}.png`, `voltia/nuevo/creador/trocear.py`,
-`voltia/nuevo/creador/sprites/<anim>/fNN.png`, `datos.json`.
+### Separación de sprites pegados
+
+Cada píxel no-rojo se asigna a la **cabeza más cercana** (BFS multi-fuente desde cada casco). Así
+cada píxel pertenece a un único sprite, los que se tocan se reparten por el punto medio y ninguna
+mota suelta se cuela. Resultado: 0 px de rojo residual, 0 frames cortados de 14.
+
+Lienzos: stance 285 × 524 (ancla de cabeza 165, 76), walk 308 × 600 (184, 80). Sin escalar.
 
 ## Chun-Li
 
