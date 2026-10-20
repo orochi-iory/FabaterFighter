@@ -69,6 +69,7 @@
   .layers { color:#d8d6ea; font-size:13px; line-height:1.55; margin:12px 0 0; }
   .aro-grid { display:flex; gap:14px; flex-wrap:wrap; justify-content:center; margin:14px 0 4px; }
   .aro-grid figure { margin:0; max-width:560px; }
+  .aro-grid figure.wide { flex:1 1 100%; max-width:100%; }
   .aro-grid img { width:100%; height:auto; image-rendering:pixelated; border-radius:8px;
     display:block; background:#101018; }
   .aro-grid figcaption { color:#9d9ab5; font-size:12px; margin-top:6px; line-height:1.45; }
@@ -92,12 +93,12 @@
   <a href="nuevo.html">② Modelo nuevo</a>
   <a href="chunli.html">③ Chun-Li</a>
   <a href="fight.html">⚔ Pelea</a>
-  <a href="aro.html">⚡ Prueba: sin el aro negro</a>
+  <a href="aro.html">⚡ Prueba: aro adelgazado</a>
   <a href="guia-vieja.html">📖 Guía del original</a>
 </nav>
 <header>
   <h1>⚡ VOLTIA ⚡</h1>
-  <p style="margin:0 0 8px"><b style="color:#96ffeb">v0.6.1 · prueba del aro negro</b> — el apartado está justo debajo, con la comparación y el GIF.</p>
+  <p style="margin:0 0 8px"><b style="color:#96ffeb">v0.6.2 · prueba del aro adelgazado</b> — el apartado está justo debajo, con la comparación y el GIF.</p>
   <p id="ver">cargando…</p>
   <a class="play" href="fight.html">Probar pelea · Voltia vs Voltia</a>
   <a class="play alt" href="guia-vieja.html">Guía de este personaje</a>
@@ -107,44 +108,52 @@
   <p id="syncwarn"></p>
 </header>
 <section class="arena" id="aro">
-  <h2>Prueba · quitarle el aro negro</h2>
+  <h2>Prueba · adelgazar el aro negro</h2>
   <div class="box">
-    <p class="layers">El modelo original lleva un aro negro alrededor de la silueta: no es un contorno de 1-2 px,
-      en la coleta llega a <b>10-12 px</b> de grosor. En un frame de stance son <b>9388 px casi negros de 32644
-      opacos (29 %)</b>. Abajo está el mismo frame, el original y la prueba, y los 15 frames del stance en los dos.</p>
+    <p class="layers">El modelo original lleva un aro negro pegado a la silueta: no es un contorno de 1-2 px,
+      en la coleta llega a <b>10-12 px</b>. En un frame de stance son <b>9388 px casi negros de 32644
+      opacos (29 %)</b>. Lo primero que probé fue <b>borrarlo</b> y salió peor: al quitar el negro se va
+      también lo que sujetaba el dibujo, la mano deja de tocar el brazo y el cinturón y la bota se parten.
+      Así que ahora <b>no se borra: se adelgaza</b>.</p>
 
     <div class="aro-grid">
-      <figure>
-        <img src="../voltia/outline_comparacion.png" alt="Original y prueba sin el aro, a 2x, y los 15 frames del stance">
-        <figcaption>Arriba: original (izquierda) y sin el aro (derecha), a 2x. Abajo: los 15 frames del stance,
-          primero sin el aro y después los del original.</figcaption>
+      <figure class="wide">
+        <img src="../voltia/outline_comparacion.png" alt="Original y aro adelgazado a 2x, y los 15 frames del stance">
+        <figcaption>Arriba: original (izquierda) y con el aro adelgazado (derecha), a 2×. Abajo: los 15
+          frames del stance en las dos versiones.</figcaption>
       </figure>
       <figure>
-        <img src="../voltia/outline_fila0.gif" alt="GIF de los 15 frames del stance sin el aro">
-        <figcaption>El stance entero, sin el aro, a 10 fps.</figcaption>
+        <img src="../voltia/outline_fila0.gif" alt="GIF de los 15 frames del stance con el aro adelgazado">
+        <figcaption>El stance entero, a 10 fps.</figcaption>
       </figure>
     </div>
 
     <table class="aro-nums">
-      <tr><th>medido en la fila 0 (15 frames)</th><th>original</th><th>sin el aro</th></tr>
-      <tr><td>píxeles casi negros</td><td>143 371</td><td><b>0</b></td></tr>
-      <tr><td>píxeles opacos</td><td>486 676</td><td>328 615 (−32,5 %)</td></tr>
-      <tr><td>alto de tinta (mediana)</td><td>294 px</td><td>287 px (−7)</td></tr>
-      <tr><td>ancho de tinta</td><td>186-240 px</td><td>158-228 px (hasta −26)</td></tr>
+      <tr><th>medido en la fila 0 (15 frames)</th><th>original</th><th>aro adelgazado</th></tr>
+      <tr><td>píxeles casi negros</td><td>143 371</td><td><b>3 308</b> (2,3 %)</td></tr>
+      <tr><td>píxeles opacos (silueta)</td><td>486 676</td><td>486 676 — <b>igual</b></td></tr>
+      <tr><td>alto / ancho de tinta (frame 0)</td><td>302 × 188 px</td><td>302 × 188 px — <b>igual</b></td></tr>
+      <tr><td>grosor del aro</td><td>1-2 px en la cara, 10-12 px en la coleta</td><td><b>2 px</b></td></tr>
     </table>
 
-    <p class="layers">Cómo se hace, en una línea: el negro se separa <b>por topología, no por grosor</b>. El que está
-      <b>conectado con el fondo</b> es el aro y se borra; el que está <b>encerrado por el dibujo</b> es línea de dibujo
-      (brazo sobre torso, rodilla, pliegues) y se queda intacto. Después, 1 px de borde oscurecido al 55 % y fuera las
-      islas de menos de 12 px.</p>
-    <p class="layers">El precio, dicho claro: <b>el personaje adelgaza exactamente lo que medía el aro</b> (7 px de alto,
-      hasta 26 de ancho) y las piezas que solo estaban separadas por negro se quedan con 1 px de aire (se nota en la
-      zapatilla). No hay dibujo inventado: es el sprite original sin el aro. <b>La hoja original no se ha tocado.</b>
+    <p class="layers">Cómo se hace, sin tocar un solo píxel de alfa:</p>
+    <ol class="layers">
+      <li>el negro se mide <b>por profundidad desde la transparencia</b>: 1 = toca el fondo;</li>
+      <li>el borde de fuera (2 px) <b>se queda, pero oscurecido</b> un 32 % del color de al lado: deja de
+        ser negro puro y pasa a ser un contorno del tono del dibujo;</li>
+      <li>el resto del aro, que era el grosor feo, se rellena con el <b>color del trozo de dibujo más
+        cercano</b> (distancia de chamfer, no difusión: la difusión inunda el aro con el primer color que
+        entra y saca un halo);</li>
+      <li>los <b>trazos finos</b> (negro con color a los dos lados en un radio de 2 px) se quedan
+        intactos: son el dibujo (brazo sobre torso, correas de la bota, cinturón).</li>
+    </ol>
+    <p class="layers">Resultado: la silueta es <b>exactamente la misma</b> (mismos 486 676 px opacos, mismo
+      alto y ancho), pero el contorno pasa de 1-12 px negro a <b>2 px</b> del color de la paleta, y el
+      dibujo de dentro sigue entero. <b>La hoja original no se ha tocado.</b>
       Ficheros: <code>voltia/outline_fila0.png</code>, <code>.gif</code>, <code>outline_comparacion.png</code>;
       herramienta: <code>tools/voltia_outline.py</code>.</p>
   </div>
 </section>
-
 <main>
   <div class="stage">
     <canvas id="anim"></canvas>

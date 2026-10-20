@@ -3,39 +3,88 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Voltia · prueba sin el aro negro</title>
+<title>Voltia · prueba del aro adelgazado</title>
 <style>
-  :root { --bg:#150f1f; --panel:#222033; --line:#3a3752; --gold:#ffcb3d; --cyan:#96ffeb; }
-  * { box-sizing:border-box; }
-  body { margin:0; background:var(--bg); color:#eee; font-family:system-ui,sans-serif; }
-  nav.models { position:sticky; top:0; z-index:9; display:flex; gap:8px; justify-content:center;
-    padding:10px; background:#0e0a16ee; border-bottom:2px solid var(--line); flex-wrap:wrap; }
+  :root { --bg:#181624; --panel:#222033; --cyan:#96ffeb; }
+  * { box-sizing: border-box; }
+  body { margin:0; font-family: system-ui, sans-serif; background:#181624; color:#eee;
+         display:flex; flex-direction:column; align-items:center; min-height:100vh; }
+  header { text-align:center; padding:20px 12px 8px; max-width:900px; }
+  header h1 { margin:0; color:#ffcb3d; letter-spacing:2px; }
+  header p { margin:6px 0 0; color:#96ffeb; }
+  header p.notes { color:#9d9ab5; font-size:14px; }
+  header p.notes b { color:#ffcb3d; }
+  header p#syncwarn { display:none; color:#ff7b7b; font-weight:bold; }
+  a.play { display:inline-block; margin-top:10px; background:#ffcb3d; color:#181624;
+    text-decoration:none; font-weight:700; padding:8px 14px; border-radius:8px; letter-spacing:0.3px; }
+  a.play:hover { background:#ffe08a; }
+  a.play.alt { background:transparent; color:#ffcb3d; border:2px solid #ffcb3d; margin-left:8px; }
+  a.play.alt:hover { background:#ffcb3d; color:#181624; }
+  .controls a.play { margin-top:0; padding:8px 12px; font-size:14px; }
+  main { display:flex; gap:20px; flex-wrap:wrap; justify-content:center; padding:16px;
+         width:100%; max-width:1200px; }
+  .stage { background:#222033; border:2px solid #3a3752; border-radius:12px; padding:16px;
+           display:flex; flex-direction:column; align-items:center; gap:12px; }
+  canvas#anim { image-rendering:pixelated; border-radius:8px;
+    background: repeating-conic-gradient(#2c2a40 0 25%, #242233 0 50%) 0 0/32px 32px; }
+  canvas#anim.solid { background:#101018; }
+  canvas#anim.magenta { background:#c0c; }
+  canvas#anim.green { background:#00ff00; }
+  .controls { display:flex; gap:8px; flex-wrap:wrap; justify-content:center; align-items:center; }
+  button, select { background:#35324e; color:#eee; border:1px solid #4a4767; border-radius:8px;
+    padding:8px 12px; cursor:pointer; font-size:14px; }
+  button:hover, select:hover { background:#454163; }
+  button.active { background:#0e7c8c; border-color:#96ffeb; color:#fff; }
+  .anims { display:grid; grid-template-columns:repeat(3, 1fr); gap:8px; }
+  .info { color:#9d9ab5; font-size:14px; }
+  .info b { color:#ffcb3d; }
+  #say { color:#ffcb3d; margin-top:4px; min-height:1.2em; font-style:italic; }
+  canvas#strip { image-rendering:pixelated; border-radius:8px; max-width:100%;
+    background: repeating-conic-gradient(#2c2a40 0 25%, #242233 0 50%) 0 0/24px 24px; }
+
+  section.manual { width:100%; max-width:1200px; padding:0 16px 16px; }
+  .card { background:#222033; border:2px solid #3a3752; border-radius:12px; padding:20px;
+          display:flex; gap:20px; flex-wrap:wrap; }
+  .card img.concept { width:300px; max-width:100%; border-radius:8px; border:1px solid #4a4767;
+                      align-self:flex-start; }
+  .card .bio { flex:1; min-width:260px; }
+  .card .bio h2 { margin:0 0 8px; color:#ffcb3d; letter-spacing:1px; }
+  .card .bio p { color:#d8d6ea; line-height:1.5; }
+  .card .bio p.draft { color:#9d9ab5; font-size:13px; }
+  table.moves { border-collapse:collapse; margin-top:12px; width:100%; font-size:14px; }
+  table.moves th, table.moves td { border:1px solid #3a3752; padding:5px 10px; text-align:left; }
+  table.moves th { background:#35324e; color:#96ffeb; }
+  table.moves tr.group td { background:#2c2a40; color:#ffcb3d; font-weight:bold; }
+  table.moves td.st { text-align:center; }
+  table.moves tr.missing td { color:#6d6b85; }
+  footer { color:#6d6b85; font-size:13px; padding:10px; text-align:center; }
+  section.arena { width:100%; max-width:1200px; padding:0 16px 24px; }
+  section.arena h2 { color:#ffcb3d; letter-spacing:1px; margin:8px 0; }
+  section.arena .box { background:#222033; border:2px solid #3a3752; border-radius:12px; padding:16px; }
+  canvas#stagecv { image-rendering:pixelated; width:100%; max-width:960px; height:auto;
+    background:#101018; border-radius:8px; display:block; margin:0 auto; }
+  .arena .controls { margin-top:12px; }
+  .arena label { color:#9d9ab5; font-size:13px; display:flex; align-items:center; gap:6px; }
+  .arena input[type=range] { width:140px; }
+  .layers { color:#d8d6ea; font-size:13px; line-height:1.55; margin:12px 0 0; }
+  .aro-grid { display:flex; gap:14px; flex-wrap:wrap; justify-content:center; margin:14px 0 4px; }
+  .aro-grid figure { margin:0; max-width:560px; }
+  .aro-grid figure.wide { flex:1 1 100%; max-width:100%; }
+  .aro-grid img { width:100%; height:auto; image-rendering:pixelated; border-radius:8px;
+    display:block; background:#101018; }
+  .aro-grid figcaption { color:#9d9ab5; font-size:12px; margin-top:6px; line-height:1.45; }
+  .aro-nums { border-collapse:collapse; font-size:13px; margin:10px 0 0; color:#d8d6ea; }
+  .aro-nums th, .aro-nums td { border-bottom:1px solid #3a3752; padding:5px 10px; text-align:left; }
+  .aro-nums th { color:#ffcb3d; }
+  .layers b { color:#96ffeb; }
+
+  nav.models { position:sticky; top:0; z-index:99; display:flex; gap:8px; justify-content:center;
+    padding:10px; background:#0e0a16ee; border-bottom:2px solid #3d3358; flex-wrap:wrap;
+    font-family:system-ui,sans-serif; }
   nav.models a { text-decoration:none; padding:9px 16px; border-radius:10px; font-weight:700;
-    letter-spacing:.5px; font-size:14px; border:2px solid var(--line); color:#cfc9e6; }
-  nav.models a:hover { border-color:var(--cyan); color:var(--cyan); }
-  nav.models a.on { background:var(--gold); color:#150f1f; border-color:var(--gold); }
-  header { padding:26px 18px 6px; max-width:1180px; margin:0 auto; }
-  header h1 { margin:0 0 10px; color:var(--gold); letter-spacing:2px; font-size:26px; }
-  header p { color:#b9b6cc; line-height:1.6; max-width:940px; }
-  header p b { color:var(--cyan); }
-  main { max-width:1180px; margin:0 auto; padding:6px 18px 60px; }
-  .box { background:var(--panel); border:2px solid var(--line); border-radius:14px; padding:18px; margin:18px 0; }
-  .box h2 { margin:0 0 10px; font-size:17px; color:var(--gold); }
-  .par { display:flex; gap:16px; flex-wrap:wrap; }
-  .par figure { margin:0; flex:1 1 420px; }
-  .par img { width:100%; height:auto; image-rendering:pixelated; background:#101018;
-    border-radius:10px; display:block; border:1px solid var(--line); }
-  figcaption { color:#9d9ab5; font-size:12.5px; line-height:1.5; margin-top:7px; }
-  table { border-collapse:collapse; width:100%; font-size:13.5px; margin-top:6px; }
-  th, td { border-bottom:1px solid var(--line); padding:7px 10px; text-align:left; }
-  th { color:var(--gold); background:#1d1a2e; }
-  td b { color:var(--cyan); }
-  p, li { color:#c3c0d4; line-height:1.65; font-size:14px; }
-  code { color:var(--cyan); }
-  .big { image-rendering:pixelated; width:100%; height:auto; border-radius:10px; background:#101018;
-    border:1px solid var(--line); display:block; }
-  .fila { display:flex; gap:14px; align-items:flex-start; flex-wrap:wrap; }
-  .fila > * { flex:1 1 420px; }
+    letter-spacing:.5px; font-size:14px; border:2px solid #3d3358; color:#cfc9e6; }
+  nav.models a:hover { border-color:#96ffeb; color:#96ffeb; }
+  nav.models a.on { background:#ffcb3d; color:#150f1f; border-color:#ffcb3d; }
 </style>
 </head>
 <body>
@@ -44,80 +93,452 @@
   <a href="nuevo.html">② Modelo nuevo</a>
   <a href="chunli.html">③ Chun-Li</a>
   <a href="fight.html">⚔ Pelea</a>
-  <a href="aro.html" class="on">⚡ Prueba: sin el aro negro</a>
+  <a href="aro.html" class="on">⚡ Prueba: aro adelgazado</a>
+  <a href="guia-vieja.html">📖 Guía del original</a>
 </nav>
-
 <header>
-  <h1>⚡ Voltia sin el aro negro ⚡</h1>
-  <p>El modelo original lleva un aro negro pegado a la silueta. No es un contorno de 1-2 px:
-     <b>en la coleta llega a 10-12 px</b> de grosor. En el frame 0 del stance son
-     <b>9388 px casi negros de 32644 opacos (29 %)</b>.</p>
-  <p>Esto es una <b>prueba sobre una copia</b>: la hoja original
-     (<code>voltia/sheet_uniform.png</code>) no se ha tocado ni un píxel. Se ha limpiado solo
-     la fila 0 (los 15 frames del stance) para que se pueda juzgar.</p>
+  <h1>⚡ VOLTIA ⚡</h1>
+  <p style="margin:0 0 8px"><b style="color:#96ffeb">v0.6.2 · prueba del aro adelgazado</b> — el apartado está justo debajo, con la comparación y el GIF.</p>
+  <p id="ver">cargando…</p>
+  <a class="play" href="fight.html">Probar pelea · Voltia vs Voltia</a>
+  <a class="play alt" href="guia-vieja.html">Guía de este personaje</a>
+  <p class="notes">Estás en el <b>modelo original</b>: el que pelea. El modelo nuevo se abre desde el menú de arriba.
+  La prueba de quitarle el aro negro está <a href="#aro" style="color:#96ffeb">aquí abajo ↓</a>.</p>
+  <p class="notes" id="notes"></p>
+  <p id="syncwarn"></p>
 </header>
-
-<main>
+<section class="arena" id="aro">
+  <h2>Prueba · adelgazar el aro negro</h2>
   <div class="box">
-    <h2>El mismo frame: original y sin el aro (a 2×)</h2>
-    <img class="big" src="../voltia/outline_comparacion.png"
-         alt="Comparación: original a la izquierda, sin el aro a la derecha, y los 15 frames del stance en las dos versiones">
-    <figcaption>Arriba: original (izquierda) y sin el aro (derecha), a 2×. Abajo: los 15 frames del
-      stance, primero sin el aro y después los del original.</figcaption>
-  </div>
+    <p class="layers">El modelo original lleva un aro negro pegado a la silueta: no es un contorno de 1-2 px,
+      en la coleta llega a <b>10-12 px</b>. En un frame de stance son <b>9388 px casi negros de 32644
+      opacos (29 %)</b>. Lo primero que probé fue <b>borrarlo</b> y salió peor: al quitar el negro se va
+      también lo que sujetaba el dibujo, la mano deja de tocar el brazo y el cinturón y la bota se parten.
+      Así que ahora <b>no se borra: se adelgaza</b>.</p>
 
-  <div class="box">
-    <h2>Los 15 frames del stance sin el aro, en movimiento</h2>
-    <div class="fila">
-      <figure style="margin:0">
-        <img src="../voltia/outline_fila0.gif" alt="GIF de los 15 frames del stance sin el aro">
-        <figcaption>10 fps, 2×. Se ve si el corte aguanta frame a frame.</figcaption>
+    <div class="aro-grid">
+      <figure class="wide">
+        <img src="../voltia/outline_comparacion.png" alt="Original y aro adelgazado a 2x, y los 15 frames del stance">
+        <figcaption>Arriba: original (izquierda) y con el aro adelgazado (derecha), a 2×. Abajo: los 15
+          frames del stance en las dos versiones.</figcaption>
       </figure>
-      <figure style="margin:0">
-        <img src="../voltia/outline_fila0.png" alt="La fila 0 de la hoja con el aro quitado">
-        <figcaption>La fila 0 entera, celda a celda, tal como sale del script
-          (<code>voltia/outline_fila0.png</code>).</figcaption>
+      <figure>
+        <img src="../voltia/outline_fila0.gif" alt="GIF de los 15 frames del stance con el aro adelgazado">
+        <figcaption>El stance entero, a 10 fps.</figcaption>
       </figure>
     </div>
-  </div>
 
-  <div class="box">
-    <h2>Las medidas</h2>
-    <table>
-      <tr><th>medido en la fila 0 (15 frames)</th><th>original</th><th>sin el aro</th></tr>
-      <tr><td>píxeles casi negros (<code>max(r,g,b) ≤ 6</code>)</td><td>143 371</td><td><b>0</b></td></tr>
-      <tr><td>píxeles opacos</td><td>486 676</td><td>328 615 (−32,5 %)</td></tr>
-      <tr><td>alto de tinta (mediana de los 15)</td><td>294 px</td><td>287 px (−7)</td></tr>
-      <tr><td>ancho de tinta</td><td>186-240 px</td><td>158-228 px (hasta −26)</td></tr>
-      <tr><td>grosor del aro</td><td>1-2 px en la cara, 10-12 px en la coleta</td><td>0</td></tr>
+    <table class="aro-nums">
+      <tr><th>medido en la fila 0 (15 frames)</th><th>original</th><th>aro adelgazado</th></tr>
+      <tr><td>píxeles casi negros</td><td>143 371</td><td><b>3 308</b> (2,3 %)</td></tr>
+      <tr><td>píxeles opacos (silueta)</td><td>486 676</td><td>486 676 — <b>igual</b></td></tr>
+      <tr><td>alto / ancho de tinta (frame 0)</td><td>302 × 188 px</td><td>302 × 188 px — <b>igual</b></td></tr>
+      <tr><td>grosor del aro</td><td>1-2 px en la cara, 10-12 px en la coleta</td><td><b>2 px</b></td></tr>
     </table>
-  </div>
 
-  <div class="box">
-    <h2>Cómo se hace, y el precio</h2>
-    <p><b>El negro se separa por topología, no por grosor.</b> El negro <b>conectado con el fondo</b>
-       es el aro y se borra. El negro <b>encerrado por el dibujo</b> es línea de dibujo (brazo sobre
-       torso, rodilla, pliegues) y se queda intacto. Después, 1 px de borde oscurecido al 55 % para
-       que el personaje no flote, y fuera las islas de menos de 12 px.</p>
-    <p>Por qué no se hace de otra forma, probado antes y descartado:</p>
-    <ul>
-      <li><b>Rellenar todo el negro con el color de al lado:</b> se van las líneas internas y queda
-        una pegatina plana.</li>
-      <li><b>Rellenar por difusión desde el borde:</b> la onda corre <i>por dentro</i> del aro, que es
-        un tubo, y el primer color que entra lo inunda: el cian del traje se comía la coleta entera.</li>
-      <li><b>Relleno en línea recta en 8 direcciones:</b> el color es correcto pero salta de un trozo
-        a otro, sale moteado.</li>
-      <li><b>Pintar el aro de su propio color (sin borrarlo):</b> conserva el volumen, pero queda un
-        halo difuminado, no un contorno limpio.</li>
-    </ul>
-    <p><b>El precio, dicho claro:</b> al quitar el aro <b>el personaje adelgaza exactamente lo que
-       medía el aro</b> (7 px de alto, hasta 26 de ancho), y las piezas que solo estaban separadas por
-       negro se quedan con 1 px de aire (se nota en la zapatilla). No hay dibujo inventado: es el
-       sprite original sin el aro.</p>
-    <p>Se puede lanzar a la hoja entera con
-       <code>PYTHONPATH=tools/pylibs python3 tools/voltia_outline.py</code>
-       (fila a fila: <code>--celdas 0</code>). Escribe hoja aparte, nunca encima de la original.</p>
+    <p class="layers">Cómo se hace, sin tocar un solo píxel de alfa:</p>
+    <ol class="layers">
+      <li>el negro se mide <b>por profundidad desde la transparencia</b>: 1 = toca el fondo;</li>
+      <li>el borde de fuera (2 px) <b>se queda, pero oscurecido</b> un 32 % del color de al lado: deja de
+        ser negro puro y pasa a ser un contorno del tono del dibujo;</li>
+      <li>el resto del aro, que era el grosor feo, se rellena con el <b>color del trozo de dibujo más
+        cercano</b> (distancia de chamfer, no difusión: la difusión inunda el aro con el primer color que
+        entra y saca un halo);</li>
+      <li>los <b>trazos finos</b> (negro con color a los dos lados en un radio de 2 px) se quedan
+        intactos: son el dibujo (brazo sobre torso, correas de la bota, cinturón).</li>
+    </ol>
+    <p class="layers">Resultado: la silueta es <b>exactamente la misma</b> (mismos 486 676 px opacos, mismo
+      alto y ancho), pero el contorno pasa de 1-12 px negro a <b>2 px</b> del color de la paleta, y el
+      dibujo de dentro sigue entero. <b>La hoja original no se ha tocado.</b>
+      Ficheros: <code>voltia/outline_fila0.png</code>, <code>.gif</code>, <code>outline_comparacion.png</code>;
+      herramienta: <code>tools/voltia_outline.py</code>.</p>
+  </div>
+</section>
+<main>
+  <div class="stage">
+    <canvas id="anim"></canvas>
+    <div class="controls">
+      <button id="play">⏸ Pausar</button>
+      <button id="step">⏭ Frame</button>
+      <select id="scale">
+        <option value="1">Escala 1x (arte)</option>
+        <option value="2" selected>Escala 2x</option>
+        <option value="4">Escala 4x</option>
+      </select>
+      <select id="bg">
+        <option value="">Fondo: cuadrícula</option>
+        <option value="solid">Fondo: oscuro</option>
+        <option value="magenta">Fondo: magenta</option>
+        <option value="green">Fondo: verde (chroma)</option>
+      </select>
+    </div>
+    <div class="info" id="info"></div>
+    <canvas id="strip"></canvas>
+  </div>
+  <div class="stage">
+    <div class="anims" id="anims"></div>
+    <div class="info">Consejo: <b>magenta</b> y <b>verde</b> sirven para comprobar la transparencia y el chroma.</div>
   </div>
 </main>
+<section class="arena" id="escenario">
+  <h2>Escenario · Cyber Fist</h2>
+  <div class="box">
+    <canvas id="stagecv" width="960" height="540"></canvas>
+    <div class="controls">
+      <label>Desplazamiento <input id="stageScroll" type="range" min="0" max="1000" value="500"></label>
+      <label>Zoom (100 = 1:1) <input id="stageZoom" type="range" min="45" max="140" value="70"></label>
+      <button id="stageJump" type="button">Simular salto</button>
+      <button id="stageMusic" type="button" title="Puerto Voltaje, tema de Voltia. Bucle.">▶ Música</button>
+      <a class="play" href="fight.html" style="text-decoration:none">Jugar</a>
+      <label>Volumen <input id="musicVol" type="range" min="0" max="100" value="75"></label>
+      <label><input id="togCrowd" type="checkbox" checked> Público</label>
+      <label><input id="togRing" type="checkbox" checked> Ring delante</label>
+      <label><input id="togSpot" type="checkbox" checked> Focos</label>
+      <label><input id="togSmoke" type="checkbox" checked> Humo</label>
+      <label><input id="togNeon" type="checkbox" checked> Neón</label>
+      <label><input id="togLed" type="checkbox" checked> Pantallas</label>
+      <label><input id="togGirl" type="checkbox" checked> Voltia</label>
+      <label><input id="togFloor" type="checkbox" checked> Línea de suelo</label>
+    </div>
+    <p class="layers" id="stageNote"></p>
+  </div>
+</section>
+<section class="manual">
+  <div class="card">
+    <img class="concept" src="../assets/voltia_concept.png" alt="Arte conceptual de Voltia">
+    <div class="bio">
+      <h2>VOLTIA · La Luchadora Voltaje</h2>
+      <p>Enmascarada del circuito clandestino de Puerto Voltaje. Tras el accidente del
+      reactor que mató a su tag-team, su traje de lucha absorbe y devuelve cada voltio:
+      sus puños cargan estática y sus patadas cierran el circuito. Lucha para desmantelar
+      la promotora que amañó aquella noche… máscara rosa, coleta violeta y cero piedad.</p>
+      <p class="draft">Historia en borrador: corrígela a tu gusto y queda fijada como canon del manual.</p>
+      <div id="movelist"></div>
+    </div>
+  </div>
+</section>
+<footer id="foot">FabaterFighter</footer>
+<script>
+(async () => {
+  try {
+  // Anti-caché: hoja y datos siempre frescos y emparejados (evita el "carrusel").
+  const QB = '?v=' + Date.now();
+  const meta = await (await fetch('../voltia/sheet.json' + QB, { cache: 'no-store' })).json();
+  document.getElementById('ver').textContent = `Vista v${meta.version || 'dev'} · cargando la hoja…`;
+  const sheet = new Image();
+  sheet.src = '../voltia/' + meta.sprite + QB;
+  // La hoja uniforme es enorme. Si no entra, el visor sigue con los frames sueltos.
+  const sheetOk = await Promise.race([
+    sheet.decode().then(() => sheet.naturalWidth > 100).catch(() => false),
+    new Promise(res => setTimeout(() => res(false), 8000)),
+  ]);
+  const looseCache = {};
+
+  const cell = meta.cell;              // {w,h} en px de hoja (uniform_scale)
+  const unit = meta.art.uniform_scale; // px-hoja por px-arte
+
+  // Guardia de sincronía: si la hoja no cubre la parrilla, avisar en vez de descuadrar.
+  const needW = Math.max(...meta.animations.map(a => a.frames)) * cell.w;
+  const needH = meta.rows * cell.h;
+  if (!sheetOk) {
+    const w = document.getElementById('syncwarn');
+    w.style.display = 'block';
+    w.textContent = 'La hoja completa no entró. Se usan los frames sueltos: es el mismo personaje.';
+    const scale = document.getElementById('scale');
+    if (scale) scale.value = '4';
+  } else if (sheet.naturalWidth < needW - 2 || sheet.naturalHeight < needH - 2) {
+    const w = document.getElementById('syncwarn');
+    w.style.display = 'block';
+    w.textContent = `⚠️ Hoja y datos desincronizados (${sheet.naturalWidth}×${sheet.naturalHeight} ` +
+      `vs ${needW}×${needH} necesarios): haz recarga fuerte (Ctrl+F5).`;
+  }
+
+  const total = meta.animations.reduce((n, a) => n + a.frames, 0);
+  const ndone = (meta.roster || []).filter(r => r.status === 'done').length;
+  const ntot = (meta.roster || []).length;
+  document.getElementById('ver').textContent =
+    `Vista v${meta.version || 'dev'} · canon v${meta.canon || '?'} · ${meta.date || ''} · ` +
+    `${meta.rows} animaciones · ${total} frames · de pie ~${meta.art.height_px}px-arte`;
+  document.getElementById('notes').innerHTML =
+    (meta.notes ? `Contenido: <b>${meta.notes}</b> · ` : '') +
+    `Roster: <b>${ndone}/${ntot}</b> movimientos`;
+  document.getElementById('foot').innerHTML =
+    `FabaterFighter · hoja <b>voltia/${meta.sprite}</b> + <b>voltia/sheet.json</b> · versión en <b>voltia/VERSION</b>`;
+
+  // ---- Manual: tabla de movimientos por grupos ----
+  const GROUPS = [
+    ['Base', ['stance','walk','jump','fwdjump','crouch','block','dash']],
+    ['Golpes débiles (≤3f)', ['punch_weak','kick_weak','kick_weak_stand','crouch_punch','jump_kick']],
+    ['Golpes fuertes (5–8f)', ['punch_strong','kick_strong','uppercut','spinkick']],
+    ['Especial', ['rayo_throw','rayo_proj']],
+    ['Reacción', ['hit','crouch_hit','knockdown','dizzy','ko']],
+    ['Poses', ['victory1','victory2']],
+  ];
+  if (meta.roster) {
+    const byId = Object.fromEntries(meta.roster.map(r => [r.id, r]));
+    let html = '<table class="moves"><tr><th></th><th>Movimiento</th><th>Frames</th><th>FPS</th><th>Loop</th></tr>';
+    for (const [g, ids] of GROUPS) {
+      html += `<tr class="group"><td colspan="5">${g}</td></tr>`;
+      for (const id of ids) {
+        const r = byId[id];
+        if (!r) continue;
+        const ok = r.status === 'done';
+        html += `<tr class="${ok ? '' : 'missing'}"><td class="st">${ok ? '✅' : '⬜'}</td>` +
+          `<td>${r.label}</td><td>${r.frames}f</td><td>${r.fps}</td><td>${r.loop ? 'sí' : 'no'}</td></tr>`;
+      }
+    }
+    html += '</table>';
+    document.getElementById('movelist').innerHTML = html;
+  }
+
+  const cv = document.getElementById('anim');
+  cv.width = cell.w; cv.height = cell.h;
+  const cx = cv.getContext('2d');
+  cx.imageSmoothingEnabled = false;
+  const strip = document.getElementById('strip');
+  const sx = strip.getContext('2d');
+  sx.imageSmoothingEnabled = false;
+  const info = document.getElementById('info');
+  const box = document.getElementById('anims');
+
+  let cur = 0, frame = 0, playing = true, last = performance.now(), acc = 0;
+
+  function setScale() {
+    const s = +document.getElementById('scale').value;
+    const loose = looseCache[cur];
+    if (!sheetOk && loose && loose[0]) {
+      cv.style.width = (loose[0].width * s / 4) + 'px';
+      cv.style.height = (loose[0].height * s / 4) + 'px';
+      return;
+    }
+    cv.style.width = (cell.w * s / unit) + 'px';
+    cv.style.height = (cell.h * s / unit) + 'px';
+  }
+  document.getElementById('scale').onchange = setScale;
+  setScale();
+  document.getElementById('bg').onchange = e => { cv.className = e.target.value; };
+  document.getElementById('play').onclick = e => {
+    playing = !playing;
+    e.target.textContent = playing ? '⏸ Pausar' : '▶ Reproducir';
+  };
+  document.getElementById('step').onclick = () => {
+    playing = false;
+    document.getElementById('play').textContent = '▶ Reproducir';
+    frame = (frame + 1) % meta.animations[cur].frames;
+  };
+
+  meta.animations.forEach((a, i) => {
+    const b = document.createElement('button');
+    b.textContent = `${String(i + 1).padStart(2, '0')} ${a.label}`;
+    b.onclick = () => select(i);
+    box.appendChild(b);
+  });
+
+  async function framesOf(a) {
+    const imgs = [];
+    for (let i = 0; i < a.frames; i++) {
+      const im = new Image();
+      im.src = `../voltia/frames/voltia_${a.id}_${i}.png` + QB;
+      await im.decode();
+      imgs.push(im);
+    }
+    return imgs;
+  }
+
+  function drawStrip() {
+    const a = meta.animations[cur];
+    const loose = looseCache[cur];
+    if (!sheetOk && loose && loose[0]) {
+      const sc = 0.35;
+      strip.width = Math.round(a.frames * loose[0].width * sc);
+      strip.height = Math.round(loose[0].height * sc);
+      sx.imageSmoothingEnabled = false;
+      sx.clearRect(0, 0, strip.width, strip.height);
+      loose.forEach((im, f) => {
+        sx.drawImage(im, Math.round(f * loose[0].width * sc), 0,
+          Math.round(loose[0].width * sc), Math.round(loose[0].height * sc));
+      });
+    } else if (sheetOk) {
+      strip.width = a.frames * cell.w;
+      strip.height = cell.h;
+      sx.clearRect(0, 0, strip.width, strip.height);
+      for (let f = 0; f < a.frames; f++)
+        sx.drawImage(sheet, f * cell.w, a.row * cell.h, cell.w, cell.h,
+                     f * cell.w, 0, cell.w, cell.h);
+    }
+    strip.style.width = Math.min(strip.width, 560) + 'px';
+    strip.style.height = 'auto';
+    info.innerHTML = `<b>${a.label}</b> · fila ${a.row} · ${a.frames} frames @ ${a.fps}fps · ` +
+      `${a.loop ? 'loop' : 'una vez'} · frame <b id="fcount">1/${a.frames}</b>` +
+      `<div id="say"></div>`;
+  }
+
+  // Golpes normales en silencio (el gruñido de esfuerzo queda para más
+  // adelante). Salto sí. Frase en especiales, derrota y victoria.
+  // Se dispara al elegir, no en cada loop.
+  const CLIP = {
+    jump: 'grunt_jump', fwdjump: 'grunt_jump',
+    uppercut: 'voltia_uppercut', spinkick: 'voltia_spinkick',
+    rayo_throw: 'voltia_rayo_throw', rayo_proj: 'voltia_rayo_proj',
+    knockdown: 'voltia_knockdown', dizzy: 'voltia_dizzy', ko: 'voltia_ko',
+    victory1: 'voltia_victory1', victory2: 'voltia_victory2',
+  };
+  const LINES = {
+    rayo_throw: '¡Rayo Volt!',
+    rayo_proj: '¡Chispa!',
+    uppercut: '¡Arriba, voltaje!',
+    spinkick: '¡Vuelta volt!',
+    knockdown: '¡Caigo!',
+    dizzy: 'La cabeza me da vueltas.',
+    ko: 'No puedo más.',
+    victory1: '¡Victoria! El circuito es mío.',
+    victory2: 'Máscara rosa. Cero piedad.',
+  };
+  let voice = null;
+  let themeCtx = null, themeBuf = null, themeGain = null, themeSrc = null, themeLoading = false;
+  function themeVolume() {
+    const el = document.getElementById('musicVol');
+    return el ? Number(el.value) / 100 : 0.75;
+  }
+  function duckTheme() {
+    if (!themeGain || !themeCtx) return;
+    const now = themeCtx.currentTime;
+    const base = themeVolume();
+    const g = themeGain.gain;
+    g.cancelScheduledValues(now);
+    g.setValueAtTime(g.value, now);
+    g.linearRampToValueAtTime(base * 0.35, now + 0.04);
+    g.linearRampToValueAtTime(base, now + 2.1);
+  }
+  async function toggleTheme() {
+    const btn = document.getElementById('stageMusic');
+    if (themeSrc) {
+      themeSrc.stop();
+      themeSrc = null;
+      btn.classList.remove('active');
+      btn.textContent = '▶ Música';
+      return;
+    }
+    if (themeLoading) return;
+    themeLoading = true;
+    btn.disabled = true;
+    btn.textContent = 'Cargando…';
+    try {
+      if (!themeCtx) {
+        try { themeCtx = new AudioContext({ sampleRate: 44100 }); }
+        catch (e) { themeCtx = new AudioContext(); }
+        themeGain = themeCtx.createGain();
+        themeGain.gain.value = themeVolume();
+        themeGain.connect(themeCtx.destination);
+      }
+      if (themeCtx.state === 'suspended') await themeCtx.resume();
+      if (!themeBuf) {
+        const res = await fetch('../voltia/theme.wav?v=3', { cache: 'no-store' });
+        themeBuf = await themeCtx.decodeAudioData(await res.arrayBuffer());
+      }
+      themeSrc = themeCtx.createBufferSource();
+      themeSrc.buffer = themeBuf;
+      themeSrc.loop = true;
+      themeSrc.connect(themeGain);
+      themeSrc.onended = () => {
+        themeSrc = null;
+        btn.classList.remove('active');
+        btn.textContent = '▶ Música';
+      };
+      themeSrc.start();
+      btn.classList.add('active');
+      btn.textContent = '⏸ Música';
+    } catch (err) {
+      btn.textContent = '▶ Música';
+      console.error(err);
+    } finally {
+      themeLoading = false;
+      btn.disabled = false;
+    }
+  }
+  document.getElementById('stageMusic').onclick = toggleTheme;
+  document.getElementById('musicVol').oninput = (e) => {
+    if (themeGain && themeCtx) {
+      const now = themeCtx.currentTime;
+      themeGain.gain.cancelScheduledValues(now);
+      themeGain.gain.setValueAtTime(Number(e.target.value) / 100, now);
+    }
+  };
+
+  function playVoice(id) {
+    if (voice) { voice.pause(); voice = null; }
+    const say = document.getElementById('say');
+    if (say) say.textContent = '';
+    const file = CLIP[id];
+    if (!file) return;
+    duckTheme();
+    const a = new Audio('../voltia/voices/' + file + '.mp3?v=2');
+    voice = a;
+    const line = LINES[id];
+    if (line) a.addEventListener('canplay', () => { if (say) say.textContent = '«' + line + '»'; });
+    a.play().catch(() => {});
+  }
+
+  async function select(i) {
+    cur = i; frame = 0; acc = 0;
+    [...box.children].forEach((b, j) => b.classList.toggle('active', j === i));
+    if (!sheetOk && !looseCache[i]) {
+      info.textContent = 'Cargando frames…';
+      looseCache[i] = await framesOf(meta.animations[i]);
+      setScale();
+    }
+    drawStrip();
+    playVoice(meta.animations[i].id);
+  }
+
+  function loop(t) {
+    const a = meta.animations[cur];
+    if (playing) {
+      acc += t - last;
+      const step = 1000 / a.fps;
+      while (acc >= step) {
+        acc -= step;
+        frame++;
+        if (frame >= a.frames) frame = a.loop ? 0 : a.frames - 1;
+      }
+    }
+    last = t;
+    // Cine, no carrusel: cada frame sustituye al anterior fijo en la celda.
+    if (sheetOk) {
+      cx.clearRect(0, 0, cell.w, cell.h);
+      cx.drawImage(sheet, frame * cell.w, a.row * cell.h, cell.w, cell.h,
+                   0, 0, cell.w, cell.h);
+    } else {
+      const im = (looseCache[cur] || [])[frame];
+      if (im) {
+        if (cv.width !== im.width || cv.height !== im.height) {
+          cv.width = im.width;
+          cv.height = im.height;
+          cx.imageSmoothingEnabled = false;
+        }
+        cx.clearRect(0, 0, cv.width, cv.height);
+        cx.drawImage(im, 0, 0);
+      }
+    }
+    const fc = document.getElementById('fcount');
+    if (fc && fc._v !== frame) { fc._v = frame; fc.textContent = (frame + 1) + '/' + a.frames; }
+    requestAnimationFrame(loop);
+  }
+
+  select(0);
+  requestAnimationFrame(loop);
+  } catch (err) {
+    const w = document.getElementById('syncwarn');
+    if (w) {
+      w.style.display = 'block';
+      w.textContent = 'El visor no pudo arrancar: ' + (err && err.message ? err.message : err);
+    }
+    const ver = document.getElementById('ver');
+    if (ver) ver.textContent = 'No cargó';
+  }
+})();
+</script>
+<script src="stage.js?v=8"></script>
+
 </body>
 </html>

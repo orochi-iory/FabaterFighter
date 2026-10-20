@@ -1,30 +1,34 @@
 #!/usr/bin/env python3
-"""Prueba: quitar el contorno negro de Voltia (modelo original) sin tocar la hoja.
+"""Voltia sin el aro negro: adelgazarlo, no borrarlo.
 
-`voltia/sheet_uniform.png` NO se modifica: se escribe una hoja aparte.
+La hoja original (`voltia/sheet_uniform.png`) NO se toca: se escribe una copia.
 
-Lo medido en el frame 0 del stance (celda 350x332 de la hoja original):
+Lo medido en el frame 0 del stance (celda 350x332):
 
-  - 9388 de 32644 px opacos (29 %) son casi negros: max(r,g,b) <= 6;
+  - 9388 px de 32644 opacos (29 %) son casi negros (max(r,g,b) <= 6);
   - el aro no tiene grosor fijo: 1-2 px en la cara, hasta 10-12 px en la cola;
-  - 2124 de esos px estan a mas de 6 px del borde, o sea que dentro del negro
-    tambien hay lineas de dibujo de verdad (brazo sobre torso, rodilla, pliegues).
+  - 2124 de esos px estan a mas de 6 px del borde: dentro del negro hay tambien
+    lineas de dibujo de verdad (brazo sobre torso, rodilla).
 
-Por eso no vale borrar todo el negro (aplana el dibujo) ni rellenarlo por
-difusion (la onda corre por dentro del aro y un solo color lo inunda: medido,
-el cian del traje se comia la cola entera).
+Borrar el negro NO vale (probado): al quitarlo se va tambien lo que sujetaba el
+dibujo y salen piezas sueltas -- la mano deja de tocar el brazo, el cinturon y la
+bota se parten, aparecen puntos sueltos. El sprite queda despiezado.
 
-Lo que si funciona: dos grupos por topologia, no por grosor.
+Lo que se hace aqui, sin tocar un solo pixel de alfa (la silueta es la misma):
 
-  externo  negro conectado con la transparencia = el aro. Se borra (alfa 0).
-  interno  negro encerrado por color = lineas de dibujo. Se queda, intacto.
+  profundidad 1-2 (el borde que da al fondo)  -> se queda OSCURO, x0,32 del color
+                                                 de al lado: el contorno de 2 px
+  profundidad 3 y mas (el resto del aro)      -> toma el color del dibujo x0,90:
+                                                 deja de ser un aro gordo
+  negro encerrado por color (lineas)          -> x0,45: sigue siendo linea, pero
+                                                 del tono de lo que separa, no negro
 
-Y luego 1 px de borde oscurecido sobre la silueta que queda, para que el sprite
-siga leyendose sobre el fondo. Es el unico precio: al quitar el aro el personaje
-adelgaza lo que medía el aro (en la cola, hasta 12 px).
+El color de cada px no se difunde (una difusion por vecinos inunda el aro con el
+primer color que entra): se toma el del trozo de dibujo mas cercano con distancia
+de chamfer (1 / 1,4).
 
     PYTHONPATH=tools/pylibs python3 tools/voltia_outline.py --celdas 0
-    PYTHONPATH=tools/pylibs python3 tools/voltia_outline.py            # toda la hoja
+    PYTHONPATH=tools/pylibs python3 tools/voltia_outline.py           # hoja entera
 """
 import argparse
 import json
@@ -35,9 +39,11 @@ from PIL import Image, ImageChops, ImageFilter
 HOJA = 'voltia/sheet_uniform.png'
 META = 'voltia/sheet.json'
 UMBRAL = 6          # max(r,g,b) <= UMBRAL cuenta como negro
-BORDE = 1           # px de borde oscurecido que se deja
-FACTOR = 0.55       # cuanto se oscurece ese borde
-SUAVIZAR = True     # quita px sueltos del alfa (apertura + cierre)
+CONTORNO = 2        # px de contorno oscuro que se dejan
+OSCURO = 0.32       # cuanto se oscurece ese contorno
+RELLENO = 0.90      # el resto del aro toma el color del dibujo a este tono
+LINEA = 0.45        # lineas internas: mismo trazo, tono de lo que separa
+MAXD = 64.0
 
 
 def mascaras(cel):
@@ -48,16 +54,33 @@ def mascaras(cel):
     return ImageChops.multiply(dark, opaco), opaco
 
 
-def aro_externo(dark, opaco, iteraciones=24):
-    """Negro que se toca con la transparencia, crecido por negro."""
-    transp = ImageChops.subtract(opaco, dark)      # por donde puede entrar
+def anillos(dark, opaco, maximo=48):
+    """Profundidad del negro contada desde la transparencia: 1 = toca el fondo."""
+    prof = Image.new('L', dark.size, 0)
+    transp = ImageChops.subtract(opaco, dark)
+    dentro = transp
+    for _ in range(2):
+        dentro = dentro.filter(ImageFilter.MaxFilter(3))
+    nivel = ImageChops.multiply(dark, dentro)
+    for k in range(1, maximo + 1):
+        if not nivel.getbbox():
+            break
+        prof.paste(k, (0, 0), nivel)
+        sig = nivel.filter(ImageFilter.MinFilter(3))
+        nivel = sig
+    return prof
+
+
+def externo_de(dark, opaco, iteraciones=24):
+    """Negro conectado con la transparencia (el aro). El resto es linea de dibujo."""
+    transp = ImageChops.subtract(opaco, dark)
     dentro = transp
     for _ in range(2):
         dentro = dentro.filter(ImageFilter.MaxFilter(3))
     crecido = ImageChops.multiply(dark, dentro)
+    w, h = dark.size
     for _ in range(iteraciones):
         nuevo = crecido
-        w, h = dark.size
         for dx, dy in ((1, 0), (-1, 0), (0, 1), (0, -1), (1, 1), (-1, -1), (1, -1), (-1, 1)):
             mov = Image.new('L', (w, h), 0)
             mov.paste(crecido, (dx, dy))
@@ -69,83 +92,118 @@ def aro_externo(dark, opaco, iteraciones=24):
     return crecido
 
 
-def quitar_trozos(cel, minimo=12):
-    """Tira los trocitos que quedan sueltos al borrar el aro (islas de 1-11 px)."""
-    a = cel.split()[3]
-    px = a.load()
+def chamfer(cel, dark):
+    """Color del px de dibujo mas cercano (distancia 1 / 1.4). No difunde."""
     w, h = cel.size
-    visto = [[False] * w for _ in range(h)]
-    fuera = Image.new('L', (w, h), 0)
-    borrar = []
+    px = cel.load()
+    dp = dark.load()
+    dist = [MAXD] * (w * h)
+    col = [(0, 0, 0)] * (w * h)
+    for y in range(h):
+        base = y * w
+        for x in range(w):
+            r, g, b, a = px[x, y]
+            if a > 0 and not dp[x, y]:
+                dist[base + x] = 0.0
+                col[base + x] = (r, g, b)
     for y in range(h):
         for x in range(w):
-            if px[x, y] == 0 or visto[y][x]:
+            i = y * w + x
+            if dist[i] == 0:
                 continue
-            pila, comp = [(x, y)], []
-            visto[y][x] = True
-            while pila:
-                cx, cy = pila.pop()
-                comp.append((cx, cy))
-                for dx in (-1, 0, 1):
-                    for dy in (-1, 0, 1):
-                        nx, ny = cx + dx, cy + dy
-                        if 0 <= nx < w and 0 <= ny < h and not visto[ny][nx] \
-                                and px[nx, ny] > 0:
-                            visto[ny][nx] = True
-                            pila.append((nx, ny))
-            if len(comp) < minimo:
-                borrar.extend(comp)
-    if not borrar:
-        return cel, 0
-    for x, y in borrar:
-        fuera.putpixel((x, y), 255)
-    r, g, b, _ = cel.split()
-    al = ImageChops.subtract(cel.split()[3], fuera)
-    return Image.merge('RGBA', (r, g, b, al)), len(borrar)
+            best, bc = dist[i], col[i]
+            for dx, dy, wgt in ((-1, 0, 1.0), (0, -1, 1.0), (-1, -1, 1.414), (1, -1, 1.414)):
+                xx, yy = x + dx, y + dy
+                if 0 <= xx < w and 0 <= yy < h:
+                    j = yy * w + xx
+                    if dist[j] + wgt < best:
+                        best, bc = dist[j] + wgt, col[j]
+            dist[i], col[i] = best, bc
+    for y in range(h - 1, -1, -1):
+        for x in range(w - 1, -1, -1):
+            i = y * w + x
+            if dist[i] == 0:
+                continue
+            best, bc = dist[i], col[i]
+            for dx, dy, wgt in ((1, 0, 1.0), (0, 1, 1.0), (1, 1, 1.414), (-1, 1, 1.414)):
+                xx, yy = x + dx, y + dy
+                if 0 <= xx < w and 0 <= yy < h:
+                    j = yy * w + xx
+                    if dist[j] + wgt < best:
+                        best, bc = dist[j] + wgt, col[j]
+            dist[i], col[i] = best, bc
+    return dist, col
 
 
-def limpiar_celda(cel, borde=BORDE, factor=FACTOR, suavizar=SUAVIZAR):
+def linea_fina(dark, fill, radio=2):
+    """Negro que tiene color a los dos lados: linea de dibujo, no mancha.
+
+    Se mira a `radio` px: si a la izquierda y a la derecha hay color (o arriba y
+    abajo), ese negro es un trazo y se respeta. En el aro gordo, a 2 px solo hay
+    mas negro, asi que no cuenta.
+    """
+    w, h = dark.size
+    cerca = fill
+    for _ in range(radio):
+        cerca = cerca.filter(ImageFilter.MaxFilter(3))
+
+    def desplaza(im, dx, dy):
+        out = Image.new('L', (w, h), 0)
+        out.paste(im, (dx, dy))
+        return out
+
+    hor = ImageChops.multiply(desplaza(cerca, -radio, 0), desplaza(cerca, radio, 0))
+    ver = ImageChops.multiply(desplaza(cerca, 0, -radio), desplaza(cerca, 0, radio))
+    return ImageChops.multiply(ImageChops.lighter(hor, ver), dark)
+
+
+def limpiar_celda(cel, contorno=CONTORNO, oscuro=OSCURO, radio=2):
+    """Adelgaza el aro: fuera lo que no es ni borde exterior ni trazo fino."""
     dark, opaco = mascaras(cel)
     n = sum(1 for p in dark.getdata() if p)
     if not n:
         return cel, 0
-    externo = aro_externo(dark, opaco)
-    r, g, b, _ = cel.split()
-    al = ImageChops.subtract(cel.split()[3], externo)     # aro fuera
-    out = Image.merge('RGBA', (r, g, b, al))
-    if suavizar:
-        al2 = Image.eval(al, lambda v: 255 if v > 0 else 0)
-        al2 = al2.filter(ImageFilter.MinFilter(3)).filter(ImageFilter.MaxFilter(3))
-        out = Image.merge('RGBA', (r, g, b, al2))
-    if borde > 0:
-        a = out.split()[3]
-        op = Image.eval(a, lambda v: 255 if v > 0 else 0)
-        dentro = op
-        for _ in range(borde):
-            dentro = dentro.filter(ImageFilter.MinFilter(3))
-        cerca = ImageChops.subtract(op, dentro)
-        r, g, b, al = out.split()
-        osc = Image.merge('RGBA', (
-            Image.eval(r, lambda v: int(v * factor)),
-            Image.eval(g, lambda v: int(v * factor)),
-            Image.eval(b, lambda v: int(v * factor)), al))
-        out.paste(osc, (0, 0), cerca)
-    out, _ = quitar_trozos(out)
+    prof = anillos(dark, opaco).load()
+    fill = ImageChops.multiply(ImageChops.invert(dark), opaco)
+    trazo = linea_fina(dark, fill, radio)
+    # se rellena: negro que no es el borde exterior (profundidad <= contorno) y
+    # que no es trazo fino
+    prof_img = anillos(dark, opaco)
+    exterior = Image.eval(prof_img, lambda v: 255 if 0 < v <= contorno else 0)
+    mancha = ImageChops.subtract(dark, ImageChops.lighter(exterior, trazo))
+    dist, col = chamfer(cel, dark)
+    w, h = cel.size
+    px = cel.load()
+    out = cel.copy()
+    po = out.load()
+    pm = mancha.load()
+    pe = exterior.load()
+    for y in range(h):
+        for x in range(w):
+            if px[x, y][3] == 0:
+                continue
+            if pm[x, y]:                       # se rellena con el color de al lado
+                i = y * w + x
+                if dist[i] >= MAXD:
+                    continue
+                r, g, b = col[i]
+                po[x, y] = (r, g, b, 255)
+            elif pe[x, y]:                     # borde exterior: oscuro, no negro
+                i = y * w + x
+                if dist[i] >= MAXD:
+                    continue
+                r, g, b = col[i]
+                po[x, y] = (int(r * oscuro), int(g * oscuro), int(b * oscuro), 255)
+            # el resto (trazos) se queda como esta
     return out, n
-
-
-def contar(cel):
-    dark, _ = mascaras(cel)
-    return sum(1 for p in dark.getdata() if p), sum(
-        1 for p in cel.split()[3].getdata() if p)
 
 
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument('--celdas', default='', help='filas a procesar: 0,1,2 (por defecto todas)')
-    ap.add_argument('--borde', type=int, default=BORDE)
-    ap.add_argument('--factor', type=float, default=FACTOR)
-    ap.add_argument('--sin-suavizar', action='store_true')
+    ap.add_argument('--contorno', type=int, default=CONTORNO)
+    ap.add_argument('--oscuro', type=float, default=OSCURO)
+    ap.add_argument('--radio', type=int, default=2, help='px a los que se busca color a los dos lados')
     ap.add_argument('--salida', default='voltia/sheet_outline.png')
     args = ap.parse_args()
 
@@ -157,7 +215,7 @@ def main():
     print('hoja %dx%d, %d x %d celdas de %dx%d' % (im.size[0], im.size[1], cols, rows, cw, ch))
 
     out = im.copy()
-    antes = despues = 0
+    antes = 0
     for r in range(rows):
         if filas is not None and r not in filas:
             continue
@@ -165,26 +223,29 @@ def main():
             cel = im.crop((c * cw, r * ch, (c + 1) * cw, (r + 1) * ch))
             if not cel.getbbox():
                 continue
-            nuevo, n = limpiar_celda(cel, args.borde, args.factor, not args.sin_suavizar)
+            nuevo, n = limpiar_celda(cel, args.contorno, args.oscuro, args.radio)
             antes += n
-            despues += contar(nuevo)[0]
             out.paste(nuevo, (c * cw, r * ch))
         print('  fila %2d lista' % r)
 
     if filas is None:
         out.save(args.salida)
-    else:                       # solo las filas pedidas: se guarda el recorte
+    else:
         y0 = min(filas) * ch
         out.crop((0, y0, im.size[0], (max(filas) + 1) * ch)).save(args.salida)
-    print('%s: negro %d -> %d px (%.1f %%)'
-          % (args.salida, antes, despues, 100.0 * despues / max(1, antes)))
-
+    despues = 0
+    for c in range(cols):
+        cel = out.crop((c * cw, 0, (c + 1) * cw, ch))
+        despues += sum(1 for p in mascaras(cel)[0].getdata() if p)
+    print('%s: negro %d -> %d px' % (args.salida, antes, despues))
     if filas is None:
         m = dict(meta)
         m['sprite'] = os.path.basename(args.salida)
         m['notes'] = (meta.get('notes', '') +
-                      ' Prueba: aro negro externo borrado, borde de %d px al %d %%.'
-                      % (args.borde, round(args.factor * 100))).strip()
+                      ' Aro negro adelgazado: contorno de %d px al %d %%, resto del aro al %d %%, '
+                      'lineas internas al %d %%. Alfa sin tocar.'
+                      % (args.contorno, round(args.oscuro * 100), round(args.relleno * 100),
+                         round(args.linea * 100))).strip()
         json.dump(m, open(os.path.splitext(args.salida)[0] + '.json', 'w'), indent=1)
 
 

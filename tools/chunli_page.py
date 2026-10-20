@@ -197,6 +197,9 @@ def main():
     a('<p>Los %d frames van en un lienzo único de <b>%d×%d px</b>: pies en la misma línea y eje '
       'de la cabeza al centro, para que el bucle no bote ni se vaya de lado.</p>'
       % (stance['n'], stance['lienzo'][0], stance['lienzo'][1]))
+    a('<img class="strip" src="../%s/stance_un_bucle.png" alt="los %d frames del stance, '
+      'cada uno con la fila de la hoja de la que sale" style="max-width:100%%">'
+      % (BASE, stance['n']))
     a('<img class="strip" src="../%s/stance_secuencia.png" alt="los %d frames del stance en orden">'
       % (BASE, stance['n']))
     a('<p class="dim">Los %d frames en orden, tal como se reproducen.</p>' % stance['n'])
