@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Voltia · prueba sin el aro negro</title>
+<style>
+  :root { --bg:#150f1f; --panel:#222033; --line:#3a3752; --gold:#ffcb3d; --cyan:#96ffeb; }
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--bg); color:#eee; font-family:system-ui,sans-serif; }
+  nav.models { position:sticky; top:0; z-index:9; display:flex; gap:8px; justify-content:center;
+    padding:10px; background:#0e0a16ee; border-bottom:2px solid var(--line); flex-wrap:wrap; }
+  nav.models a { text-decoration:none; padding:9px 16px; border-radius:10px; font-weight:700;
+    letter-spacing:.5px; font-size:14px; border:2px solid var(--line); color:#cfc9e6; }
+  nav.models a:hover { border-color:var(--cyan); color:var(--cyan); }
+  nav.models a.on { background:var(--gold); color:#150f1f; border-color:var(--gold); }
+  header { padding:26px 18px 6px; max-width:1180px; margin:0 auto; }
+  header h1 { margin:0 0 10px; color:var(--gold); letter-spacing:2px; font-size:26px; }
+  header p { color:#b9b6cc; line-height:1.6; max-width:940px; }
+  header p b { color:var(--cyan); }
+  main { max-width:1180px; margin:0 auto; padding:6px 18px 60px; }
+  .box { background:var(--panel); border:2px solid var(--line); border-radius:14px; padding:18px; margin:18px 0; }
+  .box h2 { margin:0 0 10px; font-size:17px; color:var(--gold); }
+  .par { display:flex; gap:16px; flex-wrap:wrap; }
+  .par figure { margin:0; flex:1 1 420px; }
+  .par img { width:100%; height:auto; image-rendering:pixelated; background:#101018;
+    border-radius:10px; display:block; border:1px solid var(--line); }
+  figcaption { color:#9d9ab5; font-size:12.5px; line-height:1.5; margin-top:7px; }
+  table { border-collapse:collapse; width:100%; font-size:13.5px; margin-top:6px; }
+  th, td { border-bottom:1px solid var(--line); padding:7px 10px; text-align:left; }
+  th { color:var(--gold); background:#1d1a2e; }
+  td b { color:var(--cyan); }
+  p, li { color:#c3c0d4; line-height:1.65; font-size:14px; }
+  code { color:var(--cyan); }
+  .big { image-rendering:pixelated; width:100%; height:auto; border-radius:10px; background:#101018;
+    border:1px solid var(--line); display:block; }
+  .fila { display:flex; gap:14px; align-items:flex-start; flex-wrap:wrap; }
+  .fila > * { flex:1 1 420px; }
+</style>
+</head>
+<body>
+<nav class="models">
+  <a href="index.html">① Modelo original</a>
+  <a href="nuevo.html">② Modelo nuevo</a>
+  <a href="chunli.html">③ Chun-Li</a>
+  <a href="fight.html">⚔ Pelea</a>
+  <a href="aro.html" class="on">⚡ Prueba: sin el aro negro</a>
+</nav>
+
+<header>
+  <h1>⚡ Voltia sin el aro negro ⚡</h1>
+  <p>El modelo original lleva un aro negro pegado a la silueta. No es un contorno de 1-2 px:
+     <b>en la coleta llega a 10-12 px</b> de grosor. En el frame 0 del stance son
+     <b>9388 px casi negros de 32644 opacos (29 %)</b>.</p>
+  <p>Esto es una <b>prueba sobre una copia</b>: la hoja original
+     (<code>voltia/sheet_uniform.png</code>) no se ha tocado ni un píxel. Se ha limpiado solo
+     la fila 0 (los 15 frames del stance) para que se pueda juzgar.</p>
+</header>
+
+<main>
+  <div class="box">
+    <h2>El mismo frame: original y sin el aro (a 2×)</h2>
+    <img class="big" src="../voltia/outline_comparacion.png"
+         alt="Comparación: original a la izquierda, sin el aro a la derecha, y los 15 frames del stance en las dos versiones">
+    <figcaption>Arriba: original (izquierda) y sin el aro (derecha), a 2×. Abajo: los 15 frames del
+      stance, primero sin el aro y después los del original.</figcaption>
+  </div>
+
+  <div class="box">
+    <h2>Los 15 frames del stance sin el aro, en movimiento</h2>
+    <div class="fila">
+      <figure style="margin:0">
+        <img src="../voltia/outline_fila0.gif" alt="GIF de los 15 frames del stance sin el aro">
+        <figcaption>10 fps, 2×. Se ve si el corte aguanta frame a frame.</figcaption>
+      </figure>
+      <figure style="margin:0">
+        <img src="../voltia/outline_fila0.png" alt="La fila 0 de la hoja con el aro quitado">
+        <figcaption>La fila 0 entera, celda a celda, tal como sale del script
+          (<code>voltia/outline_fila0.png</code>).</figcaption>
+      </figure>
+    </div>
+  </div>
+
+  <div class="box">
+    <h2>Las medidas</h2>
+    <table>
+      <tr><th>medido en la fila 0 (15 frames)</th><th>original</th><th>sin el aro</th></tr>
+      <tr><td>píxeles casi negros (<code>max(r,g,b) ≤ 6</code>)</td><td>143 371</td><td><b>0</b></td></tr>
+      <tr><td>píxeles opacos</td><td>486 676</td><td>328 615 (−32,5 %)</td></tr>
+      <tr><td>alto de tinta (mediana de los 15)</td><td>294 px</td><td>287 px (−7)</td></tr>
+      <tr><td>ancho de tinta</td><td>186-240 px</td><td>158-228 px (hasta −26)</td></tr>
+      <tr><td>grosor del aro</td><td>1-2 px en la cara, 10-12 px en la coleta</td><td>0</td></tr>
+    </table>
+  </div>
+
+  <div class="box">
+    <h2>Cómo se hace, y el precio</h2>
+    <p><b>El negro se separa por topología, no por grosor.</b> El negro <b>conectado con el fondo</b>
+       es el aro y se borra. El negro <b>encerrado por el dibujo</b> es línea de dibujo (brazo sobre
+       torso, rodilla, pliegues) y se queda intacto. Después, 1 px de borde oscurecido al 55 % para
+       que el personaje no flote, y fuera las islas de menos de 12 px.</p>
+    <p>Por qué no se hace de otra forma, probado antes y descartado:</p>
+    <ul>
+      <li><b>Rellenar todo el negro con el color de al lado:</b> se van las líneas internas y queda
+        una pegatina plana.</li>
+      <li><b>Rellenar por difusión desde el borde:</b> la onda corre <i>por dentro</i> del aro, que es
+        un tubo, y el primer color que entra lo inunda: el cian del traje se comía la coleta entera.</li>
+      <li><b>Relleno en línea recta en 8 direcciones:</b> el color es correcto pero salta de un trozo
+        a otro, sale moteado.</li>
+      <li><b>Pintar el aro de su propio color (sin borrarlo):</b> conserva el volumen, pero queda un
+        halo difuminado, no un contorno limpio.</li>
+    </ul>
+    <p><b>El precio, dicho claro:</b> al quitar el aro <b>el personaje adelgaza exactamente lo que
+       medía el aro</b> (7 px de alto, hasta 26 de ancho), y las piezas que solo estaban separadas por
+       negro se quedan con 1 px de aire (se nota en la zapatilla). No hay dibujo inventado: es el
+       sprite original sin el aro.</p>
+    <p>Se puede lanzar a la hoja entera con
+       <code>PYTHONPATH=tools/pylibs python3 tools/voltia_outline.py</code>
+       (fila a fila: <code>--celdas 0</code>). Escribe hoja aparte, nunca encima de la original.</p>
+  </div>
+</main>
+</body>
+</html>
