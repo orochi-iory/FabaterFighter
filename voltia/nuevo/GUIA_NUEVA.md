@@ -563,3 +563,56 @@ proyectil). La hoja es la única fuente de verdad.
 - **Cajas de golpe**: botón fijo **«Cajas (H)»** abajo a la izquierda, tecla **H**, y el
   botón «Cajas» de la pausa. Verde = caja de daño recibido, rojo = golpe activo, amarillo
   = proyectil. Se recuerda entre partidas.
+
+## El stance, otra vez: una animación, no tres (2026-10-20)
+
+Lo que se entrega: **una** entrada, **un** GIF y **una** animación en el juego. Los
+números, medidos sobre `voltia/nuevo/chunli/rows/01_stance` y `raw/fila_0{1,2,3}.png`:
+
+| franja de la hoja | y en la hoja | figuras | x |
+|---|---|---|---|
+| fila 1 | 0–74 | **10** | 97–545 |
+| fila 2 | 85–145 | **6** | 85–330 |
+| fila 3 | 154–216 | **7** | 85–330 |
+| **total** | | **23** | |
+
+- Corte **por la altura del suelo** de cada figura (`runs_columna` mide el borde inferior
+  de la tinta en cada columna), no por los huecos de fondo.
+- Orden del bucle: **1 → 2 → 1 → 3** y vuelta a la 1: **10 + 6 + 10 + 7 = 33 figuras**.
+- De esas 33, **una** es el mismo píxel que la anterior: en la costura 1→2 la primera
+  figura de la fila 2 es idéntica a la última de la fila 1 (`3ee56306`). Se descarta
+  → **32 frames**.
+- Las demás repeticiones **se quedan** (son del dibujo): `8d17` en 4 y 6, `ba6e` en 5 y 7,
+  `3ee5` en 10, 13 y 23, `9f4f` en 12, 14 y 16, `1304` en 17 y 21. De las 23 figuras de la
+  hoja solo hay **15 distintas**; por eso no se puede "quitar las repetidas" sin cargarse
+  el ciclo.
+- Lienzo único **54 × 70 px**: los pies en la misma línea y el eje de la cabeza al centro,
+  para que el bucle no bote ni se vaya de lado.
+- Reproducción: **10 fps → 3,2 s** por vuelta.
+
+Imagen de control: `voltia/nuevo/chunli/stance_un_bucle.png` (los 32 frames, cada uno con
+la franja de la que sale) y `raw/hoja_animaciones.png` (**22 filas = 22 animaciones**, el
+stance es la primera y ocupa las tres franjas). Generador: `tools/chunli_hoja.py`.
+
+## Aro negro de Voltia: separar aro de dibujo, no borrar (2026-10-20)
+
+Medido en la celda 350×332 del stance (`tools/voltia_outline.py`, fila 0):
+
+- píxeles casi negros (`max(r,g,b) ≤ 6`): **143 371** en los 15 frames → **3 308**.
+- píxeles opacos: **486 676** antes y después (**idéntico**). Alto × ancho de tinta del
+  frame 0: **302 × 188** antes y después. Alto mediano de los 15: **294** antes y después.
+- El aro no tiene grosor fijo: **1–2 px** en la cara, **10–12 px** en la coleta.
+
+El truco que funciona es **topológico**, no de color:
+
+1. negro **conectado con la transparencia** = aro; negro **encerrado por color** = dibujo
+   (2124 px por celda). Solo se toca el aro.
+2. el aro toma el **color del trozo de dibujo más cercano** por distancia de chamfer
+   (1 / 1,4). No se difunde: una difusión por vecinos inunda la coleta entera con un color.
+3. el **borde de fuera (2 px)** se deja a **×0,32** de ese color: contorno fino del tono del
+   dibujo, que es lo que hace falta para que la silueta se lea sobre el fondo.
+4. los trazos de dentro **no se tocan**: siguen negros.
+
+Descartado con números: **borrar todo el negro** deja la silueta en **328 615 px opacos
+(−32,5 %)** y el alto mediano en **287 (−7 px)**, y despieza el dibujo (mano separada del
+brazo, cinturón y bota partidos). **Pintar el aro de un color plano** deja un halo de 10 px.

@@ -18,10 +18,13 @@ Lo que se hace aqui, sin tocar un solo pixel de alfa (la silueta es la misma):
 
   profundidad 1-2 (el borde que da al fondo)  -> se queda OSCURO, x0,32 del color
                                                  de al lado: el contorno de 2 px
-  profundidad 3 y mas (el resto del aro)      -> toma el color del dibujo x0,90:
-                                                 deja de ser un aro gordo
-  negro encerrado por color (lineas)          -> x0,45: sigue siendo linea, pero
-                                                 del tono de lo que separa, no negro
+  profundidad 3 y mas (el resto del aro)      -> toma el color del dibujo tal cual:
+                                                 deja de ser un aro, pasa a ser
+                                                 sombra del propio dibujo
+  negro encerrado por color (lineas)          -> NO se toca: sigue siendo negro
+
+Lo que queda negro son solo trazos de dentro (2124 px por celda, 2,3 % del
+opaco); el aro de fuera deja de ser negro.
 
 El color de cada px no se difunde (una difusion por vecinos inunda el aro con el
 primer color que entra): se toma el del trozo de dibujo mas cercano con distancia
@@ -41,8 +44,6 @@ META = 'voltia/sheet.json'
 UMBRAL = 6          # max(r,g,b) <= UMBRAL cuenta como negro
 CONTORNO = 2        # px de contorno oscuro que se dejan
 OSCURO = 0.32       # cuanto se oscurece ese contorno
-RELLENO = 0.90      # el resto del aro toma el color del dibujo a este tono
-LINEA = 0.45        # lineas internas: mismo trazo, tono de lo que separa
 MAXD = 64.0
 
 

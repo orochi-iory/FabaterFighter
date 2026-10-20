@@ -109,16 +109,18 @@ def main():
     a('</nav>')
 
     a('<header>')
-    a('<h1>Chun-Li · las filas de la hoja</h1>')
-    a('<p>Son <b>las 24 filas</b>, cortadas por la altura del suelo de cada figura, '
-      'no por los huecos de fondo. De la 4 a la 24 salen <b>tal cual están en la hoja</b>: '
-      'todas las figuras de cada fila, en su orden, sin recortar ciclos ni quitar repeticiones.</p>')
-    a('<p>Tres cosas van montadas porque son una sola animación en la hoja o porque '
-      'el efecto va en el frame, y están marcadas: <b>1–3</b> el stance es un solo bucle · '
-      '<b>12</b> el speed kick lleva sus estelas amarillas dentro · <b>22–23</b> defensa y '
-      'super son la misma animación, con todos los frames.</p>')
-    a('<p style="margin-top:14px"><a href="../%s/raw/hoja_24_filas.png" '
-      'style="color:#ffcb3d;font-weight:700">→ Las 24 filas juntas, numeradas, en una imagen</a></p>' % BASE)
+    a('<h1>Chun-Li · 22 animaciones</h1>')
+    a('<p>La hoja trae 24 filas, pero <b>las filas 1, 2 y 3 son el mismo stance</b>: aquí van '
+      '<b>juntas, en una sola animación</b> (<b>1 → 2 → 1 → 3</b>, 32 frames, un GIF). '
+      'Por eso el modelo sale con <b>22 entradas</b>, no 24: la primera es el stance y las '
+      'demás son las filas 4 a 24.</p>')
+    a('<p>De la 4 a la 24 salen <b>tal cual están en la hoja</b>: todas las figuras de cada '
+      'fila, en su orden, sin recortar ciclos ni quitar repeticiones. Dos van montadas porque '
+      'el efecto va dentro del frame: <b>12</b> el speed kick lleva sus estelas amarillas · '
+      '<b>22–23</b> defensa y super forman una sola animación con todos los frames.</p>')
+    a('<p style="margin-top:14px"><a href="../%s/raw/hoja_animaciones.png" '
+      'style="color:#ffcb3d;font-weight:700">→ Las 22 animaciones, una fila por animación '
+      '(el stance es la primera)</a></p>' % BASE)
     a('</header>')
 
     a('<main><table>')
