@@ -97,28 +97,31 @@ nativo, no con filtros.
 
 Tamaño medido del stance: **94 × 151 px de arte** (antes, con la erosión, 95 × 150).
 
-## Hoja recreada por IA · 4 partes, 0 filtrado (2026-10-20)
+## Stance y walk rehechos por IA (2026-10-20)
 
-Se partió la hoja en **4 tiras horizontales enteras** (filas 1-6, 7-12, 13-18, 19-25; ninguna
-fila cortada), a 1 px por píxel de arte (2 625 px de ancho), y se le dio el **sprite de Cammy**
-como referencia de acabado: píxeles planos, paleta corta, línea negra dentro, sin contorno
-exterior. Nada de filtros al recortar: lo que devuelve la IA es lo que se entrega.
+Se le dio cada animación por trozos (stance en 3 trozos de 5 frames, walk de 6 en uno),
+pidiéndole pixel art real y **resolución libre** —podía trabajar más grande—. Resultado: son
+**más limpios que el original**, pero no vienen pixelados; hay que bajarlos.
 
-| parte | filas | original | IA | colores | bordes suaves | sprites |
-|---|---|---|---|---|---|---|
-| 1 | 1-6 | 2 625 × 996 | **880 × 1 212** | 125 123 | 90,5 % | 42 → 21 |
-| 2 | 7-12 | 2 625 × 996 | **1 680 × 637** | 81 716 | 94,0 % | 21 → 24 |
-| 3 | 13-18 | 2 625 × 996 | **1 680 × 637 (duplicada)** | 151 914 | 87,6 % | 24 → 60 |
-| 4 | 19-25 | 2 625 × 1 162 | **880 × 1 212** | 139 323 | 89,6 % | 17 → 24 |
+| | original | IA tal cual | bajado a píxel (`pixelar.py`) |
+|---|---|---|---|
+| colores | 18 | 16 300-27 700 | **18-19** |
+| bordes suavizados | 5,7 % | 91,5 % | **16,7 %** |
+| rejilla de píxel | 2 px exactos | **no hay** (11 % bloques) | píxel entero |
+| tamaño del sprite | 94 × 151 | 243 × 394 | 81 × 131 |
+| frames | 15 + 6 | 15 + 6 | 15 + 6 |
 
-- **Contorno exterior: eliminado.** 5 557 px verdes → 0-1 px. Eso sí se cumple.
-- **Rejilla y 1:1: no.** Devuelve 880-1 680 px de ancho donde se le dieron 2 625.
-- **Paleta plana: no.** 81 000-151 000 colores y 88-94 % de bordes suavizados.
-- **Parte 3 duplicada**: pinta la tira dos veces, una al lado de otra.
-- **Recorte total: 89 frames de 102** (25 animaciones; stance pierde 11 de 15).
+Cómo se baja a píxel (`voltia/nuevo/ia/pixelar.py`): recorte del sprite → divisor **entero**
+(÷3, NEAREST, nunca LANCZOS) → `quantize` a la paleta de 18 colores **sin dithering** → fondo
+transparente. Nada de inventar píxeles.
 
-Ficheros: `voltia/nuevo/ia/ref_parteN.png`, `ia_parteN.png`, `ref_cammy.jpg`,
-`frames/<anim>/fNN.png`, `datos.json`. Visor: `preview/nuevo.html`.
+Pendiente antes de usarlo en el juego: el sprite queda en 81 × 131 (no 94 × 151), así que hay
+que reescalarlo a la rejilla y volver a medir el pivote. Al bajar de 243 a 81 se pierde detalle
+fino (el rayo del pecho queda a 1-2 px) y la IA cambia detalles del diseño: cinturón dorado
+doble, pecho más marcado, visera distinta.
+
+Ficheros: `voltia/nuevo/ia/{ref,ia}_{stance_a,stance_b,stance_c,walk}.png`,
+`voltia/nuevo/ia/prueba/{raw,pixel}/<anim>_NN.png`. Visor: `preview/nuevo.html`.
 
 ## Chun-Li
 

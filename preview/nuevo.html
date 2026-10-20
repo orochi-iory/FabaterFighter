@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>VOLTIA · Modelo nuevo (4 partes, 0 filtrado)</title>
+<title>VOLTIA · Modelo nuevo (stance y walk pixelados)</title>
 <style>
   :root { --bg:#150f1f; --panel:#211a33; --line:#3d3358; --cyan:#96ffeb; --gold:#ffcb3d; --vio:#b98cff; }
   * { box-sizing:border-box; }
@@ -17,7 +17,7 @@
   nav.models a.on { background:#8c4dff; border-color:#8c4dff; color:#fff; }
   header { text-align:center; padding:26px 14px 6px; }
   header h1 { margin:0; color:var(--vio); letter-spacing:2px; font-size:30px; }
-  header p { margin:8px auto 0; max-width:860px; color:#cfc9e6; line-height:1.55; font-size:15px; }
+  header p { margin:8px auto 0; max-width:880px; color:#cfc9e6; line-height:1.55; font-size:15px; }
   header p b { color:var(--gold); }
   main { max-width:1180px; margin:0 auto; padding:18px 16px 40px; display:grid;
     grid-template-columns:1fr 1fr; gap:18px; }
@@ -32,8 +32,6 @@
     background:#1a1528; border-radius:8px; }
   figure.zoom figcaption { font-size:12px; color:#9b93b8; text-align:center; margin-top:5px; }
   .par { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
-  .cammy img { width:100%; max-width:300px; height:auto; image-rendering:pixelated;
-    display:block; margin:0 auto; border-radius:8px; background:#1a1528; }
   canvas#anim { image-rendering:pixelated; border-radius:8px; display:block; margin:0 auto;
     background: repeating-conic-gradient(#2c2a40 0 25%, #242233 0 50%) 0 0/32px 32px; }
   canvas#anim.solid { background:#101018; }
@@ -43,11 +41,6 @@
   button, select { background:#35324e; color:#eee; border:1px solid #4a4767; border-radius:8px;
     padding:8px 12px; cursor:pointer; font-size:14px; }
   button:hover, select:hover { background:#454163; }
-  #anims { display:grid; grid-template-columns:repeat(auto-fill,minmax(158px,1fr)); gap:6px;
-    max-height:230px; overflow:auto; margin-top:12px; }
-  #anims button { text-align:left; font-size:13px; padding:7px 10px; }
-  #anims button.on { background:#0e7c8c; border-color:#96ffeb; }
-  #anims button.falta { color:#ff9f9f; }
   table { border-collapse:collapse; width:100%; font-size:13px; }
   th, td { border:1px solid var(--line); padding:6px 9px; text-align:left; }
   th { background:#2c2442; color:var(--cyan); }
@@ -69,92 +62,29 @@
 </nav>
 
 <header>
-  <h1>MODELO NUEVO · 4 PARTES · 0 FILTRADO</h1>
-  <p>La hoja partida en <b>4 tiras horizontales enteras</b> (6 / 6 / 6 / 7 filas, ninguna fila cortada),
-     a 1 px por píxel de arte, con el <b>sprite de Cammy como referencia del resultado que queremos</b>.
-     Pedido: píxeles planos como Cammy, sprites del mismo tamaño, sin contorno exterior.
+  <h1>MODELO NUEVO · STANCE Y WALK</h1>
+  <p>Solo estas dos animaciones. Se le dio cada una por trozos, pidiendo <b>pixel art de verdad</b>
+     a la resolución que quisiera. Y sí: <b>salen más limpios que el original</b>, como decías.
      El modelo oficial no se ha tocado.</p>
 </header>
 
 <main>
 
   <section class="card wide">
-    <h2>El resultado que queremos · referencia Cammy</h2>
-    <p class="sub">Píxeles duros, paleta corta y plana, línea negra dentro del dibujo y ningún halo
-       alrededor. Eso es lo que se le pidió imitar.</p>
-    <div class="par">
-      <figure class="cammy">
-        <img src="../voltia/nuevo/ia/ref_cammy.jpg" alt="Sprite de Cammy usado como referencia de resultado">
-        <figcaption>Referencia de acabado (Cammy, SF2)</figcaption>
-      </figure>
-      <div class="note">
-        <b>Lo que define ese acabado:</b><br>
-        · paleta de 16-24 colores planos, sin mezclas<br>
-        · borde de píxel duro, sin antialias<br>
-        · línea negra <i>dentro</i> del dibujo<br>
-        · sin contorno exterior añadido<br>
-        · escala real: un personaje de ~70-100 px de alto<br><br>
-        <b>Medido en la IA:</b> 81 000-151 000 colores y 88-94 % de bordes suavizados.
-        Se parece a Cammy a distancia, pero por dentro no lo es.
-      </div>
-    </div>
-  </section>
-
-  <section class="card wide">
-    <h2>Parte 1 · filas 1-6 · la que mejor ha salido</h2>
-    <p class="sub">Conserva 6 filas, pero <b>reduce 15 columnas a 7</b> y separa los sprites.
-       Aun así es la única que mantiene algo de la rejilla original.</p>
-    <div class="par">
-      <figure class="zoom"><img src="../voltia/nuevo/ia/ref_parte1.png" alt="Parte 1 original">
-        <figcaption>Original · 2 625 × 996 · 15 columnas</figcaption></figure>
-      <figure class="zoom"><img src="../voltia/nuevo/ia/ia_parte1.png" alt="Parte 1 por la IA">
-        <figcaption>IA · 880 × 1 212 · 7 columnas · <a href="../voltia/nuevo/ia/ia_parte1.png" target="_blank" style="color:var(--cyan)">real</a></figcaption></figure>
-    </div>
-  </section>
-
-  <section class="card wide">
-    <h2>Parte 2 · filas 7-12</h2>
-    <p class="sub">Aquí sí conserva las 6 filas y se acerca a las 15 columnas en las filas llenas,
-       pero vuelve a repartir los sprites y añade huecos.</p>
-    <div class="par">
-      <figure class="zoom"><img src="../voltia/nuevo/ia/ref_parte2.png" alt="Parte 2 original">
-        <figcaption>Original · 2 625 × 996</figcaption></figure>
-      <figure class="zoom"><img src="../voltia/nuevo/ia/ia_parte2.png" alt="Parte 2 por la IA">
-        <figcaption>IA · 1 680 × 637 · <a href="../voltia/nuevo/ia/ia_parte2.png" target="_blank" style="color:var(--cyan)">real</a></figcaption></figure>
-    </div>
-  </section>
-
-  <section class="card wide">
-    <h2>Parte 3 · filas 13-18 · la que peor ha salido</h2>
-    <p class="sub"><b>Duplicó el contenido</b>: pintó la misma tira dos veces, una al lado de otra.
-       La rejilla queda inservible y los sprites salen repetidos (60 componentes donde había 24).</p>
-    <div class="par">
-      <figure class="zoom"><img src="../voltia/nuevo/ia/ref_parte3.png" alt="Parte 3 original">
-        <figcaption>Original · 2 625 × 996</figcaption></figure>
-      <figure class="zoom"><img src="../voltia/nuevo/ia/ia_parte3.png" alt="Parte 3 por la IA">
-        <figcaption>IA · 1 680 × 637 · duplicada · <a href="../voltia/nuevo/ia/ia_parte3.png" target="_blank" style="color:var(--cyan)">real</a></figcaption></figure>
-    </div>
-  </section>
-
-  <section class="card wide">
-    <h2>Parte 4 · filas 19-25</h2>
-    <p class="sub">También reduce de ancho (880 px) y reordena, pero conserva las 7 filas y las
-       poses de derribo y recuperación.</p>
-    <div class="par">
-      <figure class="zoom"><img src="../voltia/nuevo/ia/ref_parte4.png" alt="Parte 4 original">
-        <figcaption>Original · 2 625 × 1 162</figcaption></figure>
-      <figure class="zoom"><img src="../voltia/nuevo/ia/ia_parte4.png" alt="Parte 4 por la IA">
-        <figcaption>IA · 880 × 1 212 · <a href="../voltia/nuevo/ia/ia_parte4.png" target="_blank" style="color:var(--cyan)">real</a></figcaption></figure>
-    </div>
-  </section>
-
-  <section class="card wide">
-    <h2>Visor de frames · lo recortado de las 4 partes</h2>
-    <p class="sub">25 animaciones, <b>89 frames</b> de los 102 originales. Elige animación; en rojo
-       las que han perdido frames. Escala y fondos como en el modelo original.</p>
-    <div class="big"><canvas id="anim" width="600" height="660"></canvas></div>
+    <h2>Visor · stance (15 frames) y walk (6)</h2>
+    <p class="sub">Conmutador entre <b>lo que devuelve la IA</b> (ilustración suave, 27 734 colores)
+       y <b>el sprite pasado a píxel real</b> (18 colores, rejilla entera, sin dithering).</p>
+    <div class="big"><canvas id="anim" width="600" height="560"></canvas></div>
     <div class="controls">
       <button id="play">⏸ Pausa</button>
+      <select id="anim-sel">
+        <option value="stance">stance · 15 frames</option>
+        <option value="walk">walk · 6 frames</option>
+      </select>
+      <select id="modo">
+        <option value="pixel">Píxel real (18 colores)</option>
+        <option value="raw">IA tal cual (suave)</option>
+      </select>
       <select id="scale">
         <option value="2">2×</option>
         <option value="3" selected>3×</option>
@@ -169,58 +99,100 @@
       </select>
       <span class="note" id="fstat">—</span>
     </div>
-    <div id="anims"></div>
   </section>
 
   <section class="card wide">
-    <h2>Medidas de esta iteración</h2>
+    <h2>Las hojas · stance en 3 trozos</h2>
+    <p class="sub">Arriba lo que le di (original, a 2 px por píxel de arte), abajo lo que devolvió.
+       Mantiene los 5 frames de cada trozo y la pose de guardia.</p>
+    <div class="par">
+      <figure class="zoom"><img src="../voltia/nuevo/ia/ref_stance_a.png" alt="Stance 1-5 original">
+        <figcaption>Original · frames 1-5</figcaption></figure>
+      <figure class="zoom"><img src="../voltia/nuevo/ia/ia_stance_a.png" alt="Stance 1-5 por la IA">
+        <figcaption>IA · 2 233 × 464</figcaption></figure>
+    </div>
+    <div class="par" style="margin-top:10px">
+      <figure class="zoom"><img src="../voltia/nuevo/ia/ref_stance_b.png" alt="Stance 6-10 original">
+        <figcaption>Original · frames 6-10</figcaption></figure>
+      <figure class="zoom"><img src="../voltia/nuevo/ia/ia_stance_b.png" alt="Stance 6-10 por la IA">
+        <figcaption>IA · 2 233 × 464</figcaption></figure>
+    </div>
+    <div class="par" style="margin-top:10px">
+      <figure class="zoom"><img src="../voltia/nuevo/ia/ref_stance_c.png" alt="Stance 11-15 original">
+        <figcaption>Original · frames 11-15</figcaption></figure>
+      <figure class="zoom"><img src="../voltia/nuevo/ia/ia_stance_c.png" alt="Stance 11-15 por la IA">
+        <figcaption>IA · 2 233 × 464</figcaption></figure>
+    </div>
+  </section>
+
+  <section class="card wide">
+    <h2>Las hojas · walk en 1 trozo</h2>
+    <p class="sub">Aquí la IA se soltó en resolución y salió lo mejor de toda la prueba: ciclo de
+       caminar completo, 6 poses, 1 408 × 768. Los 6 sprites caben en el mismo ancho del original.</p>
+    <div class="par">
+      <figure class="zoom"><img src="../voltia/nuevo/ia/ref_walk.png" alt="Walk original">
+        <figcaption>Original · frames 1-6 · 2 140 × 372</figcaption></figure>
+      <figure class="zoom"><img src="../voltia/nuevo/ia/ia_walk.png" alt="Walk por la IA">
+        <figcaption>IA · 1 408 × 768 · ciclo completo</figcaption></figure>
+    </div>
+  </section>
+
+  <section class="card wide">
+    <h2>Medidas: lo bueno y lo que hay que corregir</h2>
     <table>
-      <tr><th>Parte</th><th>Filas</th><th>Original</th><th>IA</th><th>Colores</th><th>Bordes suaves</th><th>Sprites (orig → IA)</th></tr>
-      <tr><td>1</td><td>1-6</td><td>2 625 × 996</td><td class="bad">880 × 1 212</td><td class="bad">125 123</td><td class="bad">90,5 %</td><td class="bad">42 → 21</td></tr>
-      <tr><td>2</td><td>7-12</td><td>2 625 × 996</td><td class="bad">1 680 × 637</td><td class="bad">81 716</td><td class="bad">94,0 %</td><td class="bad">21 → 24</td></tr>
-      <tr><td>3</td><td>13-18</td><td>2 625 × 996</td><td class="bad">1 680 × 637 (duplicada)</td><td class="bad">151 914</td><td class="bad">87,6 %</td><td class="bad">24 → 60</td></tr>
-      <tr><td>4</td><td>19-25</td><td>2 625 × 1 162</td><td class="bad">880 × 1 212</td><td class="bad">139 323</td><td class="bad">89,6 %</td><td>17 → 24</td></tr>
-      <tr><td><b>Total</b></td><td><b>25</b></td><td><b>2 625 × 4 150</b></td><td class="bad">—</td><td class="bad">—</td><td class="bad">—</td><td class="bad"><b>102 → 89</b></td></tr>
+      <tr><th>Métrica</th><th>Original</th><th>IA tal cual</th><th>Pasado a píxel</th></tr>
+      <tr><td>Colores</td><td class="ok">18</td><td class="bad">16 300-27 700</td><td class="ok">18-19</td></tr>
+      <tr><td>Bordes suavizados</td><td class="ok">5,7 %</td><td class="bad">91,5 %</td><td class="ok">16,7 %</td></tr>
+      <tr><td>Rejilla de píxel</td><td class="ok">2 px exactos</td><td class="bad">no hay (11 % bloques)</td><td class="ok">píxel entero</td></tr>
+      <tr><td>Tamaño del sprite</td><td class="ok">94 × 151 px</td><td>243 × 394 px</td><td>81 × 131 px</td></tr>
+      <tr><td>Stance</td><td>15 frames</td><td class="ok">15</td><td class="ok">15</td></tr>
+      <tr><td>Walk</td><td>6 frames</td><td class="ok">6 · ciclo completo</td><td class="ok">6</td></tr>
+      <tr><td>Contorno exterior</td><td>sí (borde verde)</td><td class="ok">ninguno</td><td class="ok">ninguno</td></tr>
     </table>
     <div class="note" style="margin-top:12px">
-      <b>0 filtrado: sí.</b> El contorno verde desaparece (5 557 px → 0-1 px) y no se ha aplicado
-      ningún filtro después: lo que hay es lo que devolvió la IA, recortado.
+      <b>Lo bueno:</b> estas dos animaciones son <b>más limpias que el original</b>. La pose es más
+      legible, la coleta tiene volumen de verdad y el dibujo no arrastra el grano del arte viejo.
+      El walk es el mejor resultado de todas las pruebas: 6 poses coherentes, un ciclo completo.
       <br><br>
-      <b>Lo que sigue sin cumplirse:</b> ninguna de las 4 partes respeta la rejilla ni el tamaño
-      1:1 (880-1 680 px de ancho donde se le dieron 2 625). Ninguna entrega la paleta plana de
-      Cammy: 81 000-151 000 colores y 88-94 % de bordes suavizados. La parte 3 sale duplicada y
-      se pierden 13 frames de 102.
+      <b>Lo que hay que corregir antes de usarlo:</b> el sprite pasado a píxel mide
+      <b>81 × 131 px</b> frente a los 94 × 151 del original, así que hay que reescalarlo y volver a
+      medir su pivote. Al bajar de 243 px a 81 con NEAREST se pierden detalles finos (el rayo del
+      pecho queda a 1-2 px y la cara se simplifica). Y la IA cambia el diseño en detalles: el cinturón
+      pasa a dorado doble, el pecho se marca más y la visera cambia de forma.
       <br><br>
-      <b>Conclusión medida:</b> partir la hoja en tiras no arregla ni la resolución, ni la paleta,
-      ni la rejilla. El acabado de Cammy no se consigue pidiéndolo en el prompt; se consigue
-      dibujando a resolución de arte con la paleta cerrada, que es justo lo que hace el modelo oficial.
+      <b>0 filtrado en el recorte</b>: los sprites son lo que devolvió la IA, solo recortados y
+      bajados con NEAREST a una rejilla entera, aplanados a la paleta de 18 sin dithering.
     </div>
   </section>
 
 </main>
 
-<footer>FabaterFighter · modelo nuevo · 4 partes · 0 filtrado · 2026-10-20</footer>
+<footer>FabaterFighter · modelo nuevo · stance y walk pixelados · 2026-10-20</footer>
 
 <script>
-(async () => {
-  const datos = await (await fetch('../voltia/nuevo/ia/datos.json', { cache: 'no-store' })).json();
+(() => {
   const cv = document.getElementById('anim');
   const cx = cv.getContext('2d');
   const cache = new Map();
-  let anim = datos.anims[0], frames = [], idx = 0, playing = true;
+  let anim = 'stance', modo = 'pixel', frames = [], idx = 0, playing = true;
   let last = performance.now(), acc = 0;
-  const FPS = 10;
+  const FPS = { stance: 10, walk: 10 };
+  const N = { stance: 15, walk: 6 };
 
-  const cargar = async a => {
-    if (cache.has(a.id)) return cache.get(a.id);
-    const l = await Promise.all(a.frames_ia.map(f => new Promise(res => {
-      const im = new Image();
-      im.onload = () => res(im);
-      im.onerror = () => res(null);
-      im.src = '../voltia/nuevo/ia/' + f.p;
-    })));
-    const ok = l.filter(Boolean);
-    cache.set(a.id, ok);
+  const cargar = async (a, m) => {
+    const key = a + ':' + m;
+    if (cache.has(key)) return cache.get(key);
+    const lista = [];
+    for (let i = 0; i < N[a]; i++) {
+      lista.push(new Promise(res => {
+        const im = new Image();
+        im.onload = () => res(im);
+        im.onerror = () => res(null);
+        im.src = '../voltia/nuevo/ia/prueba/' + m + '/' + a + '_' + String(i).padStart(2, '0') + '.png';
+      }));
+    }
+    const ok = (await Promise.all(lista)).filter(Boolean);
+    cache.set(key, ok);
     return ok;
   };
 
@@ -238,31 +210,20 @@
     cx.drawImage(im, Math.round((W - im.width * s) / 2), Math.round((H - im.height * s) / 2),
                  im.width * s, im.height * s);
     document.getElementById('fstat').textContent =
-      `${anim.id} · frame ${idx + 1}/${frames.length} · ${im.width}×${im.height} px · original ${anim.frames_original} frames`;
+      `${anim} · frame ${idx + 1}/${frames.length} · ${im.width}×${im.height} px · ${modo === 'pixel' ? 'píxel real' : 'IA suave'}`;
   }
 
-  function lista() {
-    const box = document.getElementById('anims');
-    box.innerHTML = '';
-    datos.anims.forEach(a => {
-      const b = document.createElement('button');
-      b.textContent = `${a.fila + 1}. ${a.id} (${a.frames_ia.length}/${a.frames_original})`;
-      b.className = (a.id === anim.id ? 'on' : '') + (a.frames_ia.length < a.frames_original ? ' falta' : '');
-      b.onclick = async () => {
-        anim = a; frames = await cargar(a); idx = 0;
-        [...box.children].forEach(c => c.className = c.className.replace('on', '').trim());
-        b.className = 'on' + (a.frames_ia.length < a.frames_original ? ' falta' : '');
-        pintar();
-      };
-      box.appendChild(b);
-    });
+  async function recargar() {
+    frames = await cargar(anim, modo);
+    idx = 0;
+    pintar();
   }
 
   function bucle(t) {
     const dt = (t - last) / 1000; last = t;
     if (playing && frames.length) {
       acc += dt;
-      if (acc >= 1 / FPS) { acc = 0; idx = (idx + 1) % frames.length; pintar(); }
+      if (acc >= 1 / (FPS[anim] || 10)) { acc = 0; idx = (idx + 1) % frames.length; pintar(); }
     }
     requestAnimationFrame(bucle);
   }
@@ -271,12 +232,12 @@
     playing = !playing;
     e.target.textContent = playing ? '⏸ Pausa' : '▶ Play';
   };
+  document.getElementById('anim-sel').onchange = async e => { anim = e.target.value; await recargar(); };
+  document.getElementById('modo').onchange = async e => { modo = e.target.value; await recargar(); };
   document.getElementById('scale').onchange = pintar;
   document.getElementById('bg').onchange = e => { cv.className = e.target.value; };
 
-  frames = await cargar(anim);
-  lista(); pintar();
-  requestAnimationFrame(bucle);
+  recargar().then(() => requestAnimationFrame(bucle));
 })();
 </script>
 </body>
