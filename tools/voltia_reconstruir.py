@@ -31,7 +31,7 @@ import argparse
 import hashlib
 import json
 import os
-from collections import Counter
+from collections import Counter, deque
 
 from PIL import Image, ImageDraw, ImageFilter, ImageFont
 
@@ -47,6 +47,7 @@ HOJA_PX = 2         # px de hoja por px de arte en la hoja
 NEGRO = {(1, 1, 2)}
 CIAN = {(5, 176, 157)}
 V8 = ((1, 0), (-1, 0), (0, 1), (0, -1), (1, 1), (1, -1), (-1, 1), (-1, -1))
+PROTEGIDOS = (NEGRO | CIAN)
 
 
 def grano(im):
@@ -97,6 +98,88 @@ def limpiar(im, pasadas=3, masa=2, proteger=(NEGRO, CIAN)):
     return im
 
 
+def islas_de_color(im, maxpx=3, pasadas=2):
+    """Islas de color de <= maxpx px se funden con el color de su contorno.
+
+    Es lo que queda despues de la masa local: manchas pequenas de un color
+    correcto en un sitio que no toca (el cuadradito suelto que se ve en la cara o
+    en la coleta). Se quitan por regiones conexas, no pixel a pixel, y se respetan
+    el negro de linea y el cian del borde.
+    """
+    im = im.copy()
+    for _ in range(pasadas):
+        W, H = im.size
+        px = im.load()
+        visto = [[False] * W for _ in range(H)]
+        cambios = []
+        for y in range(H):
+            for x in range(W):
+                q = px[x, y]
+                if not q[3] or visto[y][x] or q[:3] in PROTEGIDOS:
+                    continue
+                cola = deque([(x, y)])
+                visto[y][x] = True
+                comp = []
+                while cola:
+                    cx, cy = cola.popleft()
+                    comp.append((cx, cy))
+                    for dx, dy in V8:
+                        nx, ny = cx + dx, cy + dy
+                        if (0 <= nx < W and 0 <= ny < H and not visto[ny][nx]
+                                and px[nx, ny][3] and px[nx, ny][:3] == q[:3]):
+                            visto[ny][nx] = True
+                            cola.append((nx, ny))
+                if len(comp) > maxpx:
+                    continue
+                borde = Counter()
+                for cx, cy in comp:
+                    for dx, dy in V8:
+                        nx, ny = cx + dx, cy + dy
+                        if (0 <= nx < W and 0 <= ny < H and px[nx, ny][3]
+                                and px[nx, ny][:3] != q[:3]):
+                            borde[px[nx, ny][:3]] += 1
+                if borde:
+                    c = borde.most_common(1)[0][0]
+                    for cx, cy in comp:
+                        cambios.append((cx, cy, c))
+        for x, y, c in cambios:
+            px[x, y] = (c[0], c[1], c[2], 255)
+        if not cambios:
+            break
+    return im
+
+
+def silueta_limpia(im, r=1):
+    """Cierra muescas de 1 px y quita salientes de 1 px de la silueta.
+
+    Ojo: al rellenar una muesca aparece un pixel opaco que antes era transparente
+    y no tiene color. Se le pone el mayoritario de sus vecinos opacos; si no,
+    queda un (0,0,0) suelto y la paleta se llena de colores nuevos (paso: de 18 a
+    2715 colores). Y lo que sigue transparente se deja a (0,0,0,0) limpio.
+    """
+    a = im.split()[3]
+    binaria = Image.eval(a, lambda v: 255 if v > 0 else 0)
+    for _ in range(r):
+        binaria = binaria.filter(ImageFilter.MaxFilter(3)).filter(ImageFilter.MinFilter(3))
+        binaria = binaria.filter(ImageFilter.MinFilter(3)).filter(ImageFilter.MaxFilter(3))
+    out = im.copy()
+    W, H = im.size
+    src = im.load()
+    dst = out.load()
+    mask = binaria.load()
+    for y in range(H):
+        for x in range(W):
+            if mask[x, y]:
+                if src[x, y][3]:
+                    continue
+                vecinos = [src[x + dx, y + dy][:3] for dx, dy in V8
+                           if 0 <= x + dx < W and 0 <= y + dy < H and src[x + dx, y + dy][3]]
+                dst[x, y] = (Counter(vecinos).most_common(1)[0][0] + (255,)) if vecinos else (0, 0, 0, 255)
+            else:
+                dst[x, y] = (0, 0, 0, 0)
+    return out
+
+
 def fuente(tam):
     for p in ('/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf',
               '/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf'):
@@ -112,6 +195,7 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument('--comer', type=int, default=0, help='px de ARTE erosionados del contorno')
     ap.add_argument('--pasadas', type=int, default=3)
+    ap.add_argument('--islas', type=int, default=3, help='tamano maximo de isla de color que se funde')
     ap.add_argument('--solo-ver', action='store_true', help='mide y no escribe la hoja')
     ap.add_argument('--comparar', action='store_true',
                     help='escribe las imagenes de comparacion en /tmp (no en el repositorio)')
@@ -129,6 +213,8 @@ def main():
             nativo = Image.open(p).convert('RGBA')
             uno = nativo.resize((nativo.size[0] // NATIVO, nativo.size[1] // NATIVO), Image.NEAREST)
             uno = limpiar(uno, args.pasadas)
+            uno = islas_de_color(uno, args.islas, 2)
+            uno = silueta_limpia(uno, 1)
             if args.comer:
                 al = uno.split()[3]
                 for _ in range(args.comer):

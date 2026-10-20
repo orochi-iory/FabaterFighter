@@ -1,7 +1,7 @@
 {
  "sprite": "sheet_uniform.png",
  "version": "1.2",
- "notes": "Reconstruida desde los frames nativos: ÷4 a 1x de arte con NEAREST, grano quitado por masa local (negro y cian protegidos), 1 px de arte comidos del contorno, y ×2 NEAREST a la hoja. Sin LANCZOS en ningun paso.",
+ "notes": "Modelo oficial reconstruido desde voltia/frames (rejilla 4x): /4 NEAREST a 1x de arte, limpieza de grano por masa local e islas de color, silueta de 1 px limpia, -1 px de arte de contorno y x2 NEAREST a la hoja. Sin LANCZOS en ningun paso. 18 colores.",
  "date": "2026-10-20",
  "canon": 1.2,
  "art": {
@@ -421,5 +421,5 @@
    "status": "done"
   }
  ],
- "rev": "3532e60521"
+ "rev": "3442d4d8a0"
 }

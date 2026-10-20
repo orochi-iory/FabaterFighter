@@ -65,12 +65,27 @@ Por frame, cero LANCZOS:
    entorno 5×5, pasa al color mayoritario de sus 8 vecinos. Se **protegen** el negro de
    línea `(1,1,2)` y el cian del borde `(5,176,157)` (sin protegerlos se borra el borde
    verde, que es intencionado);
-3. **−1 px de arte de contorno**: ajusta el grosor y quita la dentadura que deja la
+3. **islas de color**: toda región conexa de **≤ 3 px** de un mismo color se funde con el
+   color mayoritario de su contorno. Es lo que quita el cuadradito suelto en la cara o en
+   la coleta, que la masa local no ve (ese color sí tiene vecinos, solo que en otro sitio);
+4. **silueta limpia**: cierra muescas de 1 px y quita salientes de 1 px. La muesca recién
+   rellenada **hereda el color de su vecino**; si no, queda un `(0,0,0)` suelto y la paleta
+   pasa de 18 a 2715 colores (pasó, y se vio en la comprobación de colores, no a ojo);
+5. **−1 px de arte de contorno**: ajusta el grosor y quita la dentadura que deja la
    protección del cian;
-4. **×2 NEAREST** a la hoja y pegado **alineado a par**.
+6. **×2 NEAREST** a la hoja y pegado **alineado a par**.
 
-Resultado medido en el stance: grano **5,51 % → 1,47 %**, bloques 2×2 sucios
-**0,00 %**, mismos 18 colores.
+Resultado medido en el stance a 1× de arte:
+
+| | nativo | antes de la limpieza final | ahora |
+|---|---|---|---|
+| píxeles aislados | 7,13 % | 1,47 % | **0,45 %** |
+| islas de color ≤ 4 px | 876 | 213 | **115** |
+| bloques 2×2 sucios | — | 0,00 % | **0,00 %** |
+| colores opacos | 18 | 18 | **18** |
+
+Referencia de arte real en el repo (Chun-Li): **2,85 %** de píxeles aislados. Voltia está
+por debajo.
 
 ## Chun-Li
 
