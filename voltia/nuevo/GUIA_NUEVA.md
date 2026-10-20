@@ -97,31 +97,28 @@ nativo, no con filtros.
 
 Tamaño medido del stance: **94 × 151 px de arte** (antes, con la erosión, 95 × 150).
 
-## Hoja recreada por IA (2026-10-20)
+## Hoja recreada por IA · 4 partes, 0 filtrado (2026-10-20)
 
-Se le dio la hoja **mitad y mitad**, a 1 px por píxel de arte (2 625 px de ancho cada mitad),
-pidiendo: mantener las animaciones, el diseño de Voltia, los sprites al mismo tamaño (1:1) y
-**sin contorno exterior**. Se admitía reinterpretar poses para mejorarlas.
+Se partió la hoja en **4 tiras horizontales enteras** (filas 1-6, 7-12, 13-18, 19-25; ninguna
+fila cortada), a 1 px por píxel de arte (2 625 px de ancho), y se le dio el **sprite de Cammy**
+como referencia de acabado: píxeles planos, paleta corta, línea negra dentro, sin contorno
+exterior. Nada de filtros al recortar: lo que devuelve la IA es lo que se entrega.
 
-| | original | IA · mitad arriba | IA · mitad abajo | IA · prueba 6×4 |
-|---|---|---|---|---|
-| resolución devuelta | 2 625 × 2 158 | **1 129 × 928** (43 %) | **1 181 × 896** (45 %) | **1 290 × 816** (123 %) |
-| sprite | 94 × 151 px | ~51 × 64 px | ~51 × 64 px | agrandado |
-| colores | **20** | 77 950 | 95 395 | 136 653 |
-| transiciones suaves | 6,1 % | 91,2 % | 91,5 % | suave |
-| contorno verde | 5 557 px | 1 px | 0 px | 0 px |
-| rejilla | 25 × 15 | 13 × 15 | 12 × 15 | 4 × 6 |
-| frames recortables | 102 | 123 en 25 animaciones | | 24 |
+| parte | filas | original | IA | colores | bordes suaves | sprites |
+|---|---|---|---|---|---|---|
+| 1 | 1-6 | 2 625 × 996 | **880 × 1 212** | 125 123 | 90,5 % | 42 → 21 |
+| 2 | 7-12 | 2 625 × 996 | **1 680 × 637** | 81 716 | 94,0 % | 21 → 24 |
+| 3 | 13-18 | 2 625 × 996 | **1 680 × 637 (duplicada)** | 151 914 | 87,6 % | 24 → 60 |
+| 4 | 19-25 | 2 625 × 1 162 | **880 × 1 212** | 139 323 | 89,6 % | 17 → 24 |
 
-Qué se cumple y qué no:
-- **Sí**: la rejilla y el número de filas, las celdas vacías, y el **contorno exterior eliminado**
-  (el borde verde desaparece, como se pidió). El diseño se reconoce.
-- **No**: el 1:1. A media hoja baja a la mitad; en un recorte de 6×4 sube un 23 %. Para 1:1 real
-  harían falta ~6 frames por pasada (~17 pasadas).
-- **No**: colores planos. 77 000-136 000 colores y ~91 % de bordes suaves.
-- **No**: las poses. La fila de los rayos se queda sin personaje y varias filas cambian el orden.
+- **Contorno exterior: eliminado.** 5 557 px verdes → 0-1 px. Eso sí se cumple.
+- **Rejilla y 1:1: no.** Devuelve 880-1 680 px de ancho donde se le dieron 2 625.
+- **Paleta plana: no.** 81 000-151 000 colores y 88-94 % de bordes suavizados.
+- **Parte 3 duplicada**: pinta la tira dos veces, una al lado de otra.
+- **Recorte total: 89 frames de 102** (25 animaciones; stance pierde 11 de 15).
 
-Recorte: 123 frames en `voltia/nuevo/ia/frames/<anim>/`, visor en `preview/nuevo.html`.
+Ficheros: `voltia/nuevo/ia/ref_parteN.png`, `ia_parteN.png`, `ref_cammy.jpg`,
+`frames/<anim>/fNN.png`, `datos.json`. Visor: `preview/nuevo.html`.
 
 ## Chun-Li
 

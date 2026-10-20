@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>VOLTIA · Modelo nuevo (hoja rehecha por IA)</title>
+<title>VOLTIA · Modelo nuevo (4 partes, 0 filtrado)</title>
 <style>
   :root { --bg:#150f1f; --panel:#211a33; --line:#3d3358; --cyan:#96ffeb; --gold:#ffcb3d; --vio:#b98cff; }
   * { box-sizing:border-box; }
@@ -17,7 +17,7 @@
   nav.models a.on { background:#8c4dff; border-color:#8c4dff; color:#fff; }
   header { text-align:center; padding:26px 14px 6px; }
   header h1 { margin:0; color:var(--vio); letter-spacing:2px; font-size:30px; }
-  header p { margin:8px auto 0; max-width:840px; color:#cfc9e6; line-height:1.55; font-size:15px; }
+  header p { margin:8px auto 0; max-width:860px; color:#cfc9e6; line-height:1.55; font-size:15px; }
   header p b { color:var(--gold); }
   main { max-width:1180px; margin:0 auto; padding:18px 16px 40px; display:grid;
     grid-template-columns:1fr 1fr; gap:18px; }
@@ -27,14 +27,13 @@
   .card h2 { margin:0 0 4px; font-size:16px; letter-spacing:1px; color:var(--gold); }
   .card p.sub { margin:0 0 12px; font-size:13px; color:#9b93b8; line-height:1.5; }
   .big { background:#1a1528; border-radius:10px; padding:10px; text-align:center; }
-  .big img { image-rendering:pixelated; width:100%; height:auto; display:block; margin:0 auto; border-radius:6px; }
-  .par { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
-  .par figure { margin:0; }
-  .par figcaption { font-size:12px; color:#9b93b8; text-align:center; margin-top:5px; }
   figure.zoom { margin:0; }
   figure.zoom img { width:100%; height:auto; image-rendering:pixelated; display:block;
     background:#1a1528; border-radius:8px; }
   figure.zoom figcaption { font-size:12px; color:#9b93b8; text-align:center; margin-top:5px; }
+  .par { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+  .cammy img { width:100%; max-width:300px; height:auto; image-rendering:pixelated;
+    display:block; margin:0 auto; border-radius:8px; background:#1a1528; }
   canvas#anim { image-rendering:pixelated; border-radius:8px; display:block; margin:0 auto;
     background: repeating-conic-gradient(#2c2a40 0 25%, #242233 0 50%) 0 0/32px 32px; }
   canvas#anim.solid { background:#101018; }
@@ -44,10 +43,11 @@
   button, select { background:#35324e; color:#eee; border:1px solid #4a4767; border-radius:8px;
     padding:8px 12px; cursor:pointer; font-size:14px; }
   button:hover, select:hover { background:#454163; }
-  #anims { display:grid; grid-template-columns:repeat(auto-fill,minmax(150px,1fr)); gap:6px;
-    max-height:220px; overflow:auto; margin-top:12px; }
+  #anims { display:grid; grid-template-columns:repeat(auto-fill,minmax(158px,1fr)); gap:6px;
+    max-height:230px; overflow:auto; margin-top:12px; }
   #anims button { text-align:left; font-size:13px; padding:7px 10px; }
   #anims button.on { background:#0e7c8c; border-color:#96ffeb; }
+  #anims button.falta { color:#ff9f9f; }
   table { border-collapse:collapse; width:100%; font-size:13px; }
   th, td { border:1px solid var(--line); padding:6px 9px; text-align:left; }
   th { background:#2c2442; color:var(--cyan); }
@@ -69,66 +69,89 @@
 </nav>
 
 <header>
-  <h1>MODELO NUEVO · HOJA RECREADA POR IA</h1>
-  <p>Se le dio la hoja original <b>mitad y mitad</b>, a 1 px por píxel de arte, pidiendo mantener
-     las animaciones, el diseño de Voltia, los sprites al mismo tamaño y <b>sin contorno exterior</b>.
-     Esto es lo que devolvió. El modelo oficial no se ha tocado.</p>
+  <h1>MODELO NUEVO · 4 PARTES · 0 FILTRADO</h1>
+  <p>La hoja partida en <b>4 tiras horizontales enteras</b> (6 / 6 / 6 / 7 filas, ninguna fila cortada),
+     a 1 px por píxel de arte, con el <b>sprite de Cammy como referencia del resultado que queremos</b>.
+     Pedido: píxeles planos como Cammy, sprites del mismo tamaño, sin contorno exterior.
+     El modelo oficial no se ha tocado.</p>
 </header>
 
 <main>
 
   <section class="card wide">
-    <h2>Mitad de arriba · filas 1-13</h2>
-    <p class="sub">Parentesco de rejilla: <b>13 filas y 15 columnas</b>, las mismas celdas vacías.
-       Pero la IA devuelve 1 129 px de ancho donde le di 2 625: <b>el sprite sale a la mitad</b>.</p>
+    <h2>El resultado que queremos · referencia Cammy</h2>
+    <p class="sub">Píxeles duros, paleta corta y plana, línea negra dentro del dibujo y ningún halo
+       alrededor. Eso es lo que se le pidió imitar.</p>
     <div class="par">
-      <figure class="zoom">
-        <img src="../voltia/nuevo/ia/ref_arriba.png" alt="Mitad de arriba original">
-        <figcaption>Original · 2 625 × 2 158 · sprites de 94 × 151 px de arte</figcaption>
+      <figure class="cammy">
+        <img src="../voltia/nuevo/ia/ref_cammy.jpg" alt="Sprite de Cammy usado como referencia de resultado">
+        <figcaption>Referencia de acabado (Cammy, SF2)</figcaption>
       </figure>
-      <figure class="zoom">
-        <img src="../voltia/nuevo/ia/ia_arriba.png" alt="Mitad de arriba rehecha por la IA">
-        <figcaption>IA · 1 129 × 928 · sprites de ~51 × 64 px · <a href="../voltia/nuevo/ia/ia_arriba.png" target="_blank" style="color:var(--cyan)">tamaño real</a></figcaption>
-      </figure>
+      <div class="note">
+        <b>Lo que define ese acabado:</b><br>
+        · paleta de 16-24 colores planos, sin mezclas<br>
+        · borde de píxel duro, sin antialias<br>
+        · línea negra <i>dentro</i> del dibujo<br>
+        · sin contorno exterior añadido<br>
+        · escala real: un personaje de ~70-100 px de alto<br><br>
+        <b>Medido en la IA:</b> 81 000-151 000 colores y 88-94 % de bordes suavizados.
+        Se parece a Cammy a distancia, pero por dentro no lo es.
+      </div>
     </div>
   </section>
 
   <section class="card wide">
-    <h2>Mitad de abajo · filas 14-25</h2>
-    <p class="sub">Aquí se ve el <b>lado malo</b>: la fila de la patada rápida (los rayos amarillos)
-       se queda sin personaje, y varias filas cambian el orden de las poses.</p>
+    <h2>Parte 1 · filas 1-6 · la que mejor ha salido</h2>
+    <p class="sub">Conserva 6 filas, pero <b>reduce 15 columnas a 7</b> y separa los sprites.
+       Aun así es la única que mantiene algo de la rejilla original.</p>
     <div class="par">
-      <figure class="zoom">
-        <img src="../voltia/nuevo/ia/ref_abajo.png" alt="Mitad de abajo original">
-        <figcaption>Original · 2 625 × 1 992</figcaption>
-      </figure>
-      <figure class="zoom">
-        <img src="../voltia/nuevo/ia/ia_abajo.png" alt="Mitad de abajo rehecha por la IA">
-        <figcaption>IA · 1 181 × 896 · <a href="../voltia/nuevo/ia/ia_abajo.png" target="_blank" style="color:var(--cyan)">tamaño real</a></figcaption>
-      </figure>
+      <figure class="zoom"><img src="../voltia/nuevo/ia/ref_parte1.png" alt="Parte 1 original">
+        <figcaption>Original · 2 625 × 996 · 15 columnas</figcaption></figure>
+      <figure class="zoom"><img src="../voltia/nuevo/ia/ia_parte1.png" alt="Parte 1 por la IA">
+        <figcaption>IA · 880 × 1 212 · 7 columnas · <a href="../voltia/nuevo/ia/ia_parte1.png" target="_blank" style="color:var(--cyan)">real</a></figcaption></figure>
     </div>
   </section>
 
   <section class="card wide">
-    <h2>Prueba a 1:1 · 6 columnas × 4 filas</h2>
-    <p class="sub">Recorte pensado para que la IA pudiera devolverlo a la misma escala. Le di
-       1 050 × 664 y devolvió <b>1 290 × 816</b>: agrandó un 23 % aunque se le pidió lo contrario.</p>
+    <h2>Parte 2 · filas 7-12</h2>
+    <p class="sub">Aquí sí conserva las 6 filas y se acerca a las 15 columnas en las filas llenas,
+       pero vuelve a repartir los sprites y añade huecos.</p>
     <div class="par">
-      <figure class="zoom">
-        <img src="../voltia/nuevo/ia/ref_1a1.png" alt="Recorte 1 a 1 original">
-        <figcaption>Original · 1 050 × 664</figcaption>
-      </figure>
-      <figure class="zoom">
-        <img src="../voltia/nuevo/ia/ia_1a1.png" alt="Recorte 1 a 1 por la IA">
-        <figcaption>IA · 1 290 × 816 · <a href="../voltia/nuevo/ia/ia_1a1.png" target="_blank" style="color:var(--cyan)">tamaño real</a></figcaption>
-      </figure>
+      <figure class="zoom"><img src="../voltia/nuevo/ia/ref_parte2.png" alt="Parte 2 original">
+        <figcaption>Original · 2 625 × 996</figcaption></figure>
+      <figure class="zoom"><img src="../voltia/nuevo/ia/ia_parte2.png" alt="Parte 2 por la IA">
+        <figcaption>IA · 1 680 × 637 · <a href="../voltia/nuevo/ia/ia_parte2.png" target="_blank" style="color:var(--cyan)">real</a></figcaption></figure>
     </div>
   </section>
 
   <section class="card wide">
-    <h2>Visor de frames · las 25 animaciones recortadas de la hoja de la IA</h2>
-    <p class="sub">Recortadas de las dos mitades por rejilla. Elige animación, cambia escala y fondo.
-       Los frames son los que ha dibujado la IA, no los originales.</p>
+    <h2>Parte 3 · filas 13-18 · la que peor ha salido</h2>
+    <p class="sub"><b>Duplicó el contenido</b>: pintó la misma tira dos veces, una al lado de otra.
+       La rejilla queda inservible y los sprites salen repetidos (60 componentes donde había 24).</p>
+    <div class="par">
+      <figure class="zoom"><img src="../voltia/nuevo/ia/ref_parte3.png" alt="Parte 3 original">
+        <figcaption>Original · 2 625 × 996</figcaption></figure>
+      <figure class="zoom"><img src="../voltia/nuevo/ia/ia_parte3.png" alt="Parte 3 por la IA">
+        <figcaption>IA · 1 680 × 637 · duplicada · <a href="../voltia/nuevo/ia/ia_parte3.png" target="_blank" style="color:var(--cyan)">real</a></figcaption></figure>
+    </div>
+  </section>
+
+  <section class="card wide">
+    <h2>Parte 4 · filas 19-25</h2>
+    <p class="sub">También reduce de ancho (880 px) y reordena, pero conserva las 7 filas y las
+       poses de derribo y recuperación.</p>
+    <div class="par">
+      <figure class="zoom"><img src="../voltia/nuevo/ia/ref_parte4.png" alt="Parte 4 original">
+        <figcaption>Original · 2 625 × 1 162</figcaption></figure>
+      <figure class="zoom"><img src="../voltia/nuevo/ia/ia_parte4.png" alt="Parte 4 por la IA">
+        <figcaption>IA · 880 × 1 212 · <a href="../voltia/nuevo/ia/ia_parte4.png" target="_blank" style="color:var(--cyan)">real</a></figcaption></figure>
+    </div>
+  </section>
+
+  <section class="card wide">
+    <h2>Visor de frames · lo recortado de las 4 partes</h2>
+    <p class="sub">25 animaciones, <b>89 frames</b> de los 102 originales. Elige animación; en rojo
+       las que han perdido frames. Escala y fondos como en el modelo original.</p>
     <div class="big"><canvas id="anim" width="600" height="660"></canvas></div>
     <div class="controls">
       <button id="play">⏸ Pausa</button>
@@ -150,36 +173,33 @@
   </section>
 
   <section class="card wide">
-    <h2>Medidas de lo que ha salido</h2>
+    <h2>Medidas de esta iteración</h2>
     <table>
-      <tr><th>Métrica</th><th>Original</th><th>IA · mitad arriba</th><th>IA · mitad abajo</th><th>IA · prueba 1:1</th></tr>
-      <tr><td>Resolución devuelta</td><td>2 625 × 2 158</td><td class="bad">1 129 × 928 (43 %)</td><td class="bad">1 181 × 896 (45 %)</td><td class="bad">1 290 × 816 (123 %)</td></tr>
-      <tr><td>Tamaño del sprite</td><td class="ok">94 × 151 px</td><td class="bad">~51 × 64 px</td><td class="bad">~51 × 64 px</td><td class="bad">agrandado</td></tr>
-      <tr><td>Colores distintos</td><td class="ok">20</td><td class="bad">77 950</td><td class="bad">95 395</td><td class="bad">136 653</td></tr>
-      <tr><td>Transiciones suaves</td><td class="ok">6,1 %</td><td class="bad">91,2 %</td><td class="bad">91,5 %</td><td class="bad">suave</td></tr>
-      <tr><td>Contorno verde exterior</td><td>5 557 px</td><td class="ok">1 px (eliminado)</td><td class="ok">0 px (eliminado)</td><td class="ok">eliminado</td></tr>
-      <tr><td>Rejilla (filas × columnas)</td><td>25 × 15</td><td class="ok">13 × 15</td><td class="ok">12 × 15</td><td class="ok">4 × 6</td></tr>
-      <tr><td>Frames útiles recortados</td><td>102</td><td colspan="2" class="ok">123 (25 animaciones)</td><td>24</td></tr>
-      <tr><td>Animaciones mantenidas</td><td>25</td><td colspan="2" class="bad">25 sí, pero 4 cambian de contenido</td><td class="bad">parcial</td></tr>
-      <tr><td>Píxeles planos</td><td class="ok">sí</td><td class="bad">no</td><td class="bad">no</td><td class="bad">no</td></tr>
+      <tr><th>Parte</th><th>Filas</th><th>Original</th><th>IA</th><th>Colores</th><th>Bordes suaves</th><th>Sprites (orig → IA)</th></tr>
+      <tr><td>1</td><td>1-6</td><td>2 625 × 996</td><td class="bad">880 × 1 212</td><td class="bad">125 123</td><td class="bad">90,5 %</td><td class="bad">42 → 21</td></tr>
+      <tr><td>2</td><td>7-12</td><td>2 625 × 996</td><td class="bad">1 680 × 637</td><td class="bad">81 716</td><td class="bad">94,0 %</td><td class="bad">21 → 24</td></tr>
+      <tr><td>3</td><td>13-18</td><td>2 625 × 996</td><td class="bad">1 680 × 637 (duplicada)</td><td class="bad">151 914</td><td class="bad">87,6 %</td><td class="bad">24 → 60</td></tr>
+      <tr><td>4</td><td>19-25</td><td>2 625 × 1 162</td><td class="bad">880 × 1 212</td><td class="bad">139 323</td><td class="bad">89,6 %</td><td>17 → 24</td></tr>
+      <tr><td><b>Total</b></td><td><b>25</b></td><td><b>2 625 × 4 150</b></td><td class="bad">—</td><td class="bad">—</td><td class="bad">—</td><td class="bad"><b>102 → 89</b></td></tr>
     </table>
     <div class="note" style="margin-top:12px">
-      <b>Lo que sí ha cumplido:</b> mantiene la rejilla y el número de filas, respeta las celdas
-      vacías, y <b>no añade contorno exterior</b> (el borde verde desaparece por completo, como se
-      pidió). El diseño se reconoce.
+      <b>0 filtrado: sí.</b> El contorno verde desaparece (5 557 px → 0-1 px) y no se ha aplicado
+      ningún filtro después: lo que hay es lo que devolvió la IA, recortado.
       <br><br>
-      <b>Lo que no:</b> no respeta el 1:1 — a media hoja baja a la mitad, y en la prueba de 6 × 4
-      agranda un 23 %. No entrega colores planos (77 000-136 000 colores, 91 % de bordes suaves).
-      Y reinterpreta: la fila de los rayos se queda sin personaje y varias filas cambian poses.
+      <b>Lo que sigue sin cumplirse:</b> ninguna de las 4 partes respeta la rejilla ni el tamaño
+      1:1 (880-1 680 px de ancho donde se le dieron 2 625). Ninguna entrega la paleta plana de
+      Cammy: 81 000-151 000 colores y 88-94 % de bordes suavizados. La parte 3 sale duplicada y
+      se pierden 13 frames de 102.
       <br><br>
-      <b>Para tener 1:1 de verdad</b> habría que darle unos 6 frames por pasada (~17 pasadas) y
-      aun así decidiría las poses. Eso es rediseñar, no reconstruir.
+      <b>Conclusión medida:</b> partir la hoja en tiras no arregla ni la resolución, ni la paleta,
+      ni la rejilla. El acabado de Cammy no se consigue pidiéndolo en el prompt; se consigue
+      dibujando a resolución de arte con la paleta cerrada, que es justo lo que hace el modelo oficial.
     </div>
   </section>
 
 </main>
 
-<footer>FabaterFighter · modelo nuevo · hoja recreada por IA · 2026-10-20</footer>
+<footer>FabaterFighter · modelo nuevo · 4 partes · 0 filtrado · 2026-10-20</footer>
 
 <script>
 (async () => {
@@ -218,7 +238,7 @@
     cx.drawImage(im, Math.round((W - im.width * s) / 2), Math.round((H - im.height * s) / 2),
                  im.width * s, im.height * s);
     document.getElementById('fstat').textContent =
-      `${anim.id} · frame ${idx + 1}/${frames.length} · ${im.width}×${im.height} px de IA · ${anim.frames_original} en el original`;
+      `${anim.id} · frame ${idx + 1}/${frames.length} · ${im.width}×${im.height} px · original ${anim.frames_original} frames`;
   }
 
   function lista() {
@@ -227,11 +247,11 @@
     datos.anims.forEach(a => {
       const b = document.createElement('button');
       b.textContent = `${a.fila + 1}. ${a.id} (${a.frames_ia.length}/${a.frames_original})`;
-      b.className = a.id === anim.id ? 'on' : '';
+      b.className = (a.id === anim.id ? 'on' : '') + (a.frames_ia.length < a.frames_original ? ' falta' : '');
       b.onclick = async () => {
         anim = a; frames = await cargar(a); idx = 0;
-        [...box.children].forEach(c => c.className = '');
-        b.className = 'on';
+        [...box.children].forEach(c => c.className = c.className.replace('on', '').trim());
+        b.className = 'on' + (a.frames_ia.length < a.frames_original ? ' falta' : '');
         pintar();
       };
       box.appendChild(b);
