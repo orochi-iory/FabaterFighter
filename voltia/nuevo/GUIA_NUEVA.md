@@ -97,41 +97,46 @@ nativo, no con filtros.
 
 Tamaño medido del stance: **94 × 151 px de arte** (antes, con la erosión, 95 × 150).
 
-## Stance y walk v2 · centrado por cabeza (2026-10-20)
+## Creador de personajes · reglas de oro (2026-10-20)
 
-Intento nuevo usando dos referencias: una **imagen de diseño de Voltia** (casco magenta, traje
-teal, rayo, cinturón dorado, coleta morada) y la **hoja de sprites de Cammy** como estilo a clonar
-(píxel plano, paleta corta, línea negra, proporciones de sprite de pelea).
+La página `preview/nuevo.html` pasa a ser un **creador de personajes**: galería de sprites de
+cada movimiento, secuencia editable (añadir, quitar, reordenar) y visor en vivo. Las secuencias
+se guardan en el navegador (`localStorage`), por movimiento.
 
-### El problema del centrado
+### Las tres reglas de oro
 
-Centrar por la caja del sprite **no vale**: la coleta ocupa más que el cuerpo y cambia de forma en
-cada frame, así que ella mandaba y el personaje saltaba y se cortaba. Método nuevo
-(`voltia/nuevo/ia/recortar.py`):
+1. **FONDO**: el fondo tiene que ser un color que **no exista** en la paleta del sprite. Aquí
+   rojo puro `(255,0,0)`. Se anula solo ese rojo y el de su antialias; ningún otro tono se toca.
+   Si hay que sacrificar un tono del sprite para extraerlo sin ruido, se sacrifica.
+2. **CABEZA**: el anclaje es el centro del casco magenta, no la caja del sprite. Centrar por la
+   caja hace que la coleta mande y el personaje baile. Se normaliza la distancia cabeza-pies.
+3. **SIN RECONSTRUIR**: nada de LANCZOS y **nada de cuantizar** a pocos colores al recortar.
+   Cuantizar a 24 colores apagaba el dibujo (el dorado del cinturón salía crema). Se bajan los
+   tonos originales y solo se anula el fondo.
 
-1. localizar el **casco magenta** (blob del tono rosa más grande de la mitad superior);
-2. medir **centro del casco → línea de pies** (píxel más bajo);
-3. escalar cada frame para que esa distancia sea **120 px de arte** en todos;
-4. pegar en un lienzo común con la cabeza clavada en el mismo píxel;
-5. bajar a rejilla con NEAREST y paleta cerrada sin dithering.
+### Errores corregidos en esta vuelta
 
-Resultado: **0 frames cortados**. Stance con lienzo 142 × 172, ancla de cabeza (86, 48); walk
-96 × 154, ancla (59, 30). Los pies quedan en la misma línea en los 16 frames.
+| problema | causa | arreglo |
+|---|---|---|
+| el color se apagaba | `quantize` a 24 colores y dithering | sin cuantizar: se conservan los tonos |
+| sprites mutilados | cortes por columnas fijas | corte a mitad de camino entre **cabezas** |
+| sprites repetidos en el walk | huecos falsos, trozos de sprites vecinos | corte por cabeza + limpieza de piezas sueltas |
+| stance incoherente | dos hileras de diseño mezcladas | hoja nueva en **una sola fila** |
 
 ### Medidas
 
-| | original | IA tal cual | recortado |
-|---|---|---|---|
-| colores | 18 | 156 834-182 196 | 32 (paleta cerrada) |
-| rejilla | 2 px exactos | no hay (5-23 %) | píxel entero |
-| frames cortados | — | — | **0** |
-| stance / walk | 15 / 6 | 10 / 6 | 10 / 6 |
+| | valor |
+|---|---|
+| fondo | `(251, 2, 0)` rojo puro, fuera de la paleta de Voltia |
+| rojo residual en los sprites | **0 px** |
+| frames cortados | **0** de 14 |
+| cabeza / pies | anclados en los 14 sprites |
+| stance / walk | 8 / 6 sprites, una fila, mismo diseño |
+| colores | 24 598 / 17 433 (sigue siendo ilustración) |
 
-Pendiente: la IA devolvió **10 frames de stance** (no 15), los pies bailan 1-2 px entre frames y
-falta igualar el tamaño a la rejilla oficial (94 × 151) con pivote medido.
-
-Ficheros: `voltia/nuevo/ia/{ref_voltia_diseno,ref_estilo_sf2,ref_estilo_detalle,ia_stance,ia_walk}.png`,
-`voltia/nuevo/ia/frames/<anim>_NN.png`, `datos.json`. Visor: `preview/nuevo.html`.
+Ficheros: `voltia/nuevo/creador/{sheet_stance,sheet_walk,ref_voltia_diseno,ref_estilo_cammy,
+ref_estilo_detalle}.png`, `voltia/nuevo/creador/trocear.py`,
+`voltia/nuevo/creador/sprites/<anim>/fNN.png`, `datos.json`.
 
 ## Chun-Li
 

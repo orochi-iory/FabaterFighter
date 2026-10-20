@@ -1,0 +1,224 @@
+{
+ "fondo": [
+  255,
+  0,
+  0
+ ],
+ "cabeza_pies": 120,
+ "reglas": [
+  "fondo fuera de la paleta",
+  "anclaje por cabeza"
+ ],
+ "anims": {
+  "stance": {
+   "lienzo": [
+    86,
+    147
+   ],
+   "ancla": [
+    48,
+    23
+   ],
+   "pies_y": 143,
+   "esperado": 8,
+   "frames": [
+    {
+     "i": 0,
+     "fichero": "stance/f00.png",
+     "origen": [
+      268,
+      503
+     ],
+     "k": 3.64,
+     "casco": true,
+     "rojo": 0,
+     "casco_encontrado": true,
+     "cortado": false
+    },
+    {
+     "i": 1,
+     "fichero": "stance/f01.png",
+     "origen": [
+      218,
+      502
+     ],
+     "k": 3.65,
+     "casco": true,
+     "rojo": 0,
+     "casco_encontrado": true,
+     "cortado": false
+    },
+    {
+     "i": 2,
+     "fichero": "stance/f02.png",
+     "origen": [
+      234,
+      502
+     ],
+     "k": 3.64,
+     "casco": true,
+     "rojo": 0,
+     "casco_encontrado": true,
+     "cortado": false
+    },
+    {
+     "i": 3,
+     "fichero": "stance/f03.png",
+     "origen": [
+      239,
+      503
+     ],
+     "k": 3.64,
+     "casco": true,
+     "rojo": 0,
+     "casco_encontrado": true,
+     "cortado": false
+    },
+    {
+     "i": 4,
+     "fichero": "stance/f04.png",
+     "origen": [
+      228,
+      499
+     ],
+     "k": 3.64,
+     "casco": true,
+     "rojo": 0,
+     "casco_encontrado": true,
+     "cortado": false
+    },
+    {
+     "i": 5,
+     "fichero": "stance/f05.png",
+     "origen": [
+      228,
+      502
+     ],
+     "k": 3.64,
+     "casco": true,
+     "rojo": 0,
+     "casco_encontrado": true,
+     "cortado": false
+    },
+    {
+     "i": 6,
+     "fichero": "stance/f06.png",
+     "origen": [
+      222,
+      513
+     ],
+     "k": 3.69,
+     "casco": true,
+     "rojo": 0,
+     "casco_encontrado": true,
+     "cortado": false
+    },
+    {
+     "i": 7,
+     "fichero": "stance/f07.png",
+     "origen": [
+      210,
+      500
+     ],
+     "k": 3.64,
+     "casco": true,
+     "rojo": 0,
+     "casco_encontrado": true,
+     "cortado": false
+    }
+   ]
+  },
+  "walk": {
+   "lienzo": [
+    85,
+    155
+   ],
+   "ancla": [
+    51,
+    31
+   ],
+   "pies_y": 151,
+   "esperado": 6,
+   "frames": [
+    {
+     "i": 0,
+     "fichero": "walk/f00.png",
+     "origen": [
+      295,
+      530
+     ],
+     "k": 3.84,
+     "casco": true,
+     "rojo": 0,
+     "casco_encontrado": true,
+     "cortado": false
+    },
+    {
+     "i": 1,
+     "fichero": "walk/f01.png",
+     "origen": [
+      227,
+      538
+     ],
+     "k": 3.86,
+     "casco": true,
+     "rojo": 0,
+     "casco_encontrado": true,
+     "cortado": false
+    },
+    {
+     "i": 2,
+     "fichero": "walk/f02.png",
+     "origen": [
+      214,
+      530
+     ],
+     "k": 3.87,
+     "casco": true,
+     "rojo": 0,
+     "casco_encontrado": true,
+     "cortado": false
+    },
+    {
+     "i": 3,
+     "fichero": "walk/f03.png",
+     "origen": [
+      209,
+      564
+     ],
+     "k": 3.85,
+     "casco": true,
+     "rojo": 0,
+     "casco_encontrado": true,
+     "cortado": false
+    },
+    {
+     "i": 4,
+     "fichero": "walk/f04.png",
+     "origen": [
+      214,
+      586
+     ],
+     "k": 4.28,
+     "casco": true,
+     "rojo": 0,
+     "casco_encontrado": true,
+     "cortado": false
+    },
+    {
+     "i": 5,
+     "fichero": "walk/f05.png",
+     "origen": [
+      217,
+      527
+     ],
+     "k": 3.83,
+     "casco": true,
+     "rojo": 0,
+     "casco_encontrado": true,
+     "cortado": false
+    }
+   ]
+  }
+ }
+}
