@@ -67,6 +67,14 @@
   .arena label { color:#9d9ab5; font-size:13px; display:flex; align-items:center; gap:6px; }
   .arena input[type=range] { width:140px; }
   .layers { color:#d8d6ea; font-size:13px; line-height:1.55; margin:12px 0 0; }
+  .aro-grid { display:flex; gap:14px; flex-wrap:wrap; justify-content:center; margin:14px 0 4px; }
+  .aro-grid figure { margin:0; max-width:560px; }
+  .aro-grid img { width:100%; height:auto; image-rendering:pixelated; border-radius:8px;
+    display:block; background:#101018; }
+  .aro-grid figcaption { color:#9d9ab5; font-size:12px; margin-top:6px; line-height:1.45; }
+  .aro-nums { border-collapse:collapse; font-size:13px; margin:10px 0 0; color:#d8d6ea; }
+  .aro-nums th, .aro-nums td { border-bottom:1px solid #3a3752; padding:5px 10px; text-align:left; }
+  .aro-nums th { color:#ffcb3d; }
   .layers b { color:#96ffeb; }
 
   nav.models { position:sticky; top:0; z-index:99; display:flex; gap:8px; justify-content:center;
@@ -91,7 +99,8 @@
   <p id="ver">cargando…</p>
   <a class="play" href="fight.html">Probar pelea · Voltia vs Voltia</a>
   <a class="play alt" href="guia-vieja.html">Guía de este personaje</a>
-  <p class="notes">Estás en el <b>modelo original</b>: el que pelea. El modelo nuevo se abre desde el menú de arriba.</p>
+  <p class="notes">Estás en el <b>modelo original</b>: el que pelea. El modelo nuevo se abre desde el menú de arriba.
+  La prueba de quitarle el aro negro está <a href="#aro" style="color:#96ffeb">aquí abajo ↓</a>.</p>
   <p class="notes" id="notes"></p>
   <p id="syncwarn"></p>
 </header>
@@ -121,6 +130,44 @@
     <div class="info">Consejo: <b>magenta</b> y <b>verde</b> sirven para comprobar la transparencia y el chroma.</div>
   </div>
 </main>
+<section class="arena" id="aro">
+  <h2>Prueba · quitarle el aro negro</h2>
+  <div class="box">
+    <p class="layers">El modelo original lleva un aro negro alrededor de la silueta: no es un contorno de 1-2 px,
+      en la coleta llega a <b>10-12 px</b> de grosor. En un frame de stance son <b>9388 px casi negros de 32644
+      opacos (29 %)</b>. Abajo está el mismo frame, el original y la prueba, y los 15 frames del stance en los dos.</p>
+
+    <div class="aro-grid">
+      <figure>
+        <img src="../voltia/outline_comparacion.png" alt="Original y prueba sin el aro, a 2x, y los 15 frames del stance">
+        <figcaption>Arriba: original (izquierda) y sin el aro (derecha), a 2x. Abajo: los 15 frames del stance,
+          primero sin el aro y después los del original.</figcaption>
+      </figure>
+      <figure>
+        <img src="../voltia/outline_fila0.gif" alt="GIF de los 15 frames del stance sin el aro">
+        <figcaption>El stance entero, sin el aro, a 10 fps.</figcaption>
+      </figure>
+    </div>
+
+    <table class="aro-nums">
+      <tr><th>medido en la fila 0 (15 frames)</th><th>original</th><th>sin el aro</th></tr>
+      <tr><td>píxeles casi negros</td><td>143 371</td><td><b>0</b></td></tr>
+      <tr><td>píxeles opacos</td><td>486 676</td><td>328 615 (−32,5 %)</td></tr>
+      <tr><td>alto de tinta (mediana)</td><td>294 px</td><td>287 px (−7)</td></tr>
+      <tr><td>ancho de tinta</td><td>186-240 px</td><td>158-228 px (hasta −26)</td></tr>
+    </table>
+
+    <p class="layers">Cómo se hace, en una línea: el negro se separa <b>por topología, no por grosor</b>. El que está
+      <b>conectado con el fondo</b> es el aro y se borra; el que está <b>encerrado por el dibujo</b> es línea de dibujo
+      (brazo sobre torso, rodilla, pliegues) y se queda intacto. Después, 1 px de borde oscurecido al 55 % y fuera las
+      islas de menos de 12 px.</p>
+    <p class="layers">El precio, dicho claro: <b>el personaje adelgaza exactamente lo que medía el aro</b> (7 px de alto,
+      hasta 26 de ancho) y las piezas que solo estaban separadas por negro se quedan con 1 px de aire (se nota en la
+      zapatilla). No hay dibujo inventado: es el sprite original sin el aro. <b>La hoja original no se ha tocado.</b>
+      Ficheros: <code>voltia/outline_fila0.png</code>, <code>.gif</code>, <code>outline_comparacion.png</code>;
+      herramienta: <code>tools/voltia_outline.py</code>.</p>
+  </div>
+</section>
 <section class="arena" id="escenario">
   <h2>Escenario · Cyber Fist</h2>
   <div class="box">
