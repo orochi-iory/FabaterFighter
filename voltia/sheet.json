@@ -1,7 +1,7 @@
 {
  "sprite": "sheet_uniform.png",
  "version": "0.6.0",
- "notes": "Modelo de Voltia con BORDE VERDE (estado fff5dc0) y sin el filete cian que cruzaba el traje. El contorno vuelve a ser de 1 px de tres tonos (negro fino + cian 5,176,157 + azul 22,81,104) en vez del negro macizo de 35b40ca. Alfa sin tocar. La version de negro grueso queda en versions/sheet_negro_grueso.png.",
+ "notes": "Modelo de Voltia con borde verde y el contorno adelgazado 2 px de hoja (= 1.0 px de arte). Se erosiona SOLO el alfa: no se recolorea nada y el dibujo de dentro no se mueve. Alfa del original con filete: voltia/versions/sheet_borde_verde.png.",
  "date": "2026-10-20",
  "canon": 1.2,
  "art": {
@@ -421,5 +421,5 @@
    "status": "done"
   }
  ],
- "rev": "2ac9dae7bc"
+ "rev": "f9d3bae720"
 }

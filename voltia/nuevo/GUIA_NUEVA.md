@@ -678,3 +678,31 @@ Versiones guardadas: `voltia/versions/sheet_negro_grueso.png` (+ `.json`),
 `sheet_verde.png` (= `fff5dc0` puro, con filete), `stage_fighter_negro.png`,
 `linea_evolucion.png` y `hoja_verde_completa.png`. En el visor: `?aro=0` negro grueso,
 `?aro=1` el aro quitado.
+
+## Contorno fuera: −2 px de hoja (2026-10-20, elegido por el usuario)
+
+El usuario vio el borde verde y pidió «quitarle 3 o 4 px a todo el contorno». Medido antes de
+tocarlo: **el contorno mide 1-2 px de hoja** (el dibujo va a 2 px de hoja por px de arte) y el
+negro grueso 3-4. Por eso «3-4 px» era comerse el contorno y parte del dibujo.
+
+Barrido sobre el frame 0 (celda 350×332, 31 301 px opacos, alto 300):
+
+| px de hoja | = px de arte | opacos | alto | qué pasa |
+|---|---|---|---|---|
+| 1 | 0,5 | 29 347 (−6,2 %) | 298 | contorno a medias |
+| **2** | **1** | **27 567 (−11,9 %)** | **296** | **contorno fuera; el azul del traje hace de borde** |
+| 4 | 2 | 24 151 (−22,8 %) | 292 | agujero en la axila |
+| 6 | 3 | 20 857 (−33,4 %) | 288 | hueco entre brazo y costado |
+| 8 | 4 | 17 649 (−43,6 %) | 284 | el brazo se despega |
+
+**Elegido 2 px de hoja.** Se erosiona **solo el alfa** (MinFilter 3 × 2): no se recolorea nada y
+el dibujo de dentro no se mueve. Por filas, la silueta baja entre **−11,1 % y −15,8 %**.
+
+- **Sin despieces:** 1 pieza por celda en 22 de las 25 filas; la fila 3 da 4 (el rayo y su sombra,
+  que ya venían sueltos) y la 17 da 2. Los **36 puntitos** sueltos del original desaparecen.
+- Los huecos «de dentro» que cuenta el medidor son las ventanas de la coleta (1058 px ya en el
+  original, 1480 px ahora): se agrandan porque el dibujo está a 2 px por px de arte, no son roturas.
+- Alto **300 → 296** px de hoja. No rompe nada: escala y pivote los manda `sheet.json`.
+- Aplicado a **visor, pelea y escenario**. Herramienta: `tools/voltia_contorno.py --px 2`
+  (`--solo-ver` para comparar sin escribir). Respaldo del estado anterior:
+  `voltia/versions/sheet_borde_verde.png`.

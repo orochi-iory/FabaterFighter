@@ -93,18 +93,18 @@
   <a href="nuevo.html">② Modelo nuevo</a>
   <a href="chunli.html">③ Chun-Li</a>
   <a href="fight.html">⚔ Pelea</a>
-  <a href="aro.html" class="on">⚡ Borde verde</a>
+  <a href="aro.html">⚡ Borde verde</a>
   <a href="guia-vieja.html">📖 Guía del original</a>
 </nav>
 <header>
   <h1>⚡ VOLTIA ⚡</h1>
-  <p style="margin:0 0 8px"><b style="color:#96ffeb">v0.8 · el modelo vuelve al borde verde</b> — el modelo completo, con el contorno fino de antes y sin el filete cian.</p>
+  <p style="margin:0 0 8px"><b style="color:#96ffeb">v0.9 · borde verde y contorno fuera</b> — el modelo completo, sin filete cian y con el contorno adelgazado 2 px de hoja.</p>
   <p id="ver">cargando…</p>
   <a class="play" href="fight.html">Probar pelea · Voltia vs Voltia</a>
   <a class="play alt" href="guia-vieja.html">Guía de este personaje</a>
   <a class="play alt" id="togaro" href="?aro=0">Ver el modelo de negro grueso (antes)</a>
   <p class="notes">Estás en el <b>modelo original</b>: el que pelea. El modelo nuevo se abre desde el menú de arriba.
-  Esta página, la pelea y el escenario usan ya la hoja del <b>borde verde</b>. Detalles <a href="#aro" style="color:#96ffeb">aquí abajo ↓</a>.</p>
+  Esta página, la pelea y el escenario usan ya el <b>borde verde con el contorno fuera</b>. Detalles <a href="#aro" style="color:#96ffeb">aquí abajo ↓</a>.</p>
   <p class="notes" id="notes"></p>
   <p id="syncwarn"></p>
 </header>
@@ -136,7 +136,26 @@
       <tr><td>píxeles casi negros</td><td>7 236</td><td>9 388</td><td>7 386</td></tr>
       <tr><td>aro: de qué está hecho</td><td>969 negro + <b>396 cian</b> + 379 azul</td><td>1 612 todo negro</td><td>igual que el verde, sin filete</td></tr>
       <tr><td>cian dentro del traje</td><td>337 px</td><td>0 px</td><td><b>0 px</b></td></tr>
+      <tr><td>contorno, a 1×</td><td>1-2 px</td><td>3-4 px de negro</td><td><b>contorno fuera</b> (−2 px de hoja)</td></tr>
     </table>
+
+    <p class="layers"><b>Y encima, el contorno adelgazado.</b> En la hoja el dibujo va a 2 px por px de arte, así
+      que el contorno medía 1-2 px: quitarle <b>2 px de hoja = 1 px de arte</b> lo elimina entero y deja el azul
+      del traje haciendo de borde. Efecto medido en las 25 filas: silueta <b>−11,9 % a −15,8 %</b> (31 301 → 27 567 px
+      en el stance), alto <b>300 → 296</b>, y <b>ninguna fila se despieza</b> (1 pieza por celda; la fila 3 deja
+      4, que es el rayo y su sombra). Se quitaron también los 36 puntitos sueltos que arrastraba el original.</p>
+
+    <div class="aro-grid">
+      <figure class="wide">
+        <img src="../voltia/versions/prueba_contorno_elegido.png" alt="Original, contorno a −2 px y referencia a −4 px">
+        <figcaption><b>Original</b> (con su contorno) · <b>ahora: −2 px de hoja</b> · referencia de −4 px, que ya
+          abre hueco entre el brazo y el costado. Ahí se ve por qué se paró en 2.</figcaption>
+      </figure>
+      <figure class="wide">
+        <img src="../voltia/versions/hoja_contorno_2px.png" alt="Las 25 filas con el contorno adelgazado">
+        <figcaption>Las 25 filas con el contorno fuera, una por una.</figcaption>
+      </figure>
+    </div>
 
     <p class="layers">Cómo se ha hecho, sin tocar el alfa (idéntico byte a byte en las 375 celdas):</p>
     <ol class="layers">
