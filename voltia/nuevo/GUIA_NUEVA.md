@@ -706,3 +706,40 @@ el dibujo de dentro no se mueve. Por filas, la silueta baja entre **−11,1 % y 
 - Aplicado a **visor, pelea y escenario**. Herramienta: `tools/voltia_contorno.py --px 2`
   (`--solo-ver` para comparar sin escribir). Respaldo del estado anterior:
   `voltia/versions/sheet_borde_verde.png`.
+
+## Píxel saneado a resolución de arte (2026-10-20)
+
+El usuario pidió «limpiar todos los sprites y quitar los artefactos, sobre todo en la cara,
+con colores mezclados». Medido antes de tocar nada:
+
+- la hoja **ya tenía solo 18 colores**: la paleta estaba bien;
+- **7** píxeles aislados de verdad (ningún vecino de su color) → ahí no estaba el problema;
+- **el 52,85 % de los bloques 2×2 no eran uniformes**. La hoja va a **2 px de hoja por px de
+  arte**, así que medio píxel de color distinto es exactamente «mezclado y poco definido»;
+- a 1×, el **5,21 % (33 714 px)** no tenía ni un vecino de su color: ruido de generación.
+
+**Lo que se hace** (`tools/voltia_limpieza.py`), sin IA y sin redibujar:
+
+1. bajar a 1× tomando por cada bloque 2×2 el color **mayoritario**;
+2. **proteger los tonos oscuros** (`1,1,2`, `37,5,42`, `18,19,63`, `47,10,84`): si un bloque
+   lleva uno aunque sea minoría, gana el. Sin esto la cara pierde el ojo y la boca (probado:
+   con mayoría simple la cara se emborrona);
+3. filtro de ruido a 1×: el píxel sin vecino de su color pasa al mayoritario de al lado;
+4. volver a 2× con NEAREST.
+
+Resultado en la hoja entera:
+
+| | antes | después |
+|---|---|---|
+| bloques 2×2 no uniformes | 52,85 % | **0,00 %** |
+| ruido a 1× | 33 714 px (5,21 %) | **0** |
+| colores opacos | 18 | **18** (no se toca la paleta) |
+| píxeles opacos a 1× | 646 711 | 667 656 (**+3,2 %**) |
+
+El **+3,2 % de silueta** es el umbral de alfa (2 de 4): el bloque sigue opaco si la mitad de sus
+píxeles lo estaban, así que se rellenan las esquinas. Es lo que deja el contorno macizo. Con
+`--alfa 3` la silueta adelgaza en vez de engordar; no se ha probado en producción.
+
+Respaldo del estado anterior: `voltia/versions/sheet_contorno2.png` (borde verde + contorno
+fuera, sin sanear). Control: `hoja_saneada.png`, `limpieza_cara.png`, `limpieza_cuerpo.png`,
+`limpieza_antes_despues.png`.

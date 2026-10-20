@@ -98,7 +98,7 @@
 </nav>
 <header>
   <h1>⚡ VOLTIA ⚡</h1>
-  <p style="margin:0 0 8px"><b style="color:#96ffeb">v0.9 · borde verde y contorno fuera</b> — el modelo completo, sin filete cian y con el contorno adelgazado 2 px de hoja.</p>
+  <p style="margin:0 0 8px"><b style="color:#96ffeb">v1.0 · borde verde, contorno fuera y píxel saneado</b> — el modelo completo: borde verde, contorno fuera y el píxel saneado a resolución de arte.</p>
   <p id="ver">cargando…</p>
   <a class="play" href="fight.html">Probar pelea · Voltia vs Voltia</a>
   <a class="play alt" href="guia-vieja.html">Guía de este personaje</a>
@@ -139,6 +139,15 @@
       <tr><td>contorno, a 1×</td><td>1-2 px</td><td>3-4 px de negro</td><td><b>contorno fuera</b> (−2 px de hoja)</td></tr>
     </table>
 
+    <p class="layers"><b>Y encima, el pixel saneado.</b> La hoja ya usaba solo 18 colores, así que la paleta
+      estaba bien: el problema era que <b>el 52,85 % de los bloques 2×2 no eran uniformes</b> — había color a
+      medio píxel, y a 1× el <b>5,21 %</b> de los píxeles (33 714) no tenía ni un vecino de su color. Eso es el
+      ruido de la cara: una mota cian, un magenta suelto en la máscara, un amarillo en la coleta. Ahora:
+      <b>bloques no uniformes 0,00 %</b> y <b>ruido 0,00 %</b>, con los mismos 18 colores y las mismas
+      animaciones. Los trazos oscuros (el ojo, la boca, la línea del mentón) <b>se protegen</b> al bajar a 1×,
+      porque si no la mayoría por bloque se come la cara. Efecto secundario: la silueta engorda un
+      <b>+3,2 %</b> (el umbral de alfa 2 de 4 rellena las esquinas), que es lo que la deja más maciza.</p>
+
     <p class="layers"><b>Y encima, el contorno adelgazado.</b> En la hoja el dibujo va a 2 px por px de arte, así
       que el contorno medía 1-2 px: quitarle <b>2 px de hoja = 1 px de arte</b> lo elimina entero y deja el azul
       del traje haciendo de borde. Efecto medido en las 25 filas: silueta <b>−11,9 % a −15,8 %</b> (31 301 → 27 567 px
@@ -172,6 +181,18 @@
       <code>voltia/versions/sheet_negro_grueso.png</code> y se puede ver aquí con
       <a href="?aro=0" style="color:#96ffeb">?aro=0</a>. La prueba de quitar el aro entero sigue en
       <a href="?aro=1" style="color:#96ffeb">?aro=1</a>.</p>
+
+    <div class="aro-grid">
+      <figure class="wide">
+        <img src="../voltia/versions/limpieza_antes_despues.png" alt="Antes y después del saneado del pixel">
+        <figcaption><b>Antes</b> y <b>después</b> del saneado. No se redibuja nada: se fuerza el píxel a
+          resolución de arte, que es lo que quita el color mezclado de la cara.</figcaption>
+      </figure>
+      <figure class="wide">
+        <img src="../voltia/versions/hoja_saneada.png" alt="Las 25 filas saneadas">
+        <figcaption>Las 25 filas saneadas, mismas animaciones y mismos frames.</figcaption>
+      </figure>
+    </div>
   </div>
 </section>
 <main>
