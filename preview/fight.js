@@ -1823,6 +1823,14 @@
       const anims = {};
       for (let i = 0; i < meta.animations.length; i++) anims[meta.animations[i].id] = meta.animations[i];
       artCache[raw.sheet] = { img, anims, cell: [meta.cell.w, meta.cell.h] };
+      // El pivote y la escala los manda la hoja, no la ficha: si se regenera la
+      // hoja con otra celda, la ficha se queda vieja y el personaje sale movido.
+      if (meta.pivot) raw.pivot = meta.pivot;
+      if (meta.scale) raw.scale = meta.scale;
+      Object.keys(raw.moves || {}).forEach((k) => {
+        const m = raw.moves[k];
+        if (m && m.projectile && meta.pivot) m.projectile.pivot = meta.pivot;
+      });
     }
     compiled.art = artCache[raw.sheet];
     chars[id] = compiled;

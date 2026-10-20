@@ -132,12 +132,12 @@ def main():
     a('<td class="n">Stance<br><span class="dim">un solo bucle, filas 1 + 2 + 3</span></td>')
     a('<td class="mono">%d figuras<br>→ %d frames</td>' % (stance['crudo'], stance['n']))
     a('<td class="mono">7–219</td>')
-    a('<td class="note">Un solo bucle con las tres franjas, en el orden <b>2 1 2 2 3 2</b> y '
-      'vuelta a empezar: 6 + 10 + 6 + 6 + 7 + 6 = <b>41 figuras</b>. Se descartan 2, las que '
-      'están repetidas píxel a píxel justo en las costuras (la primera de la fila 2 tras la '
-      'fila 1, y la primera de la fila 2 tras el final de la fila 3) → <b>%d frames</b>. La '
-      'fila 2 hace de respiración entre la 1 y la 3 y va dos veces en la unión. En ningún '
-      'sitio sale partido: es una entrada, un GIF y una animación.</td>' % stance['n'])
+    a('<td class="note">Un solo bucle con las tres franjas, en el orden <b>1 2 1 3</b> y '
+      'vuelta a empezar: 10 + 6 + 10 + 7 = <b>33 figuras</b>. La fila 1 va <b>entre</b> la 2 y '
+      'la 3 para que el bucle no se repita igual. Se descarta la única figura repetida píxel a '
+      'píxel (la primera de la fila 2, idéntica a la última de la fila 1: la costura de la hoja) '
+      '→ <b>%d frames</b>. En ningún sitio sale partido: es una entrada, un GIF y una animación.'
+      '</td>' % stance['n'])
     a('</tr>')
 
     # ---- filas 4-24: crudas, como estaban, salvo la 12 y la 22-23 ----
@@ -188,11 +188,11 @@ def main():
 
     a('<div class="box"><h2>El stance, con los números</h2>')
     a('<p>El stance es <b>una sola animación</b> hecha con las filas 1, 2 y 3 en el orden '
-      '<b>2 → 1 → 2 → 2 → 3 → 2</b> y vuelta a empezar: 6 + 10 + 6 + 6 + 7 + 6 = <b>41 '
-      'figuras</b>, <b>%d frames</b> publicados a <b>10 fps</b> = <b>3,9 s</b> por vuelta. Se '
-      'descartan <b>%d</b>: son las figuras que quedan repetidas píxel a píxel en las dos '
-      'costuras (mismo md5, <code>3ee56306</code>), y con las dos puestas el bucle se para dos '
-      'ticks. El resto de repeticiones se quedan: son del dibujo.</p>'
+      '<b>1 → 2 → 1 → 3</b> y vuelta a empezar: 10 + 6 + 10 + 7 = <b>33 '
+      'figuras</b>, <b>%d frames</b> publicados a <b>10 fps</b> = <b>3,2 s</b> por vuelta. Se '
+      'descarta <b>%d</b>: la figura que queda repetida píxel a píxel en la costura 1→2 (mismo '
+      'md5, <code>3ee56306</code>); con las dos puestas el bucle se para dos ticks. El resto de '
+      'repeticiones se quedan: son del dibujo.</p>'
       % (stance['n'], stance['descartados']))
     a('<p>Los %d frames van en un lienzo único de <b>%d×%d px</b>: pies en la misma línea y eje '
       'de la cabeza al centro, para que el bucle no bote ni se vaya de lado.</p>'

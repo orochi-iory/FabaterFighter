@@ -61,8 +61,10 @@
               letter-spacing:0.3em; text-transform:uppercase; }
   .pickrow { display:flex; align-items:center; gap:6px; justify-content:center; }
   .pickrow .pl { color:#9d9ab5; font-size:12px; font-weight:800; letter-spacing:0.14em; width:22px; text-align:right; }
+  button.pbtn { display:inline-flex; align-items:center; gap:6px; }
+  button.pbtn img.face { height:26px; width:auto; image-rendering:pixelated; display:block; }
   button.pbtn { background:#2a2740; color:#d8d6ea; border:1px solid #4a4767; border-radius:999px;
-                padding:5px 12px; cursor:pointer; font-size:12px; font-weight:700; letter-spacing:0.06em; }
+                padding:3px 12px 3px 5px; cursor:pointer; font-size:12px; font-weight:700; letter-spacing:0.06em; }
   button.pbtn:hover { border-color:var(--cyan); color:#fff; }
   button.pbtn.pick { background:#7c2e9e; border-color:#ff8ad4; color:#fff; }
   .vsline { margin:2px 0 0; color:#8d8aa4; font-size:11px; letter-spacing:0.16em; }
@@ -134,13 +136,13 @@
         <p class="pickhead">Personajes</p>
         <div class="pickrow">
           <span class="pl">P1</span>
-          <button type="button" class="pbtn pick" data-p1="voltia">Voltia</button>
-          <button type="button" class="pbtn" data-p1="chunli">Chun-Li</button>
+          <button type="button" class="pbtn pick" data-p1="voltia"><img class="face" src="chars/face_voltia.png" alt="">Voltia</button>
+          <button type="button" class="pbtn" data-p1="chunli"><img class="face" src="chars/face_chunli.png" alt="">Chun-Li</button>
         </div>
         <div class="pickrow">
           <span class="pl">P2</span>
-          <button type="button" class="pbtn" data-p2="voltia">Voltia</button>
-          <button type="button" class="pbtn pick" data-p2="chunli">Chun-Li</button>
+          <button type="button" class="pbtn" data-p2="voltia"><img class="face" src="chars/face_voltia.png" alt="">Voltia</button>
+          <button type="button" class="pbtn pick" data-p2="chunli"><img class="face" src="chars/face_chunli.png" alt="">Chun-Li</button>
         </div>
         <p class="vsline" id="pick-line"></p>
       </div>
@@ -156,7 +158,7 @@
         <button class="item" type="button" data-act="music" data-music>Música</button>
       </nav>
       <p class="line" id="ai-line"></p>
-      <p class="foot">↑↓ elige · ←→ nivel · Enter empieza · <a href="index.html">Visor</a> · <a href="guia-vieja.html">Guía</a></p>
+      <p class="foot">build 2026-10-20c · ↑↓ elige · ←→ nivel · Enter empieza · <a href="index.html">Visor</a> · <a href="guia-vieja.html">Guía</a></p>
     </div>
     <div class="card" id="pause" hidden>
       <h2>PAUSA</h2>
@@ -185,8 +187,8 @@
   </p>
   <p id="status"></p>
 </div>
-<script src="chars/voltia.js?v=4"></script>
-<script src="chars/chunli.js?v=4"></script>
-<script src="fight.js?v=14"></script>
+<script src="chars/voltia.js?v=5"></script>
+<script src="chars/chunli.js?v=5"></script>
+<script src="fight.js?v=15"></script>
 </body>
 </html>

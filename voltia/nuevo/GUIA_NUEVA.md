@@ -523,3 +523,43 @@ en la tabla, un GIF y una fila de la hoja de juego.
 Botón fijo **«Cajas (H)»** abajo a la izquierda (no hay que pausar) y tecla **H**.
 Verde = caja de daño recibido, rojo = caja del golpe activo en ese frame, amarillo =
 proyectil, cruz blanca = pivote (los pies). Se recuerda entre partidas.
+
+## Por qué los cambios de Chun-Li "no llegaban"
+
+**Síntoma:** se arregla algo en `preview/chars/chunli.js` o en `preview/fight.js` y en el
+navegador sigue saliendo el comportamiento viejo (patada de salto equivocada, reloj de
+60 s, stance rápido, sin selector de personajes).
+
+**Causa:** los `<script>` llevaban una versión **fija** (`chars/chunli.js?v=3`,
+`fight.js?v=14`). Si el fichero cambia pero la versión no, el navegador sigue usando la
+copia que tiene en memoria: el `?v` es la clave de caché.
+
+**Regla:** cada vez que se toca un `.js` de `preview/`, **se sube su `?v` en
+`preview/fight.html`**. Ahora mismo: `voltiа.js?v=5`, `chunli.js?v=5`, `fight.js?v=15`
+(y el servidor de pruebas manda `Cache-Control: no-store`). En la página de pelea hay una
+línea `build 2026-10-20c` en el menú: si no la ves, estás viendo una versión vieja.
+
+**Segunda trampa, del mismo tipo:** el **pivote y la escala** estaban escritos a mano en
+`chars/chunli.js` (146, 203). Al regenerar la hoja, la celda pasó de 294×231 a 284×223 y
+el pivote a (141, 196): la ficha se quedó vieja y el personaje salía desplazado. Ahora
+`loadChar()` **sobrescribe `pivot` y `scale` con los de `sheet.json`** (y el pivote del
+proyectil). La hoja es la única fuente de verdad.
+
+## Chun-Li: patadas, stance y reloj (estado actual)
+
+- **Patada en el aire = fila 17** para los dos botones (débil y fuerte). La fila 15 no es
+  un salto: empieza y acaba de pie.
+- **Fila 15 = ↓↘ + patada FUERTE** (mantener abajo+adelante y pulsar fuerte). Es un
+  comando de suelo (`need: 'hk'`, `seq: [3]`), con `start: 3` para que el golpe no llegue
+  tarde.
+- **Patada adelante-abajo = fila 15**, con derribo.
+- **Salto + puño**: `start: 2` y 16 fps → el frame activo entra a **0,19 s**.
+- **Salto + patada**: `start: 3` y 16 fps → **0,19 s**.
+- **Stance**: filas 1, 2 y 3 en **un solo bucle** `1 → 2 → 1 → 3` (la fila 1 va entre la 2
+  y la 3 para que no se repita igual). 33 figuras, se descarta **1** repetida exacta en la
+  costura 1→2 → **32 frames a 10 fps = 3,2 s** por vuelta.
+- **Salto**: 176 px de mundo medidos con sonda (Voltia salta 103).
+- **Reloj: 99 s** (`ROUND_TIME = 99`, y el marcador del HTML arranca en 99).
+- **Cajas de golpe**: botón fijo **«Cajas (H)»** abajo a la izquierda, tecla **H**, y el
+  botón «Cajas» de la pausa. Verde = caja de daño recibido, rojo = golpe activo, amarillo
+  = proyectil. Se recuerda entre partidas.

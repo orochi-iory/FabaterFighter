@@ -381,10 +381,10 @@ def main():
     fila1 = sorted([f for f in b0 if f['y0'] < 80 and f['h'] < 100], key=lambda f: f['x0'])
     fila2 = sorted([f for f in b0 if f['y0'] >= 80], key=lambda f: f['x0'])
     fila3 = sorted(bandas[1]['frames'], key=lambda f: f['x0'])
-    # Orden pedido: 2 1 2 2 3 2 y vuelta a empezar (2-1-2-2-3-2-2-1-2-2...).
-    # La fila 2 es la que hace de respiracion entre la 1 y la 3, y va dos veces
-    # en la union, que es justo lo que se ve en el bucle.
-    orden = [2, 1, 2, 2, 3, 2]
+    # Orden pedido: la fila 1 va ENTRE cada 2 y cada 3, para que el bucle no se
+    # repita igual. El ciclo queda 1 -> 2 -> 1 -> 3 y vuelve a la 1:
+    # 10 + 6 + 10 + 7 = 33 figuras.
+    orden = [1, 2, 1, 3]
     grupos = {1: fila1, 2: fila2, 3: fila3}
     cajas, origen = [], []
     for n_fila in orden:
@@ -416,8 +416,8 @@ def main():
     tira.resize((tira.size[0] * 2, tira.size[1] * 2), Image.NEAREST).save(
         os.path.join(base, 'stance_secuencia.png'))
     ficha(1, 'stance', 'Stance', True,
-          'Filas 1, 2 y 3 son UN solo bucle: 2 -> 1 -> 2 -> 2 -> 3 -> 2, %d frames '
-          '(6+10+6+6+7+6 = 41 figuras; se descartan 2 porque estan repetidas '
+          'Filas 1, 2 y 3 son UN solo bucle: 1 -> 2 -> 1 -> 3, %d frames '
+          '(10+6+10+7 = 33 figuras; se descartan las que estan repetidas '
           'literalmente en las costuras). La fila 2 va dos veces en la union, '
           'que es lo que pide el bucle.' % len(fs),
           carpeta, None, False, 10)
