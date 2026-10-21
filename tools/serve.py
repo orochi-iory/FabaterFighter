@@ -54,6 +54,15 @@ class Handler(http.server.SimpleHTTPRequestHandler):
     def log_message(self, fmt, *args):
         sys.stderr.write('%s  %s\n' % (self.address_string(), fmt % args))
 
+    def copyfile(self, source, outputfile):
+        # El navegador corta la descarga de la hoja (1,4 MB) cuando ya la tiene: eso es
+        # normal y no es un fallo. Sin esto, cada corte imprime un traceback de
+        # ConnectionResetError en el log y tapa los avisos que si importan.
+        try:
+            super().copyfile(source, outputfile)
+        except (ConnectionResetError, BrokenPipeError):
+            pass
+
 
 def main():
     ap = argparse.ArgumentParser()
