@@ -24,18 +24,20 @@
     font-size:12.5px; color:#cfc9e6; max-width:330px; }
   .regla b { color:var(--cyan); display:block; font-size:12px; letter-spacing:.5px; margin-bottom:2px; }
   main { max-width:1180px; margin:0 auto; padding:16px; display:grid; grid-template-columns:1fr 1fr; gap:16px; }
-  @media (max-width:980px) { main { grid-template-columns:1fr; } }
+  @media (max-width:980px) { main { grid-template-columns:1fr; } .par { grid-template-columns:1fr; } }
   .card { background:var(--panel); border:2px solid var(--line); border-radius:14px; padding:14px; }
   .card.wide { grid-column:1 / -1; }
   .card h2 { margin:0 0 4px; font-size:15px; letter-spacing:1px; color:var(--gold); }
   .card p.sub { margin:0 0 10px; font-size:12.5px; color:#9b93b8; line-height:1.5; }
+  .card p.sub a { color:var(--cyan); font-weight:700; }
   .big { background:#1a1528; border-radius:10px; padding:10px; text-align:center; }
   .lienzo { overflow:auto; max-width:100%; }
-  /* Tira de frames: son <img>, no un canvas. Se dejan SUAVIZAR a proposito: aqui se
-     reducen a una altura fija y el factor no es entero; es una miniatura, no el pixel. */
-  .tira { display:flex; gap:2px; overflow-x:auto; padding:6px 2px 2px; margin-top:8px;
-    background:#141020; border-radius:8px; }
-  .tira img { display:block; height:84px; width:auto; border-radius:4px; }
+  /* Las tiras y galerías se muestran a tamaño nativo (sin reescalado del navegador).
+     En móvil se desplazan horizontalmente para mantener cada píxel intacto. */
+  .tira { display:flex; gap:8px; overflow-x:auto; padding:6px 2px 2px; margin-top:8px;
+    background:#141020; border-radius:8px; align-items:flex-start; }
+  .tira img { display:block; width:auto; height:auto; max-width:none; border-radius:4px;
+    image-rendering:pixelated; }
   .tira img.sel { outline:2px solid var(--cyan); outline-offset:1px; }
   /* Sin `pixelated`: el canvas ya se mide en píxeles REALES de pantalla y el CSS va a
      dispositivo/dpr. Cuando el reparto no es exacto (dpr 2,75 en el movil), `pixelated`
@@ -67,8 +69,8 @@
     padding:3px; flex:0 0 auto; }
   /* `aspect-ratio` reserva el hueco ANTES de que la imagen cargue: sin esto las fichas
      nacen con ancho 0 y mientras cargan se ven vacias y se recolocan (parecia "loco"). */
-  .chip img { display:block; height:96px; width:auto; aspect-ratio:96 / 152;
-    background:#1a1528; border-radius:4px; }
+  .chip img { display:block; width:auto; height:auto; max-width:none;
+    background:#1a1528; border-radius:4px; image-rendering:pixelated; }
   .chip img.fallo, .galeria img.fallo, .tira img.fallo { background:#5c2222; }
   .chip span { position:absolute; top:-6px; left:-6px; background:#0e7c8c; color:#fff; font-size:10px;
     width:16px; height:16px; line-height:16px; text-align:center; border-radius:50%; }
@@ -76,14 +78,25 @@
     font-size:11px; line-height:1; border-radius:50%; background:#5c2222; border:0; }
   .chip .flechas { display:flex; gap:2px; justify-content:center; margin-top:2px; }
   .chip .flechas button { padding:0 5px; font-size:11px; border-radius:5px; }
-  .galeria { display:flex; flex-wrap:nowrap; gap:6px; max-height:200px; overflow:auto; padding:4px; }
-  .galeria figure { margin:0; background:#161022; border:2px solid transparent; border-radius:8px; padding:4px; cursor:pointer; }
+  .galeria { display:flex; flex-wrap:nowrap; gap:8px; max-height:380px; overflow:auto; padding:4px;
+    align-items:flex-start; }
+  .galeria figure { margin:0; background:#161022; border:2px solid transparent; border-radius:8px;
+    padding:4px; cursor:pointer; flex:0 0 auto; }
   .galeria figure:hover { border-color:#4a4767; }
-  .galeria img { display:block; height:104px; width:auto; aspect-ratio:96 / 152;
-    background:#1a1528; border-radius:4px; }
-  .galeria figcaption { font-size:10px; color:#9b93b8; text-align:center; }
-  #galeria-gestion { max-height:none; flex-wrap:wrap; }
-  #galeria-gestion figure.sel { border-color:#ff7b7b; background:#3a1c22; }
+  .galeria img { display:block; width:auto; height:auto; max-width:none;
+    background:#1a1528; border-radius:4px; image-rendering:pixelated; }
+  .galeria figcaption { font-size:11px; color:#9b93b8; text-align:center; }
+  #galeria-gestion { max-height:440px; }
+  #papelera-vista { border:1px solid var(--line); border-radius:8px; padding:10px; margin-top:10px; }
+  #papelera-vista[hidden] { display:none; }
+  .original-strip { display:flex; gap:8px; overflow:auto; padding:8px; background:#141020;
+    border-radius:8px; align-items:flex-start; }
+  .original-strip figure { margin:0; flex:0 0 auto; }
+  .original-strip canvas { display:block; width:350px; height:332px; image-rendering:pixelated;
+    background:#101018; }
+  .original-strip figcaption { text-align:center; font:12px ui-monospace,monospace; color:#b7b0d0; }
+  .empty { color:#b7b0d0; padding:12px; }
+  #galeria-gestion figure.sel, #galeria-papelera figure.sel { border-color:#ff7b7b; background:#3a1c22; }
   #galeria-gestion figure.nueva { border-color:#3ddc84; }
   #galeria-gestion figure.aprobado { border-color:#3ddc84; box-shadow:inset 0 0 0 2px #1d6b3f; }
   #galeria-gestion figure.descartado { opacity:.45; border-color:#8a3b3b; }
@@ -143,13 +156,7 @@
       <div class="tira" id="tira"></div></div>
     <div class="controls">
       <button id="play">⏸ Pausa</button>
-      <select id="mov" title="Todas las animaciones del modelo oficial">
-        <optgroup label="Con sprites en el creador">
-          <option value="stance">stance</option>
-          <option value="walk">walk</option>
-        </optgroup>
-        <optgroup label="Del modelo oficial (25)" id="otras-anims"></optgroup>
-      </select>
+      <select id="mov" title="Las 25 animaciones del modelo original"></select>
       <select id="resol">
         <option value="oficial" selected>Tamaño oficial · 96×152</option>
         <option value="nativo">Nativo · sin reducir</option>
@@ -176,6 +183,13 @@
     </div>
   </section>
 
+  <section class="card wide" id="original-ref">
+    <h2>Referencia fija · movimiento original</h2>
+    <p class="sub">Todos los frames de la animación original seleccionada, extraídos de la hoja
+       oficial y mostrados a su tamaño nativo 350×332 (1:1, sin suavizado). Desplaza en horizontal.</p>
+    <div class="original-strip" id="original-strip"></div>
+  </section>
+
   <section class="card wide">
     <h2>Secuencia del movimiento</h2>
     <p class="sub">Pulsa un sprite de la galería para añadirlo. Quita con ×, reordena con ← →.
@@ -195,29 +209,51 @@
   </section>
 
   <section class="card wide">
-    <h2>Sprites del movimiento · borrar y añadir</h2>
-    <p class="sub">Marca sprites para <b>aprobarlos</b>, dejarlos pendientes, descartarlos o
-       mandarlos a la <b>papelera</b> (recuperable). Abajo puedes añadir PNG nuevos con fondo
-       rojo puro o transparente. Nada se borra de golpe: la papelera guarda los ficheros hasta
-       que la vacíes.</p>
+    <h2>Biblioteca y organización general de sprites</h2>
+    <p class="sub">Elige una animación de las 25 para trabajar. Puedes gestionar sus sprites o
+       mostrar la biblioteca completa, aprobar, mandar a papelera y reutilizar cualquier sprite
+       aprobado en el movimiento seleccionado. La papelera se puede ver, restaurar y vaciar aquí.
+       <a href="../voltia/nuevo/creador/ancla/ANCLA_voltia_4_vistas.png" target="_blank" rel="noopener">Abrir ancla fija de Voltia · cuatro vistas · 1408×768</a>.</p>
     <div class="controls" style="justify-content:flex-start;margin:0 0 10px">
-      <label class="note"><input type="checkbox" id="todos"> marcar todos</label>
-      <button id="aprobar-sel" class="guardar">✓ Aprobar marcados</button>
-      <button id="pendiente-sel">↺ Dejar pendientes</button>
-      <button id="descartar-sel">✕ Descartar marcados</button>
+      <label class="note">Mostrar:
+        <select id="filtro-galeria">
+          <option value="actual">Sprites del movimiento seleccionado</option>
+          <option value="todos">Biblioteca completa · todos los movimientos</option>
+        </select>
+      </label>
+      <label class="note"><input type="checkbox" id="todos"> marcar todos los visibles</label>
+      <button id="aprobar-sel" class="guardar">✓ Aprobar</button>
+      <button id="pendiente-sel">↺ Pendiente</button>
+      <button id="descartar-sel">✕ Descartar</button>
       <button id="borrar-sel" class="peligro">🗑 A la papelera</button>
+      <button id="copiar-sel">➕ Añadir aprobados a <span id="destino-copiar">stance</span></button>
     </div>
     <div class="controls" style="justify-content:flex-start;margin:0 0 10px">
-      <label class="note" style="display:flex;align-items:center;gap:6px">
-        Añadir nuevos:
-        <input type="file" id="ficheros" accept="image/png" multiple style="font-size:12px">
+      <label class="note">Añadir PNG a <b id="destino-subir">stance</b> en:
+        <select id="subir-resol">
+          <option value="nativo">Resolución nativa · sin escalar</option>
+          <option value="oficial">Tamaño oficial · 96×152 exactos</option>
+        </select>
       </label>
-      <button id="subir">⬆ Añadir a la galería</button>
+      <input type="file" id="ficheros" accept="image/png" multiple style="font-size:12px;max-width:230px">
+      <button id="subir">⬆ Añadir como pendiente</button>
       <button id="ver-papelera">🗑 Ver papelera</button>
       <button id="vaciar-papelera" class="peligro">Vaciar papelera</button>
     </div>
-    <div class="note" id="gestion">—</div>
+    <p class="sub">No se escala ni se recolorea al subir. PNG nativo: debe tener el mismo lienzo
+       que los demás frames de ese movimiento. PNG oficial: exactamente 96×152. El fondo debe ser
+       transparente o rojo puro en el borde; el rojo exacto se convierte en transparencia. El
+       sprite nuevo queda <b>pendiente</b> hasta que lo apruebes.</p>
+    <div class="note" id="gestion" aria-live="polite">—</div>
     <div class="galeria" id="galeria-gestion"></div>
+    <div id="papelera-vista" hidden>
+      <div class="controls" style="justify-content:flex-start;margin:0 0 8px">
+        <b class="note" id="papelera-titulo">Papelera</b>
+        <button id="restaurar-papelera">↩ Restaurar seleccionados</button>
+        <button id="cerrar-papelera">Cerrar papelera</button>
+      </div>
+      <div class="galeria" id="galeria-papelera"></div>
+    </div>
   </section>
 
   <section class="card wide">
@@ -285,85 +321,121 @@
 
 </main>
 
-<footer>FabaterFighter · creador de personajes · 2026-10-20</footer>
+<footer>FabaterFighter · creador de personajes · 2026-10-21</footer>
 
 <script>
 (async () => {
-  const [nat, ofi, sheet] = await Promise.all([
-    fetch('../voltia/nuevo/creador/sprites/datos.json', { cache: 'no-store' }).then(r => r.json()),
-    fetch('../voltia/nuevo/creador/oficial/datos.json', { cache: 'no-store' }).then(r => r.json()),
-    // las 25 animaciones del modelo original: para saber cuales faltan y poder pedirlas
-    fetch('../voltia/sheet.json', { cache: 'no-store' }).then(r => r.json()),
-  ]);
-  // Las que ya tienen sprites en el creador
-  const conSprites = new Set(Object.keys(ofi.anims || {}));
-  const otras = document.getElementById('otras-anims');
-  if (otras) {
-    sheet.animations.forEach(a => {
-      if (conSprites.has(a.id)) return;
-      const o = document.createElement('option');
-      o.value = a.id;
-      o.textContent = `${a.id} · ${a.frames} frames (sin sprites aún)`;
-      o.disabled = true;
-      otras.appendChild(o);
-    });
+  const sheet = await (await fetch('../voltia/sheet.json', { cache: 'no-store' })).json();
+  let catalog = await (await fetch('/api/sprites', { cache: 'no-store' })).json();
+  if (!catalog || !catalog.native || !catalog.official) {
+    throw new Error('No responde la API del creador. Inicia el servidor con python3 tools/serve.py.');
   }
+  let nat = catalog.native, ofi = catalog.official, library = catalog.library || [];
+  const animations = sheet.animations;
   const cv = document.getElementById('anim');
   const cx = cv.getContext('2d');
-  const caja = document.getElementById('caja');     // el hueco donde tiene que caber
-  const tiraEl = document.getElementById('tira');   // tira de miniaturas (imgs, no canvas)
+  const caja = document.getElementById('caja');
+  const tiraEl = document.getElementById('tira');
+  const refStrip = document.getElementById('original-strip');
   const cache = new Map();
-  let mov = 'stance', resol = 'oficial', seq = [], idx = 0, playing = true, guias = false, tira = true;
-  let last = performance.now(), acc = 0, M = 1;
+  const referenceCache = new Map();
+  const marcados = new Set();
+  const papeleraMarcada = new Set();
+  let mov = 'stance', resol = 'oficial', seq = [], idx = 0;
+  let playing = true, guias = false, tira = true;
+  let last = performance.now(), acc = 0, M = 1, trashItems = [];
 
-  const pack = () => (resol === 'oficial' ? ofi : nat);
-  const meta = () => {
-    const m = pack().anims[mov];
-    if (!m) {
-      // Movimiento del modelo oficial que aun no tiene sprites en el creador: se devuelve
-      // una animacion vacia para que el visor no reviente y se vea el aviso.
-      return { lienzo: [96, 152], ancla: [48, 26], frames: [], vacio: true };
-    }
-    return m;
+  const animSpec = id => animations.find(a => a.id === id) || animations[0];
+  const pack = (r = resol) => r === 'oficial' ? ofi : nat;
+  const nativeFallback = [96, 152];
+  function meta(r = resol) {
+    const m = pack(r).anims?.[mov];
+    if (m) return {
+      lienzo: m.lienzo || (r === 'oficial' ? [96, 152] : nativeFallback),
+      ancla: m.ancla || null,
+      pies_y: m.pies_y,
+      frames: m.frames || [],
+    };
+    return { lienzo: r === 'oficial' ? [96, 152] : nativeFallback,
+      ancla: r === 'oficial' ? [48, 26] : null,
+      pies_y: r === 'oficial' ? 146 : undefined, frames: [] };
+  }
+  const idDe = (f, movimiento = mov) => f.id || `legacy-${movimiento}-${String(f.i).padStart(2, '0')}`;
+  const ruta = (f, r = resol, movimiento = mov) => {
+    const base = r === 'oficial' ? 'oficial' : 'sprites';
+    return `../voltia/nuevo/creador/${base}/${f.fichero || `${movimiento}/f${String(f.i).padStart(2, '0')}.png`}`;
   };
-  const clave = () => `sec:${resol}:${mov}`;
-  const ruta = f => (resol === 'oficial' ? '../voltia/nuevo/creador/oficial/' : '../voltia/nuevo/creador/sprites/') + f.fichero;
   const dpr = () => window.devicePixelRatio || 1;
-
-  const cargar = i => {
-    const k = `${resol}:${mov}:${i}`;
-    if (cache.has(k)) return Promise.resolve(cache.get(k));
-    return new Promise(res => {
-      const m = new Image();
-      m.onload = () => { cache.set(k, m); res(m); };
-      m.onerror = () => res(null);
-      m.src = ruta(meta().frames[i]);
-    });
-  };
-
-  const inicial = () => {
-    let s = null;
-    try { s = JSON.parse(localStorage.getItem(clave()) || 'null'); } catch (e) {}
-    const n = meta().frames.length;
-    if (!Array.isArray(s) || !s.length || s.some(i => i < 0 || i >= n)) s = [...Array(n).keys()];
-    return s;
-  };
-  const guardar = () => { try { localStorage.setItem(clave(), JSON.stringify(seq)); } catch (e) {} };
+  function tamañoPixelNativo(el, w = el.naturalWidth, h = el.naturalHeight) {
+    if (!w || !h) return;
+    const entero = Math.max(1, Math.floor(dpr()));
+    el.style.width = `${w * entero / dpr()}px`;
+    el.style.height = `${h * entero / dpr()}px`;
+    el.style.maxWidth = 'none'; el.style.maxHeight = 'none';
+    el.style.imageRendering = 'pixelated';
+  }
+  function imagenPixelNativa(el) {
+    el.addEventListener('load', () => tamañoPixelNativo(el));
+    if (el.complete && el.naturalWidth) tamañoPixelNativo(el);
+  }
   const fps = () => +document.getElementById('fps').value || 10;
+  const storageKey = () => `sec:${resol}:${mov}`;
+  const $ = id => document.getElementById(id);
 
-  // --- Escala: entera SIEMPRE, y medida de verdad -----------------------------------
-  // 1 px del sprite se convierte en M px REALES de pantalla; el CSS se pone a M/dpr, de
-  // modo que el navegador no reescala el canvas. Antes la medida salia de
-  // parentElement.clientWidth en el primer pintado, que con la maqueta aun sin hacer vale
-  // 0: el canvas se pintaba a una escala falsa y ya no se recalculaba. Ahora se mide con
-  // ResizeObserver cada vez que el hueco cambia.
+  function actualizarSelector() {
+    const sel = $('mov');
+    const previo = mov;
+    sel.innerHTML = '';
+    for (const a of animations) {
+      const own = Math.max(nat.anims?.[a.id]?.frames?.length || 0,
+                           ofi.anims?.[a.id]?.frames?.length || 0);
+      const o = document.createElement('option');
+      o.value = a.id;
+      o.textContent = `${a.label} · ${a.id} · ${own} propios / ${a.frames} del original`;
+      sel.appendChild(o);
+    }
+    mov = animations.some(a => a.id === previo) ? previo : 'stance';
+    sel.value = mov;
+    $('destino-copiar').textContent = mov;
+    $('destino-subir').textContent = mov;
+  }
+
+  async function recargarCatalogo() {
+    const r = await fetch('/api/sprites', { cache: 'no-store' });
+    const j = await r.json();
+    if (!r.ok || j.ok === false) throw new Error(j.error || 'no se pudo cargar la biblioteca');
+    catalog = j; nat = j.native; ofi = j.official; library = j.library || [];
+    actualizarSelector();
+    cache.clear();
+  }
+
+  const post = async (path, body) => {
+    const r = await fetch(path, { method: 'POST', headers: { 'Content-Type': 'application/json' },
+                                  body: JSON.stringify(body) });
+    const j = await r.json();
+    if (!r.ok || j.ok === false) throw new Error(j.error || `Error HTTP ${r.status}`);
+    return j;
+  };
+
+  function inicial() {
+    const n = meta().frames.length;
+    try {
+      const raw = localStorage.getItem(storageKey());
+      if (raw === null) return [...Array(n).keys()];
+      const saved = JSON.parse(raw);
+      if (!Array.isArray(saved)) return [...Array(n).keys()];
+      const valid = saved.filter(i => Number.isInteger(i) && i >= 0 && i < n);
+      return [...new Set(valid)];
+    } catch (e) { return [...Array(n).keys()]; }
+  }
+  const guardar = () => { try { localStorage.setItem(storageKey(), JSON.stringify(seq)); } catch (e) {} };
+
   function encajar() {
-    const m = meta();
-    const [W, H] = m.lienzo;
+    const [W, H] = meta().lienzo;
     const d = dpr();
     const ancho = Math.max(160, caja.clientWidth || 320);
     const altoMax = Math.max(220, (window.innerHeight || 700) * 0.52);
-    const pedida = +document.getElementById('scale').value || 0;
+    const pedida = +$('scale').value || 0;
     let s = Math.floor((ancho * d) / W);
     s = Math.min(s, Math.floor((altoMax * d) / H));
     if (pedida) s = Math.min(s, pedida);
@@ -374,19 +446,34 @@
     cx.imageSmoothingEnabled = false;
   }
 
+  function cargar(i, r = resol) {
+    const m = meta(r), f = m.frames[i];
+    if (!f) return Promise.resolve(null);
+    const k = `${r}:${mov}:${idDe(f)}`;
+    if (cache.has(k)) return Promise.resolve(cache.get(k));
+    return new Promise(resolve => {
+      const im = new Image();
+      im.onload = () => { cache.set(k, im); resolve(im); };
+      im.onerror = () => resolve(null);
+      im.src = ruta(f, r);
+    });
+  }
+
   function pintar() {
-    const m = meta();
-    const [W, H] = m.lienzo;
+    const m = meta(), [W, H] = m.lienzo;
     cx.imageSmoothingEnabled = false;
     cx.clearRect(0, 0, cv.width, cv.height);
     if (!seq.length) {
-      document.getElementById('fstat').textContent = `${mov} · secuencia vacía`;
+      $('fstat').textContent = `${mov} · ${resol} · sin sprites propios todavía · referencia original debajo`;
       return;
     }
     const i = seq[idx % seq.length];
-    const im = cache.get(`${resol}:${mov}:${i}`);
-    if (im) cx.drawImage(im, 0, 0, im.width, im.height, 0, 0, W * M, H * M);
-    if (guias) {
+    const im = cache.get(`${resol}:${mov}:${idDe(m.frames[i])}`);
+    if (im) {
+      // Los lienzos se validan al subir; se usa su tamaño real y nunca se estira una figura.
+      cx.drawImage(im, 0, 0, im.naturalWidth * M, im.naturalHeight * M);
+    }
+    if (guias && m.ancla) {
       const [ax, ay] = m.ancla;
       cx.strokeStyle = 'rgba(255,60,60,.85)';
       cx.beginPath(); cx.moveTo(ax * M + .5, 0); cx.lineTo(ax * M + .5, H * M); cx.stroke();
@@ -396,114 +483,175 @@
       cx.strokeStyle = 'rgba(80,150,255,.9)';
       cx.beginPath(); cx.moveTo(0, py * M + .5); cx.lineTo(W * M, py * M + .5); cx.stroke();
     }
-    document.getElementById('fstat').textContent =
-      `${mov} · ${resol} · ${seq.length} sprites · lienzo ${W}×${H} · ${M}× (1→${M} px)`;
+    $('fstat').textContent = `${mov} · ${resol} · ${seq.length} sprites · lienzo ${W}×${H} · ${M}×`;
     marcarTira();
   }
 
-  // --- Tira de frames: <img>, sin canvas y sin recalcular 10 veces por segundo --------
+  function marcarTira() {
+    const sel = seq.length ? idx % seq.length : -1;
+    [...tiraEl.children].forEach((im, p) => im.classList.toggle('sel', p === sel));
+  }
   function dibujarTira() {
     tiraEl.innerHTML = '';
     const m = meta();
     seq.forEach((i, p) => {
       const im = document.createElement('img');
-      im.src = ruta(m.frames[i]);
-      im.alt = 'frame ' + (i + 1);
-      im.dataset.pos = p;
+      im.src = ruta(m.frames[i]); im.alt = `frame ${i + 1}`; im.dataset.pos = p;
+      imagenPixelNativa(im);
       im.onclick = () => { idx = p; pintar(); };
-      im.style.height = '84px';
-      im.width = Math.round(84 * m.lienzo[0] / m.lienzo[1]);
-      im.height = 84;
-      im.onerror = () => { im.classList.add('fallo'); im.alt = 'no carga'; };
+      im.onerror = () => im.classList.add('fallo');
       tiraEl.appendChild(im);
     });
     tiraEl.style.display = tira ? '' : 'none';
     marcarTira();
   }
-  function marcarTira() {
-    const sel = seq.length ? idx % seq.length : -1;
-    [...tiraEl.children].forEach((im, p) => im.classList.toggle('sel', p === sel));
-  }
 
-  // --- Secuencia y galería: el DOM se construye SOLO cuando cambian ------------------
   function dibujarSecuencia() {
-    const cajasec = document.getElementById('secuencia');
-    cajasec.innerHTML = '';
+    const box = $('secuencia');
+    box.innerHTML = '';
     if (!seq.length) {
-      cajasec.innerHTML = '<span class="note">Secuencia vacía: pulsa sprites de la galería.</span>';
+      box.innerHTML = '<span class="note">Secuencia vacía: añade sprites únicos desde la galería.</span>';
       return;
     }
     const m = meta();
     seq.forEach((i, p) => {
-      const d = document.createElement('div');
-      d.className = 'chip';
-      const im = document.createElement('img');
-      im.src = ruta(m.frames[i]);
-      im.alt = 'sprite ' + (i + 1);
-      im.style.height = '96px';
-      im.width = Math.round(96 * m.lienzo[0] / m.lienzo[1]);
-      im.height = 96;
-      im.onerror = () => { im.classList.add('fallo'); im.alt = 'no carga'; };
-      const num = document.createElement('span');
-      num.textContent = p + 1;
-      const x = document.createElement('button');
-      x.className = 'x';
-      x.textContent = '×';
-      x.onclick = e => { e.stopPropagation(); seq.splice(p, 1); guardar(); refrescarTodo(); };
-      const flechas = document.createElement('div');
-      flechas.className = 'flechas';
-      const izq = document.createElement('button');
-      izq.textContent = '←';
-      izq.onclick = e => {
-        e.stopPropagation();
-        if (p === 0) return;
-        [seq[p - 1], seq[p]] = [seq[p], seq[p - 1]];
-        guardar(); refrescarTodo();
-      };
-      const der = document.createElement('button');
-      der.textContent = '→';
-      der.onclick = e => {
-        e.stopPropagation();
-        if (p === seq.length - 1) return;
-        [seq[p + 1], seq[p]] = [seq[p], seq[p + 1]];
-        guardar(); refrescarTodo();
-      };
-      flechas.append(izq, der);
-      d.append(im, num, x, flechas);
-      cajasec.appendChild(d);
+      const d = document.createElement('div'); d.className = 'chip';
+      const im = document.createElement('img'); im.src = ruta(m.frames[i]); im.alt = `sprite ${i + 1}`;
+      imagenPixelNativa(im);
+      im.onerror = () => im.classList.add('fallo');
+      const num = document.createElement('span'); num.textContent = p + 1;
+      const x = document.createElement('button'); x.className = 'x'; x.textContent = '×';
+      x.onclick = e => { e.stopPropagation(); seq.splice(p, 1); idx = Math.min(idx, seq.length - 1); guardar(); refrescarTodo(); };
+      const flechas = document.createElement('div'); flechas.className = 'flechas';
+      const izq = document.createElement('button'); izq.textContent = '←';
+      izq.onclick = e => { e.stopPropagation(); if (!p) return; [seq[p - 1], seq[p]] = [seq[p], seq[p - 1]]; guardar(); refrescarTodo(); };
+      const der = document.createElement('button'); der.textContent = '→';
+      der.onclick = e => { e.stopPropagation(); if (p >= seq.length - 1) return; [seq[p + 1], seq[p]] = [seq[p], seq[p + 1]]; guardar(); refrescarTodo(); };
+      flechas.append(izq, der); d.append(im, num, x, flechas); box.appendChild(d);
     });
   }
 
   function dibujarGaleria() {
-    const g = document.getElementById('galeria');
-    g.innerHTML = '';
+    const g = $('galeria'); g.innerHTML = '';
     const m = meta();
+    if (!m.frames.length) {
+      g.innerHTML = '<div class="empty">Este movimiento aún no tiene sprites propios. Usa la biblioteca completa para añadir sprites aprobados o sube un PNG.</div>';
+      return;
+    }
     m.frames.forEach((f, i) => {
       const fig = document.createElement('figure');
-      const img = document.createElement('img');
-      img.src = ruta(f);
-      img.alt = `sprite ${i + 1}`;
-      img.style.height = '104px';
-      img.width = Math.round(104 * m.lienzo[0] / m.lienzo[1]);
-      img.height = 104;
-      img.onerror = () => { img.classList.add('fallo'); img.alt = 'no carga'; };
-      const cap = document.createElement('figcaption');
-      cap.textContent = i + 1;
-      fig.append(img, cap);
-      fig.onclick = () => { seq.push(i); guardar(); refrescarTodo(); };
+      const im = document.createElement('img'); im.src = ruta(f); im.alt = `${mov} f${i}`;
+      imagenPixelNativa(im);
+      im.onerror = () => im.classList.add('fallo');
+      const cap = document.createElement('figcaption'); cap.textContent = `f${String(i).padStart(2, '0')}`;
+      fig.append(im, cap);
+      fig.onclick = () => {
+        if (seq.includes(i)) { $('gstat').textContent = `f${String(i).padStart(2, '0')} ya está en la secuencia; no se repiten sprites.`; return; }
+        seq.push(i); guardar(); refrescarTodo();
+      };
       g.appendChild(fig);
     });
   }
 
-  // Cambia la lista: se rehace el DOM y se repinta. NO se llama en cada frame.
+  const keyFor = (item) => `${item.mov}::${item.id}`;
+  function selectedItems() {
+    return [...marcados].map(k => {
+      const sep = k.indexOf('::');
+      return { mov: k.slice(0, sep), id: k.slice(sep + 2) };
+    }).filter(x => x.mov && x.id);
+  }
+
+  function listForGallery() {
+    if ($('filtro-galeria').value === 'todos') return library.map(x => ({ ...x }));
+    const m = meta();
+    return m.frames.map(f => {
+      const id = idDe(f);
+      const lib = library.find(x => x.mov === mov && x.id === id) || {};
+      return { ...lib, mov, id, frame: f, indice: f.i,
+        estado: f.estado || lib.estado || 'pendiente',
+        urls: { ...(lib.urls || {}), [resol]: ruta(f) } };
+    });
+  }
+
+  function dibujarGestion() {
+    const g = $('galeria-gestion'); g.innerHTML = '';
+    const items = listForGallery();
+    if (!items.length) g.innerHTML = '<div class="empty">No hay sprites propios en esta vista. Cambia a «Biblioteca completa» para ver los sprites aceptados de todos los movimientos.</div>';
+    const counts = { aprobado: 0, pendiente: 0, descartado: 0 };
+    for (const item of items) {
+      const state = item.estado || 'pendiente'; counts[state] = (counts[state] || 0) + 1;
+      const src = item.urls?.[resol] || item.urls?.nativo || item.urls?.oficial;
+      const fig = document.createElement('figure');
+      fig.classList.add(state);
+      const k = keyFor(item); if (marcados.has(k)) fig.classList.add('sel');
+      if (!src) continue;
+      const im = document.createElement('img'); im.src = src; im.alt = `${item.mov} ${item.id}`;
+      imagenPixelNativa(im);
+      im.onerror = () => im.classList.add('fallo');
+      const cap = document.createElement('figcaption');
+      const num = Number.isInteger(item.indice) ? item.indice : item.indices?.[resol === 'oficial' ? 'oficial' : 'nativo'];
+      cap.textContent = `${item.mov} · ${Number.isInteger(num) ? 'f' + String(num).padStart(2, '0') + ' · ' : ''}${state.toUpperCase()}`;
+      fig.append(im, cap);
+      fig.onclick = () => { if (marcados.has(k)) marcados.delete(k); else marcados.add(k); dibujarGestion(); };
+      g.appendChild(fig);
+    }
+    $('gestion').innerHTML = marcados.size
+      ? `<b>${marcados.size}</b> sprite(s) seleccionado(s) de ${$('filtro-galeria').value === 'todos' ? 'la biblioteca' : mov}.`
+      : `Vista: <b>${$('filtro-galeria').value === 'todos' ? 'biblioteca completa' : mov}</b> · ${items.length} sprite(s) · ` +
+        `<span class="marca aprobado">${counts.aprobado || 0} aprobados</span> · ` +
+        `<span class="marca pendiente">${counts.pendiente || 0} pendientes</span> · ` +
+        `<span class="marca descartado">${counts.descartado || 0} descartados</span>`;
+    $('destino-copiar').textContent = mov;
+    $('destino-subir').textContent = mov;
+  }
+
+  async function dibujarOriginal() {
+    refStrip.innerHTML = '';
+    const a = animSpec(mov), { w, h } = sheet.cell;
+    $('original-ref')?.setAttribute('data-movimiento', a.id);
+    let source = referenceCache.get(mov);
+    if (!source) {
+      source = new Image();
+      source.src = `/api/reference/${mov}.png`;
+      try { await source.decode(); } catch (e) { /* error shown below */ }
+      if (source.naturalWidth) {
+        if (referenceCache.size >= 2) referenceCache.delete(referenceCache.keys().next().value);
+        referenceCache.set(mov, source);
+      }
+    }
+    if (!source.naturalWidth) {
+      refStrip.innerHTML = '<div class="empty">No se pudo cargar la fila original de esta animación.</div>'; return;
+    }
+    for (let i = 0; i < a.frames; i++) {
+      const fig = document.createElement('figure');
+      const c = document.createElement('canvas');
+      const entero = Math.max(1, Math.floor(dpr()));
+      c.width = w * entero; c.height = h * entero;
+      c.style.width = `${w * entero / dpr()}px`; c.style.height = `${h * entero / dpr()}px`;
+      const g = c.getContext('2d'); g.imageSmoothingEnabled = false;
+      g.drawImage(source, i * w, 0, w, h, 0, 0, w * entero, h * entero);
+      const cap = document.createElement('figcaption'); cap.textContent = `${a.id} · original ${String(i).padStart(2, '0')}`;
+      fig.append(c, cap); refStrip.appendChild(fig);
+    }
+  }
+
   async function refrescarTodo() {
-    const n = seq.length;
-    if (n) { await Promise.all(seq.map(i => cargar(i))); idx = Math.min(idx, n - 1); }
-    dibujarSecuencia();
-    dibujarTira();
-    dibujarGestion();
-    encajar();
-    pintar();
+    const m = meta();
+    const validSeq = seq.filter(i => Number.isInteger(i) && i >= 0 && i < m.frames.length);
+    seq = [...new Set(validSeq)];
+    if (seq.length) { await Promise.all(seq.map(i => cargar(i))); idx = Math.min(idx, seq.length - 1); }
+    dibujarSecuencia(); dibujarTira(); dibujarGaleria(); dibujarGestion();
+    encajar(); pintar();
+  }
+
+  async function cambiarMovimiento() {
+    mov = $('mov').value;
+    if ($('filtro-galeria').value === 'actual') { marcados.clear(); $('todos').checked = false; }
+    $('destino-copiar').textContent = mov; $('destino-subir').textContent = mov;
+    const spec = animSpec(mov);
+    $('fps').value = spec.fps; $('fps-v').textContent = spec.fps;
+    seq = inicial(); idx = 0;
+    await dibujarOriginal(); await refrescarTodo();
   }
 
   function bucle(t) {
@@ -512,289 +660,211 @@
       acc += dt;
       if (acc >= 1 / fps()) {
         acc = 0;
-        idx = (idx + 1) % seq.length;
-        pintar();               // solo dibuja: no toca el DOM de las fichas
+        if (!animSpec(mov).loop && idx >= seq.length - 1) {
+          playing = false; $('play').textContent = '▶ Play';
+        } else { idx = (idx + 1) % seq.length; }
+        pintar();
       }
     }
     requestAnimationFrame(bucle);
   }
 
-  document.getElementById('play').onclick = e => {
-    playing = !playing;
-    e.target.textContent = playing ? '⏸ Pausa' : '▶ Play';
+  $('play').onclick = e => { playing = !playing; e.target.textContent = playing ? '⏸ Pausa' : '▶ Play'; };
+  $('mov').onchange = cambiarMovimiento;
+  $('resol').onchange = async e => {
+    resol = e.target.value; $('subir-resol').value = resol;
+    seq = inicial(); idx = 0; await refrescarTodo();
   };
-  document.getElementById('mov').onchange = async () => {
-    mov = document.getElementById('mov').value;
-    seq = inicial(); idx = 0;
-    dibujarGaleria();
-    await refrescarTodo();
-  };
-  document.getElementById('resol').onchange = async e => {
-    resol = e.target.value;
-    seq = inicial(); idx = 0;
-    dibujarGaleria();
-    await refrescarTodo();
-  };
-  document.getElementById('scale').onchange = () => { encajar(); pintar(); };
-  document.getElementById('fps').oninput = e => { document.getElementById('fps-v').textContent = e.target.value; };
-  document.getElementById('bg').onchange = e => { cv.className = e.target.value; };
-  document.getElementById('tog-guia').onclick = e => { guias = !guias; e.target.classList.toggle('on', guias); pintar(); };
-  document.getElementById('tog-tira').onclick = e => { tira = !tira; e.target.classList.toggle('on', tira); dibujarTira(); };
-  document.getElementById('auto').onclick = () => {
-    seq = [...Array(meta().frames.length).keys()]; idx = 0; guardar(); refrescarTodo();
-  };
-  document.getElementById('quitar-ultimo').onclick = () => { seq.pop(); guardar(); refrescarTodo(); };
-  document.getElementById('limpiar').onclick = () => { seq = []; idx = 0; guardar(); refrescarTodo(); };
+  $('scale').onchange = () => { encajar(); pintar(); };
+  $('fps').oninput = e => { $('fps-v').textContent = e.target.value; };
+  $('bg').onchange = e => { cv.className = e.target.value; };
+  $('tog-guia').onclick = e => { guias = !guias; e.target.classList.toggle('on', guias); pintar(); };
+  $('tog-tira').onclick = e => { tira = !tira; e.target.classList.toggle('on', tira); dibujarTira(); };
+  $('auto').onclick = () => { seq = [...Array(meta().frames.length).keys()]; idx = 0; guardar(); refrescarTodo(); };
+  $('quitar-ultimo').onclick = () => { seq.pop(); idx = Math.min(idx, seq.length - 1); guardar(); refrescarTodo(); };
+  $('limpiar').onclick = () => { seq = []; idx = 0; guardar(); refrescarTodo(); };
+  $('filtro-galeria').onchange = () => { marcados.clear(); $('todos').checked = false; dibujarGestion(); };
 
-  // ---------------------------------------------------------------------------------
-  // Guardar la animación
-  // ---------------------------------------------------------------------------------
-  // Se guardan dos ficheros, sin tocar un solo píxel:
-  //   <mov>_<resol>_<n>f_<fps>fps.png   → la tira: los frames tal cual, uno al lado de otro
-  //   <mov>_<resol>_<n>f_<fps>fps.json  → el orden exacto, fps, loop, lienzo y ficheros
-  // El PNG es la tira a resolución nativa (nada de escalar ni de filtrar). El GIF se monta
-  // después con tools/make_gif.py, que es donde toca reducir a 256 colores.
-  function descargar(blob, nombre) {
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = nombre;
-    document.body.appendChild(a);
-    a.click();
-    setTimeout(() => { URL.revokeObjectURL(url); a.remove(); }, 4000);
-  }
+  function visibleItems() { return listForGallery(); }
+  $('todos').onchange = e => {
+    if (e.target.checked) visibleItems().forEach(item => marcados.add(keyFor(item)));
+    else visibleItems().forEach(item => marcados.delete(keyFor(item)));
+    dibujarGestion();
+  };
 
-  function nombreBase() {
-    return `${mov}_${resol}_${seq.length}f_${fps()}fps`;
-  }
-
-  async function guardarAnimacion() {
-    const btn = document.getElementById('guardar');
-    const st = document.getElementById('gstat');
-    if (!seq.length) { st.textContent = 'La secuencia está vacía: no hay nada que guardar.'; return; }
-    btn.disabled = true;
-    st.textContent = 'Preparando el PNG…';
+  async function aplicarEstado(state) {
+    const items = selectedItems();
+    if (!items.length) { $('gestion').textContent = 'Marca primero uno o varios sprites.'; return; }
     try {
-      const m = meta();
-      const [W, H] = m.lienzo;
-      const ims = await Promise.all(seq.map(i => cargar(i)));
-      if (ims.some(im => !im)) throw new Error('algún frame no ha cargado; vuelve a intentarlo');
-
-      const c = document.createElement('canvas');
-      c.width = W * ims.length;
-      c.height = H;
-      const g = c.getContext('2d');
-      g.imageSmoothingEnabled = false;
-      ims.forEach((im, k) => g.drawImage(im, k * W, 0, W, H));
-
-      const base = nombreBase();
-      const manifiesto = {
-        movimiento: mov,
-        resolucion: resol,
-        lienzo: [W, H],
-        ancla: m.ancla,
-        pies_y: m.pies_y !== undefined ? m.pies_y : null,
-        frames: seq.length,
-        fps: fps(),
-        loop: true,
-        orden: seq,
-        ficheros: seq.map(i => ruta(m.frames[i])),
-        tira: base + '.png',
-        guardado: new Date().toISOString(),
-      };
-
-      const poner = (blob, nombre) => new Promise(res => {
-        if (!blob) return res(null);
-        descargar(blob, nombre); res(nombre);
-      });
-      const png = await new Promise(res => c.toBlob(res, 'image/png'));
-      const json = new Blob([JSON.stringify(manifiesto, null, 1)], { type: 'application/json' });
-
-      const hechos = [];
-      hechos.push(await poner(png, base + '.png'));
-      hechos.push(await poner(json, base + '.json'));
-
-      st.innerHTML = `Guardado <b>${hechos.filter(Boolean).join('</b> + <b>')}</b> · ` +
-        `${c.width}×${c.height} px · ${seq.length} frames a ${fps()} fps.<br>` +
-        `<span style="color:#9b93b8">Los dos ficheros van a la carpeta de descargas del navegador. ` +
-        `Para el GIF: <code>python3 tools/make_gif.py &lt;carpeta&gt; ${base}.gif --fps ${fps()} --zoom 4</code></span>`;
-      document.getElementById('orden').textContent =
-        'Orden guardado: ' + seq.map(i => i + 1).join(' · ');
-    } catch (err) {
-      st.textContent = 'No se pudo guardar: ' + (err && err.message ? err.message : err);
-    } finally {
-      btn.disabled = false;
-    }
+      const result = await post('/api/sprites/state', { items, estado: state });
+      marcados.clear(); $('todos').checked = false;
+      await recargarCatalogo(); await refrescarTodo();
+      $('gestion').textContent = `${result.archivos_actualizados} variante(s) marcada(s) como ${state}.`;
+    } catch (e) { $('gestion').textContent = `No se pudo cambiar el estado: ${e.message}`; }
   }
-  document.getElementById('guardar').onclick = guardarAnimacion;
+  $('aprobar-sel').onclick = () => aplicarEstado('aprobado');
+  $('pendiente-sel').onclick = () => aplicarEstado('pendiente');
+  $('descartar-sel').onclick = () => aplicarEstado('descartado');
 
-  // ---------------------------------------------------------------------------------
-  // Gestor de sprites: borrar los que no sirven y añadir nuevos
-  // ---------------------------------------------------------------------------------
-  // El navegador no puede borrar ficheros del repo, así que el visor DESCARGA la lista de lo
-  // marcado y los scripts la aplican:
-  //   tools/papelera.py        mover a papelera / restaurar / vaciar
-  //   tools/estado_sprites.py  aprobar / pendiente / descartar
-  // Añadir sí necesita escribir, y para eso `tools/serve.py` tiene un POST /subir que deja el
-  // PNG en `creador/nuevos/`. Nunca se escribe en sprites/ ni en oficial/: lo que entra desde
-  // el navegador queda en bruto hasta que se trocea.
-  const marcados = new Set();
+  function remapSequenceAfterTrash(removedItems) {
+    const removedIds = new Set(removedItems.filter(x => x.mov === mov).map(x => x.id));
+    if (!removedIds.size) return;
+    const frames = meta().frames;
+    const removedIndices = new Set();
+    frames.forEach((f, i) => { if (removedIds.has(idDe(f))) removedIndices.add(i); });
+    seq = seq.filter(i => !removedIndices.has(i)).map(i => i - [...removedIndices].filter(r => r < i).length);
+    idx = Math.min(idx, Math.max(0, seq.length - 1)); guardar();
+  }
+  $('borrar-sel').onclick = async () => {
+    const items = selectedItems();
+    if (!items.length) { $('gestion').textContent = 'Marca primero uno o varios sprites.'; return; }
+    const list = items.map(x => `${x.mov} · ${x.id}`).join('\n');
+    if (!confirm(`Mover a la papelera ${items.length} sprite(s)?\n\n${list}\n\nSe podrán restaurar antes de vaciarla.`)) return;
+    try {
+      remapSequenceAfterTrash(items);
+      const result = await post('/api/sprites/trash', { items });
+      marcados.clear(); $('todos').checked = false;
+      await recargarCatalogo(); await refrescarTodo();
+      $('gestion').textContent = `${result.movidos.length} fichero(s) movidos a papelera. Puedes abrirla con «Ver papelera».`;
+    } catch (e) { $('gestion').textContent = `No se pudo mover a papelera: ${e.message}`; }
+  };
 
-  function dibujarGestion() {
-    const g = document.getElementById('galeria-gestion');
-    g.innerHTML = '';
-    const m = meta();
-    m.frames.forEach((f, i) => {
-      const fig = document.createElement('figure');
-      const img = document.createElement('img');
-      img.src = ruta(f);
-      img.alt = `sprite ${i + 1}`;
-      img.style.height = '96px';
-      img.width = Math.round(96 * m.lienzo[0] / m.lienzo[1]);
-      img.height = 96;
-      const cap = document.createElement('figcaption');
-      const estado = f.estado || 'pendiente';
-      cap.innerHTML = `#${i + 1}<br><span class="marca ${estado}">${estado.toUpperCase()}</span>`;
-      fig.append(img, cap);
-      fig.classList.add(estado);
-      if (marcados.has(i)) fig.classList.add('sel');
+  $('copiar-sel').onclick = async () => {
+    const items = selectedItems();
+    if (!items.length) { $('gestion').textContent = 'Selecciona primero sprites aprobados de la biblioteca.'; return; }
+    try {
+      const result = await post('/api/sprites/copy-approved', { items, destino: mov });
+      const copied = result.resultados.filter(x => x.ok).length;
+      const details = result.resultados.map(x => x.ok
+        ? `${x.mov}: añadido${x.omitido?.length ? ' (algunas variantes omitidas)' : ''}`
+        : `${x.mov}: ${x.error || x.omitido?.join(', ') || 'no copiado'}`).join(' · ');
+      marcados.clear(); $('todos').checked = false;
+      await recargarCatalogo(); await refrescarTodo();
+      $('gestion').textContent = `${copied} sprite(s) aprobados copiados a ${mov}. ${details}`;
+    } catch (e) { $('gestion').textContent = `No se pudieron copiar: ${e.message}`; }
+  };
+
+  const readDataURL = file => new Promise((resolve, reject) => {
+    const r = new FileReader(); r.onload = () => resolve(r.result); r.onerror = reject; r.readAsDataURL(file);
+  });
+  $('subir').onclick = async () => {
+    const files = [...($('ficheros').files || [])];
+    if (!files.length) { $('gestion').textContent = 'Elige uno o varios PNG.'; return; }
+    const uploadRes = $('subir-resol').value;
+    const results = [];
+    $('subir').disabled = true;
+    for (const f of files) {
+      try {
+        const data = await readDataURL(f);
+        const result = await post('/api/sprites/add', { mov, resol: uploadRes, nombre: f.name, png: data });
+        results.push(`${f.name}: añadido pendiente (${result.dimensiones[0]}×${result.dimensiones[1]})`);
+      } catch (e) { results.push(`${f.name}: RECHAZADO — ${e.message}`); }
+    }
+    $('subir').disabled = false; $('ficheros').value = '';
+    resol = uploadRes; $('resol').value = resol; seq = inicial(); idx = 0;
+    try { await recargarCatalogo(); await refrescarTodo(); }
+    catch (e) { results.push(`No se pudo actualizar la vista: ${e.message}`); }
+    $('gestion').textContent = results.join(' · ');
+  };
+
+  async function cargarPapelera() {
+    const r = await fetch('/api/trash', { cache: 'no-store' });
+    const j = await r.json(); if (!r.ok || j.ok === false) throw new Error(j.error || 'no se pudo leer la papelera');
+    trashItems = j.items || [];
+    const box = $('papelera-vista'), g = $('galeria-papelera');
+    box.hidden = false; g.innerHTML = ''; papeleraMarcada.clear();
+    $('papelera-titulo').textContent = `Papelera · ${trashItems.length} sprite(s)`;
+    if (!trashItems.length) { g.innerHTML = '<div class="empty">La papelera está vacía.</div>'; return; }
+    for (const item of trashItems) {
+      const src = item.urls?.[resol] || item.urls?.nativo || item.urls?.oficial;
+      const fig = document.createElement('figure'); const im = document.createElement('img');
+      im.src = src || ''; im.alt = `${item.mov} ${item.id}`; imagenPixelNativa(im); im.onerror = () => im.classList.add('fallo');
+      const cap = document.createElement('figcaption'); cap.textContent = `${item.mov} · ${item.id.slice(0, 8)} · restaurable`;
+      fig.append(im, cap);
       fig.onclick = () => {
-        if (marcados.has(i)) marcados.delete(i); else marcados.add(i);
-        dibujarGestion();
+        const k = `${item.mov}::${item.id}`;
+        if (papeleraMarcada.has(k)) papeleraMarcada.delete(k); else papeleraMarcada.add(k);
+        fig.classList.toggle('sel', papeleraMarcada.has(k));
       };
       g.appendChild(fig);
-    });
-    const c = { aprobado: 0, pendiente: 0, descartado: 0 };
-    m.frames.forEach(f => { c[f.estado || 'pendiente'] += 1; });
-    document.getElementById('gestion').innerHTML = marcados.size
-      ? `<b>${marcados.size}</b> marcado(s): ${[...marcados].map(i => i + 1).join(', ')}`
-      : `Galería de <b>${mov}</b> · ${m.frames.length} sprites · ` +
-        `<span class="marca aprobado">${c.aprobado} aprobados</span> · ` +
-        `<span class="marca pendiente">${c.pendiente} pendientes</span> · ` +
-        `<span class="marca descartado">${c.descartado} descartados</span`;
-  }
-
-  function bajarTexto(nombre, texto, tipo) {
-    descargar(new Blob([texto], { type: tipo || 'text/plain;charset=utf-8' }), nombre);
-  }
-
-  document.getElementById('todos').onchange = e => {
-    const m = meta();
-    if (e.target.checked) m.frames.forEach((_, i) => marcados.add(i));
-    else marcados.clear();
-    dibujarGestion();
-  };
-
-  // Marcar estado: descarga la lista y explica el comando. Es un cambio de datos (no borra
-  // ficheros), asi que se puede aplicar sin miedo y revertir con la misma orden.
-  function marcarEstado(estado, comando) {
-    if (!marcados.size) {
-      document.getElementById('gestion').textContent = 'No hay nada marcado.';
-      return;
     }
-    const lineas = [...marcados].sort((a, b) => a - b)
-      .map(i => `${mov}/f${String(i).padStart(2, '0')}.png`);
-    bajarTexto(`${comando}_${mov}_${resol}.txt`, lineas.join('\n') + '\n');
-    document.getElementById('gestion').innerHTML =
-      `Descargado <b>${comando}_${mov}_${resol}.txt</b> (${lineas.length} sprite(s)).<br>` +
-      `Para aplicarlo, en la carpeta del repo:<br><code>PYTHONPATH=tools/pylibs python3 ` +
-      `tools/estado_sprites.py --estado ${estado} --lista ~/Downloads/${comando}_${mov}_${resol}.txt</code>`;
   }
-  document.getElementById('aprobar-sel').onclick = () => marcarEstado('aprobado', 'aprobar');
-  document.getElementById('pendiente-sel').onclick = () => marcarEstado('pendiente', 'pendiente');
-  document.getElementById('descartar-sel').onclick = () => marcarEstado('descartado', 'descartar');
-
-  document.getElementById('ver-papelera').onclick = async () => {
-    const st = document.getElementById('gestion');
-    st.textContent = 'Leyendo la papelera…';
+  $('ver-papelera').onclick = async () => {
+    try { await cargarPapelera(); $('gestion').textContent = `Papelera abierta: ${trashItems.length} sprite(s). Marca los que quieras restaurar.`; }
+    catch (e) { $('gestion').textContent = `No se pudo abrir la papelera: ${e.message}`; }
+  };
+  $('cerrar-papelera').onclick = () => { $('papelera-vista').hidden = true; };
+  $('restaurar-papelera').onclick = async () => {
+    const selected = trashItems.filter(x => papeleraMarcada.has(`${x.mov}::${x.id}`));
+    const ids = selected.flatMap(x => x.items || []);
+    if (!ids.length) { $('gestion').textContent = 'Marca sprites de la papelera para restaurar.'; return; }
     try {
-      const r = await fetch('../voltia/nuevo/creador/papelera/papelera.json', { cache: 'no-store' });
-      if (!r.ok) throw new Error('la papelera está vacía');
-      const items = await r.json();
-      st.innerHTML = items.length
-        ? `<b>Papelera: ${items.length} fichero(s)</b><br>` +
-          items.map(it => `${it.base}/${it.mov}/f${String(it.fichero).replace(/[^0-9]/g, '')} ` +
-                          `<span style="color:#9b93b8">(venía del índice ${it.indice_original})</span>`).join('<br>') +
-          '<br>Devolverlos: <code>python3 tools/papelera.py --restaurar</code>'
-        : 'La papelera está vacía.';
-    } catch (e) {
-      st.textContent = 'La papelera está vacía (o no existe todavía).';
-    }
+      const result = await post('/api/trash/restore', { ids });
+      await recargarCatalogo(); await refrescarTodo(); await cargarPapelera();
+      $('gestion').textContent = `${result.restaurados} fichero(s) restaurados a su movimiento.`;
+    } catch (e) { $('gestion').textContent = `No se pudo restaurar: ${e.message}`; }
+  };
+  $('vaciar-papelera').onclick = async () => {
+    if (!confirm('Vaciar la papelera borra definitivamente sus PNG. ¿Continuar?')) return;
+    try {
+      const result = await post('/api/trash/empty', {});
+      await cargarPapelera();
+      $('gestion').textContent = `Papelera vaciada: ${result.eliminados} fichero(s) borrados definitivamente.`;
+    } catch (e) { $('gestion').textContent = `No se pudo vaciar la papelera: ${e.message}`; }
   };
 
-  document.getElementById('vaciar-papelera').onclick = () => {
-    if (!confirm('Vaciar la papelera BORRA los PNG de verdad. ¿Seguir?')) return;
-    document.getElementById('gestion').innerHTML =
-      'Para vaciarla de verdad hay que estar en el repo (el navegador no puede borrar ficheros):<br>' +
-      '<code>PYTHONPATH=tools/pylibs python3 tools/papelera.py --vaciar</code>';
-  };
+  function descargar(blob, nombre) {
+    const url = URL.createObjectURL(blob); const a = document.createElement('a');
+    a.href = url; a.download = nombre; a.click(); URL.revokeObjectURL(url);
+  }
+  function nombreBase() { return `${mov}_${resol}_${seq.length}f_${fps()}fps`; }
+  async function guardarAnimacion() {
+    const btn = $('guardar'), st = $('gstat');
+    if (!seq.length) { st.textContent = 'No hay frames únicos en la secuencia.'; return; }
+    btn.disabled = true; st.textContent = 'Preparando PNG y JSON…';
+    try {
+      const m = meta(), [W, H] = m.lienzo;
+      const images = await Promise.all(seq.map(i => cargar(i)));
+      if (images.some(x => !x)) throw new Error('uno o más sprites no cargaron');
+      if (images.some(x => x.naturalWidth !== W || x.naturalHeight !== H))
+        throw new Error('hay un sprite con un lienzo distinto; no lo escalo para guardar');
+      const c = document.createElement('canvas'); c.width = W * seq.length; c.height = H;
+      const g = c.getContext('2d'); g.imageSmoothingEnabled = false;
+      images.forEach((im, k) => g.drawImage(im, k * W, 0));
+      const base = nombreBase();
+      const spec = animSpec(mov);
+      const manifest = {
+        movimiento: mov, etiqueta: spec.label, resolucion: resol, lienzo: [W, H],
+        ancla: m.ancla, pies_y: m.pies_y ?? null, frames: seq.length, fps: fps(),
+        loop: spec.loop, orden: seq, ficheros: seq.map(i => ruta(m.frames[i])),
+        tira: base + '.png', guardado: new Date().toISOString(),
+      };
+      const png = await new Promise(resolve => c.toBlob(resolve, 'image/png'));
+      const json = new Blob([JSON.stringify(manifest, null, 1)], { type: 'application/json' });
+      descargar(png, base + '.png'); descargar(json, base + '.json');
+      st.innerHTML = `Guardado <b>${base}.png</b> + <b>${base}.json</b> · ${c.width}×${c.height} px · ${seq.length} frames a ${fps()} fps.` +
+        '<br><span style="color:#9b93b8">Se descargan sin filtrar ni cambiar el tamaño. Para un GIF: ' +
+        `<code>python3 tools/make_gif.py &lt;carpeta&gt; ${base}.gif --fps ${fps()} --zoom 4</code></span>`;
+      $('orden').textContent = 'Orden guardado: ' + seq.map(i => i + 1).join(' · ');
+    } catch (e) { st.textContent = `No se pudo guardar: ${e.message}`; }
+    finally { btn.disabled = false; }
+  }
+  $('guardar').onclick = guardarAnimacion;
 
-  document.getElementById('borrar-sel').onclick = async () => {
-    if (!marcados.size) { document.getElementById('gestion').textContent = 'No hay nada marcado.'; return; }
-    const m = meta();
-    const aBorrar = [...marcados].sort((a, b) => a - b).map(i => `${mov}/${String(i).padStart(2, '0')}`);
-    // Se pide confirmación con la lista exacta: es un borrado de ficheros.
-    if (!confirm('Se van a mover a la PAPELERA ' + aBorrar.length + ' sprite(s) de ' + mov + ':\n\n' +
-                 aBorrar.map(i => i.split('/')[1]).join(', ') +
-                 '\n\nEl fichero desaparece del disco. ¿Seguir?')) return;
-
-    // 1) manifiesto para que el script sepa qué quitar
-    bajarTexto(`papelera_${mov}_${resol}.txt`, aBorrar.map(i => `${mov}/f${i}.png`).join('\n') + '\n');
-    // 2) y se oculta en la sesión, para poder seguir trabajando sin recargar
-    seq = seq.filter(i => !marcados.has(i));
-    guardar();
-    marcados.clear();
-    await refrescarTodo();
-    dibujarGestion();
-    document.getElementById('gestion').innerHTML =
-      'Descargado <b>papelera_' + mov + '_' + resol + '.txt</b> con la lista exacta. ' +
-      'Sin recargar la página, esos sprites ya no están en la galería ni en la secuencia.<br>' +
-      'Para moverlos a la papelera (no se borran, se pueden recuperar):<br>' +
-      '<code>PYTHONPATH=tools/pylibs python3 tools/papelera.py --lista ~/Downloads/papelera_' +
-      mov + '_' + resol + '.txt</code>';
-  };
-
-  document.getElementById('subir').onclick = async () => {
-    const inp = document.getElementById('ficheros');
-    const st = document.getElementById('gestion');
-    const fs = [...(inp.files || [])];
-    if (!fs.length) { st.textContent = 'Elige primero uno o varios PNG.'; return; }
-    st.textContent = 'Subiendo ' + fs.length + ' fichero(s)…';
-    const hechos = [];
-    for (const f of fs) {
-      const datos = await new Promise((res, rej) => {
-        const r = new FileReader();
-        r.onload = () => res(r.result);
-        r.onerror = rej;
-        r.readAsDataURL(f);
-      });
-      try {
-        const r = await fetch('/subir', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ nombre: f.name, png: datos }),
-        });
-        const j = await r.json();
-        hechos.push(j.ok ? j.fichero : 'ERROR ' + f.name + ': ' + j.error);
-      } catch (e) {
-        hechos.push('ERROR ' + f.name + ': ' + e.message);
-      }
-    }
-    inp.value = '';
-    st.innerHTML = 'Subido: <b>' + hechos.join('</b>, <b>') + '</b>.<br>' +
-      'Quedan en <code>voltia/nuevo/creador/nuevos/</code>. Para que entren en el juego:<br>' +
-      '<code>PYTHONPATH=tools/pylibs python3 tools/aniadir_sprites.py --mov ' + mov + '</code>';
-  };
-
-  // La maqueta cambia (giro de pantalla, teclado, barra del navegador): se vuelve a medir.
   if (window.ResizeObserver) new ResizeObserver(() => { encajar(); pintar(); }).observe(caja);
-  window.addEventListener('resize', () => { encajar(); pintar(); });
+  window.addEventListener('resize', () => { encajar(); pintar(); dibujarOriginal(); });
 
+  actualizarSelector();
+  $('mov').value = mov;
+  $('fps').value = animSpec(mov).fps; $('fps-v').textContent = animSpec(mov).fps;
+  $('subir-resol').value = resol;
+  $('mov').onchange = cambiarMovimiento;
   seq = inicial();
-  dibujarGaleria();
+  await dibujarOriginal();
   await refrescarTodo();
   requestAnimationFrame(bucle);
 })();
+
 </script>
 </body>
 </html>

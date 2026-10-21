@@ -31,7 +31,8 @@
       176.4,
       73.7
      ],
-     "cortado": false
+     "cortado": false,
+     "id": "legacy-stance-00"
     },
     {
      "i": 1,
@@ -50,11 +51,13 @@
       172.1,
       75.9
      ],
-     "cortado": false
+     "cortado": false,
+     "id": "legacy-stance-01"
     },
     {
      "i": 2,
-     "fichero": "stance/f02.png"
+     "fichero": "stance/f02.png",
+     "id": "legacy-stance-02"
     },
     {
      "i": 3,
@@ -73,7 +76,8 @@
       209.7,
       90.8
      ],
-     "cortado": false
+     "cortado": false,
+     "id": "legacy-stance-03"
     },
     {
      "i": 4,
@@ -92,11 +96,13 @@
       236.0,
       127.7
      ],
-     "cortado": false
+     "cortado": false,
+     "id": "legacy-stance-04"
     },
     {
      "i": 5,
-     "fichero": "stance/f05.png"
+     "fichero": "stance/f05.png",
+     "id": "legacy-stance-05"
     },
     {
      "i": 6,
@@ -115,7 +121,8 @@
       175.4,
       73.9
      ],
-     "cortado": false
+     "cortado": false,
+     "id": "legacy-stance-06"
     },
     {
      "i": 7,
@@ -134,7 +141,8 @@
       172.4,
       76.3
      ],
-     "cortado": false
+     "cortado": false,
+     "id": "legacy-stance-07"
     }
    ]
   },
@@ -167,7 +175,8 @@
       177.8,
       68.3
      ],
-     "cortado": false
+     "cortado": false,
+     "id": "legacy-walk-00"
     },
     {
      "i": 1,
@@ -186,7 +195,8 @@
       147.8,
       73.6
      ],
-     "cortado": false
+     "cortado": false,
+     "id": "legacy-walk-01"
     },
     {
      "i": 2,
@@ -205,7 +215,8 @@
       169.1,
       64.9
      ],
-     "cortado": false
+     "cortado": false,
+     "id": "legacy-walk-02"
     },
     {
      "i": 3,
@@ -224,7 +235,8 @@
       149.3,
       70.2
      ],
-     "cortado": false
+     "cortado": false,
+     "id": "legacy-walk-03"
     },
     {
      "i": 4,
@@ -243,7 +255,8 @@
       157.9,
       72.0
      ],
-     "cortado": false
+     "cortado": false,
+     "id": "legacy-walk-04"
     },
     {
      "i": 5,
@@ -262,7 +275,8 @@
       160.6,
       67.0
      ],
-     "cortado": false
+     "cortado": false,
+     "id": "legacy-walk-05"
     }
    ]
   }

@@ -334,46 +334,104 @@ Pruebas guardadas: `antes_despues_piel.png` (las manchas de brazos y muslo) y
 
 ## Ancla de cuatro vistas (2026-10-21)
 
-Referencia única para generar: **`voltia/nuevo/creador/ancla/ANCLA_voltia_4_vistas.png`**,
-**1408×768** (el mismo formato que la imagen de referencia que pasó el usuario), con las
-cuatro vistas a la misma altura de tinta, la misma línea de pies y su etiqueta debajo:
-`FRENTE · DERECHA · IZQUIERDA · TRASERA`.
+La referencia fija está en **`voltia/nuevo/creador/ancla/ANCLA_voltia_4_vistas.png`**,
+**1408×768** (el mismo formato de la imagen que proporcionó el usuario): cuatro vistas de
+Voltia en una fila —FRENTE, DERECHA, IZQUIERDA, TRASERA—, con la misma altura de tinta y la
+misma línea de pies. Las cuatro poses se generaron en **una sola llamada/hoja**, usando la
+imagen del usuario como referencia. Eso conserva mejor la identidad que generar cada vista
+por separado. El quinto sprite de la imagen del usuario se descartó por estar a otra escala.
 
-Se monta con `PYTHONPATH=tools/pylibs python3 tools/creador_ancla.py` a partir de las cuatro
-imágenes de `creador/ancla/`. La banda blanca de las etiquetas no forma parte del sprite: si
-se usa la hoja como material para trocear, hay que recortar antes de `y=690`.
+La fuente sin etiquetas de la IA es `voltia/nuevo/creador/ancla/sheet_4_vistas_ia.png`
+(1584×672). Para rehacer la hoja final:
 
-**Trampa medida:** al pedir «mirando a la derecha» o «de espaldas», el modelo devolvió
-**de frente** las dos veces. Lo que sí funciona es describir la dirección respecto al **borde
-de la imagen**: «her chin, nose, chest, belt buckle and both boot toes point toward the RIGHT
-edge of the image; the ponytail is on the LEFT side». Con esa formulación salieron bien.
+    python3 tools/creador_ancla.py \
+      voltia/nuevo/creador/ancla/sheet_4_vistas_ia.png
 
-De la hoja que pasó el usuario se descartó el **quinto sprite por la izquierda** (está a otra
-escala). Por eso el ancla se genera de cero: cuatro figuras y ninguna dudosa.
+El script mide los cuatro tramos de tinta, los centra en cuatro bandas, lleva la tinta a
+**670 px**, coloca los pies en **y=680** y guarda las etiquetas en una banda blanca inferior.
+La hoja final mide **1408×768**. La banda de etiquetas no forma parte del sprite.
 
-## Gestor de sprites: borrar y añadir sin salir del visor (2026-10-21)
+**Orientación medida:** pedir «facing right» o «back view» por sí solo devolvió una figura de
+frente. Lo que funcionó fue describir la dirección respecto al borde de la imagen: nariz,
+pecho y puntas de botas hacia el borde DERECHO/IZQUIERDO; para la trasera, mostrar nuca y
+espalda y ocultar ojos y rayo del pecho. En la hoja final, derecha/izquierda son desde el
+punto de vista del espectador. La trasera no lleva ojos ni rayo frontal. Son referencias de
+diseño, no un giro 3D exacto: algunos detalles de guantes, cabello y proporción varían entre
+las vistas; no ocultar esa limitación.
 
-En el creador, sección **«Sprites del movimiento · borrar y añadir»**:
+## Creador de personajes · las 25 animaciones y la biblioteca (2026-10-21)
 
-- **Marcar y borrar.** Se marcan los sprites que no sirven y el visor descarga
-  `borrar_<mov>_<resol>.txt` con la lista exacta. En el repo:
-  `PYTHONPATH=tools/pylibs python3 tools/papelera.py --lista ~/Downloads/papelera_stance.txt`
-  Mueve el PNG nativo **y** su versión oficial a `creador/papelera/`, **renumera** lo que queda
-  (`f00, f01…`) y apunta en cada frame su índice `original`. No toca `sheet_*.png`.
-  Probado de punta a punta: mover los índices 2 y 5 deja 6 frames; `--restaurar` devuelve los
-  8 **byte a byte idénticos** (0 diferencias comprobadas con PIL); `--vaciar` borra de verdad.
-- **Estados.** Aprobar / pendiente / descartar se guardan en `datos.json` (`estado`):
-  `python3 tools/estado_sprites.py --estado aprobado --lista ...` y `--ver stance` resume.
-  Descartar **no borra**: es una marca. Para sacar el fichero, la papelera.
-- **Añadir.** Se eligen PNG en el visor y se suben a `creador/nuevos/` con un `POST /subir`
-  que añade `tools/serve.py` (no escribe nunca en `sprites/` ni en `oficial/`). Después:
-  `python3 tools/aniadir_sprites.py --mov stance`. Valida antes de aceptar: cabecera PNG de
-  verdad, alto mínimo 200 px, y borde **rojo puro o transparente** (si el fondo es blanco, se
-  rechaza, porque el pipeline no sabría separar la figura). Probado: acepta un sprite con
-  fondo transparente, rechaza un PNG blanco y rechaza un icono de 40×40.
+El visor es `preview/nuevo.html`. El selector enumera las **25 animaciones** de
+`voltia/sheet.json`, no solo stance/walk. Al elegir una muestra debajo todos los frames de la
+fila original desde `voltia/sheet_uniform.png`, recortados con la celda medida **350×332** y
+el `row`/`frames` del JSON. `/api/reference/<mov>.png` sirve solo esa fila (no decodifica en
+el navegador la hoja completa de 5250×8300); se conservan como máximo dos filas en caché.
+Cada celda se dibuja en píxeles enteros con suavizado apagado; no modifica la hoja oficial.
 
-Lo que entra por el navegador entra **en bruto**: ni se reduce ni se recolorea. Para el tamaño
-del modelo original, después `encajar.py`.
+Para correrlo, instala la dependencia de imágenes que declara el repo y arranca el servidor:
+
+    python3 -m pip install -r tools/requirements.txt
+    python3 tools/serve.py
+
+El servidor local (`tools/serve.py`) sirve `/api/sprites` y `/api/trash` para que los botones
+actúen sobre los datos del creador, sin descargar listas ni pedir comandos a mano. Las
+operaciones y reglas viven en `tools/creator_store.py`. El modelo original
+`voltia/sheet_uniform.png`, su `sheet.json` y Chun-Li no se escriben.
+
+### Reutilizar un sprite aprobado
+
+1. En **Biblioteca y organización general**, elige «Biblioteca completa».
+2. Marca un sprite en estado **APROBADO**.
+3. En el selector principal elige el movimiento destino y pulsa «Añadir aprobados a…».
+4. Se copia como un frame nuevo aprobado, con identidad propia (la aprobación original no
+   queda enlazada a la copia). Se impide repetir el mismo PNG dentro del mismo movimiento.
+
+La variante oficial se copia si existe y siempre usa lienzo **96×152**. La variante nativa se
+copia solo si su lienzo medido coincide con el destino; si no coincide, se omite con un aviso,
+**no se escala ni se estira**. Si la nueva animación aún está vacía, su lienzo nativo toma la
+medida real de la primera variante aceptada que se copie/suba; no se inventa el ancla de la
+cabeza.
+
+### Añadir un PNG
+
+El visor lo añade directamente al movimiento seleccionado, en la resolución escogida:
+
+- **Nativo:** el PNG debe medir exactamente el lienzo que ya tenga ese movimiento; en una
+  animación vacía se mide el lienzo a partir del propio PNG. No se reduce ni se estira.
+- **Oficial:** exactamente **96×152 px**. No se escala.
+- PNG real, mínimo **40×60 px**, máximo **16 megapíxeles / 32 MiB**. El borde debe tener al
+  menos **60 %** de transparencia o rojo puro `#ff0000`. Si el borde es rojo puro, solo se
+  convierte ese rojo exacto a alfa cero; no hay cuantización ni cambios de otros colores.
+- Todo PNG nuevo entra como **pendiente**; aprobarlo es una decisión explícita en la galería.
+  El control de estado se aplica a cualquier variante que comparta su ID estable.
+
+Una figura nativa nueva no recibe un ancla de cabeza inventada. Para llevarla a 96×152 hay que
+medir y guardar el ancla antes de usar `encajar.py`; mientras tanto, puede importarse una
+variante oficial ya aprobada o subirse un PNG oficial 96×152.
+
+### Aprobar, descartar, papelera y restaurar
+
+La galería puede mostrar el movimiento actual o todos los movimientos. Cada sprite tiene un
+ID estable que comparte entre sus variantes nativa/oficial:
+
+- **Aprobar / pendiente / descartar:** actualiza `estado` en los `datos.json` de variantes.
+  «Descartar» solo marca, no elimina.
+- **A la papelera:** mueve el PNG y su variante emparejada a `creador/papelera/`, conserva
+  metadatos e índice de origen y renumera sin huecos. Si se cambia de opinión, la papelera se
+  abre visualmente y permite seleccionar **restaurar**; vaciarla muestra confirmación y elimina
+  los PNG de verdad.
+- El estado general se resume con `python3 tools/estado_sprites.py --ver`.
+- CLI equivalente para mantenimiento: `python3 tools/papelera.py --ver`, `--restaurar` o
+  `--vaciar`; para una lista histórica `python3 tools/papelera.py --lista archivo.txt`.
+- Los frames nuevos del banco manual están en `creador/nuevos/`; la página no deja basura ahí.
+  `python3 tools/aniadir_sprites.py --mov <id_de_sheet.json>` acepta cualquiera de las
+  25 animaciones y conserva la validación/tamaño nativo.
+
+Prueba funcional: el catálogo del API devuelve **25 movimientos y 14 sprites** (8 stance + 6
+walk); aprobar y copiar un frame de stance a dash crea sus variantes nativa y oficial;
+mandarlas a la papelera y restaurarlas conserva los PNG byte a byte; vaciar elimina las
+variantes; una subida oficial 96×152 queda pendiente. Los botones se ejercitaron con la página
+real en jsdom; el guardado de stance continúa exportando **768×152** sin modificar píxeles.
 
 ## Chun-Li
 

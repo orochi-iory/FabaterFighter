@@ -1,92 +1,83 @@
 #!/usr/bin/env python3
-"""Organiza los sprites por estado: aprobado, pendiente o descartado.
+"""Marca los sprites aprobado/pendiente/descartado usando los mismos IDs del creador web.
 
-El visor del creador descarga una lista con un estado por línea; este script la aplica a
-`oficial/datos.json` y `sprites/datos.json` (campo `estado` de cada frame).
+    python3 tools/estado_sprites.py --estado aprobado --lista ~/Downloads/aprobar_stance.txt
+    python3 tools/estado_sprites.py --ver
 
-    # marcar los marcados en el visor como aprobados
-    PYTHONPATH=tools/pylibs python3 tools/estado_sprites.py --estado aprobado --lista ~/Downloads/aprobar_stance.txt
-    PYTHONPATH=tools/pylibs python3 tools/estado_sprites.py --estado descartado --lista ~/Downloads/descartar_stance.txt
-    PYTHONPATH=tools/pylibs python3 tools/estado_sprites.py --ver stance
-
-Lista: una ruta por línea relativa a `creador/sprites/`, p. ej. `stance/f03.png`.
-
-`descartado` no borra ni mueve nada: es una marca. Para sacarlo del proyecto se usa la
-papelera (`tools/papelera.py`), que sí mueve el fichero.
+Lista: una ruta por línea relativa al movimiento, por ejemplo `stance/f03.png`.
 """
 import argparse
 import json
 import os
 import sys
 
-BASE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-CREADOR = os.path.join(BASE, 'voltia/nuevo/creador')
-BASES = {'sprites': os.path.join(CREADOR, 'sprites'),
-         'oficial': os.path.join(CREADOR, 'oficial')}
-VALIDOS = ('aprobado', 'pendiente', 'descartado')
+import creator_store as store
 
 
-def leer_lista(ruta):
-    movs = {}
-    with open(os.path.expanduser(ruta), encoding='utf-8') as fh:
-        for linea in fh:
-            linea = linea.strip()
-            if not linea or linea.startswith('#'):
+def items_desde_lista(ruta):
+    datasets = store.ensure_ids(write=True)
+    pares, seen = [], set()
+    with open(os.path.expanduser(ruta), encoding='utf-8') as f:
+        for raw in f:
+            line = raw.strip()
+            if not line or line.startswith('#'):
                 continue
-            mov, fichero = linea.split('/')
-            movs.setdefault(mov, set()).add(int(fichero[1:-4]))
-    return movs
+            try:
+                mov, filename = line.split('/', 1)
+                idx = int(filename[1:-4])
+            except (ValueError, IndexError):
+                raise ValueError('línea no válida: %r (esperado mov/fNN.png)' % line)
+            store.movement_by_id(mov)
+            found = None
+            for base in ('nativo', 'oficial'):
+                anim = datasets[base].get('anims', {}).get(mov, {})
+                for frame in anim.get('frames', []):
+                    if int(frame['i']) == idx:
+                        found = {'mov': mov, 'id': store.image_id(mov, frame)}
+                        break
+                if found:
+                    break
+            if not found:
+                raise ValueError('no existe %s' % line)
+            key = (found['mov'], found['id'])
+            if key not in seen:
+                seen.add(key)
+                pares.append(found)
+    return pares
 
 
-def aplicar(estado, movs):
-    if estado not in VALIDOS:
-        sys.exit('estado no válido: %s (usa %s)' % (estado, ', '.join(VALIDOS)))
-    for mov, indices in movs.items():
-        for base_nombre, base in BASES.items():
-            p = os.path.join(base, 'datos.json')
-            datos = json.load(open(p))
-            v = datos['anims'][mov]
-            n = 0
-            for f in v['frames']:
-                if f['i'] in indices:
-                    f['estado'] = estado
-                    n += 1
-            with open(p, 'w') as fh:
-                json.dump(datos, fh, indent=1)
-            print('  %-22s %d frame(s) -> %s' % (base_nombre + '/' + mov, n, estado))
-    print('\nHecho. Resumen:')
-    ver(movs.keys())
-
-
-def ver(movs=None):
-    for mov in (movs or ['stance', 'walk']):
-        p = os.path.join(BASES['sprites'], 'datos.json')
-        v = json.load(open(p))['anims'].get(mov)
-        if not v:
-            continue
-        cuenta = {}
-        for f in v['frames']:
-            e = f.get('estado', 'pendiente')
-            cuenta[e] = cuenta.get(e, 0) + 1
-        detalle = ', '.join('f%02d:%s' % (f['i'], f.get('estado', 'pendiente')[:3])
-                            for f in v['frames'])
-        print('  %-7s %s' % (mov, cuenta))
-        print('          %s' % detalle)
+def ver():
+    c = store.catalog()
+    totals = {s: 0 for s in store.VALID_STATES}
+    by_mov = {}
+    for item in c['library']:
+        state = item['estado']
+        totals[state] = totals.get(state, 0) + 1
+        by_mov.setdefault(item['mov'], {}).setdefault(state, 0)
+        by_mov[item['mov']][state] += 1
+    print('Biblioteca: %d sprite(s) · %s' %
+          (len(c['library']), ', '.join('%s %d' % (k, v) for k, v in totals.items())))
+    for mov in sorted(by_mov):
+        print('  %-16s %s' % (mov, by_mov[mov]))
 
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument('--estado', choices=VALIDOS, default='')
+    ap.add_argument('--estado', choices=sorted(store.VALID_STATES), default='')
     ap.add_argument('--lista', default='')
-    ap.add_argument('--ver', nargs='?', const='', default=None)
+    ap.add_argument('--ver', action='store_true')
     a = ap.parse_args()
-    if a.estado and a.lista:
-        aplicar(a.estado, leer_lista(a.lista))
-    elif a.ver is not None:
-        ver([a.ver] if a.ver else None)
-    else:
-        ver(None)
+    try:
+        if a.estado and a.lista:
+            result = store.set_state(items_desde_lista(a.lista), a.estado)
+            print('%d variante(s) -> %s' % (result['archivos_actualizados'], a.estado))
+        else:
+            ver()
+    except Exception as e:
+        print('ERROR:', e, file=sys.stderr)
+        return 1
+    return 0
 
 
 if __name__ == '__main__':
-    main()
+    raise SystemExit(main())

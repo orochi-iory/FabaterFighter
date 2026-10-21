@@ -7,3 +7,7 @@ image-search/
 
 # librería local de Pillow, se instala aparte
 /tools/pylibs/
+
+# bandejas mutables del creador (se gestionan desde la página, no se versionan)
+/voltia/nuevo/creador/papelera/
+/voltia/nuevo/creador/nuevos/

@@ -1,43 +1,36 @@
 #!/usr/bin/env python3
-"""Servidor estatico del visor, para desarrollo local.
+"""Servidor de desarrollo para los visores y el creador de personajes.
 
-Por que existe: el visor se sirve muchas veces al dia y el navegador cachea el
-HTML y los PNG. Eso ya nos ha costado tres veces "los cambios no llegan". Este
-servidor manda **no-store** en todo, asi que lo que se ve es siempre el fichero
-del disco.
-
-    python3 tools/serve.py            # 0.0.0.0:8080, raiz = el repositorio
+    python3 tools/serve.py            # 0.0.0.0:8080, raíz = el repositorio
     python3 tools/serve.py --puerto 9000
 
-Se sirve desde la raiz del repositorio porque `preview/index.html` referencia
-`../voltia/...` y las imagenes de la hoja.
+El creador expone una API local pequeña para aprobar, copiar, subir y mandar sprites a la
+papelera. Las operaciones usan tools/creator_store.py y nunca modifican el modelo original.
 """
 import argparse
+import base64
 import functools
 import http.server
+import json
 import os
-import posixpath
 import socketserver
 import sys
+from urllib.parse import urlsplit
 
 RAIZ = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+TOOLS = os.path.dirname(os.path.abspath(__file__))
+if TOOLS not in sys.path:
+    sys.path.insert(0, TOOLS)
+
+import creator_store  # noqa: E402
 
 TIPOS = {
-    '.html': 'text/html; charset=utf-8',
-    '.js': 'text/javascript; charset=utf-8',
-    '.css': 'text/css; charset=utf-8',
-    '.json': 'application/json; charset=utf-8',
-    '.png': 'image/png',
-    '.gif': 'image/gif',
-    '.jpg': 'image/jpeg',
-    '.jpeg': 'image/jpeg',
-    '.webp': 'image/webp',
-    '.svg': 'image/svg+xml',
-    '.md': 'text/markdown; charset=utf-8',
-    '.wav': 'audio/wav',
-    '.mp3': 'audio/mpeg',
-    '.ogg': 'audio/ogg',
-    '.woff2': 'font/woff2',
+    '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8',
+    '.css': 'text/css; charset=utf-8', '.json': 'application/json; charset=utf-8',
+    '.png': 'image/png', '.gif': 'image/gif', '.jpg': 'image/jpeg',
+    '.jpeg': 'image/jpeg', '.webp': 'image/webp', '.svg': 'image/svg+xml',
+    '.md': 'text/markdown; charset=utf-8', '.wav': 'audio/wav',
+    '.mp3': 'audio/mpeg', '.ogg': 'audio/ogg', '.woff2': 'font/woff2',
 }
 
 
@@ -45,55 +38,124 @@ class Handler(http.server.SimpleHTTPRequestHandler):
     extensions_map = {**http.server.SimpleHTTPRequestHandler.extensions_map, **TIPOS}
 
     def end_headers(self):
-        # sin cache, nunca: ni HTML ni imagenes ni JS
         self.send_header('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0')
         self.send_header('Pragma', 'no-cache')
         self.send_header('Expires', '0')
         super().end_headers()
 
-    def do_POST(self):
-        """Solo para el gestor de sprites del creador: recibe N PNG y los guarda.
+    def _json(self, value, status=200):
+        body = json.dumps(value, ensure_ascii=False).encode('utf-8')
+        self.send_response(status)
+        self.send_header('Content-Type', 'application/json; charset=utf-8')
+        self.send_header('Content-Length', str(len(body)))
+        self.end_headers()
+        self.wfile.write(body)
 
-        Escribe en `voltia/nuevo/creador/nuevos/`, nunca en las carpetas buenas: lo que se
-        sube desde el navegador es material en bruto, y solo pasa a `sprites/` o `oficial/`
-        cuando se trocea y se encaja con los scripts.
-        """
-        ruta = self.path.split('?')[0]
-        if ruta != '/subir':
-            return self.send_error(404)
+    def _binary(self, body, content_type):
+        self.send_response(200)
+        self.send_header('Content-Type', content_type)
+        self.send_header('Content-Length', str(len(body)))
+        self.end_headers()
+        self.wfile.write(body)
+
+    def _body(self, max_bytes=creator_store.MAX_UPLOAD_BYTES * 2):
         try:
             n = int(self.headers.get('Content-Length') or 0)
         except ValueError:
-            return self.send_error(400)
-        destino = os.path.join(RAIZ, 'voltia/nuevo/creador/nuevos')
-        os.makedirs(destino, exist_ok=True)
+            raise ValueError('Content-Length no válido')
+        if n <= 0 or n > max_bytes:
+            raise ValueError('tamaño de petición no válido')
+        raw = self.rfile.read(n)
         try:
-            datos = self.rfile.read(n)
-            import json as _json
-            peticion = _json.loads(datos.decode('utf-8'))
-            cuerpo = __import__('base64').b64decode(peticion['png'].split(',', 1)[-1])
-            nombre = os.path.basename(peticion.get('nombre') or 'nuevo.png')
-            if not nombre.lower().endswith('.png'):
-                nombre += '.png'
-            with open(os.path.join(destino, nombre), 'wb') as fh:
-                fh.write(cuerpo)
-            respuesta = {'ok': True, 'fichero': 'nuevos/' + nombre, 'bytes': len(cuerpo)}
-        except Exception as e:                                  # noqa: BLE001
-            respuesta = {'ok': False, 'error': str(e)}
-        cuerpo = __import__('json').dumps(respuesta).encode('utf-8')
-        self.send_response(200)
-        self.send_header('Content-Type', 'application/json; charset=utf-8')
-        self.send_header('Content-Length', str(len(cuerpo)))
-        self.end_headers()
-        self.wfile.write(cuerpo)
+            return json.loads(raw.decode('utf-8'))
+        except (UnicodeDecodeError, json.JSONDecodeError) as e:
+            raise ValueError('el cuerpo debe ser JSON válido') from e
+
+    @staticmethod
+    def _decode_data_url(value):
+        if not isinstance(value, str) or ',' not in value:
+            raise ValueError('falta el PNG en formato data URL')
+        header, encoded = value.split(',', 1)
+        if 'base64' not in header.lower():
+            raise ValueError('el PNG debe venir codificado en base64')
+        try:
+            blob = base64.b64decode(encoded, validate=True)
+        except Exception as e:
+            raise ValueError('base64 inválido') from e
+        return blob
+
+    def do_GET(self):
+        route = urlsplit(self.path).path
+        try:
+            if route.startswith('/api/reference/') and route.endswith('.png'):
+                mov = route.rsplit('/', 1)[-1][:-4]
+                return self._binary(creator_store.reference_png(mov), 'image/png')
+            if route == '/api/sprites':
+                return self._json(creator_store.catalog())
+            if route == '/api/trash':
+                return self._json({'items': creator_store.trash_catalog()})
+        except Exception as e:  # return a readable error to the creator UI
+            return self._json({'ok': False, 'error': str(e)}, 500)
+        return super().do_GET()
+
+    def do_POST(self):
+        route = urlsplit(self.path).path
+        try:
+            if route == '/api/sprites/state':
+                p = self._body(1024 * 1024)
+                result = creator_store.set_state(p.get('items'), p.get('estado'))
+                return self._json(result)
+            if route == '/api/sprites/trash':
+                p = self._body(1024 * 1024)
+                return self._json(creator_store.send_to_trash(p.get('items')))
+            if route == '/api/sprites/copy-approved':
+                p = self._body(1024 * 1024)
+                return self._json(creator_store.copy_approved(p.get('items'), p.get('destino')))
+            if route == '/api/trash/restore':
+                p = self._body(1024 * 1024)
+                return self._json(creator_store.restore_trash(p.get('ids')))
+            if route == '/api/trash/empty':
+                self._body(1024)
+                return self._json(creator_store.empty_trash())
+            if route == '/api/sprites/add':
+                p = self._body()
+                blob = self._decode_data_url(p.get('png'))
+                result = creator_store.add_upload(p.get('mov'), p.get('resol'),
+                                                  p.get('nombre'), blob)
+                return self._json(result)
+            # Compatibilidad con la bandeja original: solo almacena el PNG en bruto.
+            if route == '/subir':
+                p = self._body()
+                blob = self._decode_data_url(p.get('png'))
+                if len(blob) > creator_store.MAX_UPLOAD_BYTES:
+                    raise ValueError('el PNG supera el límite de 32 MiB')
+                creator_store._png_size(blob)
+                nombre = os.path.basename(str(p.get('nombre') or 'nuevo.png'))
+                if not nombre.lower().endswith('.png'):
+                    nombre += '.png'
+                destino = os.path.join(RAIZ, 'voltia/nuevo/creador/nuevos')
+                os.makedirs(destino, exist_ok=True)
+                path = os.path.join(destino, nombre)
+                if os.path.exists(path):
+                    stem, ext = os.path.splitext(nombre)
+                    n = 2
+                    while os.path.exists(os.path.join(destino, '%s_%02d%s' % (stem, n, ext))):
+                        n += 1
+                    nombre = '%s_%02d%s' % (stem, n, ext)
+                with open(os.path.join(destino, nombre), 'wb') as f:
+                    f.write(blob)
+                return self._json({'ok': True, 'fichero': 'nuevos/' + nombre,
+                                   'bytes': len(blob)})
+        except (ValueError, KeyError, TypeError) as e:
+            return self._json({'ok': False, 'error': str(e)}, 400)
+        except Exception as e:  # unexpected server error; keep response in JSON for the UI
+            return self._json({'ok': False, 'error': str(e)}, 500)
+        return self.send_error(404)
 
     def log_message(self, fmt, *args):
         sys.stderr.write('%s  %s\n' % (self.address_string(), fmt % args))
 
     def copyfile(self, source, outputfile):
-        # El navegador corta la descarga de la hoja (1,4 MB) cuando ya la tiene: eso es
-        # normal y no es un fallo. Sin esto, cada corte imprime un traceback de
-        # ConnectionResetError en el log y tapa los avisos que si importan.
         try:
             super().copyfile(source, outputfile)
         except (ConnectionResetError, BrokenPipeError):
@@ -105,12 +167,11 @@ def main():
     ap.add_argument('--puerto', type=int, default=int(os.environ.get('PORT', 8080)))
     ap.add_argument('--host', default='0.0.0.0')
     args = ap.parse_args()
-
     handler = functools.partial(Handler, directory=RAIZ)
     socketserver.ThreadingTCPServer.allow_reuse_address = True
     with socketserver.ThreadingTCPServer((args.host, args.puerto), handler) as httpd:
         httpd.daemon_threads = True
-        print('sirviendo %s en http://%s:%d/  (raiz: %s)'
+        print('sirviendo %s en http://%s:%d/  (raíz: %s)'
               % (RAIZ, args.host, args.puerto, RAIZ), flush=True)
         try:
             httpd.serve_forever()

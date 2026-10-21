@@ -1,166 +1,51 @@
 #!/usr/bin/env python3
-"""Papelera del creador: mover sprites, devolverlos y vaciarla.
+"""CLI para la misma papelera recuperable que usa el creador web.
 
-Nada se borra de golpe. Los PNG se mueven a `creador/papelera/<mov>/<base>/` y
-`papelera.json` guarda el índice que tenía cada uno, para poder recolocarlo.
+    python3 tools/papelera.py --lista ~/Downloads/papelera_stance.txt
+    python3 tools/papelera.py --ver
+    python3 tools/papelera.py --restaurar
+    python3 tools/papelera.py --vaciar
 
-    # mandar a la papelera los marcados en el visor
-    PYTHONPATH=tools/pylibs python3 tools/papelera.py --lista ~/Downloads/papelera_stance.txt
-    PYTHONPATH=tools/pylibs python3 tools/papelera.py --ver
-    PYTHONPATH=tools/pylibs python3 tools/papelera.py --restaurar
-    PYTHONPATH=tools/pylibs python3 tools/papelera.py --vaciar
-
-La lista es una ruta por línea relativa a `creador/sprites/`: `stance/f04.png`.
-Se mueve el nativo Y su versión oficial del mismo índice, y se renumera lo que queda.
-Para devolver cada uno a su sitio, `datos.json` guarda en cada frame el campo `original`
-(índice que tenía antes de cualquier borrado).
+Formato de lista: `movimiento/fNN.png`, por ejemplo `jump/f02.png`.
 """
 import argparse
-import json
 import os
-import shutil
 import sys
 
-BASE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-CREADOR = os.path.join(BASE, 'voltia/nuevo/creador')
-BASES = {'sprites': os.path.join(CREADOR, 'sprites'),
-         'oficial': os.path.join(CREADOR, 'oficial')}
-PAPELERA = os.path.join(CREADOR, 'papelera')
-INDICE = os.path.join(PAPELERA, 'papelera.json')
+import creator_store as store
 
 
-def cargar_indice():
-    return json.load(open(INDICE)) if os.path.exists(INDICE) else []
-
-
-def guardar_indice(items):
-    os.makedirs(PAPELERA, exist_ok=True)
-    with open(INDICE, 'w') as fh:
-        json.dump(items, fh, indent=1)
-
-
-def leer_lista(ruta):
-    movs = {}
-    with open(os.path.expanduser(ruta), encoding='utf-8') as fh:
-        for linea in fh:
-            linea = linea.strip()
-            if not linea or linea.startswith('#'):
+def items_desde_lista(ruta):
+    datasets = store.ensure_ids(write=True)
+    pares = []
+    seen = set()
+    with open(os.path.expanduser(ruta), encoding='utf-8') as f:
+        for raw in f:
+            line = raw.strip()
+            if not line or line.startswith('#'):
                 continue
-            mov, fichero = linea.split('/')
-            movs.setdefault(mov, set()).add(int(fichero[1:-4]))
-    return movs
-
-
-def leer_bytes(carpeta):
-    return {f: open(os.path.join(carpeta, f), 'rb').read()
-            for f in os.listdir(carpeta) if f.endswith('.png')}
-
-
-def escribir_frames(carpeta, frames, contenidos):
-    """Deja en `carpeta` exactamente f00..fN-1 en el orden de `frames`."""
-    for f in os.listdir(carpeta):
-        if f.endswith('.png'):
-            os.remove(os.path.join(carpeta, f))
-    for k, f in enumerate(frames):
-        f['i'] = k
-        f['fichero'] = '%s/f%02d.png' % (os.path.basename(carpeta), k)
-        with open(os.path.join(carpeta, 'f%02d.png' % k), 'wb') as fh:
-            fh.write(contenidos[f.pop('_bytes')])
-
-
-def mover(movs):
-    indice = cargar_indice()
-    for mov, fuera in movs.items():
-        for base_nombre, base in BASES.items():
-            datos_p = os.path.join(base, 'datos.json')
-            datos = json.load(open(datos_p))
-            v = datos['anims'][mov]
-            carpeta = os.path.join(base, mov)
-            contenidos = leer_bytes(carpeta)
-            frames = v['frames']
-            for f in frames:
-                f.setdefault('original', f['i'])
-            quedan, van = [], []
-            for f in frames:
-                (van if f['i'] in fuera else quedan).append(f)
-            if not quedan:
-                sys.exit('te quedarías sin ningún frame de %s en %s' % (mov, base_nombre))
-            destino = os.path.join(PAPELERA, mov, base_nombre)
-            os.makedirs(destino, exist_ok=True)
-            for f in van:
-                nombre = 'f%02d.png' % f['i']
-                shutil.copy2(os.path.join(carpeta, nombre), os.path.join(destino, nombre))
-                indice.append({'mov': mov, 'base': base_nombre,
-                               'indice_original': f['original'], 'fichero': nombre})
-            for f in quedan:
-                f['_bytes'] = 'f%02d.png' % f['i']
-            escribir_frames(carpeta, quedan, contenidos)
-            v['frames'] = quedan
-            with open(datos_p, 'w') as fh:
-                json.dump(datos, fh, indent=1)
-            print('  %-22s quedan %2d · a la papelera %s'
-                  % (base_nombre + '/' + mov, len(quedan), sorted(fuera)))
-    guardar_indice(indice)
-    print('\n%d fichero(s) en la papelera (no se ha borrado nada)' % len(indice))
-
-
-def restaurar():
-    indice = cargar_indice()
-    if not indice:
-        print('la papelera está vacía')
-        return
-    for mov in sorted({it['mov'] for it in indice}):
-        for base_nombre, base in BASES.items():
-            items = [it for it in indice if it['mov'] == mov and it['base'] == base_nombre]
-            if not items:
-                continue
-            datos_p = os.path.join(base, 'datos.json')
-            datos = json.load(open(datos_p))
-            v = datos['anims'][mov]
-            carpeta = os.path.join(base, mov)
-            contenidos = leer_bytes(carpeta)
-            frames = v['frames']
-            for f in frames:
-                f.setdefault('original', f['i'])
-                f['_bytes'] = 'f%02d.png' % f['i']
-            for it in items:
-                frames.append({'i': -1, 'original': it['indice_original'],
-                               '_bytes': '__papelera__' + it['fichero']})
-                contenidos['__papelera__' + it['fichero']] = open(
-                    os.path.join(PAPELERA, mov, base_nombre, it['fichero']), 'rb').read()
-            frames.sort(key=lambda f: f['original'])
-            escribir_frames(carpeta, frames, contenidos)
-            v['frames'] = frames
-            with open(datos_p, 'w') as fh:
-                json.dump(datos, fh, indent=1)
-            print('  %-22s restaurado(s) %d · quedan %d'
-                  % (base_nombre + '/' + mov, len(items), len(frames)))
-    guardar_indice([])
-    print('papelera vacía otra vez (los ficheros han vuelto a su sitio)')
-
-
-def vaciar():
-    indice = cargar_indice()
-    n = 0
-    for raiz, _, ficheros in os.walk(PAPELERA):
-        for f in ficheros:
-            if f.endswith('.png'):
-                os.remove(os.path.join(raiz, f))
-                n += 1
-    guardar_indice([])
-    print('%d fichero(s) borrados de verdad' % n if n else 'la papelera ya estaba vacía')
-
-
-def ver():
-    indice = cargar_indice()
-    if not indice:
-        print('la papelera está vacía')
-        return
-    print('papelera: %d fichero(s)' % len(indice))
-    for it in indice:
-        print('  %-8s %-8s f%02d (venía del índice %d)'
-              % (it['base'], it['mov'], int(it['fichero'][1:-4]), it['indice_original']))
-    print('\nrestaurar: --restaurar   ·   vaciar: --vaciar')
+            try:
+                mov, filename = line.split('/', 1)
+                idx = int(filename[1:-4])
+            except (ValueError, IndexError):
+                raise ValueError('línea no válida: %r (esperado mov/fNN.png)' % line)
+            store.movement_by_id(mov)
+            found = None
+            for base in ('nativo', 'oficial'):
+                anim = datasets[base].get('anims', {}).get(mov, {})
+                for frame in anim.get('frames', []):
+                    if int(frame['i']) == idx:
+                        found = {'mov': mov, 'id': store.image_id(mov, frame)}
+                        break
+                if found:
+                    break
+            if not found:
+                raise ValueError('no existe %s' % line)
+            key = (found['mov'], found['id'])
+            if key not in seen:
+                seen.add(key)
+                pares.append(found)
+    return pares
 
 
 def main():
@@ -170,15 +55,29 @@ def main():
     ap.add_argument('--vaciar', action='store_true')
     ap.add_argument('--ver', action='store_true')
     a = ap.parse_args()
-    if a.vaciar:
-        vaciar()
-    elif a.restaurar:
-        restaurar()
-    elif a.lista:
-        mover(leer_lista(a.lista))
-    else:
-        ver()
+    try:
+        if a.vaciar:
+            result = store.empty_trash()
+            print('%d fichero(s) borrados definitivamente' % result['eliminados'])
+        elif a.restaurar:
+            result = store.restore_trash()
+            print('%d fichero(s) restaurados' % result['restaurados'])
+        elif a.lista:
+            items = items_desde_lista(a.lista)
+            result = store.send_to_trash(items)
+            print('%d variante(s) movidas a la papelera' % len(result['movidos']))
+        else:
+            items = store.trash_catalog()
+            print('papelera: %d sprite(s)' % len(items))
+            for x in items:
+                print('  %-14s %-12s %s · %s' %
+                      (x['mov'], x['id'][:8], ', '.join(x['indices']), x['estado']))
+            print('Restaurar: --restaurar · vaciar definitivamente: --vaciar')
+    except Exception as e:
+        print('ERROR:', e, file=sys.stderr)
+        return 1
+    return 0
 
 
 if __name__ == '__main__':
-    main()
+    raise SystemExit(main())

@@ -1,14 +1,13 @@
-"""Lleva los sprites nuevos al tamano del modelo original, para verlos en el visor.
+"""Lleva sprites nativos al tamaño del modelo original (96×152), sin tocar el modelo.
 
-Los sprites nativos miden 285-308 px de ancho: son la resolucion real a la que los dibuja
-la IA. Para compararlos con el modelo oficial hay que llevarlos a su rejilla de arte
-(96 x 152, la misma que usa el juego) anclando la cabeza.
+La escala se calcula una vez por animación a partir del ancla de cabeza ya medida y de los
+pies. No se inventa un ancla: si un movimiento nuevo no tiene `ancla`, se conserva sin encajar
+y el script avisa.
 
-Aqui SI se reduce, y con filtro suave a proposito: el dibujo de la IA es una ilustracion
-con antialias, no pixel art. Al reducirlo con NEAREST se rompen las lineas y sale sucio;
-con un filtro promediado el antialias se convierte en un borde limpio y el ruido de color
-desaparece. Es el mismo motivo por el que una foto se ve mejor reducida con promedio.
+Al regenerar, preserva IDs/estados de aprobación y los frames oficiales que solo existan en
+`oficial/` (por ejemplo, un PNG 96×152 añadido desde el creador). No borra variantes aceptadas.
 """
+import copy
 import json
 import os
 
@@ -18,75 +17,134 @@ BASE = os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.a
 ORIGEN = os.path.join(BASE, 'voltia/nuevo/creador/sprites')
 SALIDA = os.path.join(BASE, 'voltia/nuevo/creador/oficial')
 
-# Rejilla del modelo oficial: 96 x 152 px de arte, pies en 146, cabeza en 26.
 LIENZO = (96, 152)
 CABEZA_Y = 26
 PIES_Y = 146
 CABEZA_X = 48
+MARGEN_X = 2
+CAMPOS_ESTABLES = ('id', 'estado', 'subido', 'copiado_de', 'original', 'restaurado')
 
 
-MARGEN_X = 2      # px de aire a cada lado
+def fid(anim, frame):
+    return frame.get('id') or 'legacy-%s-%02d' % (anim, frame['i'])
+
+
+def cargar_json(path, default):
+    try:
+        with open(path, encoding='utf-8') as f:
+            return json.load(f)
+    except FileNotFoundError:
+        return default
 
 
 def main():
-    datos = json.load(open(os.path.join(ORIGEN, 'datos.json')))
+    datos = cargar_json(os.path.join(ORIGEN, 'datos.json'), {'anims': {}})
+    viejo = cargar_json(os.path.join(SALIDA, 'datos.json'), {'anims': {}})
+    # Captura los PNG oficiales antes de escribir archivos con nombres f00..; podrían colisionar.
+    bytes_viejos = {}
+    for anim, v in viejo.get('anims', {}).items():
+        for f in v.get('frames', []):
+            p = os.path.join(SALIDA, f.get('fichero', '%s/f%02d.png' % (anim, f['i'])))
+            if os.path.isfile(p):
+                bytes_viejos[(anim, fid(anim, f))] = (copy.deepcopy(f), open(p, 'rb').read())
+
     salida = {}
-    for anim, v in datos['anims'].items():
-        os.makedirs(os.path.join(SALIDA, anim), exist_ok=True)
-        ancla = v['ancla']
-        frames = []
-        # Escala UNICA por animacion, la menor de:
-        #   - la del alto cabeza-pies (misma altura que el modelo oficial),
-        #   - la que hace que la figura ENTERA quepa a lo ancho (coleta incluida).
-        # Una sola escala para todos los frames: si cada frame se escalara por su cuenta,
-        # la figura cambiaria de tamano y la animacion botaria.
-        #
-        # Antes se anclaba la cabeza en x=48 y, con el cuerpo agachado y la coleta abierta
-        # (405 px de ancho), 15 px de coleta se salian del lienzo en los 8 frames. Se
-        # prefiere bajar la escala un poco (0,227 en vez de 0,244) y que no se corte nada:
-        # la coleta es parte del diseno aprobado.
+    for anim, v in datos.get('anims', {}).items():
+        frames_nativos = v.get('frames', [])
+        if not frames_nativos:
+            continue
+        ancla = v.get('ancla')
+        if not ancla or len(ancla) < 2:
+            print('%-16s sin ancla de cabeza medida: no se escala' % anim)
+            continue
+
         alto_cab = PIES_Y - CABEZA_Y
         anchos, alturas = [], []
-        for f in v['frames']:
+        for f in frames_nativos:
             with Image.open(os.path.join(ORIGEN, f['fichero'])) as src:
                 sp = src.convert('RGBA')
             bb = sp.getbbox()
-            anchos.append(sp.size[0])      # el lienzo entero se escala, no solo la tinta
-            alturas.append(bb[3] - ancla[1])
+            if not bb:
+                alturas.append(1)
+            else:
+                alturas.append(max(1, bb[3] - ancla[1]))
+            anchos.append(sp.size[0])
         e_alto = alto_cab / max(1, max(alturas))
         e_ancho = (LIENZO[0] - 2 * MARGEN_X) / max(1, max(anchos))
         escala = min(e_alto, e_ancho)
-        for f in v['frames']:
+        destino = os.path.join(SALIDA, anim)
+        os.makedirs(destino, exist_ok=True)
+        oficiales = []
+        ids_nativos = set()
+        for f in frames_nativos:
+            source_id = fid(anim, f)
+            ids_nativos.add(source_id)
             with Image.open(os.path.join(ORIGEN, f['fichero'])) as src:
                 sp = src.convert('RGBA')
             w = max(1, round(sp.size[0] * escala))
             h = max(1, round(sp.size[1] * escala))
-            chico = sp.resize((w, h), Image.LANCZOS)   # promedio: disuelve el antialias
-            dx = MARGEN_X                             # izquierda fija: nada se sale
-            # Se ancla por los PIES (PIES_Y=146), no por la cabeza: es lo que hace que el
-            # personaje quede de pie en el suelo del juego y lo que evita que la coleta se
-            # salga por arriba cuando la pose es mas alta que el ancla escalada.
+            chico = sp.resize((w, h), Image.LANCZOS)
+            dx = MARGEN_X
             bb = sp.getbbox()
-            dy = int(round(PIES_Y - bb[3] * escala))
+            dy = int(round(PIES_Y - (bb[3] if bb else 0) * escala))
             lienzo = Image.new('RGBA', LIENZO, (0, 0, 0, 0))
             lienzo.alpha_composite(chico, (dx, dy))
-            p = os.path.join(SALIDA, anim, 'f%02d.png' % f['i'])
+            i = int(f['i'])
+            p = os.path.join(destino, 'f%02d.png' % i)
             lienzo.save(p)
             box = lienzo.getbbox()
-            frames.append({'i': f['i'], 'fichero': '%s/f%02d.png' % (anim, f['i']),
-                           'escala': round(escala, 3), 'sprite': [w, h],
-                           'cortado': bool(box and (box[0] <= 0 or box[1] <= 0
-                                                    or box[2] >= LIENZO[0] or box[3] >= LIENZO[1])),
-                           'cabeza_x': round(dx + ancla[0] * escala, 1),
-                           'bbox': list(box) if box else None})
+            entry = {'i': i, 'fichero': '%s/f%02d.png' % (anim, i),
+                     'escala': round(escala, 3), 'sprite': [w, h],
+                     'cortado': bool(box and (box[0] <= 0 or box[1] <= 0
+                                              or box[2] >= LIENZO[0] or box[3] >= LIENZO[1])),
+                     'cabeza_x': round(dx + ancla[0] * escala, 1),
+                     'bbox': list(box) if box else None,
+                     'id': source_id}
+            for key in CAMPOS_ESTABLES:
+                if key in f:
+                    entry[key] = copy.deepcopy(f[key])
+            oficiales.append(entry)
+
+        # Mantener variantes oficiales-only. Si su ID ya tiene variante nativa, la imagen
+        # oficial se regenera desde esa fuente; de lo contrario se conserva byte a byte.
+        for old_frame in viejo.get('anims', {}).get(anim, {}).get('frames', []):
+            # Solo conservar variantes oficiales con origen explícito de usuario/copia.
+            # Los antiguos frames derivados de una hoja IA se regeneran junto al nativo.
+            if not (old_frame.get('subido') or old_frame.get('copiado_de')):
+                continue
+            old_id = fid(anim, old_frame)
+            if old_id in ids_nativos or (anim, old_id) not in bytes_viejos:
+                continue
+            record, blob = bytes_viejos[(anim, old_id)]
+            i = len(oficiales)
+            name = 'f%02d.png' % i
+            with open(os.path.join(destino, name), 'wb') as out:
+                out.write(blob)
+            record['id'] = old_id
+            record['i'] = i
+            record['fichero'] = '%s/%s' % (anim, name)
+            oficiales.append(record)
+
         salida[anim] = {'lienzo': list(LIENZO), 'ancla': [CABEZA_X, CABEZA_Y],
-                        'pies_y': PIES_Y, 'escala': round(escala, 3), 'frames': frames}
-        print('%-7s %d frames -> %dx%d | escala %.3f (alto %.3f, ancho %.3f) | cortados %d'
-              % (anim, len(frames), LIENZO[0], LIENZO[1], escala, e_alto, e_ancho,
-                 sum(1 for f in frames if f['cortado'])))
-    with open(os.path.join(SALIDA, 'datos.json'), 'w') as fh:
-        json.dump({'lienzo': list(LIENZO), 'filtro': 'LANCZOS (reduccion de ilustracion)',
-                   'anims': salida}, fh, indent=1)
+                        'pies_y': PIES_Y, 'escala': round(escala, 3), 'frames': oficiales}
+        print('%-16s %d frames -> %dx%d | escala %.3f (alto %.3f, ancho %.3f) | cortados %d'
+              % (anim, len(oficiales), LIENZO[0], LIENZO[1], escala, e_alto, e_ancho,
+                 sum(1 for f in oficiales if f.get('cortado'))))
+
+    # Animaciones que por ahora solo tienen una variante oficial (no se pierden al encajar).
+    for anim, old_anim in viejo.get('anims', {}).items():
+        if anim in salida:
+            continue
+        record = copy.deepcopy(old_anim)
+        for f in record.get('frames', []):
+            f['id'] = fid(anim, f)
+        salida[anim] = record
+
+    os.makedirs(SALIDA, exist_ok=True)
+    with open(os.path.join(SALIDA, 'datos.json'), 'w', encoding='utf-8') as f:
+        json.dump({'lienzo': list(LIENZO), 'filtro': 'LANCZOS (reducción de ilustración)',
+                   'anims': salida}, f, indent=1, ensure_ascii=False)
+        f.write('\n')
 
 
 if __name__ == '__main__':

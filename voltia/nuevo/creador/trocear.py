@@ -21,8 +21,10 @@ ANCLAJE
     (sin escalar) para que su cabeza caiga en el mismo pixel.
 """
 from collections import deque, Counter
+import copy
 import json
 import os
+import uuid
 
 from PIL import Image
 
@@ -265,7 +267,8 @@ def sprite_de(im, etiqueta, lab):
     return out, (x0, y0, x1, y1)
 
 
-def procesar(anim, fichero, n_esperado):
+def procesar(anim, fichero, n_esperado, extras=None):
+    extras = extras or []
     with Image.open(os.path.join(ORIGEN, fichero)) as src:
         im = src.convert('RGB')
     W, H = im.size
@@ -293,6 +296,14 @@ def procesar(anim, fichero, n_esperado):
     der = int(round(max(p['sp'].size[0] - p['hx'] for p in piezas))) + MARGEN
     aba = int(round(max(p['sp'].size[1] - p['hy'] for p in piezas))) + MARGEN
     CW, CH = ax + der, ay + aba
+    # No se pierden frames añadidos/aprobados desde el creador. Si su lienzo medido no
+    # coincide con la nueva hoja, se conserva toda la animación anterior sin sobrescribirla.
+    for extra, blob, size in extras:
+        if tuple(size) != (CW, CH):
+            print('  AVISO: no regenero %s: el frame añadido %s mide %dx%d y la hoja nueva %dx%d; '
+                  'conservo el movimiento anterior intacto.'
+                  % (anim, extra.get('id', extra.get('i')), size[0], size[1], CW, CH))
+            return None
     destino = os.path.join(SALIDA, anim)
     os.makedirs(destino, exist_ok=True)
     for f in os.listdir(destino):
@@ -304,27 +315,65 @@ def procesar(anim, fichero, n_esperado):
         lienzo = desmatar(lienzo)      # ahora el borde del sprite sí es transparente
         lienzo.save(os.path.join(destino, 'f%02d.png' % i))
         bb = lienzo.getbbox()
-        datos.append({'i': i, 'fichero': '%s/f%02d.png' % (anim, i),
+        datos.append({'id': uuid.uuid4().hex, 'estado': 'pendiente',
+                      'i': i, 'fichero': '%s/f%02d.png' % (anim, i),
                       'nativo': list(p['sp'].size), 'caja_en_hoja': p['caja'],
                       'cabeza': [round(p['hx'], 1), round(p['hy'], 1)],
                       'cortado': bool(bb and (bb[0] <= 0 or bb[1] <= 0 or bb[2] >= CW or bb[3] >= CH))})
-    print('%-7s %d/%d sprites | lienzo %dx%d | ancla cabeza (%d,%d) | sin reducir | cortados %d'
-          % (anim, len(datos), n_esperado, CW, CH, ax, ay,
-             sum(1 for d in datos if d['cortado'])))
+    base_generados = len(datos)
+    for extra, blob, _size in extras:
+        i = len(datos)
+        nombre = 'f%02d.png' % i
+        with open(os.path.join(destino, nombre), 'wb') as out:
+            out.write(blob)
+        entry = copy.deepcopy(extra)
+        entry.update({'i': i, 'fichero': '%s/%s' % (anim, nombre)})
+        datos.append(entry)
+    print('%-7s %d nuevos + %d preservados | lienzo %dx%d | ancla cabeza (%d,%d) | '
+          'sin reducir | cortados %d'
+          % (anim, base_generados, len(extras), CW, CH, ax, ay,
+             sum(1 for d in datos[:base_generados] if d['cortado'])))
     return {'lienzo': [CW, CH], 'ancla': [ax, ay], 'esperado': n_esperado,
             'escala': 1, 'frames': datos}
 
 
 def main():
     os.makedirs(SALIDA, exist_ok=True)
+    datos_p = os.path.join(SALIDA, 'datos.json')
+    try:
+        anterior = json.load(open(datos_p, encoding='utf-8'))
+    except FileNotFoundError:
+        anterior = {'anims': {}}
+    antiguas = anterior.get('anims', {})
     todo = {}
     for anim, fichero, n in (('stance', 'sheet_stance.png', 8), ('walk', 'sheet_walk.png', 6)):
-        r = procesar(anim, fichero, n)
+        extras = []
+        old_anim = antiguas.get(anim, {})
+        for frame in old_anim.get('frames', []):
+            # Los frames de la hoja se regeneran; los añadidos/copias aceptadas son
+            # material distinto y se conservan byte a byte.
+            if not (frame.get('subido') or frame.get('copiado_de')):
+                continue
+            path = os.path.join(SALIDA, frame.get('fichero', '%s/f%02d.png' % (anim, frame['i'])))
+            if not os.path.isfile(path):
+                continue
+            with Image.open(path) as im:
+                size = im.size
+            extras.append((copy.deepcopy(frame), open(path, 'rb').read(), size))
+        r = procesar(anim, fichero, n, extras)
         if r:
             todo[anim] = r
-    with open(os.path.join(SALIDA, 'datos.json'), 'w') as fh:
+        elif anim in antiguas:
+            todo[anim] = antiguas[anim]
+    # Mantener todo movimiento agregado desde la biblioteca (jump, block, etc.); este
+    # troceador solo rehace las hojas IA de stance y walk.
+    for anim, old_anim in antiguas.items():
+        if anim not in todo:
+            todo[anim] = old_anim
+    with open(datos_p, 'w', encoding='utf-8') as fh:
         json.dump({'sin_escalar': True, 'fondo': 'rojo puro -> transparencia',
-                   'anims': todo}, fh, indent=1)
+                   'anims': todo}, fh, indent=1, ensure_ascii=False)
+        fh.write('\n')
 
 
 if __name__ == '__main__':
