@@ -52,46 +52,52 @@ def alpha_de_rojo(im):
     return out
 
 
-def desmatar(im, exceso_limpio=45, corte=0.5, radio=6):
-    """Elimina el velo rojo DE LA SILUETA, sin tocar el interior del dibujo.
+def desmatar(im, exceso_limpio=45, corte=0.45, radio=6, tol=85):
+    """Quita el velo rojo de la silueta demostrando que cada píxel ES una mezcla.
 
-    El problema: la IA antialiasa el personaje contra el rojo, y no deja un filo de 1 px
-    sino bandas de 2-4 px con tonos como (40,0,0) o (74,0,0). Mi umbral pedía rojo casi
-    puro (r>215), así que todo eso sobrevivía y se veía como borde rojo.
+    Las tres versiones anteriores, y por qué fallaron
+    ------------------------------------------------
+    v1  umbral r>215: dejaba el antialias (bandas de 2-4 px con (40,0,0)).
+    v2  `a = 1 - exceso/255`, aplicado a todo lo opaco: la piel de Voltia tiene exceso
+        alto por sí misma —(242,173,127)→69, (223,156,119)→104, (229,173,142)→56— y se
+        tomaba por velo: opacidad falsa y color del vecino pegado. Manchas marrones.
+    v3  banda de 6 px + prueba por canales verde/azul: se le escapaba el filo oscuro,
+        porque con referencia casi negra el verde es ~0 y el rojo previsto salía 255.
+        Filtrar 19 px rojizos → 858.
 
-    El error que costó el brazo (2026-10-21)
-    ----------------------------------------
-    La primera versión aplicaba la regla a TODO píxel opaco con `exceso > 45`. Y la piel
-    de Voltia tiene exceso alto: (242,173,127) → exceso 69. Así que el algoritmo creía que
-    la piel era "velo rojo", le bajaba la opacidad a 0,73 y le pegaba el color limpio más
-    cercano. Resultado: manchas marrones de bordes rectos dentro del brazo y del muslo.
-    Medido: los tonos de esas manchas aparecían **172 veces** en nuestro sprite y **12** en
-    la hoja original de la IA. Las manchas las metía este filtro, no el dibujo.
+    v5 (esto): además, se aplica al LIENZO y no al recorte. El recorte no tiene fondo
+        alrededor (sus bordes son el corte), así que su filo quedaba a distancia -1, fuera
+        de la banda, y sobrevivía el velo: se veía una línea roja en el borde superior de
+        algunos frames de walk. En el lienzo el borde es transparencia de verdad.
 
-    Regla nueva
-    -----------
-    El velo solo existe en una banda pegada al fondo. Se mide la distancia de cada píxel
-    opaco al fondo (BFS desde lo transparente) y **solo se toca lo que está a `radio` px o
-    menos**. El interior del dibujo queda intacto, tenga el color que tenga.
+    v4: banda de 6 px + **ajuste por mínimos cuadrados**, tol=85 y corte=0,45
+        (barrido medido: 12 combinaciones; sin desmatar quedaban 2 439 px de filo rojizo
+        que no es piel, con estos valores 42, y las manchas dentro de la piel no suben).
+    -----------------------------------------------------------
+    Si el píxel p es mezcla de un color limpio C y rojo puro R=(255,0,0):
 
-    Dentro de esa banda:
-      1. `exceso = r - max(g,b)` mide cuánto rojo del fondo lleva el píxel. Si la mezcla es
-         con un color oscuro (la línea de la silueta), exceso = 255*(1-a), así que
-         a = 1 - exceso/255 es su opacidad real.
-      2. si a >= corte el píxel es del personaje: se le pone el color limpio más cercano
-         (propagación BFS desde lo que tiene exceso <= exceso_limpio). Si a < corte, era
-         fondo: fuera.
+        p = a·C + (1-a)·R      →      p - R = a·(C - R)
 
-    Así el borde queda con los colores del propio dibujo —cero rojo— y la piel no se toca.
+    y `a` se despeja de golpe en los tres canales:
+
+        a = ((p-R)·(C-R)) / |C-R|²
+
+    Luego se comprueba que de verdad cae ahí: `|p - (R + a·(C-R))| <= tol`.
+
+      - a > 1,02  → el píxel es más claro que el interior: no puede ser mezcla con rojo
+                    (mezclar con rojo solo quita). NO se toca. Esto salva la piel.
+      - residuo grande → es una sombra, una línea o un brillo, no una mezcla. NO se toca.
+      - si pasa: a >= 0,5 → color limpio C; a < 0,5 → transparente.
+
+    C es el color del interior más cercano (distancia al fondo > radio por BFS), que por
+    construcción no es velo.
     """
     px = im.load()
     W, H = im.size
     opaco = [[bool(px[x, y][3]) for x in range(W)] for y in range(H)]
+    V4 = ((1, 0), (-1, 0), (0, 1), (0, -1))
 
-    def exceso(c):
-        return c[0] - max(c[1], c[2])
-
-    # --- 1. distancia al fondo por dentro de lo opaco (BFS desde los píxeles de fuera)
+    # --- 1. distancia al fondo por dentro de lo opaco
     dist = [[-1] * W for _ in range(H)]
     cola = deque()
     for y in range(H):
@@ -103,47 +109,58 @@ def desmatar(im, exceso_limpio=45, corte=0.5, radio=6):
         cx, cy = cola.popleft()
         if dist[cy][cx] >= radio:
             continue
-        for dx, dy in ((1, 0), (-1, 0), (0, 1), (0, -1)):
+        for dx, dy in V4:
             nx, ny = cx + dx, cy + dy
             if 0 <= nx < W and 0 <= ny < H and dist[ny][nx] == -1:
                 dist[ny][nx] = dist[cy][cx] + 1
                 cola.append((nx, ny))
 
-    en_banda = [[dist[y][x] != -1 for x in range(W)] for y in range(H)]
-
-    limpio = [[opaco[y][x] and exceso(px[x, y][:3]) <= exceso_limpio
-               for x in range(W)] for y in range(H)]
-
-    # --- 2. color limpio más cercano, para los píxeles de la banda
-    color = [[None] * W for _ in range(H)]
+    # --- 2. referencia: interior (dist > radio); si el sprite es muy fino, los limpios
+    sem = [[None] * W for _ in range(H)]
     cola = deque()
     for y in range(H):
         for x in range(W):
-            if limpio[y][x]:
-                color[y][x] = px[x, y][:3]
+            if not opaco[y][x]:
+                continue
+            interior = dist[y][x] == -1 or dist[y][x] > radio
+            if interior or (px[x, y][0] - max(px[x, y][1], px[x, y][2])) <= exceso_limpio:
+                sem[y][x] = px[x, y][:3]
                 cola.append((x, y))
     while cola:
         cx, cy = cola.popleft()
-        for dx, dy in ((1, 0), (-1, 0), (0, 1), (0, -1)):
+        for dx, dy in V4:
             nx, ny = cx + dx, cy + dy
-            if 0 <= nx < W and 0 <= ny < H and opaco[ny][nx] and color[ny][nx] is None:
-                color[ny][nx] = color[cy][cx]
+            if 0 <= nx < W and 0 <= ny < H and opaco[ny][nx] and sem[ny][nx] is None:
+                sem[ny][nx] = sem[cy][cx]
                 cola.append((nx, ny))
 
+    # --- 3. ¿es mezcla con rojo?
     tocados = 0
     for y in range(H):
         for x in range(W):
-            if not opaco[y][x] or not en_banda[y][x]:
-                continue                      # el interior del dibujo NO se toca
-            e = exceso(px[x, y][:3])
-            if e <= exceso_limpio:
+            if not opaco[y][x]:
                 continue
-            a = 1.0 - e / 255.0
-            if a < corte or color[y][x] is None:
-                px[x, y] = (0, 0, 0, 0)
+            if dist[y][x] != -1 and dist[y][x] > radio:
+                continue                             # interior: intocable
+            C = sem[y][x]
+            if C is None:
+                continue
+            d0, d1, d2 = C[0] - 255.0, C[1], C[2]
+            dd = d0 * d0 + d1 * d1 + d2 * d2
+            if dd < 1.0:
+                continue                             # referencia = rojo: no sirve
+            r, g, b = px[x, y][0], px[x, y][1], px[x, y][2]
+            a = ((r - 255.0) * d0 + g * d1 + b * d2) / dd
+            if a > 1.02:
+                continue                             # más claro que el interior
+            pr, pg, pb = 255.0 + a * d0, a * d1, a * d2
+            res = max(abs(r - pr), abs(g - pg), abs(b - pb))
+            if res > tol:
+                continue                             # el rojo no cuadra: es dibujo
+            if a >= corte:
+                px[x, y] = (C[0], C[1], C[2], 255)
             else:
-                c = color[y][x]
-                px[x, y] = (c[0], c[1], c[2], 255)
+                px[x, y] = (0, 0, 0, 0)
             tocados += 1
     return im
 
@@ -263,7 +280,9 @@ def procesar(anim, fichero, n_esperado):
         sp, caja = sprite_de(im, etiqueta, c['i'])
         if sp is None or sp.size[1] < 60:
             continue
-        sp = desmatar(sp)
+        # OJO: aquí NO se desmata. El recorte no tiene fondo a su alrededor (sus bordes son
+        # el corte), así que el filo del recorte quedaba a distancia -1 y el velo sobrevivía.
+        # Se desmata el LIENZO, que sí lleva su transparencia de verdad. Ver v5 en desmatar().
         piezas.append({'lab': c['i'], 'sp': sp, 'caja': caja,
                        'hx': c['x'] - caja[0], 'hy': c['y'] - caja[1]})
     if not piezas:
@@ -282,6 +301,7 @@ def procesar(anim, fichero, n_esperado):
     for i, p in enumerate(piezas):
         lienzo = Image.new('RGBA', (CW, CH), (0, 0, 0, 0))
         lienzo.alpha_composite(p['sp'], (int(round(ax - p['hx'])), int(round(ay - p['hy']))))
+        lienzo = desmatar(lienzo)      # ahora el borde del sprite sí es transparente
         lienzo.save(os.path.join(destino, 'f%02d.png' % i))
         bb = lienzo.getbbox()
         datos.append({'i': i, 'fichero': '%s/f%02d.png' % (anim, i),

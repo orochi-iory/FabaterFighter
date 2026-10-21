@@ -292,6 +292,46 @@ Ahora:
   suave en vez de saltarse filas;
 - la tira de frames es una fila de `<img>` con scroll, no un canvas gigante.
 
+## Regla de oro 12 · el velo rojo, versión que funciona (v5) (2026-10-21)
+
+Hubo que corregirlo **cuatro veces**. Copio las cuatro con el fallo de cada una, porque la
+lección no es el código: es que cada versión se validaba con una métrica que no miraba
+donde estaba el problema.
+
+| versión | qué hacía | por qué fallaba | medido |
+|---|---|---|---|
+| v1 | umbral `r > 215` | el antialias deja `(40,0,0)`…`(110,0,0)`, ninguno pasaba | 83 % del filo seguía rojo |
+| v2 | `a = 1 − exceso/255` sobre **todo** lo opaco | la piel tiene exceso alto por sí misma | 744 px de mancha en el brazo |
+| v3 | banda de 6 px + prueba por canales verde/azul | con referencia casi negra el verde es ~0 y el rojo previsto sale 255 | filo rojizo 19 → **858** |
+| v4 | banda + ajuste por mínimos cuadrados | se aplicaba al **recorte**, cuyos bordes no son fondo | 220 px de filo rojizo en walk |
+| **v5** | lo mismo, aplicado **al lienzo** ya compuesto | — | filo rojo puro ≤ 3 px por frame |
+
+**La prueba de mezcla (esto es lo que hay que conservar).** Si un píxel es mezcla de un
+color limpio C y rojo puro R=(255,0,0), entonces `p − R = a·(C − R)` y `a` sale de golpe por
+mínimos cuadrados en los tres canales:
+
+    a = ((p−R)·(C−R)) / |C−R|²        y se exige |p − (R + a·(C−R))| ≤ 85
+
+Dos descartes que salvan la piel: si `a > 1,02` el píxel es **más claro** que su interior y
+no puede ser mezcla con rojo (mezclar con rojo solo quita); y si el residuo es grande es una
+sombra, una línea o un brillo, no una mezcla. Barrido de 12 combinaciones (radio 4/6, tol
+30…85, corte 0,45/0,50): sin desmatar quedaban **2 439** px de filo rojizo; con
+radio 6 · tol 85 · corte 0,45, **42**, y las manchas dentro de la piel no suben.
+
+**El error de la v4, que costó otra vuelta:** el filtro corría sobre el **recorte** de cada
+sprite. El recorte no tiene fondo alrededor —sus bordes son el corte—, así que su filo
+quedaba a distancia `-1` (interior) y el velo de arriba sobrevivía: una línea roja en el
+borde superior de varios frames de walk. Se mueve al **lienzo**, que sí tiene su
+transparencia de verdad.
+
+Estado final medido en los 14 sprites (2 855-5 220 px de piel por frame): **0-3 px de rojo
+puro** en el filo, y el 100 % de las manchas que quedan dentro de la piel son píxeles
+**idénticos** a la hoja original de la IA (sombra del hombro, dedos enguantados, brillo).
+Un filtro ya no puede quitar eso: es dibujo.
+
+Pruebas guardadas: `antes_despues_piel.png` (las manchas de brazos y muslo) y
+`estado_brazos.png` (los 14 frames, brazo y boca limpios).
+
 ## Chun-Li
 
 - Las **filas 1, 2 y 3 de la hoja original son el mismo stance**: van juntas en **una**
