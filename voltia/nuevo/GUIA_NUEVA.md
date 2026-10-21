@@ -332,6 +332,46 @@ Un filtro ya no puede quitar eso: es dibujo.
 Pruebas guardadas: `antes_despues_piel.png` (las manchas de brazos y muslo) y
 `estado_brazos.png` (los 14 frames, brazo y boca limpios).
 
+## Ancla de cuatro vistas (2026-10-21)
+
+Referencia única para generar: **`voltia/nuevo/creador/ancla/ANCLA_voltia_4_vistas.png`**,
+**1408×768** (el mismo formato que la imagen de referencia que pasó el usuario), con las
+cuatro vistas a la misma altura de tinta, la misma línea de pies y su etiqueta debajo:
+`FRENTE · DERECHA · IZQUIERDA · TRASERA`.
+
+Se monta con `PYTHONPATH=tools/pylibs python3 tools/creador_ancla.py` a partir de las cuatro
+imágenes de `creador/ancla/`. La banda blanca de las etiquetas no forma parte del sprite: si
+se usa la hoja como material para trocear, hay que recortar antes de `y=690`.
+
+**Trampa medida:** al pedir «mirando a la derecha» o «de espaldas», el modelo devolvió
+**de frente** las dos veces. Lo que sí funciona es describir la dirección respecto al **borde
+de la imagen**: «her chin, nose, chest, belt buckle and both boot toes point toward the RIGHT
+edge of the image; the ponytail is on the LEFT side». Con esa formulación salieron bien.
+
+De la hoja que pasó el usuario se descartó el **quinto sprite por la izquierda** (está a otra
+escala). Por eso el ancla se genera de cero: cuatro figuras y ninguna dudosa.
+
+## Gestor de sprites: borrar y añadir sin salir del visor (2026-10-21)
+
+En el creador, sección **«Sprites del movimiento · borrar y añadir»**:
+
+- **Marcar y borrar.** Se marcan los sprites que no sirven y el visor descarga
+  `borrar_<mov>_<resol>.txt` con la lista exacta. En el repo:
+  `PYTHONPATH=tools/pylibs python3 tools/borrar_sprites.py --lista ~/Downloads/borrar_stance_oficial.txt`
+  Borra el PNG nativo **y** su versión oficial, y **renumera** lo que queda (`f00, f01…`) para
+  que no haya huecos. No toca `sheet_*.png`: la hoja de la IA es material de origen.
+  Probado: borrar los índices 4 y 6 de stance deja 6 frames, ficheros `f00..f05`, y los dos
+  `datos.json` coherentes (después se restauró).
+- **Añadir.** Se eligen PNG en el visor y se suben a `creador/nuevos/` con un `POST /subir`
+  que añade `tools/serve.py` (no escribe nunca en `sprites/` ni en `oficial/`). Después:
+  `python3 tools/aniadir_sprites.py --mov stance`. Valida antes de aceptar: cabecera PNG de
+  verdad, alto mínimo 200 px, y borde **rojo puro o transparente** (si el fondo es blanco, se
+  rechaza, porque el pipeline no sabría separar la figura). Probado: acepta un sprite con
+  fondo transparente, rechaza un PNG blanco y rechaza un icono de 40×40.
+
+Lo que entra por el navegador entra **en bruto**: ni se reduce ni se recolorea. Para el tamaño
+del modelo original, después `encajar.py`.
+
 ## Chun-Li
 
 - Las **filas 1, 2 y 3 de la hoja original son el mismo stance**: van juntas en **una**

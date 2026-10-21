@@ -2,11 +2,14 @@
 
 **Qué adjuntar** (dos imágenes, ninguna más — no promediar tres o más):
 
-1. `voltia/nuevo/creador/ref_stance_diseno.png` — el diseño aprobado, un frame grande y limpio.
-   Es el ancla de identidad: mismo casco, mismo rayo, mismo cinturón, mismos guantes, misma
-   coleta, mismas proporciones.
+1. **`voltia/nuevo/creador/ancla/ANCLA_voltia_4_vistas.png`** — el ancla de identidad: la misma
+   Voltia de **frente, derecha, izquierda y trasera**, con su etiqueta debajo. Es la referencia
+   que fija el diseño; no hay que inventar nada que no esté ahí.
 2. `voltia/nuevo/creador/ref_stance_actual_8f.png` — los 8 frames del stance actual. Sirve solo
    para el **rango** de movimiento (cuánto sube y baja el torso), no para copiar poses.
+
+Y una frase en el prompt: *use the four-view anchor for the design, and the pose/action only
+from the description below.*
 
 ---
 

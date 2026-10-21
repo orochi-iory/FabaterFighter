@@ -51,6 +51,42 @@ class Handler(http.server.SimpleHTTPRequestHandler):
         self.send_header('Expires', '0')
         super().end_headers()
 
+    def do_POST(self):
+        """Solo para el gestor de sprites del creador: recibe N PNG y los guarda.
+
+        Escribe en `voltia/nuevo/creador/nuevos/`, nunca en las carpetas buenas: lo que se
+        sube desde el navegador es material en bruto, y solo pasa a `sprites/` o `oficial/`
+        cuando se trocea y se encaja con los scripts.
+        """
+        ruta = self.path.split('?')[0]
+        if ruta != '/subir':
+            return self.send_error(404)
+        try:
+            n = int(self.headers.get('Content-Length') or 0)
+        except ValueError:
+            return self.send_error(400)
+        destino = os.path.join(RAIZ, 'voltia/nuevo/creador/nuevos')
+        os.makedirs(destino, exist_ok=True)
+        try:
+            datos = self.rfile.read(n)
+            import json as _json
+            peticion = _json.loads(datos.decode('utf-8'))
+            cuerpo = __import__('base64').b64decode(peticion['png'].split(',', 1)[-1])
+            nombre = os.path.basename(peticion.get('nombre') or 'nuevo.png')
+            if not nombre.lower().endswith('.png'):
+                nombre += '.png'
+            with open(os.path.join(destino, nombre), 'wb') as fh:
+                fh.write(cuerpo)
+            respuesta = {'ok': True, 'fichero': 'nuevos/' + nombre, 'bytes': len(cuerpo)}
+        except Exception as e:                                  # noqa: BLE001
+            respuesta = {'ok': False, 'error': str(e)}
+        cuerpo = __import__('json').dumps(respuesta).encode('utf-8')
+        self.send_response(200)
+        self.send_header('Content-Type', 'application/json; charset=utf-8')
+        self.send_header('Content-Length', str(len(cuerpo)))
+        self.end_headers()
+        self.wfile.write(cuerpo)
+
     def log_message(self, fmt, *args):
         sys.stderr.write('%s  %s\n' % (self.address_string(), fmt % args))
 

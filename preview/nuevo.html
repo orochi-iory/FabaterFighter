@@ -82,6 +82,9 @@
   .galeria img { display:block; height:104px; width:auto; aspect-ratio:96 / 152;
     background:#1a1528; border-radius:4px; }
   .galeria figcaption { font-size:10px; color:#9b93b8; text-align:center; }
+  #galeria-gestion { max-height:none; flex-wrap:wrap; }
+  #galeria-gestion figure.sel { border-color:#ff7b7b; background:#3a1c22; }
+  #galeria-gestion figure.nueva { border-color:#3ddc84; }
   .par { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
   figure.zoom { margin:0; }
   figure.zoom img { width:100%; height:auto; display:block; border-radius:8px; background:#1a1528; }
@@ -180,6 +183,24 @@
     <div class="orden" id="orden"></div>
     <div class="secuencia" id="secuencia"></div>
     <div class="galeria" id="galeria" style="margin-top:10px"></div>
+  </section>
+
+  <section class="card wide">
+    <h2>Sprites del movimiento · borrar y añadir</h2>
+    <p class="sub">Marca los que no sirvan y bórralos, o suelta aquí sprites nuevos (PNG con fondo
+       rojo puro). Un sprite borrado deja de estar en la galería y en la secuencia; el borrado se
+       hace en el disco, así que desaparece de verdad.</p>
+    <div class="controls" style="justify-content:flex-start;margin:0 0 10px">
+      <label class="note"><input type="checkbox" id="todos"> marcar todos</label>
+      <button id="borrar-sel" class="peligro">🗑 Borrar marcados</button>
+      <label class="note" style="display:flex;align-items:center;gap:6px">
+        Añadir nuevos:
+        <input type="file" id="ficheros" accept="image/png" multiple style="font-size:12px">
+      </label>
+      <button id="subir">⬆ Añadir a la galería</button>
+    </div>
+    <div class="note" id="gestion">—</div>
+    <div class="galeria" id="galeria-gestion"></div>
   </section>
 
   <section class="card wide">
@@ -440,6 +461,7 @@
     if (n) { await Promise.all(seq.map(i => cargar(i))); idx = Math.min(idx, n - 1); }
     dibujarSecuencia();
     dibujarTira();
+    dibujarGestion();
     encajar();
     pintar();
   }
@@ -565,6 +587,111 @@
     }
   }
   document.getElementById('guardar').onclick = guardarAnimacion;
+
+  // ---------------------------------------------------------------------------------
+  // Gestor de sprites: borrar los que no sirven y añadir nuevos
+  // ---------------------------------------------------------------------------------
+  // No hay servidor de base de datos ni hace falta: los PNG son ficheros del repo, así que
+  // se borran con `borrar_sprites.py` (que recibe la lista de ficheros y regenera
+  // datos.json). Añadir sí necesita escribir, y para eso `tools/serve.py` tiene un
+  // POST /subir que deja el PNG en `creador/nuevos/`. Nunca se escribe en sprites/ ni en
+  // oficial/: lo que entra desde el navegador queda en bruto hasta que se trocea.
+  const marcados = new Set();
+
+  function dibujarGestion() {
+    const g = document.getElementById('galeria-gestion');
+    g.innerHTML = '';
+    const m = meta();
+    m.frames.forEach((f, i) => {
+      const fig = document.createElement('figure');
+      const img = document.createElement('img');
+      img.src = ruta(f);
+      img.alt = `sprite ${i + 1}`;
+      img.style.height = '96px';
+      img.width = Math.round(96 * m.lienzo[0] / m.lienzo[1]);
+      img.height = 96;
+      const cap = document.createElement('figcaption');
+      cap.textContent = `#${i + 1}` + (marcados.has(i) ? ' · marcar para borrar' : '');
+      fig.append(img, cap);
+      if (marcados.has(i)) fig.classList.add('sel');
+      fig.onclick = () => {
+        if (marcados.has(i)) marcados.delete(i); else marcados.add(i);
+        dibujarGestion();
+      };
+      g.appendChild(fig);
+    });
+    document.getElementById('gestion').textContent = marcados.size
+      ? `${marcados.size} marcado(s): ${[...marcados].map(i => i + 1).join(', ')}. Pulsa «Borrar marcados».`
+      : `Galería de ${mov} · ${m.frames.length} sprites. Ninguno marcado.`;
+  }
+
+  function bajarTexto(nombre, texto, tipo) {
+    descargar(new Blob([texto], { type: tipo || 'text/plain;charset=utf-8' }), nombre);
+  }
+
+  document.getElementById('todos').onchange = e => {
+    const m = meta();
+    if (e.target.checked) m.frames.forEach((_, i) => marcados.add(i));
+    else marcados.clear();
+    dibujarGestion();
+  };
+
+  document.getElementById('borrar-sel').onclick = async () => {
+    if (!marcados.size) { document.getElementById('gestion').textContent = 'No hay nada marcado.'; return; }
+    const m = meta();
+    const aBorrar = [...marcados].sort((a, b) => a - b).map(i => `${mov}/${String(i).padStart(2, '0')}`);
+    // Se pide confirmación con la lista exacta: es un borrado de ficheros.
+    if (!confirm('Se van a borrar ' + aBorrar.length + ' sprite(s) de ' + mov + ':\n\n' +
+                 aBorrar.map(i => i.split('/')[1]).join(', ') +
+                 '\n\nEl fichero desaparece del disco. ¿Seguir?')) return;
+
+    // 1) manifiesto para que el script sepa qué quitar
+    bajarTexto(`borrar_${mov}_${resol}.txt`, aBorrar.map(i => `${mov}/f${i}.png`).join('\n') + '\n');
+    // 2) y se oculta en la sesión, para poder seguir trabajando sin recargar
+    seq = seq.filter(i => !marcados.has(i));
+    guardar();
+    marcados.clear();
+    await refrescarTodo();
+    dibujarGestion();
+    document.getElementById('gestion').innerHTML =
+      'Descargado <b>borrar_' + mov + '_' + resol + '.txt</b> con la lista exacta. ' +
+      'Sin recargar la página, esos sprites ya no están en la galería ni en la secuencia.<br>' +
+      'Para que desaparezcan del disco, en la carpeta del repo:<br>' +
+      '<code>PYTHONPATH=tools/pylibs python3 tools/borrar_sprites.py --lista ~/Downloads/borrar_' +
+      mov + '_' + resol + '.txt</code>';
+  };
+
+  document.getElementById('subir').onclick = async () => {
+    const inp = document.getElementById('ficheros');
+    const st = document.getElementById('gestion');
+    const fs = [...(inp.files || [])];
+    if (!fs.length) { st.textContent = 'Elige primero uno o varios PNG.'; return; }
+    st.textContent = 'Subiendo ' + fs.length + ' fichero(s)…';
+    const hechos = [];
+    for (const f of fs) {
+      const datos = await new Promise((res, rej) => {
+        const r = new FileReader();
+        r.onload = () => res(r.result);
+        r.onerror = rej;
+        r.readAsDataURL(f);
+      });
+      try {
+        const r = await fetch('/subir', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ nombre: f.name, png: datos }),
+        });
+        const j = await r.json();
+        hechos.push(j.ok ? j.fichero : 'ERROR ' + f.name + ': ' + j.error);
+      } catch (e) {
+        hechos.push('ERROR ' + f.name + ': ' + e.message);
+      }
+    }
+    inp.value = '';
+    st.innerHTML = 'Subido: <b>' + hechos.join('</b>, <b>') + '</b>.<br>' +
+      'Quedan en <code>voltia/nuevo/creador/nuevos/</code>. Para que entren en el juego:<br>' +
+      '<code>PYTHONPATH=tools/pylibs python3 tools/aniadir_sprites.py --mov ' + mov + '</code>';
+  };
 
   // La maqueta cambia (giro de pantalla, teclado, barra del navegador): se vuelve a medir.
   if (window.ResizeObserver) new ResizeObserver(() => { encajar(); pintar(); }).observe(caja);
