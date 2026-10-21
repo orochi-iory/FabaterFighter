@@ -50,7 +50,12 @@
     padding:7px 11px; cursor:pointer; font-size:13px; }
   button:hover, select:hover { background:#454163; }
   button.on { background:#0e7c8c; border-color:#96ffeb; }
-  button.peligro { border-color:#8a3b3b; color:#ffb3b3; }
+  button.guardar { background:#1d6b3f; border-color:#3ddc84; color:#eafff2; font-weight:700; }
+  button.guardar:hover { background:#28834e; }
+  button.guardar:disabled { opacity:.5; cursor:progress; }
+  .orden { font-family:ui-monospace,monospace; font-size:12px; color:#9b93b8;
+    background:#120d1c; border:1px solid #4a4767; border-radius:8px; padding:7px 10px;
+    margin-top:6px; white-space:pre-wrap; word-break:break-word; }
   button.peligro:hover { background:#5c2222; }
   #tira { display:block; margin:12px auto 0; }
   /* La secuencia va en UNA fila con scroll: en movil, 8 fichas de 96 px no caben y se
@@ -167,7 +172,12 @@
       <button id="auto">Cargar orden original</button>
       <button id="quitar-ultimo">Quitar último</button>
       <button id="limpiar" class="peligro">Vaciar</button>
+      <button id="guardar" class="guardar">💾 Guardar animación</button>
     </div>
+    <div class="note" id="gstat">La animación lista se guarda en PNG (los píxeles tal cual) + un JSON con el orden y los fps.</div>
+    <div class="note" style="margin-top:6px">Pedido del stance nuevo, listo para pegar en la IA:
+      <code>voltia/nuevo/creador/PEDIDO_stance_v2.md</code></div>
+    <div class="orden" id="orden"></div>
     <div class="secuencia" id="secuencia"></div>
     <div class="galeria" id="galeria" style="margin-top:10px"></div>
   </section>
@@ -473,6 +483,88 @@
   };
   document.getElementById('quitar-ultimo').onclick = () => { seq.pop(); guardar(); refrescarTodo(); };
   document.getElementById('limpiar').onclick = () => { seq = []; idx = 0; guardar(); refrescarTodo(); };
+
+  // ---------------------------------------------------------------------------------
+  // Guardar la animación
+  // ---------------------------------------------------------------------------------
+  // Se guardan dos ficheros, sin tocar un solo píxel:
+  //   <mov>_<resol>_<n>f_<fps>fps.png   → la tira: los frames tal cual, uno al lado de otro
+  //   <mov>_<resol>_<n>f_<fps>fps.json  → el orden exacto, fps, loop, lienzo y ficheros
+  // El PNG es la tira a resolución nativa (nada de escalar ni de filtrar). El GIF se monta
+  // después con tools/make_gif.py, que es donde toca reducir a 256 colores.
+  function descargar(blob, nombre) {
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = nombre;
+    document.body.appendChild(a);
+    a.click();
+    setTimeout(() => { URL.revokeObjectURL(url); a.remove(); }, 4000);
+  }
+
+  function nombreBase() {
+    return `${mov}_${resol}_${seq.length}f_${fps()}fps`;
+  }
+
+  async function guardarAnimacion() {
+    const btn = document.getElementById('guardar');
+    const st = document.getElementById('gstat');
+    if (!seq.length) { st.textContent = 'La secuencia está vacía: no hay nada que guardar.'; return; }
+    btn.disabled = true;
+    st.textContent = 'Preparando el PNG…';
+    try {
+      const m = meta();
+      const [W, H] = m.lienzo;
+      const ims = await Promise.all(seq.map(i => cargar(i)));
+      if (ims.some(im => !im)) throw new Error('algún frame no ha cargado; vuelve a intentarlo');
+
+      const c = document.createElement('canvas');
+      c.width = W * ims.length;
+      c.height = H;
+      const g = c.getContext('2d');
+      g.imageSmoothingEnabled = false;
+      ims.forEach((im, k) => g.drawImage(im, k * W, 0, W, H));
+
+      const base = nombreBase();
+      const manifiesto = {
+        movimiento: mov,
+        resolucion: resol,
+        lienzo: [W, H],
+        ancla: m.ancla,
+        pies_y: m.pies_y !== undefined ? m.pies_y : null,
+        frames: seq.length,
+        fps: fps(),
+        loop: true,
+        orden: seq,
+        ficheros: seq.map(i => ruta(m.frames[i])),
+        tira: base + '.png',
+        guardado: new Date().toISOString(),
+      };
+
+      const poner = (blob, nombre) => new Promise(res => {
+        if (!blob) return res(null);
+        descargar(blob, nombre); res(nombre);
+      });
+      const png = await new Promise(res => c.toBlob(res, 'image/png'));
+      const json = new Blob([JSON.stringify(manifiesto, null, 1)], { type: 'application/json' });
+
+      const hechos = [];
+      hechos.push(await poner(png, base + '.png'));
+      hechos.push(await poner(json, base + '.json'));
+
+      st.innerHTML = `Guardado <b>${hechos.filter(Boolean).join('</b> + <b>')}</b> · ` +
+        `${c.width}×${c.height} px · ${seq.length} frames a ${fps()} fps.<br>` +
+        `<span style="color:#9b93b8">Los dos ficheros van a la carpeta de descargas del navegador. ` +
+        `Para el GIF: <code>python3 tools/make_gif.py &lt;carpeta&gt; ${base}.gif --fps ${fps()} --zoom 4</code></span>`;
+      document.getElementById('orden').textContent =
+        'Orden guardado: ' + seq.map(i => i + 1).join(' · ');
+    } catch (err) {
+      st.textContent = 'No se pudo guardar: ' + (err && err.message ? err.message : err);
+    } finally {
+      btn.disabled = false;
+    }
+  }
+  document.getElementById('guardar').onclick = guardarAnimacion;
 
   // La maqueta cambia (giro de pantalla, teclado, barra del navegador): se vuelve a medir.
   if (window.ResizeObserver) new ResizeObserver(() => { encajar(); pintar(); }).observe(caja);
