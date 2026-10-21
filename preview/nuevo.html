@@ -37,7 +37,10 @@
     background:#141020; border-radius:8px; }
   .tira img { display:block; height:84px; width:auto; border-radius:4px; }
   .tira img.sel { outline:2px solid var(--cyan); outline-offset:1px; }
-  canvas#anim { image-rendering:pixelated; display:block; margin:0 auto;
+  /* Sin `pixelated`: el canvas ya se mide en píxeles REALES de pantalla y el CSS va a
+     dispositivo/dpr. Cuando el reparto no es exacto (dpr 2,75 en el movil), `pixelated`
+     hace que el navegador se salte filas; sin él, remuestrea suave. Ver regla 6 y 8. */
+  canvas#anim { image-rendering:auto; display:block; margin:0 auto;
     background: repeating-conic-gradient(#2c2a40 0 25%, #242233 0 50%) 0 0/32px 32px; border-radius:8px; }
   canvas#anim.solid { background:#101018; }
   canvas#anim.magenta { background:#c0c; }
@@ -112,7 +115,8 @@
   <div class="regla"><b>1 · FONDO FUERA DE PALETA</b>Rojo puro (255,0,0), que no existe en Voltia.</div>
   <div class="regla"><b>2 · ANCLAJE POR CABEZA</b>Centro del casco, no la caja del sprite.</div>
   <div class="regla"><b>3 · NO RECONSTRUIR</b>Sin LANCZOS ni cuantizar al recortar.</div>
-  <div class="regla"><b>4 · SIN VELO ROJO</b>Se deshace la mezcla del antialias con el fondo.</div>
+  <div class="regla"><b>4 · SIN VELO ROJO</b>Solo se toca una banda de 6 px pegada al fondo, nunca el interior.</div>
+  <div class="regla"><b>5 · LA PIEL NO SE TOCA</b>La regla del rojo miraba todo el sprite y borraba la piel: estaba a 6 px del filo.</div>
 </div>
 
 <main>

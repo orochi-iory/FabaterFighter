@@ -52,21 +52,37 @@ def alpha_de_rojo(im):
     return out
 
 
-def desmatar(im, exceso_limpio=45, corte=0.5):
-    """Elimina el velo rojo de la silueta propagando el color interior.
+def desmatar(im, exceso_limpio=45, corte=0.5, radio=6):
+    """Elimina el velo rojo DE LA SILUETA, sin tocar el interior del dibujo.
 
     El problema: la IA antialiasa el personaje contra el rojo, y no deja un filo de 1 px
-    sino bandas de 2-4 px con tonos como (40,0,0) o (74,0,0). Mi umbral pedia rojo casi
-    puro (r>215), asi que todo eso sobrevivia y se veia como borde rojo.
+    sino bandas de 2-4 px con tonos como (40,0,0) o (74,0,0). Mi umbral pedía rojo casi
+    puro (r>215), así que todo eso sobrevivía y se veía como borde rojo.
 
-    Metodo, en dos pasos y sin inventar tonos:
-      1. `exceso = r - max(g,b)` mide cuanto rojo del fondo lleva el pixel. Si la mezcla es
-         con un color oscuro (la linea de la silueta), entonces exceso = 255*(1-a), asi que
-         a = 1 - exceso/255 es la opacidad real del pixel.
-      2. si a >= corte el pixel es del personaje: se le pone el color del interior mas
-         cercano (propagacion BFS), no una mezcla calculada. Si a < corte, era fondo: fuera.
+    El error que costó el brazo (2026-10-21)
+    ----------------------------------------
+    La primera versión aplicaba la regla a TODO píxel opaco con `exceso > 45`. Y la piel
+    de Voltia tiene exceso alto: (242,173,127) → exceso 69. Así que el algoritmo creía que
+    la piel era "velo rojo", le bajaba la opacidad a 0,73 y le pegaba el color limpio más
+    cercano. Resultado: manchas marrones de bordes rectos dentro del brazo y del muslo.
+    Medido: los tonos de esas manchas aparecían **172 veces** en nuestro sprite y **12** en
+    la hoja original de la IA. Las manchas las metía este filtro, no el dibujo.
 
-    Asi el borde queda con los colores del propio dibujo: cero rojo.
+    Regla nueva
+    -----------
+    El velo solo existe en una banda pegada al fondo. Se mide la distancia de cada píxel
+    opaco al fondo (BFS desde lo transparente) y **solo se toca lo que está a `radio` px o
+    menos**. El interior del dibujo queda intacto, tenga el color que tenga.
+
+    Dentro de esa banda:
+      1. `exceso = r - max(g,b)` mide cuánto rojo del fondo lleva el píxel. Si la mezcla es
+         con un color oscuro (la línea de la silueta), exceso = 255*(1-a), así que
+         a = 1 - exceso/255 es su opacidad real.
+      2. si a >= corte el píxel es del personaje: se le pone el color limpio más cercano
+         (propagación BFS desde lo que tiene exceso <= exceso_limpio). Si a < corte, era
+         fondo: fuera.
+
+    Así el borde queda con los colores del propio dibujo —cero rojo— y la piel no se toca.
     """
     px = im.load()
     W, H = im.size
@@ -75,8 +91,30 @@ def desmatar(im, exceso_limpio=45, corte=0.5):
     def exceso(c):
         return c[0] - max(c[1], c[2])
 
-    limpio = [[opaco[y][x] and exceso(px[x, y][:3]) <= exceso_limpio for x in range(W)] for y in range(H)]
-    # propagar el color limpio mas cercano a todo lo opaco
+    # --- 1. distancia al fondo por dentro de lo opaco (BFS desde los píxeles de fuera)
+    dist = [[-1] * W for _ in range(H)]
+    cola = deque()
+    for y in range(H):
+        for x in range(W):
+            if not opaco[y][x]:
+                dist[y][x] = 0
+                cola.append((x, y))
+    while cola:
+        cx, cy = cola.popleft()
+        if dist[cy][cx] >= radio:
+            continue
+        for dx, dy in ((1, 0), (-1, 0), (0, 1), (0, -1)):
+            nx, ny = cx + dx, cy + dy
+            if 0 <= nx < W and 0 <= ny < H and dist[ny][nx] == -1:
+                dist[ny][nx] = dist[cy][cx] + 1
+                cola.append((nx, ny))
+
+    en_banda = [[dist[y][x] != -1 for x in range(W)] for y in range(H)]
+
+    limpio = [[opaco[y][x] and exceso(px[x, y][:3]) <= exceso_limpio
+               for x in range(W)] for y in range(H)]
+
+    # --- 2. color limpio más cercano, para los píxeles de la banda
     color = [[None] * W for _ in range(H)]
     cola = deque()
     for y in range(H):
@@ -91,12 +129,13 @@ def desmatar(im, exceso_limpio=45, corte=0.5):
             if 0 <= nx < W and 0 <= ny < H and opaco[ny][nx] and color[ny][nx] is None:
                 color[ny][nx] = color[cy][cx]
                 cola.append((nx, ny))
+
+    tocados = 0
     for y in range(H):
         for x in range(W):
-            if not opaco[y][x]:
-                continue
-            p_ = px[x, y][:3]
-            e = exceso(p_)
+            if not opaco[y][x] or not en_banda[y][x]:
+                continue                      # el interior del dibujo NO se toca
+            e = exceso(px[x, y][:3])
             if e <= exceso_limpio:
                 continue
             a = 1.0 - e / 255.0
@@ -105,6 +144,7 @@ def desmatar(im, exceso_limpio=45, corte=0.5):
             else:
                 c = color[y][x]
                 px[x, y] = (c[0], c[1], c[2], 255)
+            tocados += 1
     return im
 
 

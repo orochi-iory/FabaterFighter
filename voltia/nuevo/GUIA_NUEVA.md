@@ -237,6 +237,61 @@ distinto de sus dos vecinos verticales, que sí son iguales entre sí):
 
 O sea: las rayas de la piel están en el **arte original**, no en el creador ni en el visor.
 
+## Regla de oro 10 · el velo rojo comía la PIEL (2026-10-21)
+
+Síntoma, con captura: en la hoja de la IA el brazo es piel limpia y en el visor sale con
+**manchas marrones de bordes rectos** (brazos, muslo y manos).
+
+Causa medida. `desmatar()` aplicaba la regla del velo a **todo píxel opaco**:
+
+    exceso = r − máx(g, b)          → si exceso > 45, se considera «mezcla con el rojo»
+
+La piel de Voltia tiene exceso alto:
+
+| color de piel | exceso | qué hacía el filtro |
+|---|---|---|
+| `(242, 173, 127)` | **69** | la daba por velo, `a = 1 − 69/255 = 0,73` |
+| `(223, 156, 119)` | **104** | `a = 0,59` → al corte 0,5 pasaba, pero con el color del vecino |
+| `(140, 78, 60)` | **80** | idem |
+
+O sea: la piel se detectaba como «mezcla de rojo», se le bajaba la opacidad y se le pegaba
+el color limpio más cercano (pelo morado, negro de la línea). De ahí los parches con
+bordes rectos. Los tonos de esos parches aparecían **172 veces** en nuestro sprite y solo
+**12** en la hoja original de la IA: **las manchas las metía el filtro**.
+
+Arreglo: el velo solo puede existir en una **banda pegada al fondo**. Se mide la distancia
+de cada píxel opaco al fondo (BFS desde lo transparente) y **solo se toca lo que está a
+6 px o menos del filo**. El interior del dibujo queda intacto, sea del color que sea.
+
+Medido en `stance/f00`, con el mismo contador (no-piel rodeado de piel por los cuatro lados):
+
+| imagen | px de piel | no-piel dentro de piel |
+|---|---|---|
+| hoja original de la IA | 4 122 | 579 (14,0 %) |
+| **después del arreglo** | 3 966 | 586 (**14,8 %**) |
+| antes del arreglo | 3 051 | 744 (24,4 %) |
+
+El 14,8 % que queda es el del dibujo (los dedos del guante, la sombra del hombro): está
+igual en el original. Lo que sobraba era nuestro.
+
+Comparativa guardada, dos filas antes y dos después (stance y walk):
+`voltia/nuevo/creador/antes_despues_piel.png`.
+
+## Regla de oro 11 · ningún canvas con `image-rendering:pixelated` (2026-10-21)
+
+Con `pixelated`, si el reparto entre píxeles del canvas y píxeles reales de pantalla **no es
+exacto** (dpr 2,75 en el móvil, o una columna de ancho fraccionario), el navegador se salta
+filas y salen rayas. Y con un canvas enorme dentro de una columna estrecha, el navegador lo
+reduce: es lo que se veía como «una fila de 6 sprites gigantes cortada».
+
+Ahora:
+
+- el canvas se mide **en píxeles reales de pantalla** (`W × M`, M entero) y el CSS va a
+  `W·M / dpr`, aunque salga decimal;
+- **sin `image-rendering:pixelated`**: si el reparto no es exacto, el navegador remuestrea
+  suave en vez de saltarse filas;
+- la tira de frames es una fila de `<img>` con scroll, no un canvas gigante.
+
 ## Chun-Li
 
 - Las **filas 1, 2 y 3 de la hoja original son el mismo stance**: van juntas en **una**
