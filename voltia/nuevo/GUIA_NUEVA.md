@@ -205,6 +205,38 @@ dibujo. La tira de frames y el escenario (`960×540` → CSS `768×432` a DPR 1,
 las miniaturas dejaron de usar `image-rendering:pixelated`, que a altura fija producía el
 mismo defecto.
 
+## Regla de oro 9 · el visor no se reconstruye 10 veces por segundo (2026-10-21)
+
+Lo que se veía como «el visor está roto y el selector se ha vuelto loco» eran **cuatro
+fallos de maqueta**, ninguno del sprite:
+
+| síntoma | causa medida | arreglo |
+|---|---|---|
+| una fila de 6 sprites gigantes que se corta | la tira era un **canvas de 2304 px** (8 sprite × 288) dentro de un contenedor de ~600 px: desbordaba y se recortaba | la tira ahora son `<img>` de 84 px en una fila con scroll |
+| fichas vacías en la secuencia | el `<img>` de cada ficha **no tenía caja reservada**: ancho 0 hasta que la imagen cargaba, y cada carga recolocaba la fila | `width`/`height` por atributo + `aspect-ratio` + fondo visible + marca si no carga |
+| la secuencia «salta» | `pintar()` (que se llama **en cada frame**) terminaba con `dibujarSecuencia()`, que vaciaba y reconstruía el DOM de las fichas: 10 veces por segundo | el DOM se reconstruye solo cuando cambia la lista; el bucle solo repinta el canvas. `drawImage` por ejecución: **130 → 10** (modelo original) y **72 → 8** (creador) |
+| el canvas sale a una escala falsa | la escala se medía con `parentElement.clientWidth` en el primer pintado, que en móvil vale **0** antes de maquetar, y no se recalculaba | `ResizeObserver` sobre el hueco + respaldo por `window.innerWidth` |
+
+Detalle de la escala, para que no se repita: **M es el número de píxeles REALES de pantalla
+por píxel del sprite**. El canvas se dimensiona `W·M` y el CSS va a `W·M / devicePixelRatio`,
+así que el navegador no reescala nada. Las miniaturas (fichas, tira, galería) van al revés a
+propósito: **se dejan suavizar**, porque se reducen a una altura fija y ese factor nunca es
+entero.
+
+Las guías (línea roja en el eje de la cabeza) venían **activadas por defecto** y se confundían
+con una raya del dibujo: ahora están apagadas.
+
+**Medido sobre el dibujo, para separar sprite de visor** (filas sueltas en la piel: un píxel
+distinto de sus dos vecinos verticales, que sí son iguales entre sí):
+
+| sprite | px de piel | filas sueltas |
+|---|---|---|
+| nativo nuevo (`creador/sprites/stance/f00`, 285×524) | 2 855 | **0 (0,0 %)** |
+| oficial nuevo (`oficial/stance/f00`, 96×152) | 211 | **0 (0,0 %)** |
+| celda de la hoja original (`sheet_uniform`, stance 0) | 723 | **54 (7,5 %)** |
+
+O sea: las rayas de la piel están en el **arte original**, no en el creador ni en el visor.
+
 ## Chun-Li
 
 - Las **filas 1, 2 y 3 de la hoja original son el mismo stance**: van juntas en **una**

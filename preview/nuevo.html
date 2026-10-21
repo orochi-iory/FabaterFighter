@@ -30,7 +30,13 @@
   .card h2 { margin:0 0 4px; font-size:15px; letter-spacing:1px; color:var(--gold); }
   .card p.sub { margin:0 0 10px; font-size:12.5px; color:#9b93b8; line-height:1.5; }
   .big { background:#1a1528; border-radius:10px; padding:10px; text-align:center; }
-  .lienzo { overflow-x:auto; }
+  .lienzo { overflow:auto; max-width:100%; }
+  /* Tira de frames: son <img>, no un canvas. Se dejan SUAVIZAR a proposito: aqui se
+     reducen a una altura fija y el factor no es entero; es una miniatura, no el pixel. */
+  .tira { display:flex; gap:2px; overflow-x:auto; padding:6px 2px 2px; margin-top:8px;
+    background:#141020; border-radius:8px; }
+  .tira img { display:block; height:84px; width:auto; border-radius:4px; }
+  .tira img.sel { outline:2px solid var(--cyan); outline-offset:1px; }
   canvas#anim { image-rendering:pixelated; display:block; margin:0 auto;
     background: repeating-conic-gradient(#2c2a40 0 25%, #242233 0 50%) 0 0/32px 32px; border-radius:8px; }
   canvas#anim.solid { background:#101018; }
@@ -44,23 +50,29 @@
   button.peligro { border-color:#8a3b3b; color:#ffb3b3; }
   button.peligro:hover { background:#5c2222; }
   #tira { display:block; margin:12px auto 0; }
-  .secuencia { display:flex; flex-wrap:wrap; gap:8px; min-height:60px; padding:8px;
-    background:#161022; border:1px dashed #4a4767; border-radius:10px; align-items:center; }
-  .chip { position:relative; border-radius:7px; background:#241c38; border:1px solid #4a4767; padding:3px; }
-  /* miniaturas: se dejan suavizar. Reducir con `pixelated` a un factor que no es entero
-     hace que el navegador se salte filas y salgan rayas. El canvas grande es el que muestra
-     el pixel exacto. */
-  .chip img { display:block; height:96px; width:auto; }
+  /* La secuencia va en UNA fila con scroll: en movil, 8 fichas de 96 px no caben y se
+     apilaban en columnas altisimas. */
+  .secuencia { display:flex; flex-wrap:nowrap; gap:8px; min-height:60px; padding:8px;
+    background:#161022; border:1px dashed #4a4767; border-radius:10px; align-items:flex-start;
+    overflow-x:auto; }
+  .chip { position:relative; border-radius:7px; background:#241c38; border:1px solid #4a4767;
+    padding:3px; flex:0 0 auto; }
+  /* `aspect-ratio` reserva el hueco ANTES de que la imagen cargue: sin esto las fichas
+     nacen con ancho 0 y mientras cargan se ven vacias y se recolocan (parecia "loco"). */
+  .chip img { display:block; height:96px; width:auto; aspect-ratio:96 / 152;
+    background:#1a1528; border-radius:4px; }
+  .chip img.fallo, .galeria img.fallo, .tira img.fallo { background:#5c2222; }
   .chip span { position:absolute; top:-6px; left:-6px; background:#0e7c8c; color:#fff; font-size:10px;
     width:16px; height:16px; line-height:16px; text-align:center; border-radius:50%; }
   .chip button.x { position:absolute; top:-7px; right:-7px; width:17px; height:17px; padding:0;
     font-size:11px; line-height:1; border-radius:50%; background:#5c2222; border:0; }
   .chip .flechas { display:flex; gap:2px; justify-content:center; margin-top:2px; }
   .chip .flechas button { padding:0 5px; font-size:11px; border-radius:5px; }
-  .galeria { display:flex; flex-wrap:wrap; gap:6px; max-height:280px; overflow:auto; padding:4px; }
+  .galeria { display:flex; flex-wrap:nowrap; gap:6px; max-height:200px; overflow:auto; padding:4px; }
   .galeria figure { margin:0; background:#161022; border:2px solid transparent; border-radius:8px; padding:4px; cursor:pointer; }
   .galeria figure:hover { border-color:#4a4767; }
-  .galeria img { display:block; height:104px; width:auto; }
+  .galeria img { display:block; height:104px; width:auto; aspect-ratio:96 / 152;
+    background:#1a1528; border-radius:4px; }
   .galeria figcaption { font-size:10px; color:#9b93b8; text-align:center; }
   .par { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
   figure.zoom { margin:0; }
@@ -109,7 +121,8 @@
     <h2>Visor</h2>
     <p class="sub">Cambia entre el sprite nativo y el llevado al tamaño del modelo original. Las
        guías marcan cabeza, altura de cabeza y línea de pies.</p>
-    <div class="big"><div class="lienzo"><canvas id="anim"></canvas></div><div class="lienzo"><canvas id="tira"></canvas></div></div>
+    <div class="big"><div class="lienzo" id="caja"><canvas id="anim"></canvas></div>
+      <div class="tira" id="tira"></div></div>
     <div class="controls">
       <button id="play">⏸ Pausa</button>
       <select id="mov">
@@ -121,11 +134,12 @@
         <option value="nativo">Nativo · sin reducir</option>
       </select>
       <select id="scale">
-        <option value="1">1×</option>
-        <option value="2">2×</option>
-        <option value="3" selected>3×</option>
-        <option value="4">4×</option>
-        <option value="6">6×</option>
+        <option value="0" selected>Ajustar a la ventana</option>
+        <option value="1">1 px de sprite = 1 px de pantalla</option>
+        <option value="2">2 px de pantalla por píxel</option>
+        <option value="3">3 px de pantalla por píxel</option>
+        <option value="4">4 px de pantalla por píxel</option>
+        <option value="6">6 px de pantalla por píxel</option>
       </select>
       <button id="ajustar" class="on">Ajustar a la ventana</button>
       <select id="bg">
@@ -134,7 +148,7 @@
         <option value="magenta">Fondo magenta</option>
         <option value="green">Fondo verde</option>
       </select>
-      <button id="tog-guia" class="on">Guías</button>
+      <button id="tog-guia" title="Línea roja en el eje de la cabeza, verde en la altura de cabeza y azul en los pies">Guías</button>
       <button id="tog-tira" class="on">Tira</button>
       <label class="note"><input type="range" id="fps" min="4" max="20" value="10" style="vertical-align:middle;width:80px"> <span id="fps-v">10</span> fps</label>
       <span class="note" id="fstat">—</span>
@@ -229,16 +243,17 @@
   ]);
   const cv = document.getElementById('anim');
   const cx = cv.getContext('2d');
-  const tv = document.getElementById('tira');
-  const tx = tv.getContext('2d');
+  const caja = document.getElementById('caja');     // el hueco donde tiene que caber
+  const tiraEl = document.getElementById('tira');   // tira de miniaturas (imgs, no canvas)
   const cache = new Map();
-  let mov = 'stance', resol = 'oficial', seq = [], idx = 0, playing = true, guias = true, tira = true;
-  let last = performance.now(), acc = 0;
+  let mov = 'stance', resol = 'oficial', seq = [], idx = 0, playing = true, guias = false, tira = true;
+  let last = performance.now(), acc = 0, M = 1;
 
   const pack = () => (resol === 'oficial' ? ofi : nat);
   const meta = () => pack().anims[mov];
   const clave = () => `sec:${resol}:${mov}`;
   const ruta = f => (resol === 'oficial' ? '../voltia/nuevo/creador/oficial/' : '../voltia/nuevo/creador/sprites/') + f.fichero;
+  const dpr = () => window.devicePixelRatio || 1;
 
   const cargar = i => {
     const k = `${resol}:${mov}:${i}`;
@@ -259,99 +274,107 @@
     return s;
   };
   const guardar = () => { try { localStorage.setItem(clave(), JSON.stringify(seq)); } catch (e) {} };
-
-  let ajustar = true;
-  const dpr = () => window.devicePixelRatio || 1;
-  // Escala en pixeles de PANTALLA, no de CSS. El canvas se mide en px de dispositivo y el
-  // CSS se pone a M/dpr px, de manera que el navegador no reescala nada. Con dpr 1,25
-  // incluso una escala CSS "entera" (3x) da 3,75 px reales: el navegador se salta filas y
-  // salen rayas horizontales en la piel. La escala se elige entera EN PANTALLA.
-  function z(W, H) {
-    const d = dpr();
-    const pedida = +document.getElementById('scale').value || 0;
-    if (!ajustar && pedida) return pedida;
-    const caja = Math.max(200, cv.parentElement.clientWidth || 1120);
-    const porAncho = Math.floor((caja * d) / W);
-    const porAlto = H ? Math.floor(((window.innerHeight || 800) * d * 0.78) / H) : 99;
-    return Math.max(1, Math.min(pedida || 99, porAncho, porAlto));
-  }
   const fps = () => +document.getElementById('fps').value || 10;
 
-  async function pintar() {
+  // --- Escala: entera SIEMPRE, y medida de verdad -----------------------------------
+  // 1 px del sprite se convierte en M px REALES de pantalla; el CSS se pone a M/dpr, de
+  // modo que el navegador no reescala el canvas. Antes la medida salia de
+  // parentElement.clientWidth en el primer pintado, que con la maqueta aun sin hacer vale
+  // 0: el canvas se pintaba a una escala falsa y ya no se recalculaba. Ahora se mide con
+  // ResizeObserver cada vez que el hueco cambia.
+  function encajar() {
     const m = meta();
     const [W, H] = m.lienzo;
-    const s = z(W, H);
-    cv.width = W * s; cv.height = H * s;
-    cv.style.width = (W * s / dpr()) + 'px';
-    cv.style.height = (H * s / dpr()) + 'px';
+    const d = dpr();
+    const ancho = Math.max(160, caja.clientWidth || 320);
+    const altoMax = Math.max(220, (window.innerHeight || 700) * 0.52);
+    const pedida = +document.getElementById('scale').value || 0;
+    let s = Math.floor((ancho * d) / W);
+    s = Math.min(s, Math.floor((altoMax * d) / H));
+    if (pedida) s = Math.min(s, pedida);
+    M = Math.max(1, s);
+    cv.width = W * M; cv.height = H * M;
+    cv.style.width = (W * M / d) + 'px';
+    cv.style.height = (H * M / d) + 'px';
+    cx.imageSmoothingEnabled = false;
+  }
+
+  function pintar() {
+    const m = meta();
+    const [W, H] = m.lienzo;
     cx.imageSmoothingEnabled = false;
     cx.clearRect(0, 0, cv.width, cv.height);
-    const i = seq.length ? seq[idx % seq.length] : null;
-    const im = i === null ? null : await cargar(i);
-    if (im) cx.drawImage(im, 0, 0, W, H, 0, 0, cv.width, cv.height);
+    if (!seq.length) {
+      document.getElementById('fstat').textContent = `${mov} · secuencia vacía`;
+      return;
+    }
+    const i = seq[idx % seq.length];
+    const im = cache.get(`${resol}:${mov}:${i}`);
+    if (im) cx.drawImage(im, 0, 0, im.width, im.height, 0, 0, W * M, H * M);
     if (guias) {
       const [ax, ay] = m.ancla;
       cx.strokeStyle = 'rgba(255,60,60,.85)';
-      cx.beginPath(); cx.moveTo(ax * s + .5, 0); cx.lineTo(ax * s + .5, H * s); cx.stroke();
+      cx.beginPath(); cx.moveTo(ax * M + .5, 0); cx.lineTo(ax * M + .5, H * M); cx.stroke();
       cx.strokeStyle = 'rgba(60,230,130,.85)';
-      cx.beginPath(); cx.moveTo(0, ay * s + .5); cx.lineTo(W * s, ay * s + .5); cx.stroke();
+      cx.beginPath(); cx.moveTo(0, ay * M + .5); cx.lineTo(W * M, ay * M + .5); cx.stroke();
       const py = m.pies_y !== undefined ? m.pies_y : H - 6;
       cx.strokeStyle = 'rgba(80,150,255,.9)';
-      cx.beginPath(); cx.moveTo(0, py * s + .5); cx.lineTo(W * s, py * s + .5); cx.stroke();
+      cx.beginPath(); cx.moveTo(0, py * M + .5); cx.lineTo(W * M, py * M + .5); cx.stroke();
     }
-    document.getElementById('fstat').textContent = seq.length
-      ? `${mov} · ${resol} · ${seq.length} sprites · ${W}×${H}`
-      : `${mov} · secuencia vacía`;
-
-    tv.style.display = tira ? 'block' : 'none';
-    if (tira) {
-      const ims = await Promise.all(seq.map(k => cargar(k)));
-      const sm = s;
-      tv.width = W * sm * ims.length; tv.height = H * sm;
-      tv.style.width = (tv.width / dpr()) + 'px';
-      tv.style.height = (tv.height / dpr()) + 'px';
-      tx.imageSmoothingEnabled = false;
-      tx.clearRect(0, 0, tv.width, tv.height);
-      ims.forEach((im, p) => {
-        if (!im) return;
-        tx.drawImage(im, 0, 0, W, H, p * W * sm, 0, W * sm, H * sm);
-        if (guias) {
-          tx.strokeStyle = 'rgba(255,60,60,.45)';
-          tx.beginPath();
-          tx.moveTo(p * W * sm + m.ancla[0] * sm + .5, 0);
-          tx.lineTo(p * W * sm + m.ancla[0] * sm + .5, H * sm);
-          tx.stroke();
-        }
-      });
-      const sel = seq.length ? idx % seq.length : -1;
-      if (sel >= 0) {
-        tx.strokeStyle = 'rgba(150,255,235,.95)';
-        tx.lineWidth = 2;
-        tx.strokeRect(sel * W * sm, 0, W * sm, H * sm);
-      }
-    }
-    dibujarSecuencia();
+    document.getElementById('fstat').textContent =
+      `${mov} · ${resol} · ${seq.length} sprites · lienzo ${W}×${H} · ${M}× (1→${M} px)`;
+    marcarTira();
   }
 
+  // --- Tira de frames: <img>, sin canvas y sin recalcular 10 veces por segundo --------
+  function dibujarTira() {
+    tiraEl.innerHTML = '';
+    const m = meta();
+    seq.forEach((i, p) => {
+      const im = document.createElement('img');
+      im.src = ruta(m.frames[i]);
+      im.alt = 'frame ' + (i + 1);
+      im.dataset.pos = p;
+      im.onclick = () => { idx = p; pintar(); };
+      im.style.height = '84px';
+      im.width = Math.round(84 * m.lienzo[0] / m.lienzo[1]);
+      im.height = 84;
+      im.onerror = () => { im.classList.add('fallo'); im.alt = 'no carga'; };
+      tiraEl.appendChild(im);
+    });
+    tiraEl.style.display = tira ? '' : 'none';
+    marcarTira();
+  }
+  function marcarTira() {
+    const sel = seq.length ? idx % seq.length : -1;
+    [...tiraEl.children].forEach((im, p) => im.classList.toggle('sel', p === sel));
+  }
+
+  // --- Secuencia y galería: el DOM se construye SOLO cuando cambian ------------------
   function dibujarSecuencia() {
-    const caja = document.getElementById('secuencia');
-    caja.innerHTML = '';
+    const cajasec = document.getElementById('secuencia');
+    cajasec.innerHTML = '';
     if (!seq.length) {
-      caja.innerHTML = '<span class="note">Secuencia vacía: pulsa sprites de la galería.</span>';
+      cajasec.innerHTML = '<span class="note">Secuencia vacía: pulsa sprites de la galería.</span>';
       return;
     }
+    const m = meta();
     seq.forEach((i, p) => {
       const d = document.createElement('div');
       d.className = 'chip';
       const im = document.createElement('img');
-      im.src = ruta(meta().frames[i]);
+      im.src = ruta(m.frames[i]);
       im.alt = 'sprite ' + (i + 1);
+      im.style.height = '96px';
+      im.width = Math.round(96 * m.lienzo[0] / m.lienzo[1]);
+      im.height = 96;
+      im.onerror = () => { im.classList.add('fallo'); im.alt = 'no carga'; };
       const num = document.createElement('span');
       num.textContent = p + 1;
       const x = document.createElement('button');
       x.className = 'x';
       x.textContent = '×';
-      x.onclick = e => { e.stopPropagation(); seq.splice(p, 1); guardar(); pintar(); };
+      x.onclick = e => { e.stopPropagation(); seq.splice(p, 1); guardar(); refrescarTodo(); };
       const flechas = document.createElement('div');
       flechas.className = 'flechas';
       const izq = document.createElement('button');
@@ -360,7 +383,7 @@
         e.stopPropagation();
         if (p === 0) return;
         [seq[p - 1], seq[p]] = [seq[p], seq[p - 1]];
-        guardar(); pintar();
+        guardar(); refrescarTodo();
       };
       const der = document.createElement('button');
       der.textContent = '→';
@@ -368,11 +391,11 @@
         e.stopPropagation();
         if (p === seq.length - 1) return;
         [seq[p + 1], seq[p]] = [seq[p], seq[p + 1]];
-        guardar(); pintar();
+        guardar(); refrescarTodo();
       };
       flechas.append(izq, der);
       d.append(im, num, x, flechas);
-      caja.appendChild(d);
+      cajasec.appendChild(d);
     });
   }
 
@@ -385,26 +408,37 @@
       const img = document.createElement('img');
       img.src = ruta(f);
       img.alt = `sprite ${i + 1}`;
+      img.style.height = '104px';
+      img.width = Math.round(104 * m.lienzo[0] / m.lienzo[1]);
+      img.height = 104;
+      img.onerror = () => { img.classList.add('fallo'); img.alt = 'no carga'; };
       const cap = document.createElement('figcaption');
       cap.textContent = i + 1;
       fig.append(img, cap);
-      fig.onclick = () => { seq.push(i); guardar(); pintar(); };
+      fig.onclick = () => { seq.push(i); guardar(); refrescarTodo(); };
       g.appendChild(fig);
     });
   }
 
-  async function recargar() {
-    seq = inicial();
-    idx = 0;
-    dibujarGaleria();
-    await pintar();
+  // Cambia la lista: se rehace el DOM y se repinta. NO se llama en cada frame.
+  async function refrescarTodo() {
+    const n = seq.length;
+    if (n) { await Promise.all(seq.map(i => cargar(i))); idx = Math.min(idx, n - 1); }
+    dibujarSecuencia();
+    dibujarTira();
+    encajar();
+    pintar();
   }
 
   function bucle(t) {
     const dt = (t - last) / 1000; last = t;
-    if (playing && seq.length) {
+    if (playing && seq.length && dt > 0) {
       acc += dt;
-      if (acc >= 1 / fps()) { acc = 0; idx++; pintar(); }
+      if (acc >= 1 / fps()) {
+        acc = 0;
+        idx = (idx + 1) % seq.length;
+        pintar();               // solo dibuja: no toca el DOM de las fichas
+      }
     }
     requestAnimationFrame(bucle);
   }
@@ -413,24 +447,36 @@
     playing = !playing;
     e.target.textContent = playing ? '⏸ Pausa' : '▶ Play';
   };
-  document.getElementById('mov').onchange = recargar;
-  document.getElementById('resol').onchange = e => { resol = e.target.value; recargar(); };
-  document.getElementById('scale').onchange = pintar;
+  document.getElementById('mov').onchange = async () => {
+    mov = document.getElementById('mov').value;
+    seq = inicial(); idx = 0;
+    dibujarGaleria();
+    await refrescarTodo();
+  };
+  document.getElementById('resol').onchange = async e => {
+    resol = e.target.value;
+    seq = inicial(); idx = 0;
+    dibujarGaleria();
+    await refrescarTodo();
+  };
+  document.getElementById('scale').onchange = () => { encajar(); pintar(); };
   document.getElementById('fps').oninput = e => { document.getElementById('fps-v').textContent = e.target.value; };
   document.getElementById('bg').onchange = e => { cv.className = e.target.value; };
   document.getElementById('tog-guia').onclick = e => { guias = !guias; e.target.classList.toggle('on', guias); pintar(); };
-  document.getElementById('ajustar').onclick = e => {
-    ajustar = !ajustar;
-    e.target.classList.toggle('on', ajustar);
-    pintar();
+  document.getElementById('tog-tira').onclick = e => { tira = !tira; e.target.classList.toggle('on', tira); dibujarTira(); };
+  document.getElementById('auto').onclick = () => {
+    seq = [...Array(meta().frames.length).keys()]; idx = 0; guardar(); refrescarTodo();
   };
-  window.addEventListener('resize', () => pintar());
-  document.getElementById('tog-tira').onclick = e => { tira = !tira; e.target.classList.toggle('on', tira); pintar(); };
-  document.getElementById('auto').onclick = () => { seq = [...Array(meta().frames.length).keys()]; idx = 0; guardar(); pintar(); };
-  document.getElementById('quitar-ultimo').onclick = () => { seq.pop(); guardar(); pintar(); };
-  document.getElementById('limpiar').onclick = () => { seq = []; idx = 0; guardar(); pintar(); };
+  document.getElementById('quitar-ultimo').onclick = () => { seq.pop(); guardar(); refrescarTodo(); };
+  document.getElementById('limpiar').onclick = () => { seq = []; idx = 0; guardar(); refrescarTodo(); };
 
-  await recargar();
+  // La maqueta cambia (giro de pantalla, teclado, barra del navegador): se vuelve a medir.
+  if (window.ResizeObserver) new ResizeObserver(() => { encajar(); pintar(); }).observe(caja);
+  window.addEventListener('resize', () => { encajar(); pintar(); });
+
+  seq = inicial();
+  dibujarGaleria();
+  await refrescarTodo();
   requestAnimationFrame(bucle);
 })();
 </script>

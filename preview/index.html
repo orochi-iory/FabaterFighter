@@ -43,6 +43,13 @@
     background: repeating-conic-gradient(#2c2a40 0 25%, #242233 0 50%) 0 0/24px 24px; }
   .lienzo { max-width:100%; overflow-x:auto; overflow-y:hidden; }
   .lienzo canvas { display:block; }
+  /* Tira de frames: <img> y no canvas. Es una miniatura: se deja suavizar, porque a una
+     altura fija el factor no es entero y con `pixelated` se saltaria filas. */
+  .tira { display:flex; gap:2px; overflow-x:auto; padding:6px; border-radius:8px;
+    background:#1a1830; max-width:100%; }
+  .tira img { display:block; height:78px; width:auto; border-radius:3px; cursor:pointer; }
+  .tira img.sel { outline:2px solid #96ffeb; outline-offset:1px; }
+  .tira img.fallo { background:#5c2222; }
   #chk { color:#9d9ab5; font-size:13px; }
   #chk b { color:#96ffeb; }
   #chk .mal { color:#ff7b7b; }
@@ -97,6 +104,7 @@
   <p id="ver">cargando…</p>
   <a class="play" href="fight.html">Probar pelea · Voltia vs Voltia</a>
   <a class="play alt" href="guia-vieja.html">Guía de este personaje</a>
+  <p class="notes" id="modo"></p>
   <p class="notes">Estás en el <b>modelo original</b>: el que pelea. El modelo nuevo se abre desde el menú de arriba.
   Esta página, la pelea y el escenario usan la <b>misma hoja</b> (<code>voltia/sheet_uniform.png</code>).</p>
   <p class="notes" id="notes"></p>
@@ -128,7 +136,7 @@
     </div>
     <div class="info" id="info"></div>
     <div id="chk">Sin comprobar todavía.</div>
-    <div class="lienzo"><canvas id="strip"></canvas></div>
+    <div class="tira" id="strip"></div>
   </div>
   <div class="stage">
     <div class="anims" id="anims"></div>
@@ -257,8 +265,7 @@
 
   const cv = document.getElementById('anim');
   const cx = cv.getContext('2d');
-  const strip = document.getElementById('strip');
-  const sx = strip.getContext('2d');
+  const strip = document.getElementById('strip');   // tira de miniaturas (imgs, no canvas)
   const info = document.getElementById('info');
   const box = document.getElementById('anims');
   const dpr = () => window.devicePixelRatio || 1;
@@ -295,12 +302,15 @@
   // pantalla de dpr 1,25 son 875 px reales) es lo que se saltaba filas y sacaba rayas.
   function escala() {
     const pedida = +document.getElementById('scale').value;
-    if (pedida) return Math.max(1, pedida | 0);
     const d = dpr();
-    const caja = Math.max(200, (cv.parentElement && cv.parentElement.clientWidth) || 700);
-    const porAncho = Math.floor((caja * d) / LOGW);
-    const porAlto = Math.floor(((window.innerHeight || 800) * d * 0.78) / LOGH);
-    return Math.max(1, Math.min(porAncho, porAlto) | 0);
+    // clientWidth vale 0 mientras la maqueta no esta hecha: si eso pasa, se usa el ancho
+    // de la ventana como respaldo en vez de inventarse 700.
+    const caja = (cv.parentElement && cv.parentElement.clientWidth) || (window.innerWidth || 700) - 40;
+    const porAncho = Math.floor((Math.max(200, caja) * d) / LOGW);
+    const porAlto = Math.floor(((window.innerHeight || 800) * d * 0.62) / LOGH);
+    const auto = Math.max(1, Math.min(porAncho, porAlto) | 0);
+    if (pedida) return Math.max(1, Math.min(pedida, Math.max(1, porAncho)) | 0);
+    return auto;
   }
 
   function aplicarEscala() {
@@ -310,6 +320,7 @@
     cx.imageSmoothingEnabled = false;
     cv.style.width = (LOGW * M / dpr()) + 'px';
     cv.style.height = (LOGH * M / dpr()) + 'px';
+    resumenModo();
     // El escenario se pinta en 960x540: mismo criterio, CSS = px de dispositivo / dpr,
     // para que el navegador no tenga que reescalarlo tampoco.
     const st = document.getElementById('stagecv');
@@ -355,6 +366,10 @@
     aplicarEscala(); pintarTira(); comprobar();
   };
   window.addEventListener('resize', () => { aplicarEscala(); pintarTira(); comprobar(); });
+  // La maqueta puede cambiar sin que haya `resize` (giro, barra del navegador, fuentes).
+  if (window.ResizeObserver) {
+    new ResizeObserver(() => { aplicarEscala(); pintarTira(); }).observe(cv.parentElement);
+  }
 
   meta.animations.forEach((a, i) => {
     const b = document.createElement('button');
@@ -371,27 +386,25 @@
   function pintarTira() {
     const a = meta.animations[cur];
     const AW = coloc.celda[0], AH = coloc.celda[1];
-    strip.width = a.frames * AW;
-    strip.height = AH;
-    sx.imageSmoothingEnabled = false;
-    sx.clearRect(0, 0, strip.width, strip.height);
-    if (fuente === 'nativo') {
-      const q = nativo[a.id];
-      if (q) q.imgs.forEach((im, f) => {
-        const c = q.c[f];
-        if (!im || !im.width || !c) return;
-        sx.drawImage(im, 0, 0, im.width, im.height,
-                     f * AW + c[0], c[1], im.width / 4, im.height / 4);
-      });
-    } else if (sheetOk) {
-      for (let f = 0; f < a.frames; f++)
-        sx.drawImage(sheet, f * cell.w, a.row * cell.h, cell.w, cell.h, f * AW, 0, AW, AH);
+    // Se reconstruye solo si cambia el movimiento, la fuente o el numero de frames.
+    const firma = `${a.id}:${fuente}:${a.frames}`;
+    if (strip.dataset.firma !== firma) {
+      strip.dataset.firma = firma;
+      strip.innerHTML = '';
+      for (let f = 0; f < a.frames; f++) {
+        const im = document.createElement('img');
+        // Las miniaturas salen siempre de los frames nativos: es el mismo dibujo que la
+        // hoja (102 de 102 frames identicos, medido) y pesan 30 KB en vez de 1,4 MB.
+        im.src = `../voltia/frames/voltia_${a.id}_${f}.png` + QB;
+        im.alt = `frame ${f + 1}`;
+        im.height = 78;
+        im.width = Math.round(78 * 388 / 612);
+        im.onerror = () => { im.classList.add('fallo'); im.alt = 'no carga'; };
+        im.onclick = () => { playing = false; frame = f; ultimoPintado = -1; };
+        strip.appendChild(im);
+      }
     }
-    strip.style.width = (strip.width / dpr()) + 'px';
-    strip.style.height = (strip.height / dpr()) + 'px';
-    sx.strokeStyle = 'rgba(150,255,235,.95)';
-    sx.lineWidth = 2;
-    sx.strokeRect(frame * AW + 1, 1, AW - 2, AH - 2);
+    [...strip.children].forEach((im, f) => im.classList.toggle('sel', f === frame));
     info.innerHTML = `<b>${a.label}</b> · fila ${a.row} · ${a.frames} frames @ ${a.fps}fps · ` +
       `${a.loop ? 'loop' : 'una vez'} · frame <b id="fcount">${frame + 1}/${a.frames}</b>` +
       `<div id="say"></div>`;
@@ -460,6 +473,15 @@
       `${(cv.width / dpr()).toFixed(1)}×${(cv.height / dpr()).toFixed(1)} px CSS`;
   }
   document.getElementById('chkbtn').onclick = comprobar;
+
+  // Resumen honesto de como se esta pintando, siempre a la vista.
+  function resumenModo() {
+    const el = document.getElementById('modo');
+    if (!el) return;
+    el.innerHTML = fuente === 'nativo'
+      ? `Pintando <b>los frames nativos tal cual</b> (388×612, sin escalar) · ${M} px reales por píxel del sprite · DPR ${dpr()}`
+      : `Pintando <b>la hoja de juego</b> (${cell.w}×${cell.h}) · ${M} px reales por píxel · DPR ${dpr()}`;
+  }
 
   // Golpes normales en silencio (el gruñido de esfuerzo queda para más
   // adelante). Salto sí. Frase en especiales, derrota y victoria.
