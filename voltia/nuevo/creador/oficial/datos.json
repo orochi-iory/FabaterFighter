@@ -15,134 +15,143 @@
     26
    ],
    "pies_y": 146,
+   "escala": 0.227,
    "frames": [
     {
      "i": 0,
      "fichero": "stance/f00.png",
-     "escala": 0.275,
+     "escala": 0.227,
      "sprite": [
-      78,
-      144
+      92,
+      142
      ],
+     "cortado": false,
+     "cabeza_x": 59.7,
      "bbox": [
-      3,
-      5,
-      76,
-      148
-     ],
-     "cortado": false
+      17,
+      16,
+      86,
+      147
+     ]
     },
     {
      "i": 1,
      "fichero": "stance/f01.png",
-     "escala": 0.275,
+     "escala": 0.227,
      "sprite": [
-      78,
-      144
+      92,
+      142
      ],
+     "cortado": false,
+     "cabeza_x": 59.7,
      "bbox": [
-      8,
-      6,
-      76,
-      149
-     ],
-     "cortado": false
+      18,
+      17,
+      94,
+      148
+     ]
     },
     {
      "i": 2,
      "fichero": "stance/f02.png",
-     "escala": 0.275,
+     "escala": 0.227,
      "sprite": [
-      78,
-      144
+      92,
+      142
      ],
+     "cortado": false,
+     "cabeza_x": 59.7,
      "bbox": [
-      8,
-      6,
-      80,
-      148
-     ],
-     "cortado": false
+      2,
+      17,
+      84,
+      149
+     ]
     },
     {
      "i": 3,
      "fichero": "stance/f03.png",
-     "escala": 0.275,
+     "escala": 0.227,
      "sprite": [
-      78,
-      144
+      92,
+      142
      ],
+     "cortado": false,
+     "cabeza_x": 59.7,
      "bbox": [
-      3,
-      5,
-      76,
+      9,
+      16,
+      78,
       148
-     ],
-     "cortado": false
+     ]
     },
     {
      "i": 4,
      "fichero": "stance/f04.png",
-     "escala": 0.276,
+     "escala": 0.227,
      "sprite": [
-      79,
-      145
+      92,
+      142
      ],
+     "cortado": false,
+     "cabeza_x": 59.7,
      "bbox": [
-      6,
-      6,
+      3,
+      17,
       80,
-      149
-     ],
-     "cortado": false
+      148
+     ]
     },
     {
      "i": 5,
      "fichero": "stance/f05.png",
-     "escala": 0.275,
+     "escala": 0.227,
      "sprite": [
-      78,
-      144
+      92,
+      142
      ],
+     "cortado": false,
+     "cabeza_x": 59.7,
      "bbox": [
-      7,
-      6,
-      81,
-      148
-     ],
-     "cortado": false
+      17,
+      16,
+      85,
+      147
+     ]
     },
     {
      "i": 6,
      "fichero": "stance/f06.png",
-     "escala": 0.272,
+     "escala": 0.227,
      "sprite": [
-      78,
-      143
+      92,
+      142
      ],
+     "cortado": false,
+     "cabeza_x": 59.7,
      "bbox": [
-      4,
-      5,
-      73,
-      148
-     ],
-     "cortado": false
+      17,
+      16,
+      89,
+      147
+     ]
     },
     {
      "i": 7,
      "fichero": "stance/f07.png",
-     "escala": 0.275,
+     "escala": 0.227,
      "sprite": [
-      78,
-      144
+      92,
+      142
      ],
+     "cortado": false,
+     "cabeza_x": 59.7,
      "bbox": [
-      7,
-      6,
-      79,
+      18,
+      17,
+      90,
       148
-     ],
-     "cortado": false
+     ]
     }
    ]
   },
@@ -156,70 +165,75 @@
     26
    ],
    "pies_y": 146,
+   "escala": 0.234,
    "frames": [
     {
      "i": 0,
      "fichero": "walk/f00.png",
-     "escala": 0.261,
+     "escala": 0.234,
      "sprite": [
-      80,
-      157
+      72,
+      140
      ],
+     "cortado": false,
+     "cabeza_x": 45.0,
      "bbox": [
-      0,
-      6,
-      80,
+      2,
+      20,
+      74,
       149
-     ],
-     "cortado": true
+     ]
     },
     {
      "i": 1,
      "fichero": "walk/f01.png",
-     "escala": 0.26,
+     "escala": 0.234,
      "sprite": [
-      80,
-      156
+      72,
+      140
      ],
+     "cortado": false,
+     "cabeza_x": 45.0,
      "bbox": [
-      7,
-      5,
-      74,
-      149
-     ],
-     "cortado": false
+      8,
+      19,
+      69,
+      148
+     ]
     },
     {
      "i": 2,
      "fichero": "walk/f02.png",
-     "escala": 0.259,
+     "escala": 0.234,
      "sprite": [
-      80,
-      156
+      72,
+      140
      ],
+     "cortado": false,
+     "cabeza_x": 45.0,
      "bbox": [
-      1,
-      6,
-      69,
-      149
-     ],
-     "cortado": false
+      3,
+      20,
+      65,
+      148
+     ]
     },
     {
      "i": 3,
      "fichero": "walk/f03.png",
-     "escala": 0.26,
+     "escala": 0.234,
      "sprite": [
-      80,
-      156
+      72,
+      140
      ],
+     "cortado": false,
+     "cabeza_x": 45.0,
      "bbox": [
-      6,
-      5,
-      79,
-      149
-     ],
-     "cortado": false
+      8,
+      19,
+      74,
+      148
+     ]
     },
     {
      "i": 4,
@@ -229,29 +243,31 @@
       72,
       140
      ],
+     "cortado": false,
+     "cabeza_x": 45.0,
      "bbox": [
-      8,
+      5,
       7,
-      67,
+      64,
       147
-     ],
-     "cortado": false
+     ]
     },
     {
      "i": 5,
      "fichero": "walk/f05.png",
-     "escala": 0.261,
+     "escala": 0.234,
      "sprite": [
-      80,
-      157
+      72,
+      140
      ],
+     "cortado": false,
+     "cabeza_x": 45.0,
      "bbox": [
-      3,
-      6,
-      79,
+      5,
+      20,
+      73,
       149
-     ],
-     "cortado": false
+     ]
     }
    ]
   }
