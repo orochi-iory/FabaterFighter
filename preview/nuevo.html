@@ -85,6 +85,12 @@
   #galeria-gestion { max-height:none; flex-wrap:wrap; }
   #galeria-gestion figure.sel { border-color:#ff7b7b; background:#3a1c22; }
   #galeria-gestion figure.nueva { border-color:#3ddc84; }
+  #galeria-gestion figure.aprobado { border-color:#3ddc84; box-shadow:inset 0 0 0 2px #1d6b3f; }
+  #galeria-gestion figure.descartado { opacity:.45; border-color:#8a3b3b; }
+  .marca { font-size:10px; font-weight:700; letter-spacing:.4px; }
+  .marca.aprobado { color:#8dffb4; }
+  .marca.pendiente { color:#b7b0d0; }
+  .marca.descartado { color:#ff8f8f; }
   .par { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
   figure.zoom { margin:0; }
   figure.zoom img { width:100%; height:auto; display:block; border-radius:8px; background:#1a1528; }
@@ -137,9 +143,12 @@
       <div class="tira" id="tira"></div></div>
     <div class="controls">
       <button id="play">⏸ Pausa</button>
-      <select id="mov">
-        <option value="stance">stance</option>
-        <option value="walk">walk</option>
+      <select id="mov" title="Todas las animaciones del modelo oficial">
+        <optgroup label="Con sprites en el creador">
+          <option value="stance">stance</option>
+          <option value="walk">walk</option>
+        </optgroup>
+        <optgroup label="Del modelo oficial (25)" id="otras-anims"></optgroup>
       </select>
       <select id="resol">
         <option value="oficial" selected>Tamaño oficial · 96×152</option>
@@ -187,17 +196,25 @@
 
   <section class="card wide">
     <h2>Sprites del movimiento · borrar y añadir</h2>
-    <p class="sub">Marca los que no sirvan y bórralos, o suelta aquí sprites nuevos (PNG con fondo
-       rojo puro). Un sprite borrado deja de estar en la galería y en la secuencia; el borrado se
-       hace en el disco, así que desaparece de verdad.</p>
+    <p class="sub">Marca sprites para <b>aprobarlos</b>, dejarlos pendientes, descartarlos o
+       mandarlos a la <b>papelera</b> (recuperable). Abajo puedes añadir PNG nuevos con fondo
+       rojo puro o transparente. Nada se borra de golpe: la papelera guarda los ficheros hasta
+       que la vacíes.</p>
     <div class="controls" style="justify-content:flex-start;margin:0 0 10px">
       <label class="note"><input type="checkbox" id="todos"> marcar todos</label>
-      <button id="borrar-sel" class="peligro">🗑 Borrar marcados</button>
+      <button id="aprobar-sel" class="guardar">✓ Aprobar marcados</button>
+      <button id="pendiente-sel">↺ Dejar pendientes</button>
+      <button id="descartar-sel">✕ Descartar marcados</button>
+      <button id="borrar-sel" class="peligro">🗑 A la papelera</button>
+    </div>
+    <div class="controls" style="justify-content:flex-start;margin:0 0 10px">
       <label class="note" style="display:flex;align-items:center;gap:6px">
         Añadir nuevos:
         <input type="file" id="ficheros" accept="image/png" multiple style="font-size:12px">
       </label>
       <button id="subir">⬆ Añadir a la galería</button>
+      <button id="ver-papelera">🗑 Ver papelera</button>
+      <button id="vaciar-papelera" class="peligro">Vaciar papelera</button>
     </div>
     <div class="note" id="gestion">—</div>
     <div class="galeria" id="galeria-gestion"></div>
@@ -272,10 +289,25 @@
 
 <script>
 (async () => {
-  const [nat, ofi] = await Promise.all([
+  const [nat, ofi, sheet] = await Promise.all([
     fetch('../voltia/nuevo/creador/sprites/datos.json', { cache: 'no-store' }).then(r => r.json()),
     fetch('../voltia/nuevo/creador/oficial/datos.json', { cache: 'no-store' }).then(r => r.json()),
+    // las 25 animaciones del modelo original: para saber cuales faltan y poder pedirlas
+    fetch('../voltia/sheet.json', { cache: 'no-store' }).then(r => r.json()),
   ]);
+  // Las que ya tienen sprites en el creador
+  const conSprites = new Set(Object.keys(ofi.anims || {}));
+  const otras = document.getElementById('otras-anims');
+  if (otras) {
+    sheet.animations.forEach(a => {
+      if (conSprites.has(a.id)) return;
+      const o = document.createElement('option');
+      o.value = a.id;
+      o.textContent = `${a.id} · ${a.frames} frames (sin sprites aún)`;
+      o.disabled = true;
+      otras.appendChild(o);
+    });
+  }
   const cv = document.getElementById('anim');
   const cx = cv.getContext('2d');
   const caja = document.getElementById('caja');     // el hueco donde tiene que caber
@@ -285,7 +317,15 @@
   let last = performance.now(), acc = 0, M = 1;
 
   const pack = () => (resol === 'oficial' ? ofi : nat);
-  const meta = () => pack().anims[mov];
+  const meta = () => {
+    const m = pack().anims[mov];
+    if (!m) {
+      // Movimiento del modelo oficial que aun no tiene sprites en el creador: se devuelve
+      // una animacion vacia para que el visor no reviente y se vea el aviso.
+      return { lienzo: [96, 152], ancla: [48, 26], frames: [], vacio: true };
+    }
+    return m;
+  };
   const clave = () => `sec:${resol}:${mov}`;
   const ruta = f => (resol === 'oficial' ? '../voltia/nuevo/creador/oficial/' : '../voltia/nuevo/creador/sprites/') + f.fichero;
   const dpr = () => window.devicePixelRatio || 1;
@@ -591,11 +631,13 @@
   // ---------------------------------------------------------------------------------
   // Gestor de sprites: borrar los que no sirven y añadir nuevos
   // ---------------------------------------------------------------------------------
-  // No hay servidor de base de datos ni hace falta: los PNG son ficheros del repo, así que
-  // se borran con `borrar_sprites.py` (que recibe la lista de ficheros y regenera
-  // datos.json). Añadir sí necesita escribir, y para eso `tools/serve.py` tiene un
-  // POST /subir que deja el PNG en `creador/nuevos/`. Nunca se escribe en sprites/ ni en
-  // oficial/: lo que entra desde el navegador queda en bruto hasta que se trocea.
+  // El navegador no puede borrar ficheros del repo, así que el visor DESCARGA la lista de lo
+  // marcado y los scripts la aplican:
+  //   tools/papelera.py        mover a papelera / restaurar / vaciar
+  //   tools/estado_sprites.py  aprobar / pendiente / descartar
+  // Añadir sí necesita escribir, y para eso `tools/serve.py` tiene un POST /subir que deja el
+  // PNG en `creador/nuevos/`. Nunca se escribe en sprites/ ni en oficial/: lo que entra desde
+  // el navegador queda en bruto hasta que se trocea.
   const marcados = new Set();
 
   function dibujarGestion() {
@@ -611,8 +653,10 @@
       img.width = Math.round(96 * m.lienzo[0] / m.lienzo[1]);
       img.height = 96;
       const cap = document.createElement('figcaption');
-      cap.textContent = `#${i + 1}` + (marcados.has(i) ? ' · marcar para borrar' : '');
+      const estado = f.estado || 'pendiente';
+      cap.innerHTML = `#${i + 1}<br><span class="marca ${estado}">${estado.toUpperCase()}</span>`;
       fig.append(img, cap);
+      fig.classList.add(estado);
       if (marcados.has(i)) fig.classList.add('sel');
       fig.onclick = () => {
         if (marcados.has(i)) marcados.delete(i); else marcados.add(i);
@@ -620,9 +664,14 @@
       };
       g.appendChild(fig);
     });
-    document.getElementById('gestion').textContent = marcados.size
-      ? `${marcados.size} marcado(s): ${[...marcados].map(i => i + 1).join(', ')}. Pulsa «Borrar marcados».`
-      : `Galería de ${mov} · ${m.frames.length} sprites. Ninguno marcado.`;
+    const c = { aprobado: 0, pendiente: 0, descartado: 0 };
+    m.frames.forEach(f => { c[f.estado || 'pendiente'] += 1; });
+    document.getElementById('gestion').innerHTML = marcados.size
+      ? `<b>${marcados.size}</b> marcado(s): ${[...marcados].map(i => i + 1).join(', ')}`
+      : `Galería de <b>${mov}</b> · ${m.frames.length} sprites · ` +
+        `<span class="marca aprobado">${c.aprobado} aprobados</span> · ` +
+        `<span class="marca pendiente">${c.pendiente} pendientes</span> · ` +
+        `<span class="marca descartado">${c.descartado} descartados</span`;
   }
 
   function bajarTexto(nombre, texto, tipo) {
@@ -636,17 +685,61 @@
     dibujarGestion();
   };
 
+  // Marcar estado: descarga la lista y explica el comando. Es un cambio de datos (no borra
+  // ficheros), asi que se puede aplicar sin miedo y revertir con la misma orden.
+  function marcarEstado(estado, comando) {
+    if (!marcados.size) {
+      document.getElementById('gestion').textContent = 'No hay nada marcado.';
+      return;
+    }
+    const lineas = [...marcados].sort((a, b) => a - b)
+      .map(i => `${mov}/f${String(i).padStart(2, '0')}.png`);
+    bajarTexto(`${comando}_${mov}_${resol}.txt`, lineas.join('\n') + '\n');
+    document.getElementById('gestion').innerHTML =
+      `Descargado <b>${comando}_${mov}_${resol}.txt</b> (${lineas.length} sprite(s)).<br>` +
+      `Para aplicarlo, en la carpeta del repo:<br><code>PYTHONPATH=tools/pylibs python3 ` +
+      `tools/estado_sprites.py --estado ${estado} --lista ~/Downloads/${comando}_${mov}_${resol}.txt</code>`;
+  }
+  document.getElementById('aprobar-sel').onclick = () => marcarEstado('aprobado', 'aprobar');
+  document.getElementById('pendiente-sel').onclick = () => marcarEstado('pendiente', 'pendiente');
+  document.getElementById('descartar-sel').onclick = () => marcarEstado('descartado', 'descartar');
+
+  document.getElementById('ver-papelera').onclick = async () => {
+    const st = document.getElementById('gestion');
+    st.textContent = 'Leyendo la papelera…';
+    try {
+      const r = await fetch('../voltia/nuevo/creador/papelera/papelera.json', { cache: 'no-store' });
+      if (!r.ok) throw new Error('la papelera está vacía');
+      const items = await r.json();
+      st.innerHTML = items.length
+        ? `<b>Papelera: ${items.length} fichero(s)</b><br>` +
+          items.map(it => `${it.base}/${it.mov}/f${String(it.fichero).replace(/[^0-9]/g, '')} ` +
+                          `<span style="color:#9b93b8">(venía del índice ${it.indice_original})</span>`).join('<br>') +
+          '<br>Devolverlos: <code>python3 tools/papelera.py --restaurar</code>'
+        : 'La papelera está vacía.';
+    } catch (e) {
+      st.textContent = 'La papelera está vacía (o no existe todavía).';
+    }
+  };
+
+  document.getElementById('vaciar-papelera').onclick = () => {
+    if (!confirm('Vaciar la papelera BORRA los PNG de verdad. ¿Seguir?')) return;
+    document.getElementById('gestion').innerHTML =
+      'Para vaciarla de verdad hay que estar en el repo (el navegador no puede borrar ficheros):<br>' +
+      '<code>PYTHONPATH=tools/pylibs python3 tools/papelera.py --vaciar</code>';
+  };
+
   document.getElementById('borrar-sel').onclick = async () => {
     if (!marcados.size) { document.getElementById('gestion').textContent = 'No hay nada marcado.'; return; }
     const m = meta();
     const aBorrar = [...marcados].sort((a, b) => a - b).map(i => `${mov}/${String(i).padStart(2, '0')}`);
     // Se pide confirmación con la lista exacta: es un borrado de ficheros.
-    if (!confirm('Se van a borrar ' + aBorrar.length + ' sprite(s) de ' + mov + ':\n\n' +
+    if (!confirm('Se van a mover a la PAPELERA ' + aBorrar.length + ' sprite(s) de ' + mov + ':\n\n' +
                  aBorrar.map(i => i.split('/')[1]).join(', ') +
                  '\n\nEl fichero desaparece del disco. ¿Seguir?')) return;
 
     // 1) manifiesto para que el script sepa qué quitar
-    bajarTexto(`borrar_${mov}_${resol}.txt`, aBorrar.map(i => `${mov}/f${i}.png`).join('\n') + '\n');
+    bajarTexto(`papelera_${mov}_${resol}.txt`, aBorrar.map(i => `${mov}/f${i}.png`).join('\n') + '\n');
     // 2) y se oculta en la sesión, para poder seguir trabajando sin recargar
     seq = seq.filter(i => !marcados.has(i));
     guardar();
@@ -654,10 +747,10 @@
     await refrescarTodo();
     dibujarGestion();
     document.getElementById('gestion').innerHTML =
-      'Descargado <b>borrar_' + mov + '_' + resol + '.txt</b> con la lista exacta. ' +
+      'Descargado <b>papelera_' + mov + '_' + resol + '.txt</b> con la lista exacta. ' +
       'Sin recargar la página, esos sprites ya no están en la galería ni en la secuencia.<br>' +
-      'Para que desaparezcan del disco, en la carpeta del repo:<br>' +
-      '<code>PYTHONPATH=tools/pylibs python3 tools/borrar_sprites.py --lista ~/Downloads/borrar_' +
+      'Para moverlos a la papelera (no se borran, se pueden recuperar):<br>' +
+      '<code>PYTHONPATH=tools/pylibs python3 tools/papelera.py --lista ~/Downloads/papelera_' +
       mov + '_' + resol + '.txt</code>';
   };
 

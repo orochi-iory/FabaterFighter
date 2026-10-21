@@ -1,52 +1,63 @@
 #!/usr/bin/env python3
-"""Monta la tira de anclaje de Voltia: frente, derecha, izquierda y trasera, con su etiqueta.
+"""Monta el ancla de Voltia a partir de UNA sola imagen de 4 poses, con su etiqueta.
 
-Es la referencia que se da a la IA en cada generacion, a 1408x768 (el mismo formato que la
-imagen de referencia que paso el usuario).
+Por que asi: generar las cuatro vistas por separado dio cuatro personajes distintos (una de
+frente mas ancha, otra con el rayo del pecho diferente). En **una sola hoja** la IA mantiene
+el diseno entre las cuatro, que es justo lo que hace falta para usarla como referencia.
 
-Cada vista se mide por su tinta (no por la caja del PNG: el fondo rojo sobra), se escala a
-la misma altura y se apoya en la MISMA linea de pies. La etiqueta va debajo, sobre una banda
-blanca, para que quede claro que ese texto no forma parte del sprite.
+Este script NO genera nada: coge la hoja que sale de la IA, la mide, la reescala a 1408x768
+(el formato de la referencia del usuario) y le pone la banda blanca con las etiquetas.
 
-    PYTHONPATH=tools/pylibs python3 tools/creador_ancla.py
+    PYTHONPATH=tools/pylibs python3 tools/creador_ancla.py hoja_ia.png
 """
 import os
+import sys
 
 from PIL import Image, ImageDraw, ImageFont
 
 BASE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-ENTRADA = os.path.join(BASE, 'voltia/nuevo/creador/ancla')
-SALIDA = os.path.join(ENTRADA, 'ANCLA_voltia_4_vistas.png')
-TOL = 90
+SALIDA = os.path.join(BASE, 'voltia/nuevo/creador/ancla/ANCLA_voltia_4_vistas.png')
 W, H = 1408, 768
-ALTO_TINTA = 600
-LINEA_PIES = 640
-BANDA = H - 78
-ETIQUETAS = [('frente.png', 'FRENTE'), ('derecha2.png', 'DERECHA'),
-             ('izquierda2.png', 'IZQUIERDA'), ('trasera.png', 'TRASERA')]
-FUENTES = [
-    '/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf',
-    '/usr/share/fonts/truetype/liberation/LiberationSans-Bold.ttf',
-]
+BANDA = 78
+ALTO_FIGURA = H - BANDA - 20
+ETIQUETAS = ['FRENTE', 'DERECHA', 'IZQUIERDA', 'TRASERA']
+FUENTES = ['/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf',
+           '/usr/share/fonts/truetype/liberation/LiberationSans-Bold.ttf']
 
 
 def es_rojo(c):
-    return c[0] > 255 - TOL and c[1] < TOL and c[2] < TOL
+    return c[0] > 200 and c[1] < 70 and c[2] < 70
 
 
-def recortar_tinta(p):
-    im = Image.open(p).convert('RGBA')
-    px = im.load()
+def tramos(im):
+    """Columnas con tinta: devuelve un tramo (x0, x1) por figura."""
+    px = im.convert('RGB').load()
     ancho, alto = im.size
-    x0, y0, x1, y1 = ancho, alto, 0, 0
-    for y in range(alto):
-        for x in range(ancho):
-            if not es_rojo(px[x, y][:3]):
-                if x < x0: x0 = x
-                if y < y0: y0 = y
-                if x > x1: x1 = x
-                if y > y1: y1 = y
-    return im.crop((x0, y0, x1 + 1, y1 + 1))
+    hay = []
+    for x in range(ancho):
+        v = False
+        for y in range(0, alto, 2):
+            if not es_rojo(px[x, y]):
+                v = True
+                break
+        hay.append(v)
+    out, ini = [], None
+    for x, v in enumerate(hay):
+        if v and ini is None:
+            ini = x
+        elif not v and ini is not None:
+            out.append((ini, x - 1))
+            ini = None
+    if ini is not None:
+        out.append((ini, ancho - 1))
+    return [t for t in out if t[1] - t[0] > 20]
+
+
+def recorte_vertical(im, x0, x1):
+    px = im.convert('RGB').load()
+    ys = [y for y in range(im.size[1])
+          if any(not es_rojo(px[x, y]) for x in range(x0, x1 + 1, 2))]
+    return (min(ys), max(ys)) if ys else (0, im.size[1] - 1)
 
 
 def fuente(tam):
@@ -57,27 +68,34 @@ def fuente(tam):
 
 
 def main():
-    hoja = Image.new('RGBA', (W, H), (255, 0, 0, 255))
-    slot = W // len(ETIQUETAS)
-    for k, (fichero, texto) in enumerate(ETIQUETAS):
-        fig = recortar_tinta(os.path.join(ENTRADA, fichero))
-        esc = ALTO_TINTA / fig.size[1]
-        fig = fig.resize((max(1, round(fig.size[0] * esc)), ALTO_TINTA), Image.LANCZOS)
-        cx = slot * k + slot // 2
-        hoja.alpha_composite(fig, (cx - fig.size[0] // 2, LINEA_PIES - fig.size[1]))
-        print('  %-14s %4d×%4d -> x%d  escala %.3f'
-              % (texto, fig.size[0], fig.size[1], cx, esc))
+    if len(sys.argv) < 2:
+        raise SystemExit('uso: creador_ancla.py hoja_ia.png')
+    hoja = Image.open(sys.argv[1]).convert('RGB')
+    t = tramos(hoja)
+    if len(t) != 4:
+        raise SystemExit('se esperaban 4 figuras y hay %d' % len(t))
+    print('  %s · %dx%d' % (os.path.basename(sys.argv[1]), *hoja.size))
 
-    # banda de etiquetas
-    d = ImageDraw.Draw(hoja)
-    d.rectangle((0, BANDA, W, H), fill=(255, 255, 255, 255))
-    f = fuente(30)
-    for k, (_, texto) in enumerate(ETIQUETAS):
+    salida = Image.new('RGBA', (W, H), (255, 0, 0, 255))
+    slot = W // 4
+    for k, (x0, x1) in enumerate(t):
+        y0, y1 = recorte_vertical(hoja, x0, x1)
+        fig = hoja.crop((x0, y0, x1 + 1, y1 + 1))
+        esc = ALTO_FIGURA / fig.size[1]
+        fig = fig.resize((max(1, round(fig.size[0] * esc)), ALTO_FIGURA), Image.LANCZOS)
         cx = slot * k + slot // 2
-        ancho = d.textlength(texto, font=f)
-        d.text((cx - ancho / 2, BANDA + 22), texto, font=f, fill=(20, 16, 34, 255))
-    hoja.convert('RGB').save(SALIDA)
-    print('\n%s · %d×%d' % (SALIDA, W, H))
+        salida.alpha_composite(fig.convert('RGBA'), (cx - fig.size[0] // 2, 10 + ALTO_FIGURA - fig.size[1]))
+        print('  %-10s %4d..%4d  esc %.3f  -> x%d' % (ETIQUETAS[k], x0, x1, esc, cx))
+
+    d = ImageDraw.Draw(salida)
+    d.rectangle((0, H - BANDA, W, H), fill=(255, 255, 255, 255))
+    f = fuente(30)
+    for k, texto in enumerate(ETIQUETAS):
+        cx = slot * k + slot // 2
+        d.text((cx - d.textlength(texto, font=f) / 2, H - BANDA + 22), texto,
+               font=f, fill=(20, 16, 34, 255))
+    salida.convert('RGB').save(SALIDA)
+    print('\n%s · %dx%d' % (SALIDA, W, H))
 
 
 if __name__ == '__main__':

@@ -53,20 +53,7 @@
     },
     {
      "i": 2,
-     "fichero": "stance/f02.png",
-     "escala": 0.227,
-     "sprite": [
-      92,
-      142
-     ],
-     "cortado": false,
-     "cabeza_x": 59.7,
-     "bbox": [
-      2,
-      17,
-      84,
-      149
-     ]
+     "fichero": "stance/f02.png"
     },
     {
      "i": 3,
@@ -104,20 +91,7 @@
     },
     {
      "i": 5,
-     "fichero": "stance/f05.png",
-     "escala": 0.227,
-     "sprite": [
-      92,
-      142
-     ],
-     "cortado": false,
-     "cabeza_x": 59.7,
-     "bbox": [
-      17,
-      16,
-      85,
-      147
-     ]
+     "fichero": "stance/f05.png"
     },
     {
      "i": 6,

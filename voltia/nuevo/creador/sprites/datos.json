@@ -54,22 +54,7 @@
     },
     {
      "i": 2,
-     "fichero": "stance/f02.png",
-     "nativo": [
-      343,
-      560
-     ],
-     "caja_en_hoja": [
-      818,
-      40,
-      1161,
-      600
-     ],
-     "cabeza": [
-      248.2,
-      111.1
-     ],
-     "cortado": false
+     "fichero": "stance/f02.png"
     },
     {
      "i": 3,
@@ -111,22 +96,7 @@
     },
     {
      "i": 5,
-     "fichero": "stance/f05.png",
-     "nativo": [
-      276,
-      560
-     ],
-     "caja_en_hoja": [
-      2025,
-      40,
-      2301,
-      600
-     ],
-     "cabeza": [
-      176.3,
-      74.3
-     ],
-     "cortado": false
+     "fichero": "stance/f05.png"
     },
     {
      "i": 6,

@@ -357,11 +357,14 @@ En el creador, sección **«Sprites del movimiento · borrar y añadir»**:
 
 - **Marcar y borrar.** Se marcan los sprites que no sirven y el visor descarga
   `borrar_<mov>_<resol>.txt` con la lista exacta. En el repo:
-  `PYTHONPATH=tools/pylibs python3 tools/borrar_sprites.py --lista ~/Downloads/borrar_stance_oficial.txt`
-  Borra el PNG nativo **y** su versión oficial, y **renumera** lo que queda (`f00, f01…`) para
-  que no haya huecos. No toca `sheet_*.png`: la hoja de la IA es material de origen.
-  Probado: borrar los índices 4 y 6 de stance deja 6 frames, ficheros `f00..f05`, y los dos
-  `datos.json` coherentes (después se restauró).
+  `PYTHONPATH=tools/pylibs python3 tools/papelera.py --lista ~/Downloads/papelera_stance.txt`
+  Mueve el PNG nativo **y** su versión oficial a `creador/papelera/`, **renumera** lo que queda
+  (`f00, f01…`) y apunta en cada frame su índice `original`. No toca `sheet_*.png`.
+  Probado de punta a punta: mover los índices 2 y 5 deja 6 frames; `--restaurar` devuelve los
+  8 **byte a byte idénticos** (0 diferencias comprobadas con PIL); `--vaciar` borra de verdad.
+- **Estados.** Aprobar / pendiente / descartar se guardan en `datos.json` (`estado`):
+  `python3 tools/estado_sprites.py --estado aprobado --lista ...` y `--ver stance` resume.
+  Descartar **no borra**: es una marca. Para sacar el fichero, la papelera.
 - **Añadir.** Se eligen PNG en el visor y se suben a `creador/nuevos/` con un `POST /subir`
   que añade `tools/serve.py` (no escribe nunca en `sprites/` ni en `oficial/`). Después:
   `python3 tools/aniadir_sprites.py --mov stance`. Valida antes de aceptar: cabecera PNG de
