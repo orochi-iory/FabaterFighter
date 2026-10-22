@@ -1,5 +1,6 @@
 __pycache__/
 *.pyc
+.venv/
 
 # local style references, not shipped
 voltia/ref/
@@ -9,5 +10,8 @@ image-search/
 /tools/pylibs/
 
 # bandejas mutables del creador (se gestionan desde la página, no se versionan)
+/voltia/nuevo/creador/pruebas-ia-pendientes/
 /voltia/nuevo/creador/papelera/
 /voltia/nuevo/creador/nuevos/
+/characters/*/creator/papelera/
+/characters/*/creator/nuevos/

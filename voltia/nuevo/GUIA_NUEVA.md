@@ -361,12 +361,13 @@ las vistas; no ocultar esa limitación.
 
 ## Creador de personajes · las 25 animaciones y la biblioteca (2026-10-21)
 
-El visor es `preview/nuevo.html`. El selector enumera las **25 animaciones** de
-`voltia/sheet.json`, no solo stance/walk. Al elegir una muestra debajo todos los frames de la
-fila original desde `voltia/sheet_uniform.png`, recortados con la celda medida **350×332** y
-el `row`/`frames` del JSON. `/api/reference/<mov>.png` sirve solo esa fila (no decodifica en
-el navegador la hoja completa de 5250×8300); se conservan como máximo dos filas en caché.
-Cada celda se dibuja en píxeles enteros con suavizado apagado; no modifica la hoja oficial.
+La interfaz del creador es `creator/index.html`; `preview/nuevo.html` redirige allí por
+compatibilidad. El perfil Voltia enumera las **25 animaciones** de `voltia/sheet.json`, no solo
+stance/walk. Chun-Li ofrece las **29 acciones del motor** de su `game/sheet.json` (su página de
+hoja documenta las 22 filas de origen). Al elegir un movimiento, se sirve solo su fila de
+referencia, usando la celda y la hoja del perfil seleccionado; no se carga la hoja completa en
+el navegador. Se conservan como máximo dos filas en caché. Cada celda se dibuja en píxeles
+enteros con suavizado apagado; no se modifica ninguna hoja fuente.
 
 Para correrlo, instala la dependencia de imágenes que declara el repo y arranca el servidor:
 
@@ -377,6 +378,29 @@ El servidor local (`tools/serve.py`) sirve `/api/sprites` y `/api/trash` para qu
 actúen sobre los datos del creador, sin descargar listas ni pedir comandos a mano. Las
 operaciones y reglas viven en `tools/creator_store.py`. El modelo original
 `voltia/sheet_uniform.png`, su `sheet.json` y Chun-Li no se escriben.
+
+### Adaptación a pantallas (2026-10-21)
+
+- Hasta **980 px** de ancho, el contenido y las comparaciones pasan a una columna.
+- Hasta **760 px**, la navegación queda en una tira horizontal desplazable.
+- Hasta **600 px**, las acciones se organizan en dos columnas; selectores largos ocupan el
+  ancho disponible y botones/selectores tienen un alto táctil mínimo de **44 px**.
+- Visor, tira, secuencia, galerías y fila de referencia **no encogen los sprites**: mantienen
+  su proporción/tamaño de píxel y permiten desplazamiento horizontal. El canvas principal
+  conserva el cálculo entero por `devicePixelRatio` y se recalcula con `ResizeObserver`.
+- Tablas y fórmulas largas también pueden desplazarse en horizontal para no ensanchar la página.
+- La selección de la biblioteca actualiza el borde/estado sin reconstruir las tarjetas, para no
+  perder el sprite marcado ni reiniciar el desplazamiento. Tras borrar, conserva la posición de
+  la galería y confirma movimiento, frame e ID.
+- Las URLs de los PNG incluyen su ID estable como versión. Al borrar, el archivo `f05.png` puede
+  renombrarse a `f04.png`; la versión evita que el navegador muestre en `f04` la imagen anterior
+  que ya estaba cacheada.
+
+**Comprobación aislada del borrado:** con seis IDs distintos, mandar `probe-2` a la papelera
+eliminó ese mismo ID en las variantes nativa/oficial. Los frames anteriores y posteriores,
+incluido el último de la derecha, conservaron su ID y bytes exactos tras renumerarse. En la
+prueba de interfaz, borrar `walk/f04` envió `legacy-walk-04`; `legacy-walk-05` siguió visible
+como `f04` con una URL nueva, sin reutilizar la imagen cacheada del antiguo `f04`.
 
 ### Reutilizar un sprite aprobado
 
@@ -401,7 +425,8 @@ El visor lo añade directamente al movimiento seleccionado, en la resolución es
 - **Oficial:** exactamente **96×152 px**. No se escala.
 - PNG real, mínimo **40×60 px**, máximo **16 megapíxeles / 32 MiB**. El borde debe tener al
   menos **60 %** de transparencia o rojo puro `#ff0000`. Si el borde es rojo puro, solo se
-  convierte ese rojo exacto a alfa cero; no hay cuantización ni cambios de otros colores.
+  convierte a alfa cero el componente de rojo exacto conectado al borde; no hay cuantización ni
+  cambios de otros colores.
 - Todo PNG nuevo entra como **pendiente**; aprobarlo es una decisión explícita en la galería.
   El control de estado se aplica a cualquier variante que comparta su ID estable.
 
@@ -460,3 +485,175 @@ real en jsdom; el guardado de stance continúa exportando **768×152** sin modif
   Después de reescribir constantes, comprobar con `grep`.
 - **Medir, no deducir**: la altura, el salto y el grosor del contorno se miden. Todas las
   veces que se dieron por supuestos, estaban mal.
+
+## Interfaz del creador, importación de tiras y organización (2026-10-21)
+
+La interfaz vive ahora en `creator/index.html`. `preview/nuevo.html` se conserva como una
+redirección de compatibilidad. En la interfaz pública se retiraron las secciones
+«Al tamaño del modelo original · 96 × 152», «Medidas» y «Por qué salía borde rojo (y cómo
+se quita)»; sus mediciones y reglas quedan en esta guía interna.
+
+### Importar PNG individuales y hojas/tiras
+
+- En «PNG sueltos», cada archivo se trata como un sprite. En «Hoja/tira», el usuario define el
+  ancho/alto exactos de celda, número de filas/columnas, separación, márgenes y fila inicial.
+  Columnas `0` calcula las celdas completas; se importa una fila por defecto para no mezclar
+  movimientos. Varias filas solo se incluyen cuando el usuario lo indica expresamente.
+- El corte es `Image.crop` sobre coordenadas enteras: **no cambia dimensiones, no interpola ni
+  recolorea**. No aplica reducción por «recortar». Las celdas vacías (alfa transparente o rojo
+  puro exacto) se omiten; las demás se validan individualmente.
+- Máximo por archivo: **32 MiB** y 64 megapíxeles para la hoja; máximo **1024 celdas**. Cada sprite
+  mantiene la validación individual: mínimo 40×60 y 16 megapíxeles. Oficial exige celda exacta
+  **96×152**; nativo debe igualar el lienzo ya medido del movimiento (o define el lienzo si está
+  vacío). Ningún rechazo se «arregla» escalando.
+- En fondos de rojo puro, solo el color exacto `#ff0000` conectado al borde puede pasar a alfa
+  cero y solo cuando el borde cumple la regla de validación; los componentes rojos aislados del
+  dibujo, ningún rojo mezclado, tono de piel u otro color se modifica. La hoja fuente no se cambia.
+- Cada celda aceptada se guarda bajo el movimiento/resolución correspondiente con ID estable y
+  estado **pendiente**. El panel `aria-live` informa avance, cantidad aceptada, celdas vacías y
+  motivos concretos de rechazo.
+- «Guardar animación» genera descargas del navegador llamadas `<movimiento>_<resolución>_...png`
+  y `.json`. La tira PNG contiene los frames seleccionados tal cual; el JSON describe movimiento,
+  orden, fps, lienzo y rutas. El usuario puede guardarlos en la ubicación de descargas del equipo.
+
+Rutas API: `/api/sprites/add` para PNG individual y `/api/sprites/add-sheet` para rejillas. El
+servidor no vuelve a escribir `voltia/sheet_uniform.png`; `/api/reference/<mov>.png` la lee para
+servir la fila de referencia. Los sprites nuevos se escriben en el banco editable del creador.
+
+### Separación de código y datos
+
+`characters/roster.json` es el catálogo de presentación que lee `preview/personajes.html` y
+contiene perfiles de creador independientes para Voltia y Chun-Li. Cada perfil declara su JSON
+de animaciones, hoja de referencia, carpeta de almacenamiento y, solo si está medido, ancla y
+línea de pies oficiales. `tools/creator_store.py` resuelve las rutas desde ese registro; la UI
+envía el ID del personaje a cada ruta API. `FABATER_CREATOR_CHARACTER` fija el perfil por defecto
+para llamadas locales que no indiquen personaje.
+
+La separación es deliberadamente gradual: el motor está en `preview/fight.js`, las fichas de
+combate en `preview/chars/*.js`, la UI en `creator/` y las operaciones en `tools/`. No se mueven
+las hojas históricas ni se duplican datos: Voltia y Chun-Li conservan sus rutas existentes. Una
+nueva tarjeta pública no es automáticamente un personaje jugable; para ello también hace falta
+una ficha de combate y el arte/mediciones correspondientes.
+
+## Laboratorio IA aislado · alineación por cabeza (2026-10-21)
+
+`creator/pruebas-ia/` mantiene la revisión de las nueve hojas separada de la biblioteca oficial.
+En `catalogo.json`, los puntos `head` son coordenadas absolutas medidas sobre el PNG fuente:
+**324** son centroides de componentes que cumplen la misma regla `es_casco()` de
+`voltia/nuevo/creador/trocear.py`, y **12** se midieron manualmente sobre una cabeza visible cuando
+el color del casco cambió, quedó oculto por cabello/efecto o el componente no representaba la
+cabeza. Total: **336 de 345 cuadros de movimiento**. No se interpolan puntos entre cuadros ni se
+copian anclas oficiales.
+
+El detector se aplica a cada recorte ya separado; no usa la caja del sprite ni una altura fija de
+fila, porque varias poses están tumbadas. Los componentes con densidad menor que 0,22 o ancho
+mayor de 30 px se marcaron para revisión. Se inspeccionaron **24 casos**: 14 se recolocaron a un
+componente compacto del casco, uno usó un componente pequeño visible, 6 se midieron a mano y 3
+quedaron sin ancla porque solo se veía el cabello. Esos seis puntos, más otros seis medidos manualmente en la revisión individual, forman los **12
+puntos manuales** del catálogo. Los **9**
+cuadros sin cabeza medible (cinco
+efectos sin personaje y cuatro poses con la cabeza oculta) conservan el centro de columna legado
+como fallback, con aviso explícito. En el visor se puede activar el marcador, comparar con la
+alineación por columna y corregir con un clic sobre la cabeza o con coordenadas locales X/Y. También
+se puede arrastrar la imagen fuente para mover el recorte (X/Y), cambiar ancho/alto con los controles
+y arrastrar la cruz amarilla en la vista previa válida para volver a medir la cabeza.
+
+Los paneles principales del laboratorio son plegables; la hoja fuente y el alcance/máscara empiezan
+plegados. Las correcciones de recorte y ancla se guardan automáticamente en el `localStorage` del
+navegador; hay opción para guardar ahora, descargar un respaldo JSON e importarlo. El respaldo se
+valida contra la firma del catálogo y las huellas SHA-256 de las fuentes. Para revisar una animación,
+se marcan sus cuadros válidos, se comprueba la vista previa en orden original y se pulsa **Validar
+animación completa**. Si se edita un cuadro o cambia la selección válida, la animación vuelve a
+pendiente (se conserva la selección para volver a revisar).
+
+### Exclusión manual de zonas (solo laboratorio)
+
+La herramienta **Seleccionar zona a eliminar** permite arrastrar un rectángulo sobre la vista Fuente.
+Cada zona usa coordenadas absolutas del PNG y se guarda en el cuadro correspondiente. El resultado
+procesado pone su alfa a cero; el RGB, la hoja fuente, el catálogo y la biblioteca oficial no se
+modifican. El visor dibuja las zonas guardadas sobre Fuente; **Deshacer última zona** retira la última
+del cuadro y **Quitar zonas de este cuadro** elimina todas. Restaurar el cuadro o la secuencia también
+las borra. Se guardan como metadatos en el `localStorage` y en los respaldos JSON, que validan sus
+límites antes de importar.
+
+### Handoff aprobado al Creador · Nativo → 96×152
+
+La validación del laboratorio por sí sola no escribe imágenes. Al validar una animación aparece
+**Enviar al Creador · Nativo sin escala**; también se puede iniciar desde **Importar Nativo** en el
+panel de revisión del Creador. Ambas rutas exportan los cuadros válidos, alineados por la cabeza
+medida y sin marcador, y guardan cada PNG en `voltia/nuevo/creador/pruebas-ia-pendientes/<lote>/`.
+Los PNG se conservan en sus dimensiones y colores visibles exactos, sin escala ni recolor. La bandeja
+Nativa acepta cuadros desde 1×1 px (dentro de los límites máximos de tamaño) y es separada —el lienzo
+puede diferir del movimiento nativo existente—, ignorada por Git y aislada de `sprites/`, `oficial/`,
+`voltia/sheet_uniform.png` y `voltia/sheet.json`.
+El lote empieza como `pendiente`; no se puede convertir hasta pulsar **Aprobar animación en el
+Creador** tras revisar otra vez la animación nativa. La conversión oficial es un paso posterior e
+independiente y conserva sus propias comprobaciones de entrada.
+
+La acción posterior **Preparar candidatos 96×152** aplica el ajuste uniforme de `encajar.py` solo a
+ese lote y movimiento. Esto no cambia la reconstrucción original de Voltia ni su regla de cero
+filtros; el resultado queda como candidato de trabajo hasta una integración manual. Para cada PNG
+nativo se mide el bbox por alfa (no por RGB invisible), y se
+calcula una escala común `min(1, (146−26)/max(bbox.bottom−ancla_y), 92/ancho_lienzo)`. Se usa el ancla
+nativa ya centrada en cabeza, `x=2`, los pies en `y=146` y LANCZOS. El remuestreo usa alfa
+premultiplicado para que RGB oculto rojo/negro no produzca halos. No se recorta: si el arte no cabe
+completo en 96×152, la conversión se detiene. Se guardan el lote Nativo, escala, bbox, `cabeza_x`,
+número de cuadro fuente, validación y aprobación como procedencia del candidato. Los resultados se añaden a
+`oficial/<movimiento>/` como `pendiente`, sin sobrescribir sprites existentes.
+
+Esos candidatos no se incorporan automáticamente a la secuencia. Primero se aprueban en la galería
+del Creador; luego **Añadir aprobados de Pruebas IA a la secuencia** los agrega en orden, sin duplicar
+los que ya están. **Guardar animación** descarga la tira PNG y el JSON con procedencia; no escribe la
+hoja de juego. El servidor local necesario es `python3 tools/serve.py --puerto 8000`; un servidor
+estático solo permite inspeccionar el laboratorio.
+
+## Voltia Final · calibración manual y publicación versionada (2026-10-22)
+
+Voltia Final es un destino separado para las animaciones oficiales aprobadas. Su banco es
+`voltia/nuevo/voltia-final/`; no lee ni modifica `voltia/sheet_uniform.png` ni `voltia/sheet.json`, y
+no integra automáticamente los resultados en el juego ni en Voltia original. El registro público
+`characters/roster.json` incluye su ficha independiente y enlaza al visor `preview/voltia-final.html`.
+
+### Revisar alineación antes de publicar
+
+La calibración es **por movimiento**. La cabeza y el suelo son dos revisiones independientes, no
+inferibles desde la caja del sprite:
+
+- **Cabeza**: `ancla=[x,y]`, un punto medido manualmente sobre la cabeza, no el centro ni los bordes
+  de la caja del sprite. El visor permite arrastrar la cruz amarilla o introducir X/Y en el lienzo
+  oficial 96×152.
+- **Suelo**: `pies_y`, la línea horizontal medida para las poses apoyadas. Se arrastra por separado
+  desde la línea azul o se escribe el valor Y. No se deriva del borde inferior alfa del recorte; la
+  línea azul es la referencia objetivo contra la que se apoyan visualmente los pies.
+- **Posición del sprite**: después de colocar ambas guías, activa «Arrastrar sprite en el visor» y
+  muévelo sobre el lienzo hasta que la cabeza y los pies coincidan con sus referencias. También
+  puedes escribir el desplazamiento en píxeles enteros `ΔX/ΔY`. Las guías quedan fijas. El ajuste
+  se guarda por movimiento en `desplazamiento_sprite` y `revision_alineacion.sprite`; se dibuja como
+  una traslación en el Creador y en Voltia Final, sin cambiar tamaño ni reescribir el PNG. Hay que
+  confirmar visualmente la posición por movimiento con «Guardar posición revisada» antes de publicar,
+  incluso si se conserva el desplazamiento neutro `[0,0]`; así no se publica una pose sin comprobarla.
+
+Los valores ya existentes en el perfil o en los metadatos por movimiento —por ejemplo
+`ancla=[48,26]` y `pies_y=146`— se muestran como **no revisados** hasta guardar explícitamente cada
+componente. Las revisiones de cabeza y suelo se registran en `revision_alineacion.cabeza` y
+`revision_alineacion.suelo`, con el valor y la fecha; guardar una no marca la otra. La API vuelve a
+comprobar las revisiones y que coincidan con los metadatos actuales. Las miniaturas y los PNG
+originales permanecen intactos; solo cambia la posición de dibujo en el visor.
+
+### Publicación y visor
+
+«Enviar a Voltia Final» requiere el perfil Voltia, resolución oficial 96×152, una secuencia explícita
+sin IDs repetidos, todos sus PNG aprobados y las revisiones manuales de cabeza, suelo y posición del
+sprite en ese movimiento. Hay botones de envío tanto en el Visor
+como junto a «Guardar animación» dentro de Secuencia. Cuando el botón está bloqueado, el mensaje
+visible indica el requisito pendiente. La API rechaza solicitudes incompletas aunque se intente
+saltar la interfaz. Al publicar crea una carpeta nueva
+`animaciones/<movimiento>/<version_id>/`, copia los PNG aprobados byte a byte y actualiza el catálogo
+`datos.json`; las carpetas de versiones anteriores no se sobrescriben. La ficha de Personajes muestra
+el visor separado, cuyo menú permite cargar cada movimiento publicado, recorrer sus cuadros y
+reproducirlo con sus FPS y modo de bucle. El visor aplica el desplazamiento guardado sin modificar los
+PNG y muestra la versión, la cabeza, el suelo y los datos de calibración.
+
+No se ha publicado ninguna animación real mientras falte la calibración manual. Las comprobaciones
+de la publicación se ejecutaron con un banco temporal aislado, preservando exactamente los bytes de
+prueba y eliminando ese directorio al terminar.

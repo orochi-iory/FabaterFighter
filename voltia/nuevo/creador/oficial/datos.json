@@ -14,127 +14,626 @@
     48,
     26
    ],
-   "pies_y": 146,
+   "pies_y": 144,
    "escala": 0.227,
    "frames": [
     {
+     "id": "84caab51487242a1b1501f983ca71a95",
      "i": 0,
      "fichero": "stance/f00.png",
-     "escala": 0.227,
+     "nativo": null,
+     "cortado": false,
+     "subido": true,
+     "estado": "pendiente",
+     "escala": 0.511,
      "sprite": [
       92,
-      142
+      198
      ],
-     "cortado": false,
-     "cabeza_x": 59.7,
+     "cabeza_x": 48.0,
      "bbox": [
-      17,
-      16,
-      86,
-      147
+      12,
+      33,
+      70,
+      148
      ],
-     "id": "legacy-stance-00"
+     "origen_laboratorio": {
+      "secuencia": "p01-crouch",
+      "lote_nativo": "lab-a5a401de06833a6c9baabca1",
+      "validada_en": "2026-10-21T21:59:21.128Z",
+      "aprobada_en_creador": "2026-10-21T22:58:53.511305Z",
+      "cuadro_fuente": 1,
+      "resolucion_fuente": "nativo",
+      "lienzo_fuente": [
+       180,
+       388
+      ],
+      "ancla_fuente": [
+       90,
+       194
+      ],
+      "proceso": "encajar.py · reducción uniforme LANCZOS con alfa premultiplicado",
+      "escala": 0.511111,
+      "cabeza_x": 48.0,
+      "bbox": [
+       12,
+       33,
+       70,
+       148
+      ]
+     }
     },
     {
+     "id": "8ebdede99f334a14b4231edca4f65cc1",
      "i": 1,
      "fichero": "stance/f01.png",
-     "escala": 0.227,
+     "nativo": null,
+     "cortado": false,
+     "subido": true,
+     "estado": "pendiente",
+     "escala": 0.511,
      "sprite": [
       92,
-      142
+      198
      ],
-     "cortado": false,
-     "cabeza_x": 59.7,
-     "bbox": [
-      18,
-      17,
-      94,
-      148
-     ],
-     "id": "legacy-stance-01"
-    },
-    {
-     "i": 2,
-     "fichero": "stance/f02.png",
-     "id": "legacy-stance-02"
-    },
-    {
-     "i": 3,
-     "fichero": "stance/f03.png",
-     "escala": 0.227,
-     "sprite": [
-      92,
-      142
-     ],
-     "cortado": false,
-     "cabeza_x": 59.7,
+     "cabeza_x": 48.0,
      "bbox": [
       9,
-      16,
-      78,
-      148
+      49,
+      67,
+      149
      ],
-     "id": "legacy-stance-03"
+     "origen_laboratorio": {
+      "secuencia": "p01-crouch",
+      "lote_nativo": "lab-a5a401de06833a6c9baabca1",
+      "validada_en": "2026-10-21T21:59:21.128Z",
+      "aprobada_en_creador": "2026-10-21T22:58:53.511305Z",
+      "cuadro_fuente": 2,
+      "resolucion_fuente": "nativo",
+      "lienzo_fuente": [
+       180,
+       388
+      ],
+      "ancla_fuente": [
+       90,
+       194
+      ],
+      "proceso": "encajar.py · reducción uniforme LANCZOS con alfa premultiplicado",
+      "escala": 0.511111,
+      "cabeza_x": 48.0,
+      "bbox": [
+       9,
+       49,
+       67,
+       149
+      ]
+     }
     },
     {
+     "id": "26b7a4fb0a1e42c8a9f3d69a627654e9",
+     "i": 2,
+     "fichero": "stance/f02.png",
+     "nativo": null,
+     "cortado": false,
+     "subido": true,
+     "estado": "pendiente",
+     "escala": 0.511,
+     "sprite": [
+      92,
+      198
+     ],
+     "cabeza_x": 48.0,
+     "bbox": [
+      9,
+      54,
+      69,
+      149
+     ],
+     "origen_laboratorio": {
+      "secuencia": "p01-crouch",
+      "lote_nativo": "lab-a5a401de06833a6c9baabca1",
+      "validada_en": "2026-10-21T21:59:21.128Z",
+      "aprobada_en_creador": "2026-10-21T22:58:53.511305Z",
+      "cuadro_fuente": 3,
+      "resolucion_fuente": "nativo",
+      "lienzo_fuente": [
+       180,
+       388
+      ],
+      "ancla_fuente": [
+       90,
+       194
+      ],
+      "proceso": "encajar.py · reducción uniforme LANCZOS con alfa premultiplicado",
+      "escala": 0.511111,
+      "cabeza_x": 48.0,
+      "bbox": [
+       9,
+       54,
+       69,
+       149
+      ]
+     }
+    },
+    {
+     "id": "56ff86170ab446be9d4d0a0a70dfeeb7",
+     "i": 3,
+     "fichero": "stance/f03.png",
+     "nativo": null,
+     "cortado": false,
+     "subido": true,
+     "estado": "pendiente",
+     "escala": 0.511,
+     "sprite": [
+      92,
+      198
+     ],
+     "cabeza_x": 48.0,
+     "bbox": [
+      15,
+      38,
+      68,
+      148
+     ],
+     "origen_laboratorio": {
+      "secuencia": "p01-crouch",
+      "lote_nativo": "lab-a5a401de06833a6c9baabca1",
+      "validada_en": "2026-10-21T21:59:21.128Z",
+      "aprobada_en_creador": "2026-10-21T22:58:53.511305Z",
+      "cuadro_fuente": 5,
+      "resolucion_fuente": "nativo",
+      "lienzo_fuente": [
+       180,
+       388
+      ],
+      "ancla_fuente": [
+       90,
+       194
+      ],
+      "proceso": "encajar.py · reducción uniforme LANCZOS con alfa premultiplicado",
+      "escala": 0.511111,
+      "cabeza_x": 48.0,
+      "bbox": [
+       15,
+       38,
+       68,
+       148
+      ]
+     }
+    },
+    {
+     "id": "80b115b0d9544b368c109faa09b75067",
      "i": 4,
      "fichero": "stance/f04.png",
-     "escala": 0.227,
+     "nativo": null,
+     "cortado": false,
+     "subido": true,
+     "estado": "pendiente",
+     "escala": 0.511,
      "sprite": [
       92,
-      142
+      198
      ],
-     "cortado": false,
-     "cabeza_x": 59.7,
+     "cabeza_x": 48.0,
      "bbox": [
-      3,
-      17,
-      80,
-      148
+      12,
+      77,
+      69,
+      149
      ],
-     "id": "legacy-stance-04"
+     "origen_laboratorio": {
+      "secuencia": "p01-crouch",
+      "lote_nativo": "lab-a5a401de06833a6c9baabca1",
+      "validada_en": "2026-10-21T21:59:21.128Z",
+      "aprobada_en_creador": "2026-10-21T22:58:53.511305Z",
+      "cuadro_fuente": 6,
+      "resolucion_fuente": "nativo",
+      "lienzo_fuente": [
+       180,
+       388
+      ],
+      "ancla_fuente": [
+       90,
+       194
+      ],
+      "proceso": "encajar.py · reducción uniforme LANCZOS con alfa premultiplicado",
+      "escala": 0.511111,
+      "cabeza_x": 48.0,
+      "bbox": [
+       12,
+       77,
+       69,
+       149
+      ]
+     }
     },
     {
+     "id": "aacda4c289bf4a33a34af78d23c26acd",
      "i": 5,
      "fichero": "stance/f05.png",
-     "id": "legacy-stance-05"
+     "nativo": null,
+     "cortado": false,
+     "subido": true,
+     "estado": "pendiente",
+     "escala": 0.511,
+     "sprite": [
+      92,
+      198
+     ],
+     "cabeza_x": 48.0,
+     "bbox": [
+      6,
+      78,
+      67,
+      149
+     ],
+     "origen_laboratorio": {
+      "secuencia": "p01-crouch",
+      "lote_nativo": "lab-a5a401de06833a6c9baabca1",
+      "validada_en": "2026-10-21T21:59:21.128Z",
+      "aprobada_en_creador": "2026-10-21T22:58:53.511305Z",
+      "cuadro_fuente": 7,
+      "resolucion_fuente": "nativo",
+      "lienzo_fuente": [
+       180,
+       388
+      ],
+      "ancla_fuente": [
+       90,
+       194
+      ],
+      "proceso": "encajar.py · reducción uniforme LANCZOS con alfa premultiplicado",
+      "escala": 0.511111,
+      "cabeza_x": 48.0,
+      "bbox": [
+       6,
+       78,
+       67,
+       149
+      ]
+     }
     },
     {
+     "id": "aa25828834a0401799dccab8056c5ae0",
      "i": 6,
      "fichero": "stance/f06.png",
-     "escala": 0.227,
+     "nativo": null,
+     "cortado": false,
+     "subido": true,
+     "estado": "pendiente",
+     "escala": 0.511,
      "sprite": [
       92,
-      142
+      198
      ],
-     "cortado": false,
-     "cabeza_x": 59.7,
+     "cabeza_x": 48.0,
      "bbox": [
-      17,
-      16,
-      89,
-      147
-     ],
-     "id": "legacy-stance-06"
-    },
-    {
-     "i": 7,
-     "fichero": "stance/f07.png",
-     "escala": 0.227,
-     "sprite": [
-      92,
-      142
-     ],
-     "cortado": false,
-     "cabeza_x": 59.7,
-     "bbox": [
-      18,
-      17,
-      90,
+      11,
+      79,
+      71,
       148
      ],
-     "id": "legacy-stance-07"
+     "origen_laboratorio": {
+      "secuencia": "p01-crouch",
+      "lote_nativo": "lab-a5a401de06833a6c9baabca1",
+      "validada_en": "2026-10-21T21:59:21.128Z",
+      "aprobada_en_creador": "2026-10-21T22:58:53.511305Z",
+      "cuadro_fuente": 9,
+      "resolucion_fuente": "nativo",
+      "lienzo_fuente": [
+       180,
+       388
+      ],
+      "ancla_fuente": [
+       90,
+       194
+      ],
+      "proceso": "encajar.py · reducción uniforme LANCZOS con alfa premultiplicado",
+      "escala": 0.511111,
+      "cabeza_x": 48.0,
+      "bbox": [
+       11,
+       79,
+       71,
+       148
+      ]
+     }
+    },
+    {
+     "id": "bc303a8066cd48f59f75cbb764ae1ac7",
+     "i": 7,
+     "fichero": "stance/f07.png",
+     "nativo": null,
+     "cortado": false,
+     "subido": true,
+     "estado": "pendiente",
+     "escala": 0.511,
+     "sprite": [
+      92,
+      198
+     ],
+     "cabeza_x": 48.0,
+     "bbox": [
+      11,
+      71,
+      73,
+      148
+     ],
+     "origen_laboratorio": {
+      "secuencia": "p01-crouch",
+      "lote_nativo": "lab-a5a401de06833a6c9baabca1",
+      "validada_en": "2026-10-21T21:59:21.128Z",
+      "aprobada_en_creador": "2026-10-21T22:58:53.511305Z",
+      "cuadro_fuente": 10,
+      "resolucion_fuente": "nativo",
+      "lienzo_fuente": [
+       180,
+       388
+      ],
+      "ancla_fuente": [
+       90,
+       194
+      ],
+      "proceso": "encajar.py · reducción uniforme LANCZOS con alfa premultiplicado",
+      "escala": 0.511111,
+      "cabeza_x": 48.0,
+      "bbox": [
+       11,
+       71,
+       73,
+       148
+      ]
+     }
+    },
+    {
+     "id": "fa95d80f905446c5b595e294ddef9944",
+     "i": 8,
+     "fichero": "stance/f08.png",
+     "nativo": null,
+     "cortado": false,
+     "subido": true,
+     "estado": "pendiente",
+     "escala": 0.511,
+     "sprite": [
+      92,
+      198
+     ],
+     "cabeza_x": 48.0,
+     "bbox": [
+      8,
+      83,
+      72,
+      148
+     ],
+     "origen_laboratorio": {
+      "secuencia": "p01-crouch",
+      "lote_nativo": "lab-a5a401de06833a6c9baabca1",
+      "validada_en": "2026-10-21T21:59:21.128Z",
+      "aprobada_en_creador": "2026-10-21T22:58:53.511305Z",
+      "cuadro_fuente": 11,
+      "resolucion_fuente": "nativo",
+      "lienzo_fuente": [
+       180,
+       388
+      ],
+      "ancla_fuente": [
+       90,
+       194
+      ],
+      "proceso": "encajar.py · reducción uniforme LANCZOS con alfa premultiplicado",
+      "escala": 0.511111,
+      "cabeza_x": 48.0,
+      "bbox": [
+       8,
+       83,
+       72,
+       148
+      ]
+     }
+    },
+    {
+     "id": "44aa1360af544a298d02b9a02af0fb8b",
+     "i": 9,
+     "fichero": "stance/f09.png",
+     "nativo": null,
+     "cortado": false,
+     "subido": true,
+     "estado": "pendiente",
+     "escala": 0.511,
+     "sprite": [
+      92,
+      198
+     ],
+     "cabeza_x": 48.0,
+     "bbox": [
+      2,
+      72,
+      69,
+      149
+     ],
+     "origen_laboratorio": {
+      "secuencia": "p01-crouch",
+      "lote_nativo": "lab-a5a401de06833a6c9baabca1",
+      "validada_en": "2026-10-21T21:59:21.128Z",
+      "aprobada_en_creador": "2026-10-21T22:58:53.511305Z",
+      "cuadro_fuente": 13,
+      "resolucion_fuente": "nativo",
+      "lienzo_fuente": [
+       180,
+       388
+      ],
+      "ancla_fuente": [
+       90,
+       194
+      ],
+      "proceso": "encajar.py · reducción uniforme LANCZOS con alfa premultiplicado",
+      "escala": 0.511111,
+      "cabeza_x": 48.0,
+      "bbox": [
+       2,
+       72,
+       69,
+       149
+      ]
+     }
+    },
+    {
+     "id": "9d1537bf8ed341d981a1b859815b0f2d",
+     "i": 10,
+     "fichero": "stance/f10.png",
+     "nativo": null,
+     "cortado": false,
+     "subido": true,
+     "estado": "pendiente",
+     "escala": 0.511,
+     "sprite": [
+      92,
+      198
+     ],
+     "cabeza_x": 48.0,
+     "bbox": [
+      8,
+      72,
+      69,
+      149
+     ],
+     "origen_laboratorio": {
+      "secuencia": "p01-crouch",
+      "lote_nativo": "lab-a5a401de06833a6c9baabca1",
+      "validada_en": "2026-10-21T21:59:21.128Z",
+      "aprobada_en_creador": "2026-10-21T22:58:53.511305Z",
+      "cuadro_fuente": 14,
+      "resolucion_fuente": "nativo",
+      "lienzo_fuente": [
+       180,
+       388
+      ],
+      "ancla_fuente": [
+       90,
+       194
+      ],
+      "proceso": "encajar.py · reducción uniforme LANCZOS con alfa premultiplicado",
+      "escala": 0.511111,
+      "cabeza_x": 48.0,
+      "bbox": [
+       8,
+       72,
+       69,
+       149
+      ]
+     }
+    },
+    {
+     "id": "6b756102f0714455821c55b18f561d36",
+     "i": 11,
+     "fichero": "stance/f11.png",
+     "nativo": null,
+     "cortado": false,
+     "subido": true,
+     "estado": "pendiente",
+     "escala": 0.511,
+     "sprite": [
+      92,
+      198
+     ],
+     "cabeza_x": 48.0,
+     "bbox": [
+      2,
+      53,
+      71,
+      148
+     ],
+     "origen_laboratorio": {
+      "secuencia": "p01-crouch",
+      "lote_nativo": "lab-a5a401de06833a6c9baabca1",
+      "validada_en": "2026-10-21T21:59:21.128Z",
+      "aprobada_en_creador": "2026-10-21T22:58:53.511305Z",
+      "cuadro_fuente": 15,
+      "resolucion_fuente": "nativo",
+      "lienzo_fuente": [
+       180,
+       388
+      ],
+      "ancla_fuente": [
+       90,
+       194
+      ],
+      "proceso": "encajar.py · reducción uniforme LANCZOS con alfa premultiplicado",
+      "escala": 0.511111,
+      "cabeza_x": 48.0,
+      "bbox": [
+       2,
+       53,
+       71,
+       148
+      ]
+     }
+    },
+    {
+     "id": "fc4d0164f9d445a38c5c2e3fd82aec47",
+     "i": 12,
+     "fichero": "stance/f12.png",
+     "nativo": null,
+     "cortado": false,
+     "subido": true,
+     "estado": "pendiente",
+     "escala": 0.511,
+     "sprite": [
+      92,
+      198
+     ],
+     "cabeza_x": 48.0,
+     "bbox": [
+      6,
+      51,
+      66,
+      148
+     ],
+     "origen_laboratorio": {
+      "secuencia": "p01-crouch",
+      "lote_nativo": "lab-a5a401de06833a6c9baabca1",
+      "validada_en": "2026-10-21T21:59:21.128Z",
+      "aprobada_en_creador": "2026-10-21T22:58:53.511305Z",
+      "cuadro_fuente": 16,
+      "resolucion_fuente": "nativo",
+      "lienzo_fuente": [
+       180,
+       388
+      ],
+      "ancla_fuente": [
+       90,
+       194
+      ],
+      "proceso": "encajar.py · reducción uniforme LANCZOS con alfa premultiplicado",
+      "escala": 0.511111,
+      "cabeza_x": 48.0,
+      "bbox": [
+       6,
+       51,
+       66,
+       148
+      ]
+     }
     }
+   ],
+   "revision_alineacion": {
+    "suelo": {
+     "revisada": true,
+     "pies_y": 144,
+     "revisada_en": "2026-10-22T00:41:21.985680Z"
+    },
+    "sprite": {
+     "revisada": true,
+     "desplazamiento": [
+      -1,
+      0
+     ],
+     "revisada_en": "2026-10-22T00:41:42.033987Z"
+    }
+   },
+   "desplazamiento_sprite": [
+    -1,
+    0
    ]
   },
   "walk": {
@@ -222,7 +721,6 @@
      "id": "legacy-walk-03"
     },
     {
-     "i": 4,
      "fichero": "walk/f04.png",
      "escala": 0.234,
      "sprite": [
@@ -237,7 +735,8 @@
       64,
       147
      ],
-     "id": "legacy-walk-04"
+     "id": "legacy-walk-04",
+     "i": 4
     },
     {
      "i": 5,
@@ -258,6 +757,636 @@
      "id": "legacy-walk-05"
     }
    ]
+  },
+  "crouch": {
+   "lienzo": [
+    96,
+    152
+   ],
+   "ancla": [
+    49,
+    48
+   ],
+   "pies_y": 146,
+   "escala": 1,
+   "esperado": 3,
+   "fps": 8,
+   "loop": true,
+   "frames": [
+    {
+     "id": "1178e2d6dc674401833e0cc6b3728613",
+     "i": 0,
+     "fichero": "crouch/f00.png",
+     "nativo": null,
+     "cortado": false,
+     "subido": true,
+     "estado": "aprobado",
+     "escala": 0.511,
+     "sprite": [
+      92,
+      198
+     ],
+     "cabeza_x": 48.0,
+     "bbox": [
+      12,
+      33,
+      70,
+      148
+     ],
+     "origen_laboratorio": {
+      "secuencia": "p01-crouch",
+      "lote_nativo": "lab-a5a401de06833a6c9baabca1",
+      "validada_en": "2026-10-21T21:59:21.128Z",
+      "aprobada_en_creador": "2026-10-21T22:58:53.511305Z",
+      "cuadro_fuente": 1,
+      "resolucion_fuente": "nativo",
+      "lienzo_fuente": [
+       180,
+       388
+      ],
+      "ancla_fuente": [
+       90,
+       194
+      ],
+      "proceso": "encajar.py · reducción uniforme LANCZOS con alfa premultiplicado",
+      "escala": 0.511111,
+      "cabeza_x": 48.0,
+      "bbox": [
+       12,
+       33,
+       70,
+       148
+      ]
+     }
+    },
+    {
+     "id": "35e96e09ddfd4de7b271196a1c86de68",
+     "i": 1,
+     "fichero": "crouch/f01.png",
+     "nativo": null,
+     "cortado": false,
+     "subido": true,
+     "estado": "aprobado",
+     "escala": 0.511,
+     "sprite": [
+      92,
+      198
+     ],
+     "cabeza_x": 48.0,
+     "bbox": [
+      9,
+      49,
+      67,
+      149
+     ],
+     "origen_laboratorio": {
+      "secuencia": "p01-crouch",
+      "lote_nativo": "lab-a5a401de06833a6c9baabca1",
+      "validada_en": "2026-10-21T21:59:21.128Z",
+      "aprobada_en_creador": "2026-10-21T22:58:53.511305Z",
+      "cuadro_fuente": 2,
+      "resolucion_fuente": "nativo",
+      "lienzo_fuente": [
+       180,
+       388
+      ],
+      "ancla_fuente": [
+       90,
+       194
+      ],
+      "proceso": "encajar.py · reducción uniforme LANCZOS con alfa premultiplicado",
+      "escala": 0.511111,
+      "cabeza_x": 48.0,
+      "bbox": [
+       9,
+       49,
+       67,
+       149
+      ]
+     }
+    },
+    {
+     "id": "ebe64d3e947547988ad22031e632a8a2",
+     "i": 2,
+     "fichero": "crouch/f02.png",
+     "nativo": null,
+     "cortado": false,
+     "subido": true,
+     "estado": "aprobado",
+     "escala": 0.511,
+     "sprite": [
+      92,
+      198
+     ],
+     "cabeza_x": 48.0,
+     "bbox": [
+      9,
+      54,
+      69,
+      149
+     ],
+     "origen_laboratorio": {
+      "secuencia": "p01-crouch",
+      "lote_nativo": "lab-a5a401de06833a6c9baabca1",
+      "validada_en": "2026-10-21T21:59:21.128Z",
+      "aprobada_en_creador": "2026-10-21T22:58:53.511305Z",
+      "cuadro_fuente": 3,
+      "resolucion_fuente": "nativo",
+      "lienzo_fuente": [
+       180,
+       388
+      ],
+      "ancla_fuente": [
+       90,
+       194
+      ],
+      "proceso": "encajar.py · reducción uniforme LANCZOS con alfa premultiplicado",
+      "escala": 0.511111,
+      "cabeza_x": 48.0,
+      "bbox": [
+       9,
+       54,
+       69,
+       149
+      ]
+     }
+    },
+    {
+     "id": "de476f5d6fd24d6aa2c64f7028d85113",
+     "i": 3,
+     "fichero": "crouch/f03.png",
+     "nativo": null,
+     "cortado": false,
+     "subido": true,
+     "estado": "aprobado",
+     "escala": 0.511,
+     "sprite": [
+      92,
+      198
+     ],
+     "cabeza_x": 48.0,
+     "bbox": [
+      15,
+      38,
+      68,
+      148
+     ],
+     "origen_laboratorio": {
+      "secuencia": "p01-crouch",
+      "lote_nativo": "lab-a5a401de06833a6c9baabca1",
+      "validada_en": "2026-10-21T21:59:21.128Z",
+      "aprobada_en_creador": "2026-10-21T22:58:53.511305Z",
+      "cuadro_fuente": 5,
+      "resolucion_fuente": "nativo",
+      "lienzo_fuente": [
+       180,
+       388
+      ],
+      "ancla_fuente": [
+       90,
+       194
+      ],
+      "proceso": "encajar.py · reducción uniforme LANCZOS con alfa premultiplicado",
+      "escala": 0.511111,
+      "cabeza_x": 48.0,
+      "bbox": [
+       15,
+       38,
+       68,
+       148
+      ]
+     }
+    },
+    {
+     "id": "0fc84539bbd548a0bb3c41b07964b8f8",
+     "i": 4,
+     "fichero": "crouch/f04.png",
+     "nativo": null,
+     "cortado": false,
+     "subido": true,
+     "estado": "aprobado",
+     "escala": 0.511,
+     "sprite": [
+      92,
+      198
+     ],
+     "cabeza_x": 48.0,
+     "bbox": [
+      12,
+      77,
+      69,
+      149
+     ],
+     "origen_laboratorio": {
+      "secuencia": "p01-crouch",
+      "lote_nativo": "lab-a5a401de06833a6c9baabca1",
+      "validada_en": "2026-10-21T21:59:21.128Z",
+      "aprobada_en_creador": "2026-10-21T22:58:53.511305Z",
+      "cuadro_fuente": 6,
+      "resolucion_fuente": "nativo",
+      "lienzo_fuente": [
+       180,
+       388
+      ],
+      "ancla_fuente": [
+       90,
+       194
+      ],
+      "proceso": "encajar.py · reducción uniforme LANCZOS con alfa premultiplicado",
+      "escala": 0.511111,
+      "cabeza_x": 48.0,
+      "bbox": [
+       12,
+       77,
+       69,
+       149
+      ]
+     }
+    },
+    {
+     "id": "b2e7d6ea339f46868ad722270ffe310c",
+     "i": 5,
+     "fichero": "crouch/f05.png",
+     "nativo": null,
+     "cortado": false,
+     "subido": true,
+     "estado": "aprobado",
+     "escala": 0.511,
+     "sprite": [
+      92,
+      198
+     ],
+     "cabeza_x": 48.0,
+     "bbox": [
+      6,
+      78,
+      67,
+      149
+     ],
+     "origen_laboratorio": {
+      "secuencia": "p01-crouch",
+      "lote_nativo": "lab-a5a401de06833a6c9baabca1",
+      "validada_en": "2026-10-21T21:59:21.128Z",
+      "aprobada_en_creador": "2026-10-21T22:58:53.511305Z",
+      "cuadro_fuente": 7,
+      "resolucion_fuente": "nativo",
+      "lienzo_fuente": [
+       180,
+       388
+      ],
+      "ancla_fuente": [
+       90,
+       194
+      ],
+      "proceso": "encajar.py · reducción uniforme LANCZOS con alfa premultiplicado",
+      "escala": 0.511111,
+      "cabeza_x": 48.0,
+      "bbox": [
+       6,
+       78,
+       67,
+       149
+      ]
+     }
+    },
+    {
+     "id": "de975d0095ba44f3a03876d6fbbb179b",
+     "i": 6,
+     "fichero": "crouch/f06.png",
+     "nativo": null,
+     "cortado": false,
+     "subido": true,
+     "estado": "aprobado",
+     "escala": 0.511,
+     "sprite": [
+      92,
+      198
+     ],
+     "cabeza_x": 48.0,
+     "bbox": [
+      11,
+      79,
+      71,
+      148
+     ],
+     "origen_laboratorio": {
+      "secuencia": "p01-crouch",
+      "lote_nativo": "lab-a5a401de06833a6c9baabca1",
+      "validada_en": "2026-10-21T21:59:21.128Z",
+      "aprobada_en_creador": "2026-10-21T22:58:53.511305Z",
+      "cuadro_fuente": 9,
+      "resolucion_fuente": "nativo",
+      "lienzo_fuente": [
+       180,
+       388
+      ],
+      "ancla_fuente": [
+       90,
+       194
+      ],
+      "proceso": "encajar.py · reducción uniforme LANCZOS con alfa premultiplicado",
+      "escala": 0.511111,
+      "cabeza_x": 48.0,
+      "bbox": [
+       11,
+       79,
+       71,
+       148
+      ]
+     }
+    },
+    {
+     "id": "c9ef3ee611d649829743b32d6651a334",
+     "i": 7,
+     "fichero": "crouch/f07.png",
+     "nativo": null,
+     "cortado": false,
+     "subido": true,
+     "estado": "aprobado",
+     "escala": 0.511,
+     "sprite": [
+      92,
+      198
+     ],
+     "cabeza_x": 48.0,
+     "bbox": [
+      11,
+      71,
+      73,
+      148
+     ],
+     "origen_laboratorio": {
+      "secuencia": "p01-crouch",
+      "lote_nativo": "lab-a5a401de06833a6c9baabca1",
+      "validada_en": "2026-10-21T21:59:21.128Z",
+      "aprobada_en_creador": "2026-10-21T22:58:53.511305Z",
+      "cuadro_fuente": 10,
+      "resolucion_fuente": "nativo",
+      "lienzo_fuente": [
+       180,
+       388
+      ],
+      "ancla_fuente": [
+       90,
+       194
+      ],
+      "proceso": "encajar.py · reducción uniforme LANCZOS con alfa premultiplicado",
+      "escala": 0.511111,
+      "cabeza_x": 48.0,
+      "bbox": [
+       11,
+       71,
+       73,
+       148
+      ]
+     }
+    },
+    {
+     "id": "82a872dd2d9749fdbd94f92fec4e3b1e",
+     "i": 8,
+     "fichero": "crouch/f08.png",
+     "nativo": null,
+     "cortado": false,
+     "subido": true,
+     "estado": "aprobado",
+     "escala": 0.511,
+     "sprite": [
+      92,
+      198
+     ],
+     "cabeza_x": 48.0,
+     "bbox": [
+      8,
+      83,
+      72,
+      148
+     ],
+     "origen_laboratorio": {
+      "secuencia": "p01-crouch",
+      "lote_nativo": "lab-a5a401de06833a6c9baabca1",
+      "validada_en": "2026-10-21T21:59:21.128Z",
+      "aprobada_en_creador": "2026-10-21T22:58:53.511305Z",
+      "cuadro_fuente": 11,
+      "resolucion_fuente": "nativo",
+      "lienzo_fuente": [
+       180,
+       388
+      ],
+      "ancla_fuente": [
+       90,
+       194
+      ],
+      "proceso": "encajar.py · reducción uniforme LANCZOS con alfa premultiplicado",
+      "escala": 0.511111,
+      "cabeza_x": 48.0,
+      "bbox": [
+       8,
+       83,
+       72,
+       148
+      ]
+     }
+    },
+    {
+     "id": "54d3d077e4e74f7185007c43eb4f6148",
+     "i": 9,
+     "fichero": "crouch/f09.png",
+     "nativo": null,
+     "cortado": false,
+     "subido": true,
+     "estado": "aprobado",
+     "escala": 0.511,
+     "sprite": [
+      92,
+      198
+     ],
+     "cabeza_x": 48.0,
+     "bbox": [
+      2,
+      72,
+      69,
+      149
+     ],
+     "origen_laboratorio": {
+      "secuencia": "p01-crouch",
+      "lote_nativo": "lab-a5a401de06833a6c9baabca1",
+      "validada_en": "2026-10-21T21:59:21.128Z",
+      "aprobada_en_creador": "2026-10-21T22:58:53.511305Z",
+      "cuadro_fuente": 13,
+      "resolucion_fuente": "nativo",
+      "lienzo_fuente": [
+       180,
+       388
+      ],
+      "ancla_fuente": [
+       90,
+       194
+      ],
+      "proceso": "encajar.py · reducción uniforme LANCZOS con alfa premultiplicado",
+      "escala": 0.511111,
+      "cabeza_x": 48.0,
+      "bbox": [
+       2,
+       72,
+       69,
+       149
+      ]
+     }
+    },
+    {
+     "id": "a97aeab780ac4f89bc7d22b038b335aa",
+     "i": 10,
+     "fichero": "crouch/f10.png",
+     "nativo": null,
+     "cortado": false,
+     "subido": true,
+     "estado": "aprobado",
+     "escala": 0.511,
+     "sprite": [
+      92,
+      198
+     ],
+     "cabeza_x": 48.0,
+     "bbox": [
+      8,
+      72,
+      69,
+      149
+     ],
+     "origen_laboratorio": {
+      "secuencia": "p01-crouch",
+      "lote_nativo": "lab-a5a401de06833a6c9baabca1",
+      "validada_en": "2026-10-21T21:59:21.128Z",
+      "aprobada_en_creador": "2026-10-21T22:58:53.511305Z",
+      "cuadro_fuente": 14,
+      "resolucion_fuente": "nativo",
+      "lienzo_fuente": [
+       180,
+       388
+      ],
+      "ancla_fuente": [
+       90,
+       194
+      ],
+      "proceso": "encajar.py · reducción uniforme LANCZOS con alfa premultiplicado",
+      "escala": 0.511111,
+      "cabeza_x": 48.0,
+      "bbox": [
+       8,
+       72,
+       69,
+       149
+      ]
+     }
+    },
+    {
+     "id": "0ef335b073674be2a89d654273963076",
+     "i": 11,
+     "fichero": "crouch/f11.png",
+     "nativo": null,
+     "cortado": false,
+     "subido": true,
+     "estado": "aprobado",
+     "escala": 0.511,
+     "sprite": [
+      92,
+      198
+     ],
+     "cabeza_x": 48.0,
+     "bbox": [
+      2,
+      53,
+      71,
+      148
+     ],
+     "origen_laboratorio": {
+      "secuencia": "p01-crouch",
+      "lote_nativo": "lab-a5a401de06833a6c9baabca1",
+      "validada_en": "2026-10-21T21:59:21.128Z",
+      "aprobada_en_creador": "2026-10-21T22:58:53.511305Z",
+      "cuadro_fuente": 15,
+      "resolucion_fuente": "nativo",
+      "lienzo_fuente": [
+       180,
+       388
+      ],
+      "ancla_fuente": [
+       90,
+       194
+      ],
+      "proceso": "encajar.py · reducción uniforme LANCZOS con alfa premultiplicado",
+      "escala": 0.511111,
+      "cabeza_x": 48.0,
+      "bbox": [
+       2,
+       53,
+       71,
+       148
+      ]
+     }
+    },
+    {
+     "id": "0ebc654c729e410b9ea4115ada9f465c",
+     "i": 12,
+     "fichero": "crouch/f12.png",
+     "nativo": null,
+     "cortado": false,
+     "subido": true,
+     "estado": "aprobado",
+     "escala": 0.511,
+     "sprite": [
+      92,
+      198
+     ],
+     "cabeza_x": 48.0,
+     "bbox": [
+      6,
+      51,
+      66,
+      148
+     ],
+     "origen_laboratorio": {
+      "secuencia": "p01-crouch",
+      "lote_nativo": "lab-a5a401de06833a6c9baabca1",
+      "validada_en": "2026-10-21T21:59:21.128Z",
+      "aprobada_en_creador": "2026-10-21T22:58:53.511305Z",
+      "cuadro_fuente": 16,
+      "resolucion_fuente": "nativo",
+      "lienzo_fuente": [
+       180,
+       388
+      ],
+      "ancla_fuente": [
+       90,
+       194
+      ],
+      "proceso": "encajar.py · reducción uniforme LANCZOS con alfa premultiplicado",
+      "escala": 0.511111,
+      "cabeza_x": 48.0,
+      "bbox": [
+       6,
+       51,
+       66,
+       148
+      ]
+     }
+    }
+   ],
+   "revision_alineacion": {
+    "suelo": {
+     "revisada": true,
+     "pies_y": 146,
+     "revisada_en": "2026-10-22T00:16:47.078722Z"
+    },
+    "cabeza": {
+     "revisada": true,
+     "ancla": [
+      49,
+      48
+     ],
+     "revisada_en": "2026-10-22T00:17:30.735384Z"
+    }
+   }
   }
  }
 }

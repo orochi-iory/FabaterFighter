@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#100e18">
+<title>Personajes · Fabater Fighter</title>
+<style>
+  :root { --bg:#100e18; --panel:#1d1929; --line:#3b3351; --cyan:#96ffeb; --gold:#ffcb3d; --muted:#b7b0c9; }
+  * { box-sizing:border-box; }
+  body { margin:0; min-height:100vh; background:radial-gradient(ellipse at 50% 0,#2b2037,#100e18 60%); color:#f4f0ff; font-family:system-ui,sans-serif; }
+  nav { position:sticky; top:0; z-index:10; display:flex; gap:8px; justify-content:center; flex-wrap:wrap; padding:9px 12px; background:#0e0a16ed; border-bottom:1px solid var(--line); backdrop-filter:blur(8px); }
+  nav a { display:flex; align-items:center; min-height:42px; padding:8px 14px; border:1px solid var(--line); border-radius:9px; color:#d6cee8; text-decoration:none; font-size:14px; font-weight:700; }
+  nav a:hover, nav a:focus-visible { border-color:var(--cyan); color:var(--cyan); }
+  nav a[aria-current=page] { background:#3a2751; border-color:#9b68e7; color:#fff; }
+  main { width:min(1040px,100%); margin:0 auto; padding:clamp(18px,4vw,38px) clamp(14px,3vw,28px) 40px; }
+  header { margin-bottom:20px; }
+  .eyebrow { margin:0 0 6px; color:var(--cyan); font-size:12px; font-weight:800; letter-spacing:.2em; text-transform:uppercase; }
+  h1 { margin:0; color:var(--gold); font-size:clamp(28px,5vw,44px); letter-spacing:.06em; }
+  header p { max-width:70ch; margin:8px 0 0; color:var(--muted); line-height:1.55; }
+  .roster { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:14px; }
+  .character { display:grid; grid-template-columns:150px minmax(0,1fr); gap:16px; min-width:0; padding:15px; border:1px solid var(--line); border-radius:15px; background:linear-gradient(145deg,#211c30,#171420); box-shadow:0 12px 32px #0003; }
+  .portrait { display:grid; place-items:center; min-height:190px; overflow:hidden; border:1px solid #4a3f62; border-radius:10px; background-color:#171321; background-image:linear-gradient(45deg,#211d2c 25%,transparent 25%),linear-gradient(-45deg,#211d2c 25%,transparent 25%),linear-gradient(45deg,transparent 75%,#211d2c 75%),linear-gradient(-45deg,transparent 75%,#211d2c 75%); background-size:16px 16px; background-position:0 0,0 8px,8px -8px,-8px 0; }
+  .portrait img { display:block; width:auto; height:auto; max-width:100%; max-height:190px; image-rendering:pixelated; object-fit:contain; }
+  .character h2 { margin:0; color:#fff; font-size:24px; letter-spacing:.02em; }
+  .subtitle { margin:3px 0 8px; color:var(--cyan); font-size:12px; font-weight:700; }
+  .description { margin:0; color:var(--muted); font-size:14px; line-height:1.5; }
+  .actions { display:flex; flex-wrap:wrap; gap:7px; margin-top:14px; }
+  .actions a { display:inline-flex; align-items:center; min-height:40px; padding:8px 11px; border:1px solid #4a4260; border-radius:8px; color:#ddd5ef; text-decoration:none; font-size:13px; font-weight:700; }
+  .actions a:hover, .actions a:focus-visible { border-color:var(--cyan); color:var(--cyan); }
+  .actions a.primary { border-color:#8152bf; background:#41295b; color:#fff; }
+  .empty, .error { grid-column:1/-1; padding:16px; border:1px solid var(--line); border-radius:10px; color:var(--muted); background:#1b1726; }
+  .future { margin-top:18px; padding:14px 16px; border-left:3px solid var(--gold); border-radius:0 9px 9px 0; background:#1b1726; color:var(--muted); line-height:1.55; font-size:13px; }
+  .future b { color:var(--gold); }
+  footer { padding:6px 14px 24px; color:#77718d; text-align:center; font-size:12px; }
+  @media (max-width:760px) { nav { justify-content:flex-start; flex-wrap:nowrap; overflow-x:auto; } nav a { flex:0 0 auto; } .roster { grid-template-columns:minmax(0,1fr); } }
+  @media (max-width:440px) { .character { grid-template-columns:90px minmax(0,1fr); gap:11px; padding:11px; } .portrait { min-height:145px; } .portrait img { max-height:145px; } .character h2 { font-size:20px; } .actions a { flex:1 1 auto; justify-content:center; } }
+</style>
+</head>
+<body>
+<nav aria-label="Navegación principal">
+  <a href="../index.html">🏠 Inicio</a>
+  <a href="fight.html">⚔ Juego</a>
+  <a href="../creator/">🧩 Creador de personajes</a>
+  <a href="personajes.html" aria-current="page">👥 Personajes</a>
+</nav>
+<main>
+  <header>
+    <p class="eyebrow">Plantel</p>
+    <h1>PERSONAJES</h1>
+    <p>Voltia original, Voltia Final (separada y con las animaciones publicadas desde el Creador) y Chun-Li. Cada ficha se lee desde un registro común.</p>
+  </header>
+  <section class="roster" id="roster" aria-live="polite"><div class="empty">Cargando personajes…</div></section>
+  <aside class="future"><b>Preparada para crecer.</b> Añade una ficha a <code>characters/roster.json</code> con su retrato, descripción y enlaces. Si además debe ser jugable, se registra su configuración de combate en el motor.</aside>
+</main>
+<footer>Fabater Fighter · plantel de personajes</footer>
+<script>
+(async () => {
+  const root = document.getElementById('roster');
+  const linkFor = (path) => {
+    const url = new URL(path, location.href);
+    if (url.origin !== location.origin) throw new Error('Los enlaces del registro deben ser locales.');
+    return url.href;
+  };
+  try {
+    const response = await fetch('../characters/roster.json', { cache: 'no-store' });
+    if (!response.ok) throw new Error(`No se pudo leer el plantel (HTTP ${response.status}).`);
+    const data = await response.json();
+    if (!Array.isArray(data.characters)) throw new Error('El registro no contiene una lista de personajes.');
+    root.replaceChildren();
+    if (!data.characters.length) {
+      root.innerHTML = '<div class="empty">Todavía no hay personajes en el plantel.</div>';
+      return;
+    }
+    for (const item of data.characters) {
+      const card = document.createElement('article'); card.className = 'character';
+      const portraitBox = document.createElement('div'); portraitBox.className = 'portrait';
+      const portrait = document.createElement('img');
+      portrait.src = linkFor(item.portrait); portrait.alt = item.portrait_alt || `Retrato de ${item.name}`;
+      portrait.loading = 'lazy'; portraitBox.appendChild(portrait);
+      const info = document.createElement('div');
+      const title = document.createElement('h2'); title.textContent = item.name || item.id;
+      const subtitle = document.createElement('p'); subtitle.className = 'subtitle'; subtitle.textContent = item.subtitle || '';
+      const description = document.createElement('p'); description.className = 'description'; description.textContent = item.description || '';
+      const actions = document.createElement('div'); actions.className = 'actions';
+      for (const action of (Array.isArray(item.actions) ? item.actions : [])) {
+        const anchor = document.createElement('a');
+        anchor.href = linkFor(action.href); anchor.textContent = action.label || 'Abrir';
+        if (action.kind === 'primary') anchor.classList.add('primary');
+        actions.appendChild(anchor);
+      }
+      info.append(title, subtitle, description, actions);
+      card.append(portraitBox, info); root.appendChild(card);
+    }
+  } catch (error) {
+    root.innerHTML = '';
+    const message = document.createElement('div'); message.className = 'error';
+    message.textContent = `No se pudo cargar el plantel: ${error.message}`;
+    root.appendChild(message);
+  }
+})();
+</script>
+</body>
+</html>

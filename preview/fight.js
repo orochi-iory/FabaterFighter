@@ -1786,6 +1786,80 @@
   document.getElementById('pause-boxes').onclick = (e) => { e.currentTarget.blur(); setBoxes(!showBoxes); };
   const boxesBtn = document.getElementById('boxes-btn');
   if (boxesBtn) boxesBtn.onclick = (e) => { e.currentTarget.blur(); setBoxes(!showBoxes); };
+
+  const fullscreenButton = document.getElementById('fullscreen-btn');
+  const gameStage = document.querySelector('.stage');
+  function gameIsFullscreen() {
+    return document.fullscreenElement === gameStage || document.webkitFullscreenElement === gameStage ||
+      !!gameStage?.classList.contains('game-fullscreen');
+  }
+  function syncFullscreenButton() {
+    if (!fullscreenButton) return;
+    const active = gameIsFullscreen();
+    fullscreenButton.textContent = active ? '⛶ Salir' : '⛶ Pantalla completa';
+    fullscreenButton.setAttribute('aria-label', active ? 'Salir de pantalla completa' : 'Entrar en pantalla completa');
+    fullscreenButton.setAttribute('aria-pressed', active ? 'true' : 'false');
+    fullscreenButton.title = active ? 'Salir de pantalla completa (Esc)' : 'Ver el juego a pantalla completa';
+  }
+  function setWebFullscreen(active) {
+    gameStage.classList.toggle('game-fullscreen', active);
+    document.documentElement.classList.toggle('game-fullscreen-active', active);
+    syncFullscreenButton();
+  }
+  if (fullscreenButton && gameStage) {
+    fullscreenButton.addEventListener('click', async (event) => {
+      event.stopPropagation();
+      const activeElement = document.fullscreenElement || document.webkitFullscreenElement;
+      if (gameStage.classList.contains('game-fullscreen')) {
+        setWebFullscreen(false);
+        return;
+      }
+      if (activeElement === gameStage) {
+        try {
+          if (document.exitFullscreen) await document.exitFullscreen();
+          else if (document.webkitExitFullscreen) document.webkitExitFullscreen();
+          else throw new Error('el navegador no permite salir del modo de pantalla completa');
+        } catch (err) {
+          const status = document.getElementById('status');
+          if (status) status.textContent = 'No se pudo salir de pantalla completa: ' + (err.message || 'permiso denegado');
+        }
+        return;
+      }
+      if (activeElement) {
+        const status = document.getElementById('status');
+        if (status) status.textContent = 'Sal de la otra vista de pantalla completa antes de ampliar el juego.';
+        return;
+      }
+      try {
+        if (gameStage.requestFullscreen) {
+          await gameStage.requestFullscreen();
+          if (!gameIsFullscreen()) setWebFullscreen(true);
+        } else if (gameStage.webkitRequestFullscreen) {
+          gameStage.webkitRequestFullscreen();
+          window.setTimeout(() => {
+            if (!document.webkitFullscreenElement && !gameStage.classList.contains('game-fullscreen')) setWebFullscreen(true);
+          }, 500);
+        } else {
+          setWebFullscreen(true);
+        }
+      } catch (err) {
+        // Algunos visores web bloquean Fullscreen API en iframes; ampliar el juego
+        // dentro del área disponible sigue funcionando sin pedir permisos al host.
+        setWebFullscreen(true);
+      }
+    });
+    document.addEventListener('fullscreenchange', syncFullscreenButton);
+    document.addEventListener('webkitfullscreenchange', syncFullscreenButton);
+    document.addEventListener('keydown', (event) => {
+      if (event.code !== 'Escape' || !gameStage.classList.contains('game-fullscreen')) return;
+      event.preventDefault();
+      event.stopPropagation();
+      if (event.stopImmediatePropagation) event.stopImmediatePropagation();
+      setWebFullscreen(false);
+    });
+    syncFullscreenButton();
+  }
+
   document.getElementById('rematch').onclick = () => again();
   document.getElementById('to-menu').onclick = () => toMenu();
   try { if (localStorage.getItem(BOX_KEY) === '1') setBoxes(true, false); } catch (err) { /* sin permiso */ }

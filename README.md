@@ -14,13 +14,29 @@ python3 tools/serve.py                       # http://localhost:8080
 `tools/serve.py` sirve el repositorio con **`Cache-Control: no-store`**: el visor cambia
 mucho y el navegador cacheando HTML/PNG ya nos costó tres veces «los cambios no llegan».
 
-- `/` → redirige al visor.
-- `/preview/index.html` → visor de Voltia: frame a frame, tira de la animación, escala
-  1×/2×/4×, fondos de chroma, escenario y manual de movimientos.
-- `/preview/fight.html` → el juego (selector de personaje, cajas de golpe con **H**).
-- `/preview/chunli.html` → ficha de Chun-Li: las 22 animaciones con sus números.
-- `/preview/nuevo.html` → el modelo nuevo (experimental, no entra en el juego).
-- `/preview/guia-vieja.html` → guía de estilo del modelo original.
+- `/` → menú principal con accesos a Juego, Creador de personajes y Personajes.
+- `/preview/fight.html` → juego de pelea con selector de personajes, cajas de golpe con **H** y modo de pantalla completa.
+- `/creator/` → interfaz del creador; `/preview/nuevo.html` queda como enlace de compatibilidad.
+- `/creator/pruebas-ia/` → visor aislado para revisar recortes y fondo de nuevas hojas IA; no escribe en el creador ni en los datos del juego.
+- `/preview/personajes.html` → plantel de Voltia original, Voltia Final y Chun-Li; su lista está en
+  `characters/roster.json`.
+- `/preview/voltia-final.html` → visor independiente de las animaciones aprobadas y publicadas desde el Creador.
+  La publicación requiere revisar cabeza, suelo y posición del sprite por movimiento; el desplazamiento se aplica al visor sin alterar los PNG.
+- `/preview/index.html` → visor de Voltia original: frames, tira, fondos y manual de movimientos.
+- `/preview/chunli.html` → ficha de Chun-Li: las 22 animaciones.
+- `/preview/guia-vieja.html` → guía de estilo original de Voltia.
+
+En el creador se pueden cambiar los perfiles Voltia/Chun-Li, subir PNG individuales o cortar
+hojas/tiras por una rejilla de celdas exactas. Por defecto solo se importa una fila para no
+mezclar movimientos; los frames aceptados quedan **pendientes**. «Guardar animación» descarga
+a tu equipo la tira PNG y el manifiesto JSON, sin modificar el sprite.
+
+## Organización del código y los datos
+
+- `creator/` contiene la interfaz; `tools/serve.py` y `tools/creator_store.py` contienen el servidor y las operaciones.
+- `characters/roster.json` es el registro de presentación y contiene perfiles independientes de datos para Voltia y Chun-Li; el creador permite cambiar entre ellos. Los retratos están en `characters/<id>/`.
+- `preview/fight.js` es el motor; `preview/chars/` contiene solo las fichas de combate.
+- Las hojas históricas siguen en sus rutas de Voltia/Chun-Li para no duplicar ni alterar fuentes originales. Las nuevas subidas de Chun-Li van a `characters/chunli/creator/`, fuera del árbol de Voltia.
 
 ## Voltia: lo que se sirve
 

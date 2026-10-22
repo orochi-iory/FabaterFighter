@@ -1,0 +1,323 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#100e18">
+<title>Voltia Final · visor</title>
+<style>
+  :root { --bg:#100e18; --panel:#1d1929; --line:#3b3351; --cyan:#96ffeb; --gold:#ffcb3d; --muted:#b7b0c9; }
+  * { box-sizing:border-box; }
+  body { margin:0; min-height:100vh; background:radial-gradient(ellipse at 50% 0,#2b2037,#100e18 60%); color:#f4f0ff; font-family:system-ui,sans-serif; }
+  nav { position:sticky; top:0; z-index:10; display:flex; gap:8px; justify-content:center; flex-wrap:wrap; padding:9px 12px; background:#0e0a16ed; border-bottom:1px solid var(--line); backdrop-filter:blur(8px); }
+  nav a { display:flex; align-items:center; min-height:42px; padding:8px 14px; border:1px solid var(--line); border-radius:9px; color:#d6cee8; text-decoration:none; font-size:14px; font-weight:700; }
+  nav a:hover, nav a:focus-visible { border-color:var(--cyan); color:var(--cyan); }
+  main { width:min(1100px,100%); margin:0 auto; padding:clamp(14px,3vw,28px); }
+  header { margin-bottom:16px; }
+  .eyebrow { margin:0 0 5px; color:var(--cyan); font-size:12px; font-weight:800; letter-spacing:.2em; text-transform:uppercase; }
+  h1 { margin:0; color:var(--gold); font-size:clamp(26px,5vw,42px); letter-spacing:.06em; }
+  header p { max-width:75ch; color:var(--muted); line-height:1.55; }
+  .panel { min-width:0; margin:12px 0; padding:14px; border:1px solid var(--line); border-radius:14px; background:linear-gradient(145deg,#211c30,#171420); }
+  .controls { display:flex; align-items:center; flex-wrap:wrap; gap:8px; }
+  label { display:flex; align-items:center; gap:8px; min-width:0; color:var(--muted); font-size:13px; }
+  button, select, input { min-height:40px; max-width:100%; padding:8px 11px; border:1px solid #4a4260; border-radius:8px; background:#35324e; color:#eee; font:inherit; font-size:14px; }
+  button { cursor:pointer; font-weight:700; touch-action:manipulation; }
+  button:hover, select:hover { background:#454163; }
+  button:disabled { opacity:.55; cursor:not-allowed; }
+  button.primary { background:#41295b; border-color:#8152bf; color:#fff; }
+  .animation-list { display:flex; flex-wrap:wrap; gap:7px; margin-top:10px; }
+  .animation-list button[aria-current=true] { outline:2px solid var(--cyan); outline-offset:1px; }
+  .status { min-height:1.6em; margin:10px 0 0; color:var(--muted); font-size:13px; line-height:1.5; overflow-wrap:anywhere; }
+  .status[data-kind=error] { color:#ffd1d1; }
+  .stage { display:grid; place-items:center; min-height:330px; max-width:100%; overflow:auto; padding:12px; border:1px solid var(--line); border-radius:10px; background-color:#171321;
+    background-image:linear-gradient(45deg,#211d2c 25%,transparent 25%),linear-gradient(-45deg,#211d2c 25%,transparent 25%),linear-gradient(45deg,transparent 75%,#211d2c 75%),linear-gradient(-45deg,transparent 75%,#211d2c 75%); background-size:16px 16px; background-position:0 0,0 8px,8px -8px,-8px 0; }
+  canvas { display:block; image-rendering:pixelated; background:transparent; }
+  .stage[data-bg=black] { background:#101018; }
+  .stage[data-bg=magenta] { background:#f0f; }
+  .stage[data-bg=green] { background:#00ff00; }
+  .strip { display:flex; gap:8px; max-width:100%; min-width:0; overflow-x:auto; padding:8px 2px 3px; overscroll-behavior-inline:contain; -webkit-overflow-scrolling:touch; }
+  .strip button { flex:0 0 auto; min-height:0; padding:5px; border:1px solid #4a4767; background:#100c19; }
+  .strip button[aria-current=true] { border-color:var(--cyan); }
+  .strip img { display:block; width:96px; height:152px; image-rendering:pixelated; }
+  .strip span { display:block; margin-top:3px; color:var(--muted); font-size:11px; text-align:center; }
+  .empty { padding:12px; border:1px dashed #62587c; border-radius:9px; color:var(--muted); line-height:1.5; }
+  .note { color:var(--muted); font-size:12px; line-height:1.55; }
+  details.panel { padding:0; }
+  details.panel > summary { display:flex; align-items:center; justify-content:space-between; gap:10px; padding:14px; cursor:pointer; list-style:none; font-weight:700; color:var(--cyan); }
+  details.panel > summary::-webkit-details-marker { display:none; }
+  details.panel > summary::marker { content:""; }
+  details.panel[open] > summary { border-bottom:1px solid var(--line); }
+  details.panel > div { padding:12px 14px; }
+  footer { padding:12px 14px 24px; color:#77718d; text-align:center; font-size:12px; }
+  @media (max-width:700px) {
+    nav { justify-content:flex-start; flex-wrap:nowrap; overflow-x:auto; }
+    nav a { flex:0 0 auto; }
+    .controls { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); }
+    .controls > * { width:100%; }
+    .controls label { grid-column:1/-1; flex-wrap:wrap; }
+    .stage { justify-items:start; }
+  }
+</style>
+</head>
+<body>
+<nav aria-label="Navegación principal">
+  <a href="../index.html">🏠 Inicio</a>
+  <a href="fight.html">⚔ Juego</a>
+  <a href="../creator/">🧩 Creador</a>
+  <a href="personajes.html">👥 Personajes</a>
+  <a href="index.html">⚡ Voltia original</a>
+</nav>
+<main>
+  <header>
+    <p class="eyebrow">Personaje independiente · no sustituye a la Voltia original</p>
+    <h1>VOLTIA FINAL</h1>
+    <p>Visor de las animaciones aprobadas y enviadas explícitamente desde el Creador. Cada movimiento conserva su propia secuencia, velocidad, versión y desplazamiento manual del sprite; la posición se aplica aquí sin reescribir los PNG ni modificar la hoja original del juego.</p>
+  </header>
+
+  <details class="panel" id="published-animations-panel" open>
+    <summary><span>Animaciones publicadas</span><span aria-hidden="true">⌄</span></summary>
+    <div>
+      <div id="animation-empty" class="empty" hidden>Aún no hay animaciones enviadas a Voltia Final. Prepara y aprueba una secuencia oficial en el Creador y pulsa «Enviar a Voltia Final».</div>
+      <div class="controls">
+        <label for="animation-select">Movimiento
+          <select id="animation-select" disabled><option value="">Cargando…</option></select>
+        </label>
+        <button id="load-animation" class="primary" type="button" disabled>Cargar animación</button>
+        <button id="refresh-catalog" type="button">Actualizar catálogo</button>
+      </div>
+      <div id="animation-list" class="animation-list" aria-label="Botones para cargar cada animación"></div>
+      <p id="catalog-status" class="status" role="status" aria-live="polite">Cargando el catálogo de Voltia Final…</p>
+    </div>
+  </details>
+
+  <section class="panel" aria-label="Visor de animación">
+    <div id="stage" class="stage" data-bg="checker"><canvas id="animation-canvas" width="96" height="152" aria-label="Visor de Voltia Final"></canvas></div>
+    <div class="controls" style="margin-top:10px">
+      <button id="play" type="button" disabled>⏸ Pausa</button>
+      <button id="previous" type="button" disabled>◀ Anterior</button>
+      <button id="next" type="button" disabled>Siguiente ▶</button>
+      <label>Zoom entero
+        <select id="zoom" aria-label="Zoom del visor">
+          <option value="1">1×</option><option value="2" selected>2×</option><option value="3">3×</option><option value="4">4×</option>
+        </select>
+      </label>
+      <label>Fondo
+        <select id="background" aria-label="Fondo del visor">
+          <option value="checker">Ajedrez</option><option value="black">Negro</option><option value="magenta">Magenta</option><option value="green">Verde</option>
+        </select>
+      </label>
+      <label>Velocidad
+        <input id="fps" type="range" min="2" max="30" value="10" aria-label="Fotogramas por segundo">
+        <output id="fps-value">10 fps</output>
+      </label>
+    </div>
+    <p id="frame-status" class="status" role="status" aria-live="polite">Selecciona una animación publicada arriba.</p>
+    <div id="frame-strip" class="strip" aria-label="Cuadros de la animación"></div>
+  </section>
+
+  <details class="panel">
+    <summary><span>Origen y alineación de la publicación</span><span aria-hidden="true">⌄</span></summary>
+    <div id="publication-info" class="note">La información aparece al cargar una animación.</div>
+  </details>
+</main>
+<footer>FabaterFighter · Voltia Final · copia independiente del visor original</footer>
+<script>
+(() => {
+  const $ = id => document.getElementById(id);
+  const select = $('animation-select');
+  const catalogStatus = $('catalog-status');
+  const frameStatus = $('frame-status');
+  const empty = $('animation-empty');
+  const list = $('animation-list');
+  const strip = $('frame-strip');
+  const canvas = $('animation-canvas');
+  const context = canvas.getContext('2d');
+  let animations = [];
+  let active = null;
+  let images = [];
+  let currentFrame = 0;
+  let playing = false;
+  let last = performance.now();
+  let elapsed = 0;
+  let loadToken = 0;
+  let frameDelay = 100;
+  const frameUrl = frame => {
+    const url = new URL(frame.url, location.href);
+    if (url.origin !== location.origin) throw new Error('El PNG de Voltia Final debe servirse desde este mismo sitio.');
+    return url.href;
+  };
+
+  function applyZoom() {
+    const zoom = Math.max(1, Math.min(4, Number($('zoom').value) || 1));
+    canvas.width = 96 * zoom;
+    canvas.height = 152 * zoom;
+    canvas.style.width = `${96 * zoom}px`;
+    canvas.style.height = `${152 * zoom}px`;
+    context.imageSmoothingEnabled = false;
+    draw();
+  }
+
+  function draw() {
+    context.imageSmoothingEnabled = false;
+    context.clearRect(0, 0, canvas.width, canvas.height);
+    const image = images[currentFrame];
+    const zoom = Math.max(1, Number($('zoom').value) || 1);
+    const offset = Array.isArray(active?.sprite_offset) && active.sprite_offset.length === 2
+      ? active.sprite_offset : [0, 0];
+    if (image?.naturalWidth)
+      context.drawImage(image, Number(offset[0] || 0) * zoom, Number(offset[1] || 0) * zoom,
+        image.naturalWidth * zoom, image.naturalHeight * zoom);
+    [...strip.querySelectorAll('button')].forEach((button, index) =>
+      button.setAttribute('aria-current', String(index === currentFrame)));
+  }
+
+  function updateControls() {
+    const loaded = Boolean(active && images.length);
+    $('play').disabled = !loaded || images.length < 2;
+    $('previous').disabled = !loaded || images.length < 2;
+    $('next').disabled = !loaded || images.length < 2;
+    $('play').textContent = playing ? '⏸ Pausa' : '▶ Reproducir';
+  }
+
+  function drawStrip() {
+    strip.replaceChildren();
+    if (!active) return;
+    active.frames.forEach((frame, index) => {
+      const button = document.createElement('button');
+      button.type = 'button';
+      button.setAttribute('aria-label', `Cargar cuadro ${index + 1}`);
+      const image = document.createElement('img');
+      image.src = frameUrl(frame);
+      image.alt = '';
+      image.loading = 'lazy';
+      const label = document.createElement('span'); label.textContent = `f${String(index).padStart(2,'0')}`;
+      button.append(image, label);
+      button.onclick = () => { currentFrame = index; playing = false; draw(); updateControls(); };
+      strip.appendChild(button);
+    });
+  }
+
+  async function loadAnimation(id) {
+    const animation = animations.find(item => item.mov === id);
+    if (!animation) return;
+    const token = ++loadToken;
+    catalogStatus.textContent = `Cargando ${animation.label}…`;
+    frameStatus.textContent = 'Cargando los PNG publicados…';
+    playing = false;
+    let loaded;
+    try {
+      loaded = await Promise.all(animation.frames.map(frame => new Promise(resolve => {
+        const image = new Image();
+        image.onload = () => resolve(image);
+        image.onerror = () => resolve(null);
+        image.src = frameUrl(frame);
+      })));
+    } catch (error) {
+      if (token !== loadToken) return;
+      frameStatus.dataset.kind = 'error';
+      frameStatus.textContent = `No se pudo cargar ${animation.label}: ${error.message}`;
+      return;
+    }
+    if (token !== loadToken) return;
+    if (!loaded.length || loaded.some(image => !image)) {
+      active = null; images = []; strip.replaceChildren(); draw(); updateControls();
+      frameStatus.dataset.kind = 'error';
+      frameStatus.textContent = `No se pudieron cargar todos los PNG de ${animation.label}; revisa su publicación en el Creador.`;
+      return;
+    }
+    active = animation;
+    images = loaded;
+    currentFrame = 0;
+    const publishedFps = Math.max(2, Math.min(30, Number(animation.fps) || 10));
+    frameDelay = 1000 / publishedFps;
+    $('fps').value = String(publishedFps); $('fps-value').textContent = `${publishedFps} fps`;
+    drawStrip(); applyZoom(); updateControls();
+    const date = animation.published_at ? new Date(animation.published_at).toLocaleString() : 'fecha no disponible';
+    const headReview = animation.alignment_review?.cabeza;
+    const floorReview = animation.alignment_review?.suelo;
+    const reviewDate = value => value ? new Date(value).toLocaleString() : 'fecha no disponible';
+    frameStatus.dataset.kind = '';
+    frameStatus.textContent = `${animation.label} · ${images.length} cuadro(s) aprobados · ${animation.fps} fps · ${animation.loop ? 'bucle' : 'una pasada'} · publicado ${date}`;
+    const offset = Array.isArray(animation.sprite_offset) ? animation.sprite_offset : [0, 0];
+    const spriteReview = animation.alignment_review?.sprite;
+    $('publication-info').textContent = `Movimiento: ${animation.label} (${animation.mov}) · lienzo ${animation.canvas?.[0] || 96}×${animation.canvas?.[1] || 152} · cabeza (X,Y): ${Array.isArray(animation.anchor) ? animation.anchor.join(', ') : 'sin dato'} · línea de pies: ${Number.isInteger(animation.feet_y) ? animation.feet_y : 'sin dato'} · desplazamiento del sprite aplicado: ΔX ${offset[0] || 0}, ΔY ${offset[1] || 0} px · revisión manual de posición: ${spriteReview?.revisada ? reviewDate(spriteReview.revisada_en) : 'sin desplazamiento / no requerida'} · PNG publicados intactos · revisiones manuales: cabeza ${headReview?.revisada ? reviewDate(headReview.revisada_en) : 'no registrada'}, suelo ${floorReview?.revisada ? reviewDate(floorReview.revisada_en) : 'no registrada'} · versión ${animation.version_id || '—'}.`;
+    catalogStatus.textContent = `${animations.length} animación(es) publicada(s).`;
+  }
+
+  function renderCatalog() {
+    select.replaceChildren(); list.replaceChildren();
+    if (!animations.length) {
+      empty.hidden = false;
+      const option = document.createElement('option'); option.value = ''; option.textContent = 'Sin animaciones publicadas'; select.appendChild(option);
+      select.disabled = true; $('load-animation').disabled = true;
+      catalogStatus.textContent = 'El catálogo está vacío; publica una animación aprobada desde el Creador.';
+      return;
+    }
+    empty.hidden = true; select.disabled = false; $('load-animation').disabled = false;
+    for (const animation of animations) {
+      const option = document.createElement('option'); option.value = animation.mov;
+      option.textContent = `${animation.label} · ${animation.frames.length} cuadro(s)`;
+      select.appendChild(option);
+      const button = document.createElement('button'); button.type = 'button';
+      button.textContent = `Cargar ${animation.label}`; button.dataset.mov = animation.mov;
+      button.onclick = () => { select.value = animation.mov; loadAnimation(animation.mov); };
+      list.appendChild(button);
+    }
+    catalogStatus.textContent = `${animations.length} animación(es) publicada(s). Elige una y pulsa «Cargar animación».`;
+  }
+
+  async function refreshCatalog() {
+    catalogStatus.textContent = 'Cargando el catálogo de Voltia Final…';
+    try {
+      const response = await fetch('/api/voltia-final', { cache: 'no-store' });
+      const data = await response.json();
+      if (!response.ok || data.ok === false || !Array.isArray(data.animations))
+        throw new Error(data.error || `HTTP ${response.status}`);
+      animations = data.animations.filter(item => Array.isArray(item.frames) && item.frames.length);
+      catalogStatus.dataset.kind = '';
+      renderCatalog();
+    } catch (error) {
+      animations = []; renderCatalog();
+      catalogStatus.dataset.kind = 'error';
+      catalogStatus.textContent = `No se pudo leer Voltia Final: ${error.message}. Inicia python3 tools/serve.py.`;
+    }
+  }
+
+  function step(direction) {
+    if (!images.length) return;
+    currentFrame = (currentFrame + direction + images.length) % images.length;
+    draw();
+  }
+  $('load-animation').onclick = () => loadAnimation(select.value);
+  $('play').onclick = () => { playing = !playing; elapsed = 0; updateControls(); };
+  $('previous').onclick = () => { playing = false; step(-1); updateControls(); };
+  $('next').onclick = () => { playing = false; step(1); updateControls(); };
+  $('zoom').onchange = applyZoom;
+  $('background').onchange = () => { $('stage').dataset.bg = $('background').value; };
+  $('fps').oninput = () => { $('fps-value').textContent = `${$('fps').value} fps`; frameDelay = 1000 / (Number($('fps').value) || 10); };
+  function animate(now) {
+    const dt = Math.min(100, now - last); last = now;
+    if (playing && images.length > 1) {
+      elapsed += dt;
+      if (elapsed >= frameDelay) {
+        elapsed = 0;
+        if (!active.loop && currentFrame >= images.length - 1) {
+          playing = false; updateControls();
+        } else {
+          currentFrame = (currentFrame + 1) % images.length;
+          draw();
+        }
+      }
+    }
+    requestAnimationFrame(animate);
+  }
+  $('animation-select').onchange = () => { $('load-animation').disabled = !select.value; };
+  $('refresh-catalog').onclick = refreshCatalog;
+  window.addEventListener('focus', refreshCatalog);
+  applyZoom();
+  refreshCatalog();
+  requestAnimationFrame(animate);
+})();
+</script>
+</body>
+</html>

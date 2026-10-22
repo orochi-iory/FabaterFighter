@@ -1,0 +1,2481 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Fabater Fighter · Creador de personajes</title>
+<style>
+  :root { --bg:#150f1f; --panel:#211a33; --line:#3d3358; --cyan:#96ffeb; --gold:#ffcb3d; --vio:#b98cff; }
+  * { box-sizing:border-box; }
+  html { scroll-behavior:smooth; }
+  body { margin:0; font-family:system-ui,sans-serif; background:var(--bg); color:#eee; }
+  nav.models { position:sticky; top:0; z-index:20; display:flex; gap:8px; justify-content:center;
+    padding:10px; background:#0e0a16ee; border-bottom:2px solid var(--line);
+    backdrop-filter:blur(6px); flex-wrap:wrap; overflow-x:auto; overscroll-behavior-inline:contain;
+    scrollbar-width:thin; }
+  nav.models a { flex:0 0 auto; display:flex; align-items:center; min-height:42px; white-space:nowrap;
+    text-decoration:none; padding:9px 16px; border-radius:10px; font-weight:700;
+    letter-spacing:.4px; font-size:14px; border:2px solid var(--line); color:#cfc9e6; }
+  nav.models a:hover { border-color:var(--cyan); color:var(--cyan); }
+  nav.models a.on { background:#8c4dff; border-color:#8c4dff; color:#fff; }
+  header { text-align:center; padding:22px 14px 4px; }
+  header h1 { margin:0; color:var(--vio); letter-spacing:clamp(.04em,.5vw,.12em);
+    font-size:clamp(20px,4vw,28px); line-height:1.15; overflow-wrap:anywhere; }
+  header p { margin:8px auto 0; max-width:920px; color:#cfc9e6; line-height:1.55; font-size:14px; }
+  header p b { color:var(--gold); }
+  main { width:min(100%,1180px); margin:0 auto; padding:clamp(8px,1.8vw,16px); display:grid;
+    grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:clamp(10px,1.5vw,16px); }
+  @media (max-width:980px) {
+    main { grid-template-columns:minmax(0,1fr); }
+    .par { grid-template-columns:minmax(0,1fr); }
+  }
+  .card { min-width:0; background:var(--panel); border:2px solid var(--line); border-radius:14px;
+    padding:clamp(10px,1.2vw,14px); }
+  .card.wide { grid-column:1 / -1; }
+  .card h2 { margin:0 0 4px; font-size:15px; line-height:1.35; letter-spacing:1px; color:var(--gold); }
+  .card p.sub { margin:0 0 10px; font-size:12.5px; color:#9b93b8; line-height:1.5; }
+  .card p.sub a { color:var(--cyan); font-weight:700; }
+  .big { min-width:0; background:#1a1528; border-radius:10px; padding:10px; text-align:center; }
+  .lienzo { overflow:auto; max-width:100%; min-width:0; overscroll-behavior:contain;
+    -webkit-overflow-scrolling:touch; }
+  /* Las tiras y galerías se muestran a tamaño nativo (sin reescalado del navegador).
+     En móvil se desplazan horizontalmente para mantener cada píxel intacto. */
+  .tira { display:flex; gap:8px; overflow-x:auto; max-width:100%; min-width:0;
+    padding:6px 2px 2px; margin-top:8px; background:#141020; border-radius:8px;
+    align-items:flex-start; overscroll-behavior-inline:contain; -webkit-overflow-scrolling:touch; }
+  .tira img { display:block; width:auto; height:auto; max-width:none; border-radius:4px;
+    image-rendering:pixelated; }
+  .tira img.sel { outline:2px solid var(--cyan); outline-offset:1px; }
+  /* Sin `pixelated`: el canvas ya se mide en píxeles REALES de pantalla y el CSS va a
+     dispositivo/dpr. Cuando el reparto no es exacto (dpr 2,75 en el movil), `pixelated`
+     hace que el navegador se salte filas; sin él, remuestrea suave. Ver regla 6 y 8. */
+  canvas#anim { image-rendering:auto; display:block; margin:0 auto;
+    background: repeating-conic-gradient(#2c2a40 0 25%, #242233 0 50%) 0 0/32px 32px; border-radius:8px; }
+  canvas#anim.solid { background:#101018; }
+  canvas#anim.magenta { background:#c0c; }
+  canvas#anim.green { background:#00ff00; }
+  .controls { display:flex; gap:7px; flex-wrap:wrap; justify-content:center; align-items:center;
+    min-width:0; margin-top:10px; }
+  .controls > * { min-width:0; max-width:100%; }
+  button, select { max-width:100%; background:#35324e; color:#eee; border:1px solid #4a4767;
+    border-radius:8px; padding:7px 11px; cursor:pointer; font:inherit; font-size:13px;
+    touch-action:manipulation; }
+  .controls button, .controls select { min-height:40px; }
+  .controls select { min-width:0; }
+  button:hover, select:hover { background:#454163; }
+  button:focus-visible, select:focus-visible, input:focus-visible, a:focus-visible,
+  figure[role=button]:focus-visible { outline:2px solid var(--cyan); outline-offset:2px; }
+  button.on { background:#0e7c8c; border-color:#96ffeb; }
+  button.guardar { background:#1d6b3f; border-color:#3ddc84; color:#eafff2; font-weight:700; }
+  button.guardar:hover { background:#28834e; }
+  button.guardar:disabled { opacity:.5; cursor:progress; }
+  .orden { font-family:ui-monospace,monospace; font-size:12px; color:#9b93b8;
+    background:#120d1c; border:1px solid #4a4767; border-radius:8px; padding:7px 10px;
+    margin-top:6px; white-space:pre-wrap; word-break:break-word; }
+  button.peligro:hover { background:#5c2222; }
+  #tira { display:flex; margin:12px auto 0; }
+  .lab-preview-frame { display:block; width:100%; height:min(520px,72vh); min-height:320px;
+    border:1px solid var(--line); border-radius:10px; background:#150f1f; }
+  .lab-preview-frame[hidden] { display:none; }
+  .lab-preview-open { display:inline-flex; align-items:center; min-height:40px; padding:7px 11px;
+    border:1px solid #4a4767; border-radius:8px; background:#35324e; color:var(--cyan);
+    text-decoration:none; font-size:13px; font-weight:700; }
+  .lab-preview-open:hover { background:#454163; }
+  .lab-import-controls { justify-content:flex-start !important; margin-top:8px; }
+  .lab-import-controls button:disabled { opacity:.55; cursor:not-allowed; }
+  #lab-preview-select { min-width:min(100%,280px); }
+  .lab-stage-preview { min-width:0; margin-top:10px; padding:9px; border:1px solid var(--line); border-radius:9px; background:#171225; }
+  .lab-stage-preview[hidden] { display:none; }
+  .lab-stage-preview h3 { margin:0 0 5px; color:var(--cyan); font-size:13px; }
+  .lab-stage-preview p { margin:0 0 7px; }
+  .lab-candidate-strip { display:flex; gap:8px; max-width:100%; min-width:0; overflow-x:auto; padding:6px;
+    align-items:flex-start; overscroll-behavior-inline:contain; -webkit-overflow-scrolling:touch; }
+  .lab-candidate-strip figure { flex:0 0 auto; margin:0; padding:4px; border:1px solid #4a4767; border-radius:7px; background:#100c19; }
+  .lab-candidate-strip img { display:block; width:auto; height:auto; max-width:none; image-rendering:pixelated; background:#1a1528; }
+  .lab-candidate-strip figcaption { max-width:180px; color:#b7b0d0; font-size:11px; line-height:1.4; text-align:center; overflow-wrap:anywhere; }
+  .lab-candidate-strip figure.aprobado { border-color:#3ddc84; }
+  .lab-candidate-strip figure.pendiente { border-color:#7d718f; }
+  .lab-candidate-strip img.fallo { background:#5c2222; }
+  .lab-official-sets { display:grid; gap:10px; min-width:0; }
+  .lab-official-set { min-width:0; padding:7px; border:1px solid #37314c; border-radius:7px; }
+  .lab-official-set h4 { margin:0 0 4px; color:#e2dcf4; font-size:12px; }
+  .lab-official-set .lab-candidate-strip { padding:4px 0; }
+  details.collapsible { min-width:0; }
+  details.collapsible > summary { display:flex; justify-content:space-between; align-items:center; gap:10px;
+    cursor:pointer; list-style:none; }
+  details.collapsible > summary::-webkit-details-marker { display:none; }
+  details.collapsible > summary::marker { content:""; }
+  details.collapsible > summary h2 { margin:0; }
+  details.collapsible:not([open]) > summary { margin-bottom:0; }
+  .collapse-indicator { flex:0 0 auto; width:28px; height:28px; display:grid; place-items:center;
+    border:1px solid #4a4767; border-radius:7px; color:var(--cyan); font-size:20px; line-height:1; }
+  .collapse-indicator::before { content:"−"; }
+  details.collapsible:not([open]) .collapse-indicator::before { content:"+"; }
+  .creator-tools { margin-top:10px; padding:10px; border:1px solid var(--line); border-radius:10px; background:#171225; }
+  .creator-tools > summary h2 { color:var(--cyan); font-size:13px; letter-spacing:.2px; }
+  #voltia-final-status[data-kind="success"] { color:#c9ffdd; }
+  #voltia-final-status[data-kind="error"], .alignment-status[data-kind="error"] { color:#ffd1d1; }
+  .alignment-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px; }
+  .alignment-group { min-width:0; padding:10px; border:1px solid #37314c; border-radius:8px; background:#120e1d; }
+  .alignment-group h3 { margin:0 0 7px; color:#e2dcf4; font-size:13px; }
+  .alignment-values { display:flex; flex-wrap:wrap; align-items:center; gap:8px; }
+  .alignment-values label { display:flex; align-items:center; gap:5px; color:#c5bdd7; font-size:12px; }
+  .alignment-values input { width:82px; min-height:38px; padding:6px; border:1px solid #4a4767; border-radius:7px; background:#35324e; color:#eee; font:inherit; }
+  .alignment-group .controls { justify-content:flex-start; }
+  .alignment-status { min-height:1.4em; margin:7px 0 0; color:#b7b0d0; font-size:12px; line-height:1.45; }
+  .alignment-group button.on { border-color:var(--cyan); background:#0e7c8c; }
+  canvas#anim.alignment-active { cursor:crosshair; touch-action:none; }
+  canvas#anim.alignment-active[data-alignment-mode="sprite"] { cursor:move; }
+  .alignment-group.sprite-adjustment { border-color:#64532a; }
+  #alignment-sprite-status[data-kind="success"] { color:#c9ffdd; }
+  #publish-voltia-final, #publish-voltia-final-sequence { min-height:44px; background:#0e7c8c;
+    border-color:var(--cyan); color:#fff; font-weight:800; }
+  #publish-voltia-final:hover:not(:disabled), #publish-voltia-final-sequence:hover:not(:disabled) { background:#126b78; }
+  #publish-voltia-final:disabled, #publish-voltia-final-sequence:disabled { opacity:.62; cursor:not-allowed; }
+  #voltia-final-sequence-status { margin:7px 0 0; color:#c5bdd7; font-size:12px; line-height:1.5; }
+  #voltia-final-sequence-status[data-kind="success"] { color:#c9ffdd; }
+  #voltia-final-sequence-status[data-kind="error"] { color:#ffd1d1; }
+  @media (max-width:700px) { .alignment-grid { grid-template-columns:minmax(0,1fr); } }
+  /* La secuencia va en UNA fila con scroll: en movil, 8 fichas de 96 px no caben y se
+     apilaban en columnas altisimas. */
+  .secuencia { display:flex; flex-wrap:nowrap; gap:8px; min-height:60px; max-width:100%; min-width:0;
+    padding:8px; background:#161022; border:1px dashed #4a4767; border-radius:10px;
+    align-items:flex-start; overflow-x:auto; overscroll-behavior-inline:contain;
+    -webkit-overflow-scrolling:touch; }
+  .chip { position:relative; border-radius:7px; background:#241c38; border:1px solid #4a4767;
+    padding:3px; flex:0 0 auto; }
+  /* `aspect-ratio` reserva el hueco ANTES de que la imagen cargue: sin esto las fichas
+     nacen con ancho 0 y mientras cargan se ven vacias y se recolocan (parecia "loco"). */
+  .chip img { display:block; width:auto; height:auto; max-width:none;
+    background:#1a1528; border-radius:4px; image-rendering:pixelated; }
+  .chip img.fallo, .galeria img.fallo, .tira img.fallo { background:#5c2222; }
+  .chip span { position:absolute; top:-6px; left:-6px; background:#0e7c8c; color:#fff; font-size:10px;
+    width:16px; height:16px; line-height:16px; text-align:center; border-radius:50%; }
+  .chip button.x { position:absolute; top:-7px; right:-7px; width:17px; height:17px; padding:0;
+    font-size:11px; line-height:1; border-radius:50%; background:#5c2222; border:0; }
+  .chip .flechas { display:flex; gap:2px; justify-content:center; margin-top:2px; }
+  .chip .flechas button { padding:0 5px; font-size:11px; border-radius:5px; }
+  .galeria { display:flex; flex-wrap:nowrap; gap:8px; max-height:380px; max-width:100%; min-width:0;
+    overflow:auto; padding:4px; align-items:flex-start; overscroll-behavior:contain;
+    -webkit-overflow-scrolling:touch; }
+  .galeria figure { margin:0; background:#161022; border:2px solid transparent; border-radius:8px;
+    padding:4px; cursor:pointer; flex:0 0 auto; }
+  .galeria figure:hover { border-color:#4a4767; }
+  .galeria img { display:block; width:auto; height:auto; max-width:none;
+    background:#1a1528; border-radius:4px; image-rendering:pixelated; }
+  .galeria figcaption { font-size:11px; color:#9b93b8; text-align:center; }
+  #galeria-gestion { max-height:440px; }
+  #papelera-vista { border:1px solid var(--line); border-radius:8px; padding:10px; margin-top:10px; }
+  #papelera-vista[hidden] { display:none; }
+  .original-strip { display:flex; gap:8px; max-width:100%; min-width:0; overflow:auto; padding:8px;
+    background:#141020; border-radius:8px; align-items:flex-start; overscroll-behavior:contain;
+    -webkit-overflow-scrolling:touch; }
+  .original-strip figure { margin:0; flex:0 0 auto; }
+  .original-strip canvas { display:block; width:350px; height:332px; image-rendering:pixelated;
+    background:#101018; }
+  .original-strip figcaption { text-align:center; font:12px ui-monospace,monospace; color:#b7b0d0; }
+  .empty { color:#b7b0d0; padding:12px; }
+  #galeria-gestion figure.sel, #galeria-papelera figure.sel { border-color:#ff7b7b; background:#3a1c22; }
+  #galeria-gestion figure.nueva { border-color:#3ddc84; }
+  #galeria-gestion figure.aprobado { border-color:#3ddc84; box-shadow:inset 0 0 0 2px #1d6b3f; }
+  #galeria-gestion figure.descartado { opacity:.45; border-color:#8a3b3b; }
+  .marca { font-size:10px; font-weight:700; letter-spacing:.4px; }
+  .marca.aprobado { color:#8dffb4; }
+  .marca.pendiente { color:#b7b0d0; }
+  .marca.descartado { color:#ff8f8f; }
+  .par { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px; }
+  figure.zoom { min-width:0; margin:0; }
+  figure.zoom img { width:100%; height:auto; display:block; border-radius:8px; background:#1a1528; }
+  figure.zoom figcaption, .refs figcaption { font-size:12px; color:#9b93b8; text-align:center; margin-top:4px; }
+  .refs img { width:100%; height:auto; border-radius:8px; display:block; }
+  .refs figure { margin:0; }
+  .table-scroll { max-width:100%; overflow-x:auto; overscroll-behavior-inline:contain;
+    -webkit-overflow-scrolling:touch; border-radius:8px; }
+  table { border-collapse:collapse; width:100%; font-size:12.5px; }
+  .table-scroll table { min-width:440px; }
+  .metricas-scroll table { min-width:560px; }
+  th, td { border:1px solid var(--line); padding:5px 8px; text-align:left; }
+  th { background:#2c2442; color:var(--cyan); }
+  td.ok { color:#8dffb4; font-weight:600; }
+  td.bad { color:#ff8f8f; font-weight:600; }
+  .note { font-size:12.5px; color:#b7b0d0; line-height:1.6; }
+  .note b { color:var(--gold); }
+  .grid-options { display:grid; grid-template-columns:repeat(auto-fit,minmax(145px,1fr)); gap:8px;
+    margin:8px 0 10px; padding:10px; background:#171225; border:1px solid var(--line); border-radius:9px; }
+  .grid-options[hidden] { display:none; }
+  .grid-options label { display:grid; gap:4px; min-width:0; color:#cfc9e6; font-size:12px; }
+  .grid-options input { width:100%; min-height:38px; background:#35324e; color:#fff; border:1px solid #4a4767;
+    border-radius:7px; padding:6px 8px; font:inherit; }
+  .grid-help { grid-column:1/-1; margin:0; color:#9b93b8; font-size:12px; line-height:1.5; }
+  .upload-controls input[type=file] { flex:1 1 220px; min-width:180px; font-size:13px; }
+  #perfil-status[data-kind="error"] { color:#ffd1d1; }
+  .upload-status { padding:8px 10px; margin:0 0 8px; background:#171225;
+    border:1px solid var(--line); border-radius:8px; min-height:38px; white-space:pre-wrap; overflow-wrap:anywhere; }
+  .upload-status[data-kind="error"] { border-color:#b64d4d; color:#ffd1d1; }
+  .upload-status[data-kind="success"] { border-color:#328455; color:#c9ffdd; }
+  .formula { max-width:100%; overflow-x:auto; overscroll-behavior-inline:contain;
+    -webkit-overflow-scrolling:touch; background:#120d1c; border-left:3px solid var(--cyan);
+    padding:8px 12px; margin:8px 0; font-family:ui-monospace,monospace; font-size:12.5px;
+    color:#cfc9e6; border-radius:4px; }
+  code { overflow-wrap:anywhere; }
+  footer { text-align:center; color:#6d6b85; font-size:12px; padding:8px 10px 26px; }
+
+  @media (max-width:980px) {
+    .par { grid-template-columns:minmax(0,1fr); }
+  }
+  @media (max-width:760px) {
+    nav.models { justify-content:flex-start; flex-wrap:nowrap; overflow-x:auto; padding:8px 10px;
+      -webkit-overflow-scrolling:touch; }
+    nav.models a { padding:8px 12px; font-size:13px; }
+  }
+  @media (max-width:600px) {
+    header { padding:18px 12px 4px; }
+    header p { font-size:13px; }
+    main { padding:10px; gap:10px; }
+    .card { border-radius:12px; }
+    .card h2 { font-size:14px; letter-spacing:.7px; }
+    .card p.sub { font-size:13px; }
+    .big { padding:8px; }
+    .grid-options { grid-template-columns:repeat(2,minmax(0,1fr)); padding:9px; }
+    .grid-help { grid-column:1/-1; }
+    .controls { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:8px;
+      justify-content:stretch; align-items:stretch; width:100%; }
+    .controls > * { width:100%; min-width:0; max-width:100%; }
+    .controls > label { grid-column:1 / -1; display:flex; flex-wrap:wrap; align-items:center; gap:7px; }
+    .controls button, .controls select, .controls input[type=file] {
+      min-height:44px; padding:9px 10px; font-size:16px; }
+    .controls button { line-height:1.25; white-space:normal; overflow-wrap:anywhere; }
+    .controls select { width:100%; text-overflow:ellipsis; }
+    .controls > #mov, .controls > #resol, .controls > #scale, .controls > #bg,
+    .controls > #personaje, .controls > #fstat, .controls > #copiar-sel, .controls > #ficheros,
+    .controls > #subir, .controls > #fps-control, .controls > #papelera-titulo { grid-column:1 / -1; }
+    .controls input[type=range] { min-height:28px; width:min(100%,240px) !important; flex:1 1 120px; }
+    .controls > input[type=file] { grid-column:1 / -1; font-size:14px; }
+    .chip button.x { top:-9px; right:-9px; width:28px; height:28px; font-size:16px; }
+    .chip .flechas button { min-width:36px; min-height:36px; font-size:15px; }
+    .galeria, #galeria-gestion, #galeria-papelera { max-height:min(55vh,420px); }
+    .table-scroll table { min-width:440px; }
+    .metricas-scroll table { min-width:560px; }
+  }
+</style>
+</head>
+<body>
+
+<nav class="models" aria-label="Navegación principal">
+  <a href="../index.html">🏠 Inicio</a>
+  <a href="../preview/fight.html">⚔ Juego</a>
+  <a class="on" href="./" aria-current="page">🧩 Creador</a>
+  <a href="../preview/personajes.html">👥 Personajes</a>
+  <a href="pruebas-ia/">🧪 Pruebas IA · Voltia</a>
+</nav>
+
+<header>
+  <h1>CREADOR DE PERSONAJES</h1>
+  <p>Visor de movimientos y biblioteca de sprites. Alterna entre resolución nativa y oficial;
+     las reglas técnicas completas se conservan en la documentación interna.</p>
+</header>
+
+<main>
+
+
+
+    <section class="card wide creator-workspace" id="creator-viewer">
+    <h2>Visor</h2>
+    <p class="sub">Cambia entre resolución nativa y oficial. Si la secuencia está vacía, el visor muestra
+       la biblioteca para revisión sin añadir nada; usa «Previsualizar biblioteca» para alternar cuando
+       haya una secuencia. En móvil, la tira se desplaza en horizontal y conserva los píxeles.</p>
+    <div class="controls" style="justify-content:flex-start;margin:0 0 8px">
+      <label class="note">Personaje:
+        <select id="personaje" aria-label="Perfil de personaje del creador" disabled></select>
+      </label>
+      <span class="note" id="perfil-status" aria-live="polite">Cargando perfil…</span>
+    </div>
+    <div class="big"><div class="lienzo" id="caja"><canvas id="anim"></canvas></div>
+      <div class="tira" id="tira"></div></div>
+    <div class="controls">
+      <button id="play">⏸ Pausa</button>
+      <button id="visor-preview-toggle" type="button" disabled>Previsualizar biblioteca</button>
+      <button id="publish-voltia-final" class="guardar" type="button" aria-describedby="voltia-final-status" disabled>Enviar a Voltia Final</button>
+      <select id="mov" title="Movimientos del personaje seleccionado"></select>
+      <select id="resol">
+        <option value="oficial" selected>Tamaño oficial · 96×152</option>
+        <option value="nativo">Nativo · sin reducir</option>
+      </select>
+      <select id="scale">
+        <option value="0" selected>Ajustar a la ventana</option>
+        <option value="1">1 px de sprite = 1 px de pantalla</option>
+        <option value="2">2 px de pantalla por píxel</option>
+        <option value="3">3 px de pantalla por píxel</option>
+        <option value="4">4 px de pantalla por píxel</option>
+        <option value="6">6 px de pantalla por píxel</option>
+      </select>
+      <button id="ajustar" class="on">Ajustar a la ventana</button>
+      <select id="bg">
+        <option value="">Fondo ajedrez</option>
+        <option value="solid">Fondo negro</option>
+        <option value="magenta">Fondo magenta</option>
+        <option value="green">Fondo verde</option>
+      </select>
+      <button id="tog-guia" title="Eje X de cabeza (rojo), altura de cabeza (verde) y línea de suelo/pies (azul)">Guías cabeza/suelo</button>
+      <button id="tog-tira" class="on">Tira</button>
+      <label class="note" id="fps-control"><input type="range" id="fps" min="4" max="20" value="10" style="vertical-align:middle;width:80px"> <span id="fps-v">10</span> fps</label>
+      <span class="note" id="fstat">—</span>
+    </div>
+    <p class="note" id="voltia-final-status" role="status" aria-live="polite">Para enviar una animación, prepara su secuencia oficial y aprueba todos sus cuadros. Voltia Final es un destino independiente; no modifica la hoja original ni el juego.</p>
+
+  <details id="creator-alignment-panel" class="creator-tools collapsible">
+    <summary><h2>Alineación manual · cabeza y suelo por movimiento</h2><span class="collapse-indicator" aria-hidden="true"></span></summary>
+    <p class="sub">La cruz amarilla marca el ancla de cabeza y la línea azul el suelo objetivo. Primero coloca las guías medidas; después puedes arrastrar el sprite en el visor para hacer coincidir la cabeza y apoyar los pies en esas referencias. El desplazamiento se guarda por movimiento y se aplica al visor de Voltia Final, pero no reescribe ningún PNG ni toca Voltia original. Antes de publicar, confirma manualmente la posición del sprite en cada movimiento, aunque el desplazamiento sea 0,0.</p>
+    <div class="alignment-grid">
+      <section class="alignment-group" aria-labelledby="alignment-head-title">
+        <h3 id="alignment-head-title">Cabeza · ancla X/Y (dentro de 96×152)</h3>
+        <div class="alignment-values">
+          <label for="alignment-head-x">X <input id="alignment-head-x" type="number" min="0" max="95" step="1" inputmode="numeric"></label>
+          <label for="alignment-head-y">Y <input id="alignment-head-y" type="number" min="0" max="151" step="1" inputmode="numeric"></label>
+        </div>
+        <div class="controls">
+          <button id="alignment-head-drag" type="button" aria-pressed="false">Arrastrar cruz de cabeza</button>
+          <button id="alignment-head-save" class="guardar" type="button">Guardar cabeza revisada</button>
+        </div>
+        <p id="alignment-head-status" class="alignment-status" role="status" aria-live="polite"></p>
+      </section>
+      <section class="alignment-group" aria-labelledby="alignment-floor-title">
+        <h3 id="alignment-floor-title">Suelo · línea Y (0–152)</h3>
+        <div class="alignment-values">
+          <label for="alignment-floor-y">Y del suelo <input id="alignment-floor-y" type="number" min="0" max="152" step="1" inputmode="numeric"></label>
+        </div>
+        <div class="controls">
+          <button id="alignment-floor-drag" type="button" aria-pressed="false">Arrastrar línea del suelo</button>
+          <button id="alignment-floor-save" class="guardar" type="button">Guardar suelo revisado</button>
+        </div>
+        <p id="alignment-floor-status" class="alignment-status" role="status" aria-live="polite"></p>
+      </section>
+      <section class="alignment-group sprite-adjustment" aria-labelledby="alignment-sprite-title">
+        <h3 id="alignment-sprite-title">Mover sprite · respecto a las guías fijas</h3>
+        <div class="alignment-values">
+          <label for="alignment-sprite-x">Desplazamiento X <input id="alignment-sprite-x" type="number" min="-96" max="96" step="1" inputmode="numeric"></label>
+          <label for="alignment-sprite-y">Desplazamiento Y <input id="alignment-sprite-y" type="number" min="-152" max="152" step="1" inputmode="numeric"></label>
+        </div>
+        <div class="controls">
+          <button id="alignment-sprite-drag" type="button" aria-pressed="false">Arrastrar sprite en el visor</button>
+          <button id="alignment-sprite-save" class="guardar" type="button">Guardar posición revisada</button>
+        </div>
+        <p id="alignment-sprite-status" class="alignment-status" role="status" aria-live="polite"></p>
+      </section>
+    </div>
+  </details>
+
+  <details id="creator-library-panel" class="creator-tools collapsible">
+    <summary><h2>Biblioteca · aprobar, subir y organizar</h2><span class="collapse-indicator" aria-hidden="true"></span></summary>
+    <p class="sub">Elige un movimiento del personaje seleccionado. Puedes gestionar sus sprites o
+       mostrar la biblioteca completa, aprobar, mandar a papelera y reutilizar cualquier sprite
+       aprobado en el movimiento seleccionado. La papelera se puede ver, restaurar y vaciar aquí.
+       <a id="ancla-voltia" hidden href="../voltia/nuevo/creador/ancla/ANCLA_voltia_4_vistas.png" target="_blank" rel="noopener">Abrir ancla fija de Voltia · cuatro vistas · 1408×768</a>.</p>
+    <div class="controls" style="justify-content:flex-start;margin:0 0 10px">
+      <label class="note">Mostrar:
+        <select id="filtro-galeria">
+          <option value="actual">Sprites del movimiento seleccionado</option>
+          <option value="todos">Biblioteca completa · todos los movimientos</option>
+        </select>
+      </label>
+      <label class="note"><input type="checkbox" id="todos"> marcar todos los visibles</label>
+      <button id="aprobar-sel" class="guardar">✓ Aprobar</button>
+      <button id="pendiente-sel">↺ Pendiente</button>
+      <button id="descartar-sel">✕ Descartar</button>
+      <button id="borrar-sel" class="peligro">🗑 A la papelera</button>
+      <button id="copiar-sel">➕ Añadir aprobados a <span id="destino-copiar">stance</span></button>
+    </div>
+    <div class="controls upload-controls" style="justify-content:flex-start;margin:0 0 10px">
+      <label class="note">Destino: <b id="destino-subir">stance</b>
+        <select id="subir-resol">
+          <option value="nativo">Nativo · celda existente</option>
+          <option value="oficial">Oficial · 96×152</option>
+        </select>
+      </label>
+      <label class="note">Formato de entrada:
+        <select id="modo-subida">
+          <option value="individual">PNG sueltos · cada archivo es un sprite</option>
+          <option value="hoja">Hoja/tira · cortar por rejilla exacta</option>
+        </select>
+      </label>
+    </div>
+    <div class="grid-options" id="opciones-hoja" hidden>
+      <label>Celda ancho (px)<input id="celda-ancho" type="number" min="40" step="1" value="96"></label>
+      <label>Celda alto (px)<input id="celda-alto" type="number" min="60" step="1" value="152"></label>
+      <label>Columnas · 0 = auto<input id="columnas" type="number" min="0" step="1" value="0"></label>
+      <label>Fila de inicio (1 = primera)<input id="fila-inicio" type="number" min="1" step="1" value="1"></label>
+      <label>Filas a importar · 0 = todas<input id="filas" type="number" min="0" step="1" value="1"></label>
+      <label>Separación X (px)<input id="gap-x" type="number" min="0" step="1" value="0"></label>
+      <label>Separación Y (px)<input id="gap-y" type="number" min="0" step="1" value="0"></label>
+      <label>Margen izquierdo (px)<input id="offset-x" type="number" min="0" step="1" value="0"></label>
+      <label>Margen superior (px)<input id="offset-y" type="number" min="0" step="1" value="0"></label>
+      <p class="grid-help">Por defecto solo se importa una fila: así no se mezclan animaciones distintas de una hoja. Elige su fila de inicio; usa varias filas únicamente si pertenecen al mismo movimiento. Columnas en 0 detecta las celdas completas. Corte exacto, sin escalar.</p>
+    </div>
+    <div class="controls upload-controls" style="justify-content:flex-start;margin:0 0 8px">
+      <input type="file" id="ficheros" accept="image/png" multiple disabled aria-label="Selecciona uno o varios archivos PNG" aria-describedby="subida-ayuda">
+      <button id="subir" class="guardar" disabled>⬆ Añadir a la biblioteca como pendiente</button>
+      <button id="ver-papelera">🗑 Ver papelera</button>
+      <button id="vaciar-papelera" class="peligro">Vaciar papelera</button>
+    </div>
+    <p class="sub" id="subida-ayuda">Elige PNG individual o una hoja/tira uniforme. Los archivos aceptados se guardan
+      en la carpeta del movimiento y quedan <b>pendientes</b>; la tira de la secuencia se descarga con
+      «Guardar animación» (PNG + JSON) en tu equipo. Tamaño oficial: 96×152 exactos; nativo: el lienzo
+      ya medido del movimiento. La cuadrícula se recorta, no se escala.</p>
+    <div class="upload-status note" id="subida-status" role="status" aria-live="polite">Cargando el perfil y la biblioteca…</div>
+    <div class="note" id="gestion" aria-live="polite">—</div>
+    <div class="galeria" id="galeria-gestion"></div>
+    <div id="papelera-vista" hidden>
+      <div class="controls" style="justify-content:flex-start;margin:0 0 8px">
+        <b class="note" id="papelera-titulo">Papelera</b>
+        <button id="restaurar-papelera">↩ Restaurar seleccionados</button>
+        <button id="cerrar-papelera">Cerrar papelera</button>
+      </div>
+      <div class="galeria" id="galeria-papelera"></div>
+    </div>
+  </details>
+
+  <details id="creator-sequence-panel" class="creator-tools collapsible" open>
+    <summary><h2>Secuencia · preparar animación</h2><span class="collapse-indicator" aria-hidden="true"></span></summary>
+    <p class="sub">Pulsa un sprite de la galería para añadirlo. Los candidatos de Pruebas IA no entran mientras estén pendientes: apruébalos primero en la biblioteca y usa el botón específico para añadirlos en orden. Quita con ×, reordena con ← →; no se repiten cuadros. La fila se desplaza horizontalmente y se guarda por movimiento y resolución en este navegador.</p>
+    <div class="controls" style="justify-content:flex-start;margin:0 0 8px">
+      <button id="auto">Cargar orden disponible</button>
+      <button id="add-approved-sequence" class="guardar" type="button" disabled>Añadir aprobados de Pruebas IA a la secuencia</button>
+      <button id="quitar-ultimo">Quitar último</button>
+      <button id="limpiar" class="peligro">Vaciar</button>
+      <button id="guardar" class="guardar">💾 Guardar animación</button>
+      <button id="publish-voltia-final-sequence" class="guardar" type="button" aria-describedby="voltia-final-sequence-status" disabled>Enviar a Voltia Final</button>
+    </div>
+    <div class="note" id="gstat">La tira PNG conserva sus píxeles originales; el JSON guarda el orden, los fps y el desplazamiento de vista por movimiento (sin aplicarlo a los PNG).</div>
+    <p id="voltia-final-sequence-status" role="status" aria-live="polite">La publicación aparece aquí y en el Visor. El mensaje indicará qué requisito falta antes de habilitarla.</p>
+    <div class="note" id="pedido-voltia" hidden style="margin-top:6px">Pedido del stance nuevo de Voltia, listo para pegar en la IA:
+      <code>voltia/nuevo/creador/PEDIDO_stance_v2.md</code></div>
+    <div class="orden" id="orden"></div>
+    <div class="secuencia" id="secuencia"></div>
+    <div class="galeria" id="galeria" style="margin-top:10px"></div>
+  </details>
+
+  <details id="original-ref" class="creator-tools collapsible">
+    <summary><h2>Referencia del movimiento</h2><span class="collapse-indicator" aria-hidden="true"></span></summary>
+    <p class="sub">Frames de referencia del movimiento seleccionado, extraídos de la hoja fuente
+       del perfil y mostrados a tamaño nativo, sin suavizado. Desplaza en horizontal.</p>
+    <div class="original-strip" id="original-strip"></div>
+  </details>
+  </section>
+
+    <details class="card collapsible wide" id="lab-preview-card">
+    <summary><h2>Pruebas IA · aprobación e importación al Creador</h2><span class="collapse-indicator" aria-hidden="true"></span></summary>
+    <p class="sub">En Pruebas IA, valida la animación y pulsa «Enviar al Creador · Nativo sin escala»; también puedes importarla desde esta previsualización. Se guarda en una bandeja Nativa aislada, con su lienzo real, sin escalar y como pendiente. Revísala aquí y apruébala; solo después se ofrece convertirla a 96×152 como candidatos pendientes. No se modifica la hoja del juego ni el modelo original.</p>
+    <div class="controls" style="justify-content:flex-start">
+      <label class="note" for="lab-preview-select">Secuencia validada:
+        <select id="lab-preview-select" disabled aria-label="Secuencia validada de Pruebas IA">
+          <option value="">Buscando validaciones guardadas…</option>
+        </select>
+      </label>
+      <button id="lab-preview-refresh" type="button">Actualizar lista</button>
+      <a class="lab-preview-open" href="pruebas-ia/" target="_blank" rel="noopener">Abrir Pruebas IA</a>
+    </div>
+    <p class="note" id="lab-preview-status" role="status" aria-live="polite">Buscando animaciones validadas en este navegador…</p>
+    <iframe id="lab-preview-frame" class="lab-preview-frame" title="Previsualización nativa de una animación validada de Voltia" loading="lazy" hidden></iframe>
+    <div class="controls lab-import-controls">
+      <button id="lab-native-import" type="button" disabled>Importar Nativo · sin escala · pendiente</button>
+      <button id="lab-review-approve" type="button" disabled>✓ Aprobar animación en el Creador</button>
+      <button id="lab-import-official" class="guardar" type="button" disabled>Preparar candidatos 96×152 · pendientes</button>
+    </div>
+    <p class="note" id="lab-import-destination">Destino de la conversión: selecciona un movimiento en el Creador.</p>
+    <p class="note" id="lab-import-status" role="status" aria-live="polite">La primera importación conserva los PNG en una bandeja Nativa aislada y pendiente. Solo tras la aprobación del Creador se habilita la conversión separada a 96×152; la hoja del juego no se modifica.</p>
+    <section id="lab-native-preview" class="lab-stage-preview" hidden aria-label="Sprites importados a Nativo">
+      <h3>Sprites de la bandeja Nativa</h3>
+      <p class="note" id="lab-native-preview-status"></p>
+      <div id="lab-native-strip" class="lab-candidate-strip"></div>
+    </section>
+    <section id="lab-official-preview" class="lab-stage-preview" hidden aria-label="Candidatos oficiales de Pruebas IA">
+      <h3>Candidatos del Creador · 96×152</h3>
+      <p class="note" id="lab-official-preview-status"></p>
+      <div id="lab-official-strip" class="lab-official-sets"></div>
+    </section>
+  </details>
+
+
+
+
+</main>
+
+<footer>FabaterFighter · creador de personajes · 2026-10-22</footer>
+
+<script>
+(async () => {
+  const $ = id => document.getElementById(id);
+  for (const panel of document.querySelectorAll('details.collapsible[id]')) {
+    const key = `fabaterfighter.creator-panel.v1:${panel.id}`;
+    try {
+      const saved = localStorage.getItem(key);
+      if (saved === 'open' || saved === 'closed') panel.open = saved === 'open';
+    } catch (_) {}
+    panel.addEventListener('toggle', () => {
+      try { localStorage.setItem(key, panel.open ? 'open' : 'closed'); } catch (_) {}
+    });
+  }
+  const labPreviewPanel = $('lab-preview-card');
+  if (labPreviewPanel && (new URLSearchParams(location.search).has('ia') || location.hash === '#lab-preview-card')) {
+    labPreviewPanel.open = true;
+    window.setTimeout(() => labPreviewPanel.scrollIntoView?.({ block: 'start', behavior: 'smooth' }), 150);
+  }
+  const rosterResponse = await fetch('../characters/roster.json', { cache: 'no-store' });
+  if (!rosterResponse.ok) throw new Error('No se pudo cargar el registro de personajes.');
+  const roster = await rosterResponse.json();
+  const profiles = (roster.characters || []).filter(item => item.creator_profile);
+  if (!profiles.length) throw new Error('No hay perfiles de personaje configurados para el creador.');
+  const profileSelect = $('personaje');
+  for (const profile of profiles) {
+    const option = document.createElement('option');
+    option.value = profile.id; option.textContent = profile.name;
+    profileSelect.appendChild(option);
+  }
+  const requestedProfile = new URLSearchParams(location.search).get('character');
+  let characterId = profiles.some(item => item.id === requestedProfile) ? requestedProfile : profiles[0].id;
+  let activeProfile = profiles.find(item => item.id === characterId);
+  profileSelect.value = characterId;
+  const profileUrl = profile => {
+    const url = new URL(`../${profile.creator_profile.model_json}`, location.href);
+    if (url.origin !== location.origin) throw new Error('La ruta de datos del personaje debe ser local.');
+    return url.href;
+  };
+  const apiUrl = path => `${path}${path.includes('?') ? '&' : '?'}character=${encodeURIComponent(characterId)}`;
+  const loadModel = async profile => {
+    const response = await fetch(profileUrl(profile), { cache: 'no-store' });
+    if (!response.ok) throw new Error(`No se pudo cargar el modelo de ${profile.name}.`);
+    return response.json();
+  };
+  const loadCatalog = async id => {
+    const response = await fetch(`/api/sprites?character=${encodeURIComponent(id)}`, { cache: 'no-store' });
+    if (!response.ok) throw new Error(`La API de la biblioteca no está disponible (HTTP ${response.status}). Inicia python3 tools/serve.py; un servidor estático no incluye esta API.`);
+    const data = await response.json();
+    if (data.ok === false || !data.native || !data.official)
+      throw new Error(data.error || 'No responde la biblioteca del creador. Inicia python3 tools/serve.py.');
+    if (data.personaje && data.personaje !== id) throw new Error('La API devolvió otro perfil de personaje.');
+    return data;
+  };
+  let sheet = await loadModel(activeProfile);
+  let catalog = await loadCatalog(characterId);
+  let nat = catalog.native, ofi = catalog.official, library = catalog.library || [];
+  let animations = sheet.animations || [];
+  const cv = document.getElementById('anim');
+  const cx = cv.getContext('2d');
+  const caja = document.getElementById('caja');
+  const tiraEl = document.getElementById('tira');
+  const refStrip = document.getElementById('original-strip');
+  const cache = new Map();
+  const referenceCache = new Map();
+  const marcados = new Set();
+  const papeleraMarcada = new Set();
+  let mov = 'stance', resol = activeProfile.creator_profile.default_resolution || 'oficial', seq = [], idx = 0;
+  let playing = true, guias = false, tira = true;
+  let bibliotecaPreview = false, previewFrameIndex = 0;
+  let alignmentMode = '', alignmentPointer = null, alignmentDragStart = null, alignmentDraftMovement = null;
+  const alignmentDrafts = new Map();
+  let finalPublishBusy = false;
+  let last = performance.now(), acc = 0, M = 1, trashItems = [];
+
+  const animSpec = id => animations.find(a => a.id === id) || animations[0];
+  const pack = (r = resol) => r === 'oficial' ? ofi : nat;
+  let nativeFallback = activeProfile.creator_profile.native_fallback ||
+    [sheet.cell?.w || 96, sheet.cell?.h || 152];
+  function meta(r = resol) {
+    const m = pack(r).anims?.[mov];
+    if (m) return {
+      lienzo: m.lienzo || (r === 'oficial' ? [96, 152] : nativeFallback),
+      ancla: m.ancla || (r === 'oficial' ? activeProfile.creator_profile.official_anchor : null) || null,
+      pies_y: m.pies_y ?? activeProfile.creator_profile.official_feet_y,
+      desplazamiento_sprite: Array.isArray(m.desplazamiento_sprite) ? m.desplazamiento_sprite : [0, 0],
+      revision_alineacion: m.revision_alineacion || {},
+      frames: m.frames || [],
+    };
+    return { lienzo: r === 'oficial' ? [96, 152] : nativeFallback,
+      ancla: r === 'oficial' ? (activeProfile.creator_profile.official_anchor || null) : null,
+      pies_y: r === 'oficial' ? activeProfile.creator_profile.official_feet_y : undefined,
+      desplazamiento_sprite: [0, 0], revision_alineacion: {}, frames: [] };
+  }
+  const idDe = (f, movimiento = mov) => f.id || `legacy-${movimiento}-${String(f.i).padStart(2, '0')}`;
+  const urlVersionada = (url, id) => `${url}${url.includes('?') ? '&' : '?'}v=${encodeURIComponent(id)}`;
+  const ruta = (f, r = resol, movimiento = mov) => {
+    const base = r === 'oficial' ? 'oficial' : 'sprites';
+    const path = `../${activeProfile.creator_profile.storage_root}/${base}/${f.fichero || `${movimiento}/f${String(f.i).padStart(2, '0')}.png`}`;
+    // Tras borrar un frame, los PNG restantes se renombran (f05 pasa a f04). La URL
+    // numérica se repite, pero su contenido cambia: el ID evita reutilizar una imagen cacheada.
+    return urlVersionada(path, idDe(f, movimiento));
+  };
+  const dpr = () => window.devicePixelRatio || 1;
+  function tamañoPixelNativo(el, w = el.naturalWidth, h = el.naturalHeight) {
+    if (!w || !h) return;
+    const entero = Math.max(1, Math.floor(dpr()));
+    el.style.width = `${w * entero / dpr()}px`;
+    el.style.height = `${h * entero / dpr()}px`;
+    el.style.maxWidth = 'none'; el.style.maxHeight = 'none';
+    el.style.imageRendering = 'pixelated';
+  }
+  function imagenPixelNativa(el) {
+    el.addEventListener('load', () => tamañoPixelNativo(el));
+    if (el.complete && el.naturalWidth) tamañoPixelNativo(el);
+  }
+  const fps = () => +document.getElementById('fps').value || 10;
+  const storageKey = () => `sec:${characterId}:${resol}:${mov}`;
+
+  function actualizarSelector() {
+    const sel = $('mov');
+    const previo = mov;
+    sel.innerHTML = '';
+    for (const a of animations) {
+      const own = Math.max(nat.anims?.[a.id]?.frames?.length || 0,
+                           ofi.anims?.[a.id]?.frames?.length || 0);
+      const o = document.createElement('option');
+      o.value = a.id;
+      o.textContent = `${a.label} · ${a.id} · ${own} propios / ${a.frames} del original`;
+      sel.appendChild(o);
+    }
+    mov = animations.some(a => a.id === previo) ? previo : (animations[0]?.id || 'stance');
+    sel.value = mov;
+    $('destino-copiar').textContent = mov;
+    $('destino-subir').textContent = mov;
+    const isVoltia = activeProfile.id === 'voltia';
+    $('pedido-voltia').hidden = !isVoltia; $('ancla-voltia').hidden = !isVoltia;
+    $('perfil-status').textContent = `${activeProfile.name} · ${animations.length} movimientos`;
+  }
+
+  async function recargarCatalogo() {
+    const r = await fetch(apiUrl('/api/sprites'), { cache: 'no-store' });
+    const j = await r.json();
+    if (!r.ok || j.ok === false) throw new Error(j.error || 'no se pudo cargar la biblioteca');
+    catalog = j; nat = j.native; ofi = j.official; library = j.library || [];
+    actualizarSelector();
+    cache.clear();
+  }
+
+  const post = async (path, body) => {
+    const r = await fetch(path, { method: 'POST', headers: { 'Content-Type': 'application/json' },
+                                  body: JSON.stringify({ ...body, character: characterId }) });
+    const j = await r.json();
+    if (!r.ok || j.ok === false) throw new Error(j.error || `Error HTTP ${r.status}`);
+    return j;
+  };
+
+  function alineacionBase(movement = mov) {
+    const saved = ofi.anims?.[movement] || {};
+    const fallbackAnchor = activeProfile.creator_profile.official_anchor;
+    const anchor = Array.isArray(saved.ancla) ? saved.ancla : fallbackAnchor;
+    const feet = Number.isInteger(saved.pies_y) ? saved.pies_y : activeProfile.creator_profile.official_feet_y;
+    const spriteOffset = Array.isArray(saved.desplazamiento_sprite) && saved.desplazamiento_sprite.length === 2
+      ? saved.desplazamiento_sprite : [0, 0];
+    return {
+      anchor: Array.isArray(anchor) && anchor.length === 2 ? anchor : null,
+      feet: Number.isInteger(feet) ? feet : null,
+      spriteOffset,
+      inheritedAnchor: !Array.isArray(saved.ancla) && Array.isArray(fallbackAnchor),
+      inheritedFloor: !Number.isInteger(saved.pies_y) && Number.isInteger(activeProfile.creator_profile.official_feet_y),
+      revision: saved.revision_alineacion || {},
+    };
+  }
+
+  const alignmentDraftKey = movement => `${activeProfile.id}:${movement}`;
+  function asegurarBorradorAlineacion() {
+    const key = alignmentDraftKey(mov);
+    if (alignmentDraftMovement === key) return;
+    const base = alineacionBase(mov);
+    const draft = alignmentDrafts.get(key) || {
+      headX: base.anchor ? String(base.anchor[0]) : '',
+      headY: base.anchor ? String(base.anchor[1]) : '',
+      floorY: base.feet === null ? '' : String(base.feet),
+      spriteX: String(base.spriteOffset[0]),
+      spriteY: String(base.spriteOffset[1]),
+    };
+    $('alignment-head-x').value = draft.headX;
+    $('alignment-head-y').value = draft.headY;
+    $('alignment-floor-y').value = draft.floorY;
+    $('alignment-sprite-x').value = draft.spriteX;
+    $('alignment-sprite-y').value = draft.spriteY;
+    alignmentDrafts.set(key, { ...draft });
+    alignmentDraftMovement = key;
+  }
+
+  function valoresBorradorAlineacion() {
+    asegurarBorradorAlineacion();
+    return {
+      headX: $('alignment-head-x').value,
+      headY: $('alignment-head-y').value,
+      floorY: $('alignment-floor-y').value,
+      spriteX: $('alignment-sprite-x').value,
+      spriteY: $('alignment-sprite-y').value,
+    };
+  }
+
+  function enteroEnRango(value, min, max) {
+    if (String(value).trim() === '') return null;
+    const number = Number(value);
+    return Number.isInteger(number) && number >= min && number <= max ? number : null;
+  }
+
+  function estadoRevisionAlineacion() {
+    const base = alineacionBase(mov);
+    const draft = valoresBorradorAlineacion();
+    const head = [enteroEnRango(draft.headX, 0, 95), enteroEnRango(draft.headY, 0, 151)];
+    const floor = enteroEnRango(draft.floorY, 0, 152);
+    const sprite = [enteroEnRango(draft.spriteX, -96, 96), enteroEnRango(draft.spriteY, -152, 152)];
+    const headRecord = base.revision.cabeza;
+    const floorRecord = base.revision.suelo;
+    const spriteRecord = base.revision.sprite;
+    const headSaved = Boolean(base.anchor && head.every(Number.isInteger) &&
+      headRecord?.revisada === true && JSON.stringify(headRecord.ancla) === JSON.stringify(base.anchor) &&
+      JSON.stringify(head) === JSON.stringify(base.anchor));
+    const floorSaved = Boolean(base.feet !== null && Number.isInteger(floor) &&
+      floorRecord?.revisada === true && floorRecord.pies_y === base.feet && floor === base.feet);
+    const spriteSaved = Boolean(sprite.every(Number.isInteger) &&
+      spriteRecord?.revisada === true &&
+      JSON.stringify(spriteRecord.desplazamiento) === JSON.stringify(base.spriteOffset) &&
+      JSON.stringify(sprite) === JSON.stringify(base.spriteOffset));
+    const spriteChanged = Boolean(sprite.every(Number.isInteger) &&
+      JSON.stringify(sprite) !== JSON.stringify(base.spriteOffset));
+    const spriteNeedsReview = Boolean(sprite.every(Number.isInteger) && !spriteSaved);
+    return { base, draft, head, floor, sprite, headSaved, floorSaved,
+      spriteSaved, spriteChanged, spriteNeedsReview };
+  }
+
+  function actualizarPanelAlineacion() {
+    const panel = $('creator-alignment-panel');
+    if (!panel) return;
+    asegurarBorradorAlineacion();
+    const enabled = activeProfile.id === 'voltia' && resol === 'oficial';
+    panel.hidden = activeProfile.id !== 'voltia';
+    for (const id of ['alignment-head-x', 'alignment-head-y', 'alignment-floor-y',
+                      'alignment-head-drag', 'alignment-head-save',
+                      'alignment-floor-drag', 'alignment-floor-save',
+                      'alignment-sprite-x', 'alignment-sprite-y',
+                      'alignment-sprite-drag', 'alignment-sprite-save'])
+      $(id).disabled = !enabled;
+
+    const state = estadoRevisionAlineacion();
+    const canSaveHead = state.head.every(Number.isInteger) && enabled;
+    const canSaveFloor = Number.isInteger(state.floor) && enabled;
+    const canSaveSprite = state.sprite.every(Number.isInteger) && enabled;
+    $('alignment-head-save').disabled = !canSaveHead || state.headSaved;
+    $('alignment-floor-save').disabled = !canSaveFloor || state.floorSaved;
+    $('alignment-sprite-save').disabled = !canSaveSprite || !state.spriteNeedsReview;
+    const dateText = value => value ? new Date(value).toLocaleString() : '';
+    const headReview = state.base.revision.cabeza;
+    const floorReview = state.base.revision.suelo;
+    const headChanged = state.base.anchor && state.head.every(Number.isInteger) &&
+      JSON.stringify(state.head) !== JSON.stringify(state.base.anchor);
+    const floorChanged = state.base.feet !== null && Number.isInteger(state.floor) && state.floor !== state.base.feet;
+    $('alignment-head-status').textContent = state.headSaved
+      ? `Revisada manualmente${dateText(headReview.revisada_en) ? ' · ' + dateText(headReview.revisada_en) : ''} · X ${state.head[0]}, Y ${state.head[1]}.`
+      : headChanged
+        ? `Cambio sin guardar · cabeza X ${state.head[0]}, Y ${state.head[1]}. Guárdalo tras medirlo para registrarlo como revisado.`
+        : `Pendiente de revisión manual${state.base.inheritedAnchor && state.base.anchor
+          ? ` · valor base heredado X ${state.base.anchor[0]}, Y ${state.base.anchor[1]}; no está verificado.`
+          : state.base.anchor ? ` · valor guardado X ${state.base.anchor[0]}, Y ${state.base.anchor[1]}; no está verificado.`
+          : ' · introduce las coordenadas medidas.'}`;
+    $('alignment-floor-status').textContent = state.floorSaved
+      ? `Revisada manualmente${dateText(floorReview.revisada_en) ? ' · ' + dateText(floorReview.revisada_en) : ''} · Y ${state.floor}.`
+      : floorChanged
+        ? `Cambio sin guardar · línea de suelo Y ${state.floor}. Guárdala tras medirla para registrarla como revisada.`
+        : `Pendiente de revisión manual${state.base.inheritedFloor && state.base.feet !== null
+          ? ` · valor base heredado Y ${state.base.feet}; no está verificado.`
+          : state.base.feet !== null ? ` · valor guardado Y ${state.base.feet}; no está verificado.`
+          : ' · introduce la línea medida.'}`;
+    const spriteValueText = state.sprite.every(Number.isInteger)
+      ? `ΔX ${state.sprite[0]} px · ΔY ${state.sprite[1]} px`
+      : 'usa números enteros dentro de los límites indicados';
+    $('alignment-sprite-status').textContent = state.spriteSaved
+      ? `Posición manual guardada${dateText(state.base.revision.sprite.revisada_en) ? ' · ' + dateText(state.base.revision.sprite.revisada_en) : ''} · ${spriteValueText}. Se aplicará en Voltia Final; el PNG permanece intacto.`
+      : state.spriteNeedsReview
+        ? `${state.spriteChanged ? 'Cambio sin guardar' : 'Posición pendiente de revisión'} · ${spriteValueText}. Guarda la posición después de comprobar cabeza y pies sobre sus guías.`
+        : state.sprite.every(Number.isInteger)
+          ? `Sin desplazamiento adicional · ${spriteValueText}. Arrastra la figura si la cabeza o los pies no coinciden con las guías.`
+          : `Posición no válida · ${spriteValueText}.`;
+    if (alignmentMode === 'cabeza') $('alignment-head-status').textContent += ' Arrastra la cruz en la vista previa; después guarda la revisión.';
+    if (alignmentMode === 'suelo') $('alignment-floor-status').textContent += ' Arrastra la línea en la vista previa; después guarda la revisión.';
+    if (alignmentMode === 'sprite') $('alignment-sprite-status').textContent += ' Arrastra desde cualquier punto del visor; las guías no se mueven.';
+    $('alignment-head-drag').classList.toggle('on', alignmentMode === 'cabeza');
+    $('alignment-floor-drag').classList.toggle('on', alignmentMode === 'suelo');
+    $('alignment-sprite-drag').classList.toggle('on', alignmentMode === 'sprite');
+    $('alignment-head-drag').setAttribute('aria-pressed', String(alignmentMode === 'cabeza'));
+    $('alignment-floor-drag').setAttribute('aria-pressed', String(alignmentMode === 'suelo'));
+    $('alignment-sprite-drag').setAttribute('aria-pressed', String(alignmentMode === 'sprite'));
+    cv.classList.toggle('alignment-active', Boolean(alignmentMode));
+    cv.dataset.alignmentMode = alignmentMode;
+    cv.style.touchAction = alignmentMode ? 'none' : '';
+    if (!enabled && activeProfile.id === 'voltia') {
+      $('alignment-head-status').textContent += ' · Cambia a Oficial · 96×152 para editar y revisar.';
+      $('alignment-floor-status').textContent += ' · Cambia a Oficial · 96×152 para editar y revisar.';
+      $('alignment-sprite-status').textContent += ' · Cambia a Oficial · 96×152 para editar y revisar.';
+    }
+  }
+
+  function guardarBorradorAlineacion() {
+    alignmentDrafts.set(alignmentDraftKey(mov), valoresBorradorAlineacion());
+    $('alignment-head-status').dataset.kind = '';
+    $('alignment-floor-status').dataset.kind = '';
+    $('alignment-sprite-status').dataset.kind = '';
+    actualizarPanelAlineacion();
+    pintar();
+    actualizarBotonVoltiaFinal();
+  }
+
+  async function guardarRevisionAlineacion(component) {
+    if (activeProfile.id !== 'voltia' || resol !== 'oficial') return;
+    const movement = mov;
+    const profileId = characterId;
+    const draftKey = `${profileId}:${movement}`;
+    const state = estadoRevisionAlineacion();
+    if (component === 'cabeza' && !state.head.every(Number.isInteger)) return;
+    if (component === 'suelo' && !Number.isInteger(state.floor)) return;
+    if (component === 'sprite' && !state.sprite.every(Number.isInteger)) return;
+    const body = component === 'cabeza'
+      ? { mov: movement, componente: component, ancla: state.head }
+      : component === 'suelo'
+        ? { mov: movement, componente: component, pies_y: state.floor }
+        : { mov: movement, componente: component, desplazamiento: state.sprite };
+    const controls = {
+      cabeza: ['alignment-head-save', 'alignment-head-status'],
+      suelo: ['alignment-floor-save', 'alignment-floor-status'],
+      sprite: ['alignment-sprite-save', 'alignment-sprite-status'],
+    }[component];
+    if (!controls) return;
+    const button = $(controls[0]);
+    const status = $(controls[1]);
+    let failure = '';
+    button.disabled = true;
+    status.textContent = `Guardando revisión manual de ${component}…`;
+    try {
+      const result = await post('/api/sprites/alignment', body);
+      if (alignmentMode === component) {
+        alignmentMode = ''; alignmentPointer = null; alignmentDragStart = null;
+      }
+      const draft = movement === mov && profileId === characterId
+        ? valoresBorradorAlineacion()
+        : (alignmentDrafts.get(draftKey) || {
+            headX: '', headY: '', floorY: '', spriteX: '0', spriteY: '0',
+          });
+      if (component === 'cabeza') {
+        draft.headX = String(result.ancla[0]); draft.headY = String(result.ancla[1]);
+      } else if (component === 'suelo') draft.floorY = String(result.pies_y);
+      else {
+        draft.spriteX = String(result.desplazamiento_sprite[0]);
+        draft.spriteY = String(result.desplazamiento_sprite[1]);
+      }
+      alignmentDrafts.set(draftKey, draft);
+      if (profileId !== characterId) return;
+      await recargarCatalogo();
+      actualizarPanelAlineacion();
+      await refrescarTodo();
+    } catch (error) {
+      failure = `No se pudo guardar la revisión manual de ${component}: ${error.message}`;
+    } finally {
+      actualizarPanelAlineacion();
+      if (failure) { status.dataset.kind = 'error'; status.textContent = failure; }
+      else status.dataset.kind = '';
+      actualizarBotonVoltiaFinal();
+    }
+  }
+
+  function activarArrastreAlineacion(component) {
+    if (activeProfile.id !== 'voltia' || resol !== 'oficial') return;
+    alignmentMode = alignmentMode === component ? '' : component;
+    alignmentPointer = null;
+    alignmentDragStart = null;
+    guias = true;
+    $('tog-guia').classList.add('on');
+    actualizarPanelAlineacion();
+    pintar();
+  }
+
+  function actualizarAlineacionDesdePuntero(event) {
+    if (alignmentPointer === null || event.pointerId !== alignmentPointer || !alignmentMode) return;
+    const rect = cv.getBoundingClientRect();
+    if (!rect.width || !rect.height) return;
+    const [width, height] = meta('oficial').lienzo;
+    const x = Math.max(0, Math.min(width - 1, Math.round((event.clientX - rect.left) * width / rect.width)));
+    const rawY = Math.round((event.clientY - rect.top) * height / rect.height);
+    const y = Math.max(0, Math.min(height - 1, rawY));
+    if (alignmentMode === 'cabeza') {
+      $('alignment-head-x').value = String(x);
+      $('alignment-head-y').value = String(y);
+    } else if (alignmentMode === 'suelo') {
+      $('alignment-floor-y').value = String(Math.max(0, Math.min(152, rawY)));
+    } else if (alignmentMode === 'sprite' && alignmentDragStart) {
+      const dx = alignmentDragStart.spriteX + x - alignmentDragStart.pointerX;
+      const dy = alignmentDragStart.spriteY + y - alignmentDragStart.pointerY;
+      $('alignment-sprite-x').value = String(Math.max(-96, Math.min(96, dx)));
+      $('alignment-sprite-y').value = String(Math.max(-152, Math.min(152, dy)));
+    }
+    guardarBorradorAlineacion();
+  }
+
+  function iniciarArrastreAlineacion(event) {
+    if (!alignmentMode || activeProfile.id !== 'voltia' || resol !== 'oficial') return;
+    const rect = cv.getBoundingClientRect();
+    if (!rect.width || !rect.height) return;
+    const [width, height] = meta('oficial').lienzo;
+    const pointerX = Math.max(0, Math.min(width - 1, Math.round((event.clientX - rect.left) * width / rect.width)));
+    const pointerY = Math.max(0, Math.min(height - 1, Math.round((event.clientY - rect.top) * height / rect.height)));
+    const state = estadoRevisionAlineacion();
+    const onHandle = alignmentMode === 'sprite'
+      ? state.sprite.every(Number.isInteger)
+      : alignmentMode === 'cabeza'
+        ? state.head.every(Number.isInteger) && Math.abs(pointerX - state.head[0]) <= 5 && Math.abs(pointerY - state.head[1]) <= 5
+        : Number.isInteger(state.floor) && Math.abs(pointerY - Math.min(151, state.floor)) <= 4;
+    if (!onHandle) {
+      const statusId = alignmentMode === 'cabeza' ? 'alignment-head-status'
+        : alignmentMode === 'suelo' ? 'alignment-floor-status' : 'alignment-sprite-status';
+      const status = $(statusId);
+      status.textContent += alignmentMode === 'cabeza'
+        ? ' Pulsa sobre la cruz amarilla para arrastrar su ancla.'
+        : alignmentMode === 'suelo'
+          ? ' Pulsa sobre la línea azul para arrastrarla.'
+          : ' No se pudo iniciar el arrastre; revisa los valores X/Y.';
+      return;
+    }
+    event.preventDefault();
+    alignmentPointer = event.pointerId;
+    alignmentDragStart = alignmentMode === 'sprite'
+      ? { pointerX, pointerY, spriteX: state.sprite[0], spriteY: state.sprite[1] }
+      : null;
+    try { cv.setPointerCapture(event.pointerId); } catch (_) {}
+    actualizarAlineacionDesdePuntero(event);
+  }
+
+  function inicial() {
+    const frames = meta().frames;
+    const defaultSequence = frames.map((frame, index) => index).filter(index => !frames[index].origen_laboratorio);
+    try {
+      const raw = localStorage.getItem(storageKey());
+      if (raw === null) return defaultSequence;
+      const saved = JSON.parse(raw);
+      if (!Array.isArray(saved)) return defaultSequence;
+      const valid = saved.filter(i => Number.isInteger(i) && i >= 0 && i < frames.length);
+      return [...new Set(valid)];
+    } catch (e) { return defaultSequence; }
+  }
+  const guardar = () => { try { localStorage.setItem(storageKey(), JSON.stringify(seq)); } catch (e) {} };
+
+  function mostrarPrimerCandidatoIA() {
+    const index = meta().frames.findIndex(frame => frame.origen_laboratorio);
+    if (index < 0) return false;
+    bibliotecaPreview = true;
+    previewFrameIndex = index;
+    return true;
+  }
+
+  function seleccionarVistaInicial() {
+    if (seq.length) {
+      bibliotecaPreview = false;
+      previewFrameIndex = 0;
+      return;
+    }
+    bibliotecaPreview = true;
+    previewFrameIndex = Math.max(0, meta().frames.findIndex(frame => frame.origen_laboratorio));
+  }
+
+  function encajar() {
+    const [W, H] = meta().lienzo;
+    const d = dpr();
+    const ancho = Math.max(160, caja.clientWidth || 320);
+    const altoMax = Math.max(220, (window.innerHeight || 700) * 0.52);
+    const pedida = +$('scale').value || 0;
+    let s = Math.floor((ancho * d) / W);
+    s = Math.min(s, Math.floor((altoMax * d) / H));
+    if (pedida) s = Math.min(s, pedida);
+    M = Math.max(1, s);
+    cv.width = W * M; cv.height = H * M;
+    cv.style.width = (W * M / d) + 'px';
+    cv.style.height = (H * M / d) + 'px';
+    cx.imageSmoothingEnabled = false;
+  }
+
+  function cargar(i, r = resol) {
+    const m = meta(r), f = m.frames[i];
+    if (!f) return Promise.resolve(null);
+    const k = `${r}:${mov}:${idDe(f)}`;
+    if (cache.has(k)) return Promise.resolve(cache.get(k));
+    return new Promise(resolve => {
+      const im = new Image();
+      im.onload = () => { cache.set(k, im); resolve(im); };
+      im.onerror = () => resolve(null);
+      im.src = ruta(f, r);
+    });
+  }
+
+  function visorMuestraBiblioteca() { return bibliotecaPreview || !seq.length; }
+
+  function actualizarModoVisor() {
+    const button = $('visor-preview-toggle');
+    if (!button) return;
+    const frameCount = meta().frames.length;
+    const previewing = visorMuestraBiblioteca();
+    if (!frameCount) {
+      button.textContent = 'Sin sprites para previsualizar';
+      button.disabled = true;
+      return;
+    }
+    button.disabled = previewing && !seq.length;
+    button.textContent = previewing
+      ? (seq.length ? 'Volver a la secuencia' : 'Biblioteca · solo previsualización')
+      : 'Previsualizar biblioteca · sin añadir';
+    button.title = previewing
+      ? 'La previsualización de biblioteca no cambia la secuencia guardada.'
+      : 'Muestra todos los sprites de este movimiento, incluidos los pendientes, sin añadirlos a la secuencia.';
+  }
+
+  function nombreMovimiento(id) {
+    const option = [...$('mov').options].find(item => item.value === id);
+    return option?.textContent.split(' · ')[0].trim() || id;
+  }
+
+  function estadoPreparacionVoltiaFinal() {
+    if (activeProfile.id !== 'voltia') return { ready: false, message: 'La publicación final está disponible solo para Voltia.' };
+    if (resol !== 'oficial') return { ready: false, message: 'Cambia a Oficial · 96×152 antes de preparar la versión final.' };
+    if (visorMuestraBiblioteca()) return { ready: false, message: 'Vuelve a la secuencia del movimiento; la previsualización de biblioteca no publica ni añade cuadros.' };
+    if (!seq.length) return { ready: false, message: 'Prepara una secuencia explícita con los cuadros que quieres enviar.' };
+    const frames = seq.map(index => meta().frames[index]);
+    if (frames.some(frame => !frame)) return { ready: false, message: 'La secuencia contiene un cuadro que ya no está disponible.' };
+    if (new Set(frames.map(frame => idDe(frame))).size !== frames.length)
+      return { ready: false, message: 'Quita los cuadros repetidos antes de publicar la animación.' };
+    if (frames.some(frame => frame.estado !== 'aprobado'))
+      return { ready: false, message: 'Aprueba todos los cuadros de esta secuencia en la Biblioteca antes de enviarla.' };
+    const alignment = estadoRevisionAlineacion();
+    if (!alignment.headSaved) return { ready: false, message: 'Revisa y guarda manualmente el ancla de cabeza de este movimiento antes de enviarlo a Voltia Final.' };
+    if (!alignment.floorSaved) return { ready: false, message: 'Revisa y guarda manualmente la línea de suelo de este movimiento antes de enviarlo a Voltia Final.' };
+    if (!alignment.spriteSaved) return { ready: false, message: 'Revisa visualmente la posición del sprite respecto a la cruz de cabeza y la línea de suelo; después pulsa «Guardar posición revisada». También confirma la posición actual si no necesitas desplazarla.' };
+    const offset = alignment.sprite.every(Number.isInteger) ? alignment.sprite : [0, 0];
+    return { ready: true, message: `${nombreMovimiento(mov)} está lista: ${frames.length} cuadro(s) oficial(es) aprobados, cabeza/suelo revisados y desplazamiento del sprite ΔX ${offset[0]}, ΔY ${offset[1]} px registrado. La publicación conserva una copia separada y no toca la Voltia original.` };
+  }
+
+  function actualizarBotonVoltiaFinal(preserveStatus = false) {
+    const buttons = [$('publish-voltia-final'), $('publish-voltia-final-sequence')].filter(Boolean);
+    const statuses = [$('voltia-final-status'), $('voltia-final-sequence-status')].filter(Boolean);
+    if (!buttons.length || !statuses.length) return;
+    const readiness = estadoPreparacionVoltiaFinal();
+    for (const button of buttons) {
+      button.disabled = !readiness.ready || finalPublishBusy;
+      button.textContent = readiness.ready
+        ? `Enviar a Voltia Final · ${seq.length} cuadro(s)`
+        : 'Enviar a Voltia Final';
+      button.title = readiness.message;
+    }
+    for (const status of statuses) status.setAttribute('aria-label', readiness.message);
+    if (preserveStatus) return;
+    for (const status of statuses) {
+      status.textContent = readiness.message;
+      status.dataset.kind = readiness.ready ? 'success' : '';
+    }
+  }
+
+  async function publicarVoltiaFinal() {
+    const readiness = estadoPreparacionVoltiaFinal();
+    if (!readiness.ready || finalPublishBusy) { actualizarBotonVoltiaFinal(); return; }
+    const movement = mov;
+    const frames = [...seq].map(index => meta().frames[index]);
+    const frameIds = frames.map(frame => idDe(frame, movement));
+    const movementName = nombreMovimiento(movement);
+    if (!window.confirm(`¿Enviar «${movementName}» (${frames.length} cuadro(s) aprobados) a Voltia Final? Se publicará una copia versionada, sin modificar la biblioteca, la hoja original ni el juego. Si ya existe, la versión anterior se conservará.`)) return;
+    const statuses = [$('voltia-final-status'), $('voltia-final-sequence-status')].filter(Boolean);
+    finalPublishBusy = true;
+    actualizarBotonVoltiaFinal(true);
+    for (const status of statuses) {
+      status.textContent = `Publicando ${movementName} en el banco separado de Voltia Final…`;
+      status.dataset.kind = '';
+    }
+    try {
+      const result = await post('/api/voltia-final/publish', {
+        mov: movement, frame_ids: frameIds, fps: fps(), loop: Boolean(animSpec(movement).loop),
+      });
+      const message = `${movementName}: ${result.animation.frames.length} cuadro(s) publicados en Voltia Final. `;
+      for (const status of statuses) {
+        const link = document.createElement('a');
+        link.href = '../preview/voltia-final.html'; link.textContent = 'Abrir su visor';
+        status.replaceChildren(document.createTextNode(message), link);
+        status.dataset.kind = 'success';
+      }
+      window.dispatchEvent(new CustomEvent('creator-voltia-final-updated', {
+        detail: { mov: movement, character: 'voltia-final' },
+      }));
+    } catch (error) {
+      for (const status of statuses) {
+        status.textContent = `No se pudo enviar ${movementName} a Voltia Final: ${error.message}`;
+        status.dataset.kind = 'error';
+      }
+    } finally {
+      finalPublishBusy = false;
+      actualizarBotonVoltiaFinal(true);
+    }
+  }
+
+  function pintar() {
+    const m = meta(), [W, H] = m.lienzo;
+    cx.imageSmoothingEnabled = false;
+    cx.clearRect(0, 0, cv.width, cv.height);
+    const previewing = visorMuestraBiblioteca();
+    const i = previewing
+      ? (m.frames.length ? Math.max(0, Math.min(previewFrameIndex, m.frames.length - 1)) : -1)
+      : (seq.length ? seq[idx % seq.length] : -1);
+    const frame = i >= 0 ? m.frames[i] || null : null;
+    const im = frame ? cache.get(`${resol}:${mov}:${idDe(frame)}`) : null;
+    let alignmentDraft = null;
+    let spriteX = 0, spriteY = 0;
+    if (activeProfile.id === 'voltia' && resol === 'oficial') {
+      alignmentDraft = valoresBorradorAlineacion();
+      spriteX = enteroEnRango(alignmentDraft.spriteX, -96, 96) ?? 0;
+      spriteY = enteroEnRango(alignmentDraft.spriteY, -152, 152) ?? 0;
+    }
+    if (im) {
+      // Solo se desplaza el dibujo compuesto del visor. El PNG original no se altera ni se remuestrea.
+      cx.drawImage(im, spriteX * M, spriteY * M, im.naturalWidth * M, im.naturalHeight * M);
+    }
+    let guideAnchor = m.ancla;
+    let guideFloor = m.pies_y;
+    if (alignmentDraft) {
+      const headX = enteroEnRango(alignmentDraft.headX, 0, W - 1);
+      const headY = enteroEnRango(alignmentDraft.headY, 0, H - 1);
+      const floorY = enteroEnRango(alignmentDraft.floorY, 0, H);
+      guideAnchor = headX !== null && headY !== null ? [headX, headY] : null;
+      guideFloor = floorY;
+    }
+    if (guias) {
+      if (Array.isArray(guideAnchor)) {
+        const [ax, ay] = guideAnchor;
+        cx.strokeStyle = 'rgba(255,60,60,.85)';
+        cx.beginPath(); cx.moveTo(ax * M + .5, 0); cx.lineTo(ax * M + .5, H * M); cx.stroke();
+        cx.strokeStyle = 'rgba(60,230,130,.85)';
+        cx.beginPath(); cx.moveTo(0, ay * M + .5); cx.lineTo(W * M, ay * M + .5); cx.stroke();
+        cx.strokeStyle = 'rgba(255,220,90,.98)';
+        cx.beginPath(); cx.moveTo(ax * M - 4 * M + .5, ay * M + .5); cx.lineTo(ax * M + 4 * M + .5, ay * M + .5);
+        cx.moveTo(ax * M + .5, ay * M - 4 * M + .5); cx.lineTo(ax * M + .5, ay * M + 4 * M + .5); cx.stroke();
+      }
+      if (Number.isInteger(guideFloor)) {
+        const py = Math.min(H - 1, guideFloor);
+        cx.strokeStyle = 'rgba(80,150,255,.9)';
+        cx.beginPath(); cx.moveTo(0, py * M + .5); cx.lineTo(W * M, py * M + .5); cx.stroke();
+      }
+    }
+    const state = frame?.estado ? ` · ${String(frame.estado).toUpperCase()}` : '';
+    const loadError = frame && !im ? ' · no se pudo cargar el PNG' : '';
+    const alignmentState = activeProfile.id === 'voltia' && resol === 'oficial'
+      ? estadoRevisionAlineacion() : null;
+    const alignmentStatus = alignmentState
+      ? `${alignmentState.headSaved && alignmentState.floorSaved
+        ? ' · cabeza y suelo revisados' : ' · alineación pendiente de revisión'}${alignmentState.sprite.every(Number.isInteger) && (alignmentState.sprite[0] || alignmentState.sprite[1])
+          ? ` · sprite ΔX ${alignmentState.sprite[0]}, ΔY ${alignmentState.sprite[1]} px${alignmentState.spriteNeedsReview ? ' (sin guardar)' : ''}` : ''}`
+      : '';
+    $('fstat').textContent = frame
+      ? (previewing
+        ? `${mov} · ${resol} · biblioteca · f${String(i).padStart(2, '0')}${state}${loadError} · fuera de la secuencia · lienzo ${W}×${H} · ${M}×${alignmentStatus}`
+        : `${mov} · ${resol} · ${seq.length} sprites en secuencia${loadError} · lienzo ${W}×${H} · ${M}×${alignmentStatus}`)
+      : `${mov} · ${resol} · sin sprites propios · referencia original debajo${alignmentStatus}`;
+    marcarTira();
+  }
+
+  function marcarTira() {
+    const previewing = visorMuestraBiblioteca();
+    const selected = previewing
+      ? previewFrameIndex
+      : (seq.length ? idx % seq.length : -1);
+    [...tiraEl.children].forEach((im, position) => {
+      const frameIndex = Number(im.dataset.frameIndex);
+      im.classList.toggle('sel', previewing ? frameIndex === selected : position === selected);
+    });
+  }
+
+  function dibujarTira() {
+    tiraEl.replaceChildren();
+    const m = meta();
+    const previewing = visorMuestraBiblioteca();
+    const indices = previewing ? m.frames.map((_, index) => index) : seq;
+    for (const [position, frameIndex] of indices.entries()) {
+      const frame = m.frames[frameIndex];
+      if (!frame) continue;
+      const im = document.createElement('img');
+      im.src = ruta(frame); im.alt = `${mov} cuadro ${frameIndex + 1}`;
+      im.title = `${mov} · f${String(frameIndex).padStart(2, '0')} · ${String(frame.estado || 'disponible').toUpperCase()}${previewing ? ' · solo previsualización' : ''}`;
+      im.dataset.pos = position; im.dataset.frameIndex = frameIndex;
+      if (frame.estado) im.dataset.state = frame.estado;
+      imagenPixelNativa(im);
+      im.onclick = () => {
+        if (previewing) {
+          previewFrameIndex = frameIndex;
+          pintar();
+        } else {
+          idx = position;
+          pintar();
+        }
+      };
+      im.onerror = () => im.classList.add('fallo');
+      tiraEl.appendChild(im);
+    }
+    tiraEl.style.display = tira ? '' : 'none';
+    marcarTira();
+  }
+
+  function dibujarSecuencia() {
+    const box = $('secuencia');
+    box.innerHTML = '';
+    if (!seq.length) {
+      box.innerHTML = '<span class="note">Secuencia vacía: añade sprites únicos desde la galería.</span>';
+      return;
+    }
+    const m = meta();
+    seq.forEach((i, p) => {
+      const d = document.createElement('div'); d.className = 'chip';
+      const im = document.createElement('img'); im.src = ruta(m.frames[i]); im.alt = `sprite ${i + 1}`;
+      imagenPixelNativa(im);
+      im.onerror = () => im.classList.add('fallo');
+      const num = document.createElement('span'); num.textContent = p + 1;
+      const x = document.createElement('button'); x.className = 'x'; x.textContent = '×';
+      x.onclick = e => { e.stopPropagation(); seq.splice(p, 1); idx = Math.min(idx, seq.length - 1); if (!seq.length) bibliotecaPreview = true; guardar(); refrescarTodo(); };
+      const flechas = document.createElement('div'); flechas.className = 'flechas';
+      const izq = document.createElement('button'); izq.textContent = '←';
+      izq.onclick = e => { e.stopPropagation(); if (!p) return; [seq[p - 1], seq[p]] = [seq[p], seq[p - 1]]; guardar(); refrescarTodo(); };
+      const der = document.createElement('button'); der.textContent = '→';
+      der.onclick = e => { e.stopPropagation(); if (p >= seq.length - 1) return; [seq[p + 1], seq[p]] = [seq[p], seq[p + 1]]; guardar(); refrescarTodo(); };
+      flechas.append(izq, der); d.append(im, num, x, flechas); box.appendChild(d);
+    });
+  }
+
+  function dibujarGaleria() {
+    const g = $('galeria'); g.innerHTML = '';
+    const m = meta();
+    if (!m.frames.length) {
+      g.innerHTML = '<div class="empty">Este movimiento aún no tiene sprites propios. Usa la biblioteca completa para añadir sprites aprobados o sube un PNG.</div>';
+      return;
+    }
+    m.frames.forEach((f, i) => {
+      const fig = document.createElement('figure');
+      const im = document.createElement('img'); im.src = ruta(f); im.alt = `${mov} f${i}`;
+      imagenPixelNativa(im);
+      im.onerror = () => im.classList.add('fallo');
+      const cap = document.createElement('figcaption');
+      cap.textContent = f.origen_laboratorio
+        ? `f${String(i).padStart(2, '0')} · Pruebas IA · ${(f.estado || 'pendiente').toUpperCase()}`
+        : `f${String(i).padStart(2, '0')}`;
+      fig.append(im, cap);
+      fig.onclick = () => {
+        if (f.origen_laboratorio && f.estado !== 'aprobado') {
+          $('gstat').textContent = `f${String(i).padStart(2, '0')} sigue ${(f.estado || 'pendiente').toUpperCase()}; apruébalo en la biblioteca antes de añadirlo.`;
+          return;
+        }
+        if (seq.includes(i)) { $('gstat').textContent = `f${String(i).padStart(2, '0')} ya está en la secuencia; no se repiten sprites.`; return; }
+        seq.push(i); bibliotecaPreview = false; guardar(); refrescarTodo();
+      };
+      g.appendChild(fig);
+    });
+  }
+
+  const keyFor = (item) => `${item.mov}::${item.id}`;
+  function selectedItems() {
+    return [...marcados].map(k => {
+      const sep = k.indexOf('::');
+      return { mov: k.slice(0, sep), id: k.slice(sep + 2) };
+    }).filter(x => x.mov && x.id);
+  }
+
+  function listForGallery() {
+    if ($('filtro-galeria').value === 'todos') return library.map(x => ({ ...x }));
+    const m = meta();
+    return m.frames.map(f => {
+      const id = idDe(f);
+      const lib = library.find(x => x.mov === mov && x.id === id) || {};
+      return { ...lib, mov, id, frame: f, indice: f.i,
+        estado: f.estado || lib.estado || 'pendiente',
+        urls: { ...(lib.urls || {}), [resol]: ruta(f) } };
+    });
+  }
+
+  function actualizarResumenGestion(items) {
+    const counts = { aprobado: 0, pendiente: 0, descartado: 0 };
+    for (const item of items) {
+      const state = item.estado || 'pendiente';
+      counts[state] = (counts[state] || 0) + 1;
+    }
+    const todos = $('filtro-galeria').value === 'todos';
+    $('gestion').innerHTML = marcados.size
+      ? `<b>${marcados.size}</b> sprite(s) seleccionado(s) de ${todos ? 'la biblioteca' : mov}.`
+      : `Vista: <b>${todos ? 'biblioteca completa' : mov}</b> · ${items.length} sprite(s) · ` +
+        `<span class="marca aprobado">${counts.aprobado || 0} aprobados</span> · ` +
+        `<span class="marca pendiente">${counts.pendiente || 0} pendientes</span> · ` +
+        `<span class="marca descartado">${counts.descartado || 0} descartados</span>`;
+  }
+
+  function actualizarSeleccionGestion(items = listForGallery()) {
+    const figures = $('galeria-gestion').querySelectorAll('figure[data-selection-key]');
+    for (const fig of figures) {
+      const selected = marcados.has(fig.dataset.selectionKey);
+      fig.classList.toggle('sel', selected);
+      fig.setAttribute('aria-pressed', String(selected));
+    }
+    const keys = items.map(keyFor);
+    $('todos').checked = keys.length > 0 && keys.every(k => marcados.has(k));
+    actualizarResumenGestion(items);
+  }
+
+  function dibujarGestion(scroll = null) {
+    const g = $('galeria-gestion'); g.innerHTML = '';
+    const items = listForGallery();
+    if (!items.length) g.innerHTML = '<div class="empty">No hay sprites propios en esta vista. Cambia a «Biblioteca completa» para ver los sprites aceptados de todos los movimientos.</div>';
+    for (const item of items) {
+      const state = item.estado || 'pendiente';
+      const src = item.urls?.[resol] || item.urls?.nativo || item.urls?.oficial;
+      if (!src) continue;
+      const fig = document.createElement('figure');
+      fig.classList.add(state);
+      const k = keyFor(item);
+      fig.dataset.selectionKey = k;
+      fig.setAttribute('role', 'button'); fig.tabIndex = 0;
+      fig.setAttribute('aria-pressed', String(marcados.has(k)));
+      if (marcados.has(k)) fig.classList.add('sel');
+      const im = document.createElement('img');
+      im.src = src.includes('?') ? src : urlVersionada(src, `${resol}:${item.id}`);
+      im.alt = `${item.mov} ${item.id}`;
+      imagenPixelNativa(im);
+      im.onerror = () => im.classList.add('fallo');
+      const cap = document.createElement('figcaption');
+      const num = Number.isInteger(item.indice) ? item.indice : item.indices?.[resol === 'oficial' ? 'oficial' : 'nativo'];
+      const fromLab = item.origen_laboratorio || item.frame?.origen_laboratorio;
+      cap.textContent = `${item.mov} · ${Number.isInteger(num) ? 'f' + String(num).padStart(2, '0') + ' · ' : ''}${fromLab ? 'PRUEBAS IA · ' : ''}${state.toUpperCase()}`;
+      fig.append(im, cap);
+      // Solo cambia clase/ARIA: reconstruir las tarjetas al seleccionar reiniciaba el scroll
+      // horizontal y podía dejar marcado fuera de vista el sprite que se quería borrar.
+      const toggle = () => {
+        if (marcados.has(k)) marcados.delete(k); else marcados.add(k);
+        actualizarSeleccionGestion(items);
+      };
+      fig.onclick = toggle;
+      fig.onkeydown = e => {
+        if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggle(); }
+      };
+      g.appendChild(fig);
+    }
+    actualizarSeleccionGestion(items);
+    $('destino-copiar').textContent = mov;
+    $('destino-subir').textContent = mov;
+    if (scroll) {
+      const restore = () => requestAnimationFrame(() => {
+        g.scrollLeft = Math.min(scroll.left, Math.max(0, g.scrollWidth - g.clientWidth));
+        g.scrollTop = Math.min(scroll.top, Math.max(0, g.scrollHeight - g.clientHeight));
+      });
+      restore();
+      g.querySelectorAll('img').forEach(im => {
+        if (!im.complete) {
+          im.addEventListener('load', restore, { once: true });
+          im.addEventListener('error', restore, { once: true });
+        }
+      });
+    }
+  }
+
+  async function dibujarOriginal() {
+    refStrip.innerHTML = '';
+    const a = animSpec(mov), { w, h } = sheet.cell;
+    $('original-ref')?.setAttribute('data-movimiento', a.id);
+    const referenceKey = `${characterId}:${mov}`;
+    let source = referenceCache.get(referenceKey);
+    if (!source) {
+      source = new Image();
+      source.src = apiUrl(`/api/reference/${mov}.png`);
+      try { await source.decode(); } catch (e) { /* error shown below */ }
+      if (source.naturalWidth) {
+        if (referenceCache.size >= 2) referenceCache.delete(referenceCache.keys().next().value);
+        referenceCache.set(referenceKey, source);
+      }
+    }
+    if (!source.naturalWidth) {
+      refStrip.innerHTML = '<div class="empty">No se pudo cargar la fila original de esta animación.</div>'; return;
+    }
+    for (let i = 0; i < a.frames; i++) {
+      const fig = document.createElement('figure');
+      const c = document.createElement('canvas');
+      const entero = Math.max(1, Math.floor(dpr()));
+      c.width = w * entero; c.height = h * entero;
+      c.style.width = `${w * entero / dpr()}px`; c.style.height = `${h * entero / dpr()}px`;
+      const g = c.getContext('2d'); g.imageSmoothingEnabled = false;
+      g.drawImage(source, i * w, 0, w, h, 0, 0, w * entero, h * entero);
+      const cap = document.createElement('figcaption'); cap.textContent = `${a.id} · original ${String(i).padStart(2, '0')}`;
+      fig.append(c, cap); refStrip.appendChild(fig);
+    }
+  }
+
+  function approvedLabIndices() {
+    return meta('oficial').frames.map((frame, index) => ({ frame, index }))
+      .filter(item => item.frame.origen_laboratorio && item.frame.estado === 'aprobado')
+      .map(item => item.index);
+  }
+
+  function actualizarBotonAprobadosLab() {
+    const button = $('add-approved-sequence');
+    if (!button) return;
+    const approved = activeProfile.id === 'voltia' && resol === 'oficial' ? approvedLabIndices() : [];
+    button.disabled = approved.length === 0;
+    button.textContent = `Añadir aprobados de Pruebas IA a la secuencia (${approved.length})`;
+    button.title = resol !== 'oficial'
+      ? 'Cambia a la resolución oficial 96×152 para añadir candidatos ya aprobados.'
+      : 'Añade, en orden, solo los cuadros de Pruebas IA aprobados en la biblioteca del Creador.';
+  }
+
+  function addApprovedLabToSequence() {
+    if (resol !== 'oficial') {
+      $('gstat').textContent = 'Cambia a Oficial · 96×152 para añadir los cuadros de Pruebas IA.';
+      return;
+    }
+    const approved = approvedLabIndices();
+    const additions = approved.filter(index => !seq.includes(index));
+    if (!approved.length) {
+      $('gstat').textContent = 'No hay cuadros de Pruebas IA aprobados en este movimiento.';
+      return;
+    }
+    if (!additions.length) {
+      $('gstat').textContent = 'Todos los cuadros de Pruebas IA aprobados ya están en la secuencia; no se repiten.';
+      return;
+    }
+    seq.push(...additions);
+    idx = Math.max(0, seq.length - additions.length);
+    bibliotecaPreview = false;
+    guardar();
+    refrescarTodo();
+    $('gstat').textContent = `Añadidos ${additions.length} cuadro(s) aprobado(s) de Pruebas IA en orden; no se repitieron los que ya estaban.`;
+  }
+
+  async function refrescarTodo(gestionScroll = null) {
+    const m = meta();
+    const previousSequence = JSON.stringify(seq);
+    const validSeq = seq.filter(i => Number.isInteger(i) && i >= 0 && i < m.frames.length &&
+      (!m.frames[i].origen_laboratorio || m.frames[i].estado === 'aprobado'));
+    seq = [...new Set(validSeq)];
+    if (JSON.stringify(seq) !== previousSequence) guardar();
+    if (!seq.length) bibliotecaPreview = true;
+    if (visorMuestraBiblioteca()) {
+      previewFrameIndex = m.frames.length ? Math.max(0, Math.min(previewFrameIndex, m.frames.length - 1)) : 0;
+      if (m.frames.length) await Promise.all(m.frames.map((_, index) => cargar(index)));
+    } else if (seq.length) {
+      await Promise.all(seq.map(i => cargar(i)));
+      idx = Math.min(idx, seq.length - 1);
+    }
+    dibujarSecuencia(); dibujarTira(); dibujarGaleria(); dibujarGestion(gestionScroll);
+    actualizarBotonAprobadosLab(); actualizarModoVisor(); actualizarPanelAlineacion(); actualizarBotonVoltiaFinal();
+    encajar(); pintar();
+  }
+
+  async function cambiarMovimiento() {
+    alignmentMode = ''; alignmentPointer = null; alignmentDragStart = null;
+    mov = $('mov').value;
+    if ($('filtro-galeria').value === 'actual') { marcados.clear(); $('todos').checked = false; }
+    $('destino-copiar').textContent = mov; $('destino-subir').textContent = mov;
+    if ($('subir-resol').value === 'nativo') sugerirCelda();
+    const spec = animSpec(mov);
+    $('fps').value = spec.fps; $('fps-v').textContent = spec.fps;
+    seq = inicial(); idx = 0; previewFrameIndex = 0; seleccionarVistaInicial();
+    await dibujarOriginal(); await refrescarTodo();
+  }
+
+  async function cambiarPersonaje(nextId) {
+    if (nextId === characterId) return;
+    const nextProfile = profiles.find(item => item.id === nextId && item.creator_profile);
+    if (!nextProfile) { profileSelect.value = characterId; return; }
+    alignmentMode = ''; alignmentPointer = null; alignmentDragStart = null;
+    profileSelect.disabled = true; $('ficheros').disabled = true; $('subir').disabled = true;
+    $('perfil-status').textContent = `Cargando ${nextProfile.name}…`;
+    try {
+      const [nextSheet, nextCatalog] = await Promise.all([
+        loadModel(nextProfile), loadCatalog(nextProfile.id),
+      ]);
+      if (!Array.isArray(nextSheet.animations) || !nextSheet.animations.length)
+        throw new Error('El modelo no define movimientos para el creador.');
+      characterId = nextProfile.id;
+      activeProfile = nextProfile;
+      sheet = nextSheet; animations = nextSheet.animations;
+      catalog = nextCatalog; nat = nextCatalog.native; ofi = nextCatalog.official;
+      library = nextCatalog.library || [];
+      nativeFallback = activeProfile.creator_profile.native_fallback ||
+        [sheet.cell?.w || 96, sheet.cell?.h || 152];
+      cache.clear(); referenceCache.clear(); marcados.clear(); papeleraMarcada.clear();
+      trashItems = []; $('papelera-vista').hidden = true; $('galeria-papelera').replaceChildren();
+      mov = animations.find(item => item.id === 'stance')?.id || animations[0].id;
+      actualizarSelector(); $('mov').value = mov;
+      $('fps').value = animSpec(mov).fps; $('fps-v').textContent = animSpec(mov).fps;
+      resol = nextProfile.creator_profile.default_resolution || $('resol').value || 'oficial';
+      $('resol').value = resol; $('subir-resol').value = resol; sugerirCelda();
+      seq = inicial(); idx = 0; previewFrameIndex = 0; seleccionarVistaInicial();
+      const url = new URL(location.href); url.searchParams.set('character', characterId);
+      history.replaceState(null, '', url);
+      await dibujarOriginal(); await refrescarTodo();
+      $('perfil-status').textContent = `${activeProfile.name} · ${animations.length} movimientos`;
+      estadoSubida(`Perfil ${activeProfile.name}: selecciona movimiento y añade PNG o una hoja/tira.`);
+      $('gestion').textContent = `Biblioteca de ${activeProfile.name} cargada.`;
+    } catch (e) {
+      profileSelect.value = characterId;
+      $('perfil-status').textContent = `No se pudo cambiar de perfil: ${e.message}`;
+    } finally {
+      profileSelect.disabled = false; $('ficheros').disabled = false; $('subir').disabled = false;
+    }
+  }
+
+  function bucle(t) {
+    const dt = (t - last) / 1000; last = t;
+    const previewing = visorMuestraBiblioteca();
+    const frameCount = previewing ? meta().frames.length : seq.length;
+    const position = previewing ? previewFrameIndex : idx;
+    if (playing && frameCount && dt > 0) {
+      acc += dt;
+      if (acc >= 1 / fps()) {
+        acc = 0;
+        if (!animSpec(mov).loop && position >= frameCount - 1) {
+          playing = false; $('play').textContent = '▶ Play';
+        } else if (previewing) {
+          previewFrameIndex = (previewFrameIndex + 1) % frameCount;
+        } else {
+          idx = (idx + 1) % frameCount;
+        }
+        pintar();
+      }
+    }
+    requestAnimationFrame(bucle);
+  }
+
+  $('play').onclick = e => { playing = !playing; e.target.textContent = playing ? '⏸ Pausa' : '▶ Play'; };
+  $('visor-preview-toggle').onclick = () => {
+    if (visorMuestraBiblioteca()) {
+      if (!seq.length) return;
+      bibliotecaPreview = false;
+      idx = Math.min(idx, seq.length - 1);
+    } else {
+      bibliotecaPreview = true;
+      previewFrameIndex = seq.length ? seq[idx % seq.length] : 0;
+    }
+    acc = 0;
+    refrescarTodo();
+  };
+  $('publish-voltia-final').onclick = publicarVoltiaFinal;
+  $('publish-voltia-final-sequence').onclick = publicarVoltiaFinal;
+  profileSelect.onchange = () => cambiarPersonaje(profileSelect.value);
+  window.addEventListener('creator-library-updated', async event => {
+    const detail = event.detail || {};
+    if (detail.character && detail.character !== characterId) return;
+    alignmentMode = ''; alignmentPointer = null; alignmentDragStart = null;
+    if (detail.mov && animations.some(animation => animation.id === detail.mov)) {
+      mov = detail.mov;
+      $('mov').value = mov;
+    }
+    if (detail.resol === 'oficial' || detail.resol === 'nativo') {
+      resol = detail.resol;
+      $('resol').value = resol;
+      $('subir-resol').value = resol;
+    }
+    marcados.clear(); $('todos').checked = false;
+    $('filtro-galeria').value = 'actual';
+    try {
+      await recargarCatalogo();
+      seq = inicial(); idx = 0; previewFrameIndex = 0;
+      if (!mostrarPrimerCandidatoIA()) seleccionarVistaInicial();
+      $('fps').value = animSpec(mov).fps; $('fps-v').textContent = animSpec(mov).fps;
+      sugerirCelda();
+      await dibujarOriginal(); await refrescarTodo();
+    } catch (error) {
+      $('gstat').textContent = `La biblioteca se actualizó, pero no se pudo refrescar el visor: ${error.message}`;
+    }
+  });
+  $('mov').onchange = cambiarMovimiento;
+  $('resol').onchange = async e => {
+    alignmentMode = ''; alignmentPointer = null; alignmentDragStart = null;
+    resol = e.target.value; $('subir-resol').value = resol; sugerirCelda();
+    seq = inicial(); idx = 0; previewFrameIndex = 0; seleccionarVistaInicial(); await refrescarTodo();
+  };
+  $('scale').onchange = () => { encajar(); pintar(); };
+  $('fps').oninput = e => { $('fps-v').textContent = e.target.value; };
+  $('bg').onchange = e => { cv.className = e.target.value; };
+  $('tog-guia').onclick = e => {
+    guias = !guias; e.target.classList.toggle('on', guias);
+    if (!guias) { alignmentMode = ''; alignmentPointer = null; alignmentDragStart = null; actualizarPanelAlineacion(); }
+    pintar();
+  };
+  $('alignment-head-x').addEventListener('input', guardarBorradorAlineacion);
+  $('alignment-head-y').addEventListener('input', guardarBorradorAlineacion);
+  $('alignment-floor-y').addEventListener('input', guardarBorradorAlineacion);
+  $('alignment-sprite-x').addEventListener('input', guardarBorradorAlineacion);
+  $('alignment-sprite-y').addEventListener('input', guardarBorradorAlineacion);
+  $('alignment-head-drag').onclick = () => activarArrastreAlineacion('cabeza');
+  $('alignment-floor-drag').onclick = () => activarArrastreAlineacion('suelo');
+  $('alignment-sprite-drag').onclick = () => activarArrastreAlineacion('sprite');
+  $('alignment-head-save').onclick = () => guardarRevisionAlineacion('cabeza');
+  $('alignment-floor-save').onclick = () => guardarRevisionAlineacion('suelo');
+  $('alignment-sprite-save').onclick = () => guardarRevisionAlineacion('sprite');
+  cv.addEventListener('pointerdown', iniciarArrastreAlineacion);
+  cv.addEventListener('pointermove', actualizarAlineacionDesdePuntero);
+  const finishAlignmentPointer = event => {
+    if (alignmentPointer === event.pointerId) {
+      alignmentPointer = null;
+      alignmentDragStart = null;
+    }
+  };
+  cv.addEventListener('pointerup', finishAlignmentPointer);
+  cv.addEventListener('pointercancel', finishAlignmentPointer);
+  cv.addEventListener('lostpointercapture', finishAlignmentPointer);
+  $('tog-tira').onclick = e => { tira = !tira; e.target.classList.toggle('on', tira); dibujarTira(); };
+  $('auto').onclick = () => {
+    seq = [...Array(meta().frames.length).keys()].filter(i => !meta().frames[i].origen_laboratorio);
+    idx = 0; bibliotecaPreview = !seq.length; guardar(); refrescarTodo();
+  };
+  $('add-approved-sequence').onclick = addApprovedLabToSequence;
+  $('quitar-ultimo').onclick = () => {
+    seq.pop(); idx = Math.min(idx, seq.length - 1);
+    if (!seq.length) bibliotecaPreview = true;
+    guardar(); refrescarTodo();
+  };
+  $('limpiar').onclick = () => { seq = []; idx = 0; bibliotecaPreview = true; guardar(); refrescarTodo(); };
+  $('filtro-galeria').onchange = () => { marcados.clear(); $('todos').checked = false; dibujarGestion(); };
+
+  function visibleItems() { return listForGallery(); }
+  $('todos').onchange = e => {
+    const items = visibleItems();
+    if (e.target.checked) items.forEach(item => marcados.add(keyFor(item)));
+    else items.forEach(item => marcados.delete(keyFor(item)));
+    actualizarSeleccionGestion(items);
+  };
+
+  async function aplicarEstado(state) {
+    const items = selectedItems();
+    if (!items.length) { $('gestion').textContent = 'Marca primero uno o varios sprites.'; return; }
+    try {
+      const result = await post('/api/sprites/state', { items, estado: state });
+      marcados.clear(); $('todos').checked = false;
+      await recargarCatalogo();
+      if (!mostrarPrimerCandidatoIA()) seleccionarVistaInicial();
+      await refrescarTodo();
+      window.dispatchEvent(new CustomEvent('creator-sprite-state-changed', {
+        detail: { character: characterId, movs: [...new Set(items.map(item => item.mov))] },
+      }));
+      $('gestion').textContent = `${result.archivos_actualizados} variante(s) marcada(s) como ${state}.`;
+    } catch (e) { $('gestion').textContent = `No se pudo cambiar el estado: ${e.message}`; }
+  }
+  $('aprobar-sel').onclick = () => aplicarEstado('aprobado');
+  $('pendiente-sel').onclick = () => aplicarEstado('pendiente');
+  $('descartar-sel').onclick = () => aplicarEstado('descartado');
+
+  function remapSequenceAfterTrash(removedItems) {
+    const removedIds = new Set(removedItems.filter(x => x.mov === mov).map(x => x.id));
+    if (!removedIds.size) return;
+    const frames = meta().frames;
+    const removedIndices = new Set();
+    frames.forEach((f, i) => { if (removedIds.has(idDe(f))) removedIndices.add(i); });
+    if (!removedIndices.size) return;
+
+    const currentIndex = seq.length ? seq[idx % seq.length] : null;
+    const currentId = Number.isInteger(currentIndex) && frames[currentIndex]
+      ? idDe(frames[currentIndex]) : null;
+    seq = seq.filter(i => !removedIndices.has(i))
+      .map(i => i - [...removedIndices].filter(r => r < i).length);
+    if (currentId && !removedIds.has(currentId)) {
+      const oldIndex = frames.findIndex(f => idDe(f) === currentId);
+      const newIndex = oldIndex - [...removedIndices].filter(r => r < oldIndex).length;
+      const position = seq.indexOf(newIndex);
+      idx = position >= 0 ? position : Math.min(idx, Math.max(0, seq.length - 1));
+    } else {
+      idx = Math.min(idx, Math.max(0, seq.length - 1));
+    }
+    guardar();
+  }
+  $('borrar-sel').onclick = async () => {
+    const items = selectedItems();
+    if (!items.length) { $('gestion').textContent = 'Marca primero uno o varios sprites.'; return; }
+    const labelFor = x => {
+      const entry = library.find(item => item.mov === x.mov && item.id === x.id);
+      const frame = entry?.indices?.[resol];
+      return `${x.mov}${Number.isInteger(frame) ? ` · f${String(frame).padStart(2, '0')}` : ''} · ${x.id}`;
+    };
+    const retirados = items.map(labelFor);
+    const list = retirados.join('\n');
+    if (!confirm(`Mover a la papelera ${items.length} sprite(s)?\n\n${list}\n\nLos frames posteriores se renumeran para cerrar el hueco, pero conservan su sprite e ID. El eliminado se podrá restaurar antes de vaciar la papelera.`)) return;
+    const gallery = $('galeria-gestion');
+    const galleryScroll = { left: gallery.scrollLeft, top: gallery.scrollTop };
+    try {
+      const result = await post('/api/sprites/trash', { items });
+      remapSequenceAfterTrash(items);
+      marcados.clear(); $('todos').checked = false;
+      await recargarCatalogo(); await refrescarTodo(galleryScroll);
+      const detalle = retirados.length <= 4 ? retirados.join(', ')
+        : `${retirados.slice(0, 3).join(', ')} y ${retirados.length - 3} más`;
+      $('gestion').textContent = `${retirados.length} sprite(s) movidos a papelera (${result.movidos.length} fichero(s)): ${detalle}. Los posteriores se renumeran, no se borran. Puedes abrirla con «Ver papelera».`;
+    } catch (e) { $('gestion').textContent = `No se pudo mover a papelera: ${e.message}`; }
+  };
+
+  $('copiar-sel').onclick = async () => {
+    const items = selectedItems();
+    if (!items.length) { $('gestion').textContent = 'Selecciona primero sprites aprobados de la biblioteca.'; return; }
+    try {
+      const result = await post('/api/sprites/copy-approved', { items, destino: mov });
+      const copied = result.resultados.filter(x => x.ok).length;
+      const details = result.resultados.map(x => x.ok
+        ? `${x.mov}: añadido${x.omitido?.length ? ' (algunas variantes omitidas)' : ''}`
+        : `${x.mov}: ${x.error || x.omitido?.join(', ') || 'no copiado'}`).join(' · ');
+      marcados.clear(); $('todos').checked = false;
+      await recargarCatalogo(); await refrescarTodo();
+      $('gestion').textContent = `${copied} sprite(s) aprobados copiados a ${mov}. ${details}`;
+    } catch (e) { $('gestion').textContent = `No se pudieron copiar: ${e.message}`; }
+  };
+
+  const readDataURL = file => new Promise((resolve, reject) => {
+    const r = new FileReader(); r.onload = () => resolve(r.result); r.onerror = () => reject(new Error('no se pudo leer el archivo')); r.readAsDataURL(file);
+  });
+  const estadoSubida = (text, kind = '') => {
+    const el = $('subida-status'); el.textContent = text;
+    if (kind) el.dataset.kind = kind; else delete el.dataset.kind;
+  };
+  $('ficheros').onchange = () => {
+    const files = [...($('ficheros').files || [])];
+    if (!files.length) { estadoSubida('No hay archivos seleccionados.'); return; }
+    const names = files.slice(0, 3).map(file => file.name).join(', ');
+    const more = files.length > 3 ? ` y ${files.length - 3} más` : '';
+    estadoSubida(`${files.length} PNG seleccionado(s): ${names}${more}. Pulsa «Añadir a la biblioteca como pendiente».`);
+  };
+  function sugerirCelda() {
+    const [w, h] = $('subir-resol').value === 'oficial' ? [96, 152] : meta('nativo').lienzo;
+    $('celda-ancho').value = w; $('celda-alto').value = h;
+  }
+  $('modo-subida').onchange = () => {
+    const hoja = $('modo-subida').value === 'hoja';
+    $('opciones-hoja').hidden = !hoja;
+    const selected = [...($('ficheros').files || [])];
+    const prefix = selected.length ? `${selected.length} PNG seleccionado(s). ` : '';
+    estadoSubida(prefix + (hoja
+      ? 'Modo hoja/tira: indica el tamaño exacto de celda y fila de inicio. Columnas 0 = auto; filas 0 = todas (solo si son el mismo movimiento).'
+      : 'Modo PNG sueltos: cada archivo se añadirá como un sprite pendiente.'));
+  };
+  $('subir-resol').onchange = sugerirCelda;
+  $('subir').onclick = async () => {
+    const files = [...($('ficheros').files || [])];
+    if (!files.length) {
+      estadoSubida('Selecciona primero uno o varios PNG.', 'error');
+      $('gestion').textContent = 'Elige uno o varios PNG.';
+      return;
+    }
+    const uploadRes = $('subir-resol').value;
+    const mode = $('modo-subida').value;
+    const results = [];
+    let added = 0, rejected = 0, empty = 0;
+    const uploadControls = ['personaje', 'mov', 'resol', 'ficheros', 'subir-resol', 'modo-subida',
+      'celda-ancho', 'celda-alto', 'columnas', 'fila-inicio', 'filas',
+      'gap-x', 'gap-y', 'offset-x', 'offset-y', 'subir'];
+    uploadControls.forEach(id => { $(id).disabled = true; });
+    try {
+      for (let i = 0; i < files.length; i++) {
+        const file = files[i];
+        estadoSubida(`Leyendo ${i + 1}/${files.length}: ${file.name}…`);
+        try {
+          const png = await readDataURL(file);
+          if (mode === 'individual') {
+            const item = await post('/api/sprites/add', {
+              mov, resol: uploadRes, nombre: file.name, png,
+            });
+            added++;
+            results.push(`${file.name}: añadido como pendiente (${item.dimensiones[0]}×${item.dimensiones[1]} px)`);
+          } else {
+            const item = await post('/api/sprites/add-sheet', {
+              mov, resol: uploadRes, nombre: file.name, png,
+              celda_ancho: $('celda-ancho').value, celda_alto: $('celda-alto').value,
+              columnas: $('columnas').value, filas: $('filas').value,
+              fila_inicio: $('fila-inicio').value,
+              gap_x: $('gap-x').value, gap_y: $('gap-y').value,
+              offset_x: $('offset-x').value, offset_y: $('offset-y').value,
+            });
+            const frames = item.resultados || [];
+            const ok = frames.filter(x => x.ok);
+            const blank = frames.filter(x => x.omitido);
+            const failed = frames.filter(x => !x.ok && !x.omitido);
+            added += ok.length; empty += blank.length; rejected += failed.length;
+            const problems = failed.slice(0, 4).map(x =>
+              `fila ${x.fila}, columna ${x.columna}: ${x.error}`).join(' · ');
+            results.push(`${file.name}: ${ok.length} pendiente(s), ${blank.length} celda(s) vacía(s) omitida(s)` +
+              (failed.length ? `, ${failed.length} rechazada(s)${problems ? ` (${problems})` : ''}` : ''));
+          }
+        } catch (e) {
+          rejected++;
+          results.push(`${file.name}: RECHAZADO — ${e.message}`);
+        }
+        estadoSubida(results.join('\n'), added ? 'success' : '');
+      }
+      $('ficheros').value = '';
+      resol = uploadRes; $('resol').value = resol; seq = inicial(); idx = 0; previewFrameIndex = 0; seleccionarVistaInicial();
+      try {
+        await recargarCatalogo();
+        seq = inicial(); idx = 0; previewFrameIndex = 0;
+        if (!mostrarPrimerCandidatoIA()) seleccionarVistaInicial();
+        await refrescarTodo();
+      }
+      catch (e) { results.push(`No se pudo actualizar la vista: ${e.message}`); }
+      const kind = added ? 'success' : 'error';
+      estadoSubida(`${added} sprite(s) guardados como pendiente(s); ${rejected} rechazado(s); ${empty} celda(s) vacía(s) omitida(s).\n${results.join('\n')}`, kind);
+      $('gestion').textContent = added
+        ? `${added} sprite(s) pendientes añadidos a ${mov}. Puedes aprobarlos en la biblioteca.`
+        : `No se añadió ningún sprite. Revisa los motivos indicados arriba.`;
+    } finally {
+      uploadControls.forEach(id => { $(id).disabled = false; });
+    }
+  };
+
+  async function cargarPapelera() {
+    const r = await fetch(apiUrl('/api/trash'), { cache: 'no-store' });
+    const j = await r.json(); if (!r.ok || j.ok === false) throw new Error(j.error || 'no se pudo leer la papelera');
+    trashItems = j.items || [];
+    const box = $('papelera-vista'), g = $('galeria-papelera');
+    box.hidden = false; g.innerHTML = ''; papeleraMarcada.clear();
+    $('papelera-titulo').textContent = `Papelera · ${trashItems.length} sprite(s)`;
+    if (!trashItems.length) { g.innerHTML = '<div class="empty">La papelera está vacía.</div>'; return; }
+    for (const item of trashItems) {
+      const src = item.urls?.[resol] || item.urls?.nativo || item.urls?.oficial;
+      const fig = document.createElement('figure'); const im = document.createElement('img');
+      im.src = src || ''; im.alt = `${item.mov} ${item.id}`; imagenPixelNativa(im); im.onerror = () => im.classList.add('fallo');
+      const cap = document.createElement('figcaption');
+      const num = item.indices?.[resol] ?? item.indices?.nativo ?? item.indices?.oficial;
+      const eliminado = Number.isInteger(num) ? `enviado f${String(num).padStart(2, '0')} · ` : '';
+      cap.textContent = `${item.mov} · ${eliminado}${item.id.slice(0, 8)} · restaurable`;
+      fig.append(im, cap);
+      fig.onclick = () => {
+        const k = `${item.mov}::${item.id}`;
+        if (papeleraMarcada.has(k)) papeleraMarcada.delete(k); else papeleraMarcada.add(k);
+        fig.classList.toggle('sel', papeleraMarcada.has(k));
+      };
+      g.appendChild(fig);
+    }
+  }
+  $('ver-papelera').onclick = async () => {
+    try { await cargarPapelera(); $('gestion').textContent = `Papelera abierta: ${trashItems.length} sprite(s). Marca los que quieras restaurar.`; }
+    catch (e) { $('gestion').textContent = `No se pudo abrir la papelera: ${e.message}`; }
+  };
+  $('cerrar-papelera').onclick = () => { $('papelera-vista').hidden = true; };
+  $('restaurar-papelera').onclick = async () => {
+    const selected = trashItems.filter(x => papeleraMarcada.has(`${x.mov}::${x.id}`));
+    const ids = selected.flatMap(x => x.items || []);
+    if (!ids.length) { $('gestion').textContent = 'Marca sprites de la papelera para restaurar.'; return; }
+    try {
+      const result = await post('/api/trash/restore', { ids });
+      await recargarCatalogo(); await refrescarTodo(); await cargarPapelera();
+      $('gestion').textContent = `${result.restaurados} fichero(s) restaurados a su movimiento.`;
+    } catch (e) { $('gestion').textContent = `No se pudo restaurar: ${e.message}`; }
+  };
+  $('vaciar-papelera').onclick = async () => {
+    if (!confirm('Vaciar la papelera borra definitivamente sus PNG. ¿Continuar?')) return;
+    try {
+      const result = await post('/api/trash/empty', {});
+      await cargarPapelera();
+      $('gestion').textContent = `Papelera vaciada: ${result.eliminados} fichero(s) borrados definitivamente.`;
+    } catch (e) { $('gestion').textContent = `No se pudo vaciar la papelera: ${e.message}`; }
+  };
+
+  function descargar(blob, nombre) {
+    const url = URL.createObjectURL(blob); const a = document.createElement('a');
+    a.href = url; a.download = nombre; a.style.display = 'none';
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 1500);
+  }
+  function nombreBase() { return `${mov}_${resol}_${seq.length}f_${fps()}fps`; }
+  async function guardarAnimacion() {
+    const btn = $('guardar'), st = $('gstat');
+    if (!seq.length) { st.textContent = 'No hay frames únicos en la secuencia.'; return; }
+    btn.disabled = true; st.textContent = 'Preparando PNG y JSON…';
+    try {
+      const m = meta(), [W, H] = m.lienzo;
+      const images = await Promise.all(seq.map(i => cargar(i)));
+      if (images.some(x => !x)) throw new Error('uno o más sprites no cargaron');
+      if (images.some(x => x.naturalWidth !== W || x.naturalHeight !== H))
+        throw new Error('hay un sprite con un lienzo distinto; no lo escalo para guardar');
+      const c = document.createElement('canvas'); c.width = W * seq.length; c.height = H;
+      const g = c.getContext('2d'); g.imageSmoothingEnabled = false;
+      images.forEach((im, k) => g.drawImage(im, k * W, 0));
+      const base = nombreBase();
+      const spec = animSpec(mov);
+      const alignmentState = activeProfile.id === 'voltia' && resol === 'oficial'
+        ? estadoRevisionAlineacion() : null;
+      const spriteOffset = alignmentState?.sprite.every(Number.isInteger)
+        ? alignmentState.sprite : (m.desplazamiento_sprite || [0, 0]);
+      const manifest = {
+        movimiento: mov, etiqueta: spec.label, resolucion: resol, lienzo: [W, H],
+        ancla: m.ancla, pies_y: m.pies_y ?? null,
+        desplazamiento_sprite: spriteOffset,
+        desplazamiento_guardado: alignmentState ? alignmentState.spriteSaved : true,
+        desplazamiento_aplicado_a_tira: false,
+        revision_alineacion: activeProfile.id === 'voltia' && resol === 'oficial'
+          ? (m.revision_alineacion || {}) : {},
+        frames: seq.length, fps: fps(),
+        loop: spec.loop, orden: seq, ficheros: seq.map(i => ruta(m.frames[i])),
+        origen_laboratorio: seq.map(i => m.frames[i].origen_laboratorio || null),
+        tira: base + '.png', guardado: new Date().toISOString(),
+      };
+      const png = await new Promise(resolve => c.toBlob(resolve, 'image/png'));
+      const json = new Blob([JSON.stringify(manifest, null, 1)], { type: 'application/json' });
+      descargar(png, base + '.png'); descargar(json, base + '.json');
+      st.innerHTML = `Descarga lista: <b>${base}.png</b> + <b>${base}.json</b> · ${c.width}×${c.height} px · ${seq.length} frames a ${fps()} fps.` +
+        '<br><span style="color:#9b93b8">Busca los dos archivos en Descargas (o en la ubicación configurada en tu navegador); permite ambas descargas si te lo pregunta. El PNG conserva los píxeles originales; el JSON guarda por separado el desplazamiento de vista. Se exportan sin filtrar ni cambiar el tamaño. Para un GIF: ' +
+        `<code>python3 tools/make_gif.py &lt;carpeta&gt; ${base}.gif --fps ${fps()} --zoom 4</code></span>`;
+      $('orden').textContent = 'Orden guardado: ' + seq.map(i => i + 1).join(' · ');
+    } catch (e) { st.textContent = `No se pudo guardar: ${e.message}`; }
+    finally { btn.disabled = false; }
+  }
+  $('guardar').onclick = guardarAnimacion;
+
+  if (window.ResizeObserver) new ResizeObserver(() => { encajar(); pintar(); }).observe(caja);
+  window.addEventListener('resize', () => { encajar(); pintar(); dibujarOriginal(); });
+
+  actualizarSelector();
+  $('mov').value = mov;
+  $('fps').value = animSpec(mov).fps; $('fps-v').textContent = animSpec(mov).fps;
+  $('resol').value = resol; $('subir-resol').value = resol; sugerirCelda();
+  $('mov').onchange = cambiarMovimiento;
+  seq = inicial(); previewFrameIndex = 0; seleccionarVistaInicial();
+  if (!seq.length) mostrarPrimerCandidatoIA();
+  await dibujarOriginal();
+  await refrescarTodo();
+  profileSelect.disabled = false; $('ficheros').disabled = false; $('subir').disabled = false;
+  estadoSubida('Elige uno o varios PNG para empezar.');
+  requestAnimationFrame(bucle);
+})().catch(error => {
+  console.error('No se pudo iniciar el creador de personajes:', error);
+  const profileStatus = document.getElementById('perfil-status');
+  if (profileStatus) {
+    profileStatus.textContent = `No se pudo cargar el perfil: ${error?.message || String(error)}`;
+    profileStatus.dataset.kind = 'error';
+  }
+  const uploadStatus = document.getElementById('subida-status');
+  if (uploadStatus) {
+    uploadStatus.textContent = `El creador no terminó de cargar. Ejecuta python3 tools/serve.py y recarga la página. Detalle: ${error?.message || String(error)}`;
+    uploadStatus.dataset.kind = 'error';
+  }
+});
+
+</script>
+<script>
+(() => {
+  const select = document.getElementById('lab-preview-select');
+  const refresh = document.getElementById('lab-preview-refresh');
+  const frame = document.getElementById('lab-preview-frame');
+  const status = document.getElementById('lab-preview-status');
+  const nativeButton = document.getElementById('lab-native-import');
+  const approveButton = document.getElementById('lab-review-approve');
+  const convertButton = document.getElementById('lab-import-official');
+  const importStatus = document.getElementById('lab-import-status');
+  const destination = document.getElementById('lab-import-destination');
+  const nativePreview = document.getElementById('lab-native-preview');
+  const nativePreviewStatus = document.getElementById('lab-native-preview-status');
+  const nativeStrip = document.getElementById('lab-native-strip');
+  const officialPreview = document.getElementById('lab-official-preview');
+  const officialPreviewStatus = document.getElementById('lab-official-preview-status');
+  const officialStrip = document.getElementById('lab-official-strip');
+  const movementSelect = document.getElementById('mov');
+  const profileSelect = document.getElementById('personaje');
+  if (!select || !refresh || !frame || !status || !nativeButton || !approveButton || !convertButton || !importStatus ||
+      !nativePreview || !nativePreviewStatus || !nativeStrip || !officialPreview || !officialPreviewStatus || !officialStrip) return;
+
+  const WORKSPACE_FORMAT = 'FabaterFighter-PruebasIA';
+  const WORKSPACE_VERSION = 1;
+  const KEY_PREFIX = 'fabaterfighter.pruebas-ia.v1:';
+  let available = new Map();
+  let nativeBatches = [];
+  let stagingApiAvailable = false;
+  let stagingApiError = '';
+  let previewReady = false;
+  let operationBusy = false;
+  const officialFrameStates = new Map();
+  const officialStateLoads = new Set();
+  const officialStateLoaded = new Set();
+  const officialStateDirty = new Set();
+
+  function catalogSignature(catalog) {
+    return JSON.stringify({
+      schema: catalog.schema,
+      sources: catalog.sources.map(source => [source.id, source.sha256]),
+      sequences: catalog.sequences.map(sequence => [sequence.id, sequence.source,
+        sequence.frames.map(item => [item.n, item.x, item.y, item.w, item.h, item.head?.x ?? null, item.head?.y ?? null])]),
+    });
+  }
+
+  function sameNumbers(left, right) {
+    return Array.isArray(left) && Array.isArray(right) && left.length === right.length &&
+      left.every((number, index) => number === right[index]);
+  }
+
+  function currentValidatedNumbers(sequence, record) {
+    if (!record || typeof record !== 'object' || !record.frames || !record.validation) return null;
+    const selected = sequence.frames.filter(item => record.frames[String(item.n)]?.approved === true).map(item => item.n);
+    const saved = record.validation.validFrameNumbers;
+    if (!selected.length || !Array.isArray(saved) || saved.length !== selected.length ||
+        !saved.every((number, index) => Number.isInteger(number) && number === selected[index]) ||
+        typeof record.validation.validatedAt !== 'string') return null;
+    return selected;
+  }
+
+  function currentItem() { return available.get(select.value) || null; }
+
+  function currentNativeBatch(item = currentItem()) {
+    if (!item) return null;
+    return nativeBatches.find(batch => batch.secuencia === item.sequence.id &&
+      batch.validada_en === item.validatedAt && sameNumbers(batch.cuadros_fuente, item.frameNumbers)) || null;
+  }
+
+  function targetMovement() { return movementSelect?.value || ''; }
+
+  function movementLabel(id) {
+    const option = movementSelect?.selectedOptions?.[0];
+    return option?.value === id ? option.textContent.trim() : id;
+  }
+
+  function setBatch(batch) {
+    if (!batch?.batch_id) return;
+    nativeBatches = nativeBatches.filter(item => item.batch_id !== batch.batch_id);
+    nativeBatches.push(batch);
+  }
+
+  function stageImage(path, id, alt) {
+    const image = document.createElement('img');
+    const url = new URL(path, location.href);
+    if (id) url.searchParams.set('v', id);
+    image.src = url.href;
+    image.alt = alt;
+    image.loading = 'lazy';
+    image.decoding = 'async';
+    image.addEventListener('error', () => image.classList.add('fallo'), { once: true });
+    return image;
+  }
+
+  function candidateCard(path, id, alt, caption, state) {
+    const figure = document.createElement('figure');
+    const normalizedState = String(state || 'pendiente').toLowerCase();
+    figure.classList.add(normalizedState);
+    const image = stageImage(path, id, alt);
+    const label = document.createElement('figcaption');
+    label.textContent = caption;
+    figure.append(image, label);
+    return figure;
+  }
+
+  function renderNativePreview(item, batch) {
+    nativeStrip.replaceChildren();
+    if (!item || !batch || !Array.isArray(batch.frames) || !batch.frames.length) {
+      nativePreview.hidden = true;
+      return;
+    }
+    nativePreview.hidden = false;
+    const dimensions = Array.isArray(batch.lienzo) ? batch.lienzo.join('×') : 'tamaño original';
+    const state = String(batch.estado || 'pendiente').toUpperCase();
+    nativePreviewStatus.textContent = `Etapa Nativa · ${state} en el Creador · ${batch.frames.length} cuadro(s) · ${dimensions} px · sin escala ni recolor. Esta bandeja no se añade a la secuencia.`;
+    const root = profileSelect?.selectedOptions?.[0]?.dataset?.storageRoot || 'voltia/nuevo/creador';
+    for (const frame of [...batch.frames].sort((a, b) => Number(a.i) - Number(b.i))) {
+      const number = Number.isInteger(frame.i) ? frame.i : 0;
+      const sourceNumber = Number.isInteger(frame.cuadro_fuente) ? frame.cuadro_fuente : number;
+      const file = frame.fichero || `${batch.batch_id}/f${String(number).padStart(2, '0')}.png`;
+      const path = `../${root}/pruebas-ia-pendientes/${file}`;
+      const frameState = frame.estado || batch.estado || 'pendiente';
+      nativeStrip.appendChild(candidateCard(path, frame.id, `Cuadro Nativo ${number + 1}`, `Nativo ${String(number + 1).padStart(2, '0')} · fuente ${sourceNumber} · ${String(frameState).toUpperCase()}`, frameState));
+    }
+  }
+
+  function officialMovementLabel(id) {
+    return [...(movementSelect?.options || [])].find(option => option.value === id)?.textContent.trim() || id;
+  }
+
+  function renderOfficialPreview(item, batch) {
+    officialStrip.replaceChildren();
+    const conversions = Object.entries(batch?.conversiones || {})
+      .filter(([, conversion]) => Array.isArray(conversion?.resultados) && conversion.resultados.length);
+    if (!item || !conversions.length) {
+      officialPreview.hidden = true;
+      return;
+    }
+    officialPreview.hidden = false;
+    const total = conversions.reduce((count, [, conversion]) => count + conversion.resultados.length, 0);
+    const states = conversions.flatMap(([movement, conversion]) => conversion.resultados.map(result =>
+      officialFrameStates.get(`${movement}:${result.id}`) || result.estado || 'pendiente'));
+    const counts = states.reduce((result, state) => {
+      const key = String(state || 'pendiente').toLowerCase();
+      result[key] = (result[key] || 0) + 1;
+      return result;
+    }, {});
+    const summary = ['aprobado', 'pendiente', 'descartado']
+      .filter(state => counts[state]).map(state => `${counts[state]} ${state}${counts[state] === 1 ? '' : 's'}`).join(' · ');
+    officialPreviewStatus.textContent = `${total} candidato(s) oficial(es) de esta secuencia · ${summary || 'estado por comprobar'}. Las aprobaciones oficiales no los añaden a la secuencia: esa incorporación sigue siendo explícita.`;
+    for (const [movement, conversion] of conversions) {
+      const group = document.createElement('section');
+      group.className = 'lab-official-set';
+      const heading = document.createElement('h4');
+      heading.textContent = `${officialMovementLabel(movement)} · ${conversion.resultados.length} candidato(s) · 96×152`;
+      const row = document.createElement('div');
+      row.className = 'lab-candidate-strip';
+      for (const result of conversion.resultados) {
+        const number = Number.isInteger(result.i) ? result.i : 0;
+        const sourceNumber = Number.isInteger(result.cuadro_fuente) ? result.cuadro_fuente : number;
+        const file = result.fichero || `${movement}/f${String(number).padStart(2, '0')}.png`;
+        const path = `../voltia/nuevo/creador/oficial/${file}`;
+        const state = officialFrameStates.get(`${movement}:${result.id}`) || result.estado || 'pendiente';
+        row.appendChild(candidateCard(path, result.id, `Candidato oficial ${officialMovementLabel(movement)} ${number + 1}`, `${String(number + 1).padStart(2, '0')} · fuente ${sourceNumber} · ${String(state).toUpperCase()}`, state));
+      }
+      group.append(heading, row);
+      officialStrip.appendChild(group);
+      if (!officialStateLoaded.has(movement)) loadOfficialStates(movement);
+    }
+  }
+
+  async function loadOfficialStates(movement, force = false) {
+    if (force) {
+      officialStateLoaded.delete(movement);
+      const prefix = `${movement}:`;
+      for (const key of officialFrameStates.keys()) if (key.startsWith(prefix)) officialFrameStates.delete(key);
+      if (officialStateLoads.has(movement)) {
+        officialStateDirty.add(movement);
+        return;
+      }
+    }
+    if (officialStateLoads.has(movement) || officialStateLoaded.has(movement)) return;
+    officialStateLoads.add(movement);
+    try {
+      const response = await fetch('/api/sprites?character=voltia', { cache: 'no-store' });
+      if (!response.ok) throw new Error(`HTTP ${response.status}`);
+      const data = await response.json();
+      const frames = data?.official?.anims?.[movement]?.frames;
+      if (!Array.isArray(frames)) throw new Error('la biblioteca oficial no contiene ese movimiento');
+      for (const frame of frames) {
+        if (frame.id) officialFrameStates.set(`${movement}:${frame.id}`, frame.estado || 'pendiente');
+      }
+      officialStateLoaded.add(movement);
+    } catch (error) {
+      officialStateLoaded.add(movement);
+      console.warn(`No se pudo actualizar el estado oficial de ${movement}:`, error);
+    } finally {
+      officialStateLoads.delete(movement);
+      const item = currentItem();
+      renderOfficialPreview(item, currentNativeBatch(item));
+      if (officialStateDirty.delete(movement)) loadOfficialStates(movement, true);
+    }
+  }
+
+  function renderCandidatePreviews(item, batch) {
+    renderNativePreview(item, batch);
+    renderOfficialPreview(item, batch);
+  }
+
+  function syncControls(preserveStatus = false) {
+    const item = currentItem();
+    const batch = currentNativeBatch(item);
+    const isVoltia = profileSelect?.value === 'voltia';
+    const hasPreview = Boolean(item && previewReady && !frame.hidden);
+    const movement = targetMovement();
+    const conversion = batch?.conversiones?.[movement] || null;
+    const alreadyConverted = Boolean(conversion);
+    const canUseApi = stagingApiAvailable;
+
+    nativeButton.disabled = !isVoltia || !canUseApi || !hasPreview || Boolean(batch) || operationBusy;
+    nativeButton.textContent = batch
+      ? `Nativo importado · ${String(batch.estado || 'pendiente').toUpperCase()}`
+      : 'Importar Nativo · sin escala · pendiente';
+    approveButton.disabled = !isVoltia || !canUseApi || !hasPreview || !batch || batch.estado !== 'pendiente' || operationBusy;
+    approveButton.textContent = batch?.estado === 'aprobado'
+      ? '✓ Animación aprobada en el Creador'
+      : '✓ Aprobar animación en el Creador';
+    convertButton.disabled = !isVoltia || !canUseApi || !hasPreview || !batch || batch.estado !== 'aprobado' || !movement || alreadyConverted || operationBusy;
+    convertButton.textContent = alreadyConverted
+      ? `Candidatos ya preparados en ${movementLabel(movement)}`
+      : 'Preparar candidatos 96×152 · pendientes';
+    if (destination) {
+      destination.textContent = `Destino de la conversión: ${movement ? movementLabel(movement) : 'selecciona un movimiento'} · salida 96×152.`;
+    }
+    renderCandidatePreviews(item, batch);
+    if (preserveStatus || operationBusy) return;
+    if (!isVoltia) {
+      importStatus.textContent = 'La importación desde Pruebas IA solo está disponible con el perfil Voltia seleccionado.';
+      importStatus.dataset.kind = 'warning';
+    } else if (!canUseApi) {
+      importStatus.textContent = `La bandeja Nativa no responde: ${stagingApiError || 'inicia la versión actual de python3 tools/serve.py y actualiza la página.'}`;
+      importStatus.dataset.kind = 'error';
+    } else if (!item) {
+      importStatus.textContent = 'No hay una secuencia validada seleccionada.';
+      importStatus.dataset.kind = '';
+    } else if (!hasPreview) {
+      importStatus.textContent = 'Espera a que la previsualización nativa termine de cargar para poder revisarla.';
+      importStatus.dataset.kind = '';
+    } else if (!batch) {
+      importStatus.textContent = 'Revisa la secuencia en su lienzo nativo y pulsa «Importar Nativo». Se guardará sin escala, como pendiente y en una bandeja separada.';
+      importStatus.dataset.kind = '';
+    } else if (batch.estado === 'pendiente') {
+      importStatus.textContent = `${batch.frames?.length || item.count} cuadro(s) conservados en Nativo a ${batch.lienzo?.[0]}×${batch.lienzo?.[1]} px, sin escala ni recolor. Estado PENDIENTE; aprueba la animación aquí para habilitar la conversión.`;
+      importStatus.dataset.kind = '';
+    } else if (batch.estado === 'aprobado' && alreadyConverted) {
+      importStatus.textContent = `${conversion.añadidos} candidato(s) 96×152 pendiente(s) preparados para ${movementLabel(movement)}. Apruébalos en la biblioteca; después usa «Añadir aprobados de Pruebas IA a la secuencia».`;
+      importStatus.dataset.kind = 'success';
+    } else if (batch.estado === 'aprobado') {
+      importStatus.textContent = `Aprobación del Creador registrada para el lote Nativo. Puedes convertirlo ahora para ${movementLabel(movement)}; esa acción creará candidatos oficiales pendientes.`;
+      importStatus.dataset.kind = 'success';
+    } else {
+      importStatus.textContent = `El lote Nativo está ${String(batch.estado || 'pendiente').toUpperCase()}; no se puede convertir.`;
+      importStatus.dataset.kind = 'warning';
+    }
+  }
+
+  async function loadNativeBatches() {
+    const response = await fetch('/api/sprites/lab-native?character=voltia', { cache: 'no-store' });
+    if (!response.ok) throw new Error(`HTTP ${response.status} en la bandeja Nativa`);
+    const data = await response.json();
+    if (data.ok === false || !Array.isArray(data.items))
+      throw new Error(data.error || 'la API no devolvió los lotes nativos');
+    nativeBatches = data.items;
+    stagingApiAvailable = true;
+    stagingApiError = '';
+  }
+
+  async function reloadValidatedPreviews() {
+    refresh.disabled = true;
+    select.disabled = true;
+    previewReady = false;
+    status.textContent = 'Buscando animaciones validadas guardadas en este navegador…';
+    syncControls();
+    try {
+      const response = await fetch(new URL('pruebas-ia/catalogo.json', location.href), { cache: 'no-store' });
+      if (!response.ok) throw new Error(`No se pudo leer el catálogo del laboratorio (HTTP ${response.status}).`);
+      const labCatalog = await response.json();
+      const signature = catalogSignature(labCatalog);
+      try { await loadNativeBatches(); }
+      catch (error) { stagingApiAvailable = false; stagingApiError = error.message; nativeBatches = []; }
+      const matchingWorkspaces = [];
+      for (let index = 0; index < localStorage.length; index++) {
+        const key = localStorage.key(index);
+        if (!key?.startsWith(KEY_PREFIX)) continue;
+        try {
+          const saved = JSON.parse(localStorage.getItem(key));
+          if (saved?.format === WORKSPACE_FORMAT && saved.version === WORKSPACE_VERSION &&
+              saved.catalogSignature === signature && saved.sequences && typeof saved.sequences === 'object')
+            matchingWorkspaces.push(saved);
+        } catch (_) {}
+      }
+      matchingWorkspaces.sort((left, right) => String(right.updatedAt || '').localeCompare(String(left.updatedAt || '')));
+      available = new Map();
+      for (const sequence of labCatalog.sequences) {
+        if (sequence.category === 'Retrato') continue;
+        for (const workspace of matchingWorkspaces) {
+          const record = workspace.sequences?.[sequence.id];
+          const selected = currentValidatedNumbers(sequence, record);
+          if (!selected) continue;
+          const previous = available.get(sequence.id);
+          const validatedAt = record.validation.validatedAt;
+          if (!previous || validatedAt > previous.validatedAt)
+            available.set(sequence.id, {
+              sequence, count: selected.length, validatedAt, frameNumbers: selected,
+              catalogSignature: signature,
+            });
+        }
+      }
+      const priorSelection = select.value;
+      const requestedSequence = new URLSearchParams(location.search).get('ia');
+      select.replaceChildren();
+      const entries = [...available.values()];
+      const sourceTitles = new Map(labCatalog.sources.map(source => [source.id, source.title]));
+      for (const item of entries) {
+        const option = document.createElement('option');
+        option.value = item.sequence.id;
+        const sourceTitle = sourceTitles.get(item.sequence.source) || item.sequence.source;
+        option.textContent = `${item.sequence.label} · ${sourceTitle} · ${item.count} cuadro(s)`;
+        select.appendChild(option);
+      }
+      if (!entries.length) {
+        select.disabled = true;
+        frame.hidden = true;
+        status.textContent = 'Todavía no hay animaciones validadas para revisar. Valida una en Pruebas IA, vuelve aquí y pulsa «Actualizar lista». No se importa nada automáticamente.';
+        syncControls();
+        return;
+      }
+      select.disabled = false;
+      select.value = available.has(requestedSequence) ? requestedSequence
+        : available.has(priorSelection) ? priorSelection : entries[0].sequence.id;
+      showSelectedPreview();
+    } catch (error) {
+      select.disabled = true;
+      frame.hidden = true;
+      status.textContent = `No se pudo cargar la lista de Pruebas IA: ${error.message}`;
+      importStatus.textContent = 'La lista no está disponible; no se puede revisar ni importar.';
+      importStatus.dataset.kind = 'error';
+      syncControls(true);
+    } finally {
+      refresh.disabled = false;
+    }
+  }
+
+  function showSelectedPreview() {
+    const selected = currentItem();
+    previewReady = false;
+    if (!selected) {
+      frame.hidden = true;
+      syncControls();
+      return;
+    }
+    const url = new URL('pruebas-ia/', location.href);
+    url.searchParams.set('vista', 'creador');
+    url.searchParams.set('secuencia', selected.sequence.id);
+    url.searchParams.set('actualizar', String(Date.now()));
+    frame.src = url.href;
+    frame.hidden = false;
+    status.textContent = `${selected.sequence.label} · ${selected.count} cuadro(s) validados. Revisa primero el lienzo nativo; editar en Pruebas IA invalida la validación y requiere repetir la revisión.`;
+    syncControls();
+  }
+
+  async function postLocal(path, body) {
+    const response = await fetch(path, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ ...body, character: 'voltia' }),
+    });
+    const data = await response.json();
+    if (!response.ok || data.ok === false) throw new Error(data.error || `Error HTTP ${response.status}`);
+    return data;
+  }
+
+  function requestNativeExport(item) {
+    return new Promise((resolve, reject) => {
+      if (!frame.contentWindow) { reject(new Error('no se encuentra la previsualización del laboratorio')); return; }
+      const requestId = `creator-${Date.now()}-${Math.random().toString(36).slice(2)}`;
+      const timeout = window.setTimeout(() => {
+        window.removeEventListener('message', onMessage);
+        reject(new Error('el laboratorio no respondió. Recarga la previsualización y prueba otra vez.'));
+      }, 15000);
+      const onMessage = event => {
+        if (event.source !== frame.contentWindow || event.origin !== location.origin ||
+            event.data?.type !== 'fabaterfighter:validated-lab-sequence-export' ||
+            event.data.requestId !== requestId) return;
+        window.clearTimeout(timeout);
+        window.removeEventListener('message', onMessage);
+        if (!event.data.ok) { reject(new Error(event.data.error || 'no se pudo exportar la secuencia nativa')); return; }
+        const result = event.data.result;
+        if (!result || result.sequenceId !== item.sequence.id || result.validatedAt !== item.validatedAt ||
+            !sameNumbers(result.frameNumbers, item.frameNumbers) ||
+            !Number.isInteger(result.frameWidth) || result.frameWidth < 1 ||
+            !Number.isInteger(result.frameHeight) || result.frameHeight < 1 ||
+            !Array.isArray(result.framePngs) || result.framePngs.length !== item.frameNumbers.length ||
+            result.framePngs.some(png => typeof png !== 'string' || !png.startsWith('data:image/png;base64,'))) {
+          reject(new Error('la exportación nativa no coincide con la validación actual'));
+          return;
+        }
+        resolve(result);
+      };
+      window.addEventListener('message', onMessage);
+      try {
+        frame.contentWindow.postMessage({
+          type: 'fabaterfighter:export-validated-lab-sequence', requestId,
+          sequenceId: item.sequence.id, validatedAt: item.validatedAt,
+          frameNumbers: item.frameNumbers,
+        }, location.origin);
+      } catch (error) {
+        window.clearTimeout(timeout);
+        window.removeEventListener('message', onMessage);
+        reject(error);
+      }
+    });
+  }
+
+  async function importNativePending() {
+    const item = currentItem();
+    if (!item || currentNativeBatch(item) || !previewReady || !stagingApiAvailable ||
+        profileSelect?.value !== 'voltia' || operationBusy) return;
+    if (!window.confirm(`¿Importar «${item.sequence.label}» con ${item.count} cuadro(s) a la bandeja Nativa? Se guardarán sin escala ni recolor y quedarán pendientes; la conversión a 96×152 será posterior y separada.`)) return;
+    operationBusy = true; select.disabled = true; refresh.disabled = true;
+    importStatus.textContent = 'Exportando y guardando los PNG nativos sin escala…'; importStatus.dataset.kind = '';
+    syncControls(true);
+    try {
+      const native = await requestNativeExport(item);
+      const result = await postLocal('/api/sprites/lab-native/import', {
+        frames_png: native.framePngs, celda_ancho: native.frameWidth, celda_alto: native.frameHeight,
+        cuadros_fuente: native.frameNumbers, secuencia: native.sequenceId,
+        validada_en: native.validatedAt,
+      });
+      setBatch(result.batch);
+      importStatus.textContent = `${result.batch.frames.length} cuadro(s) importados en Nativo a ${result.batch.lienzo[0]}×${result.batch.lienzo[1]} px, sin escala ni recolor. El lote está PENDIENTE y permanece separado de la biblioteca oficial.`;
+      importStatus.dataset.kind = 'success';
+    } catch (error) {
+      importStatus.textContent = `No se pudo importar la variante Nativa: ${error.message}`;
+      importStatus.dataset.kind = 'error';
+    } finally {
+      operationBusy = false; select.disabled = available.size === 0; refresh.disabled = false;
+      syncControls(true);
+    }
+  }
+
+  async function approveNativeBatch() {
+    const item = currentItem();
+    const batch = currentNativeBatch(item);
+    if (!item || !batch || batch.estado !== 'pendiente' || !previewReady || operationBusy) return;
+    if (!window.confirm(`¿Apruebas en el Creador el lote Nativo de «${item.sequence.label}» con ${batch.frames.length} cuadro(s)? La conversión oficial seguirá siendo una acción aparte.`)) return;
+    operationBusy = true; select.disabled = true; refresh.disabled = true;
+    importStatus.textContent = 'Registrando la segunda aprobación del Creador…'; importStatus.dataset.kind = '';
+    syncControls(true);
+    try {
+      const result = await postLocal('/api/sprites/lab-native/state', {
+        batch_id: batch.batch_id, estado: 'aprobado',
+      });
+      setBatch(result.batch);
+      importStatus.textContent = `Lote Nativo aprobado en el Creador · ${result.batch.frames.length} cuadro(s). Ya puedes elegir por separado la conversión a 96×152.`;
+      importStatus.dataset.kind = 'success';
+    } catch (error) {
+      importStatus.textContent = `No se pudo registrar la aprobación: ${error.message}`;
+      importStatus.dataset.kind = 'error';
+    } finally {
+      operationBusy = false; select.disabled = available.size === 0; refresh.disabled = false;
+      syncControls(true);
+    }
+  }
+
+  async function prepareOfficialCandidates() {
+    const item = currentItem();
+    const batch = currentNativeBatch(item);
+    const movement = targetMovement();
+    if (!item || !batch || batch.estado !== 'aprobado' || !previewReady || !movement ||
+        !stagingApiAvailable || operationBusy || batch.conversiones?.[movement]) return;
+    if (!window.confirm(`¿Convertir el lote Nativo aprobado de «${item.sequence.label}» para ${movementLabel(movement)}? Se aplicará la reducción uniforme aprobada a 96×152 y se crearán candidatos pendientes; no se modifica la hoja del juego.`)) return;
+    operationBusy = true; select.disabled = true; refresh.disabled = true;
+    importStatus.textContent = 'Aplicando la reducción uniforme aprobada a los PNG nativos guardados…'; importStatus.dataset.kind = '';
+    syncControls(true);
+    try {
+      const result = await postLocal('/api/sprites/lab-native/convert', {
+        batch_id: batch.batch_id, mov: movement,
+      });
+      if (result.batch) setBatch(result.batch);
+      window.dispatchEvent(new CustomEvent('creator-library-updated', {
+        detail: { character: 'voltia', mov: movement, resol: 'oficial' },
+      }));
+      importStatus.textContent = `${result.añadidos} candidato(s) pendiente(s) añadidos a ${movementLabel(movement)} en 96×152 · escala uniforme ${result.escala}. ${result.duplicados_omitidos ? `${result.duplicados_omitidos} duplicado(s) omitido(s). ` : ''}Apruébalos en la biblioteca del Creador; después usa «Añadir aprobados de Pruebas IA a la secuencia».`;
+      importStatus.dataset.kind = 'success';
+    } catch (error) {
+      importStatus.textContent = `No se pudo preparar la variante oficial: ${error.message}`;
+      importStatus.dataset.kind = 'error';
+    } finally {
+      operationBusy = false; select.disabled = available.size === 0; refresh.disabled = false;
+      syncControls(true);
+    }
+  }
+
+  frame.addEventListener('load', () => {
+    previewReady = true;
+    syncControls();
+  });
+  select.addEventListener('change', showSelectedPreview);
+  refresh.addEventListener('click', reloadValidatedPreviews);
+  nativeButton.addEventListener('click', importNativePending);
+  approveButton.addEventListener('click', approveNativeBatch);
+  convertButton.addEventListener('click', prepareOfficialCandidates);
+  movementSelect?.addEventListener('change', syncControls);
+  profileSelect?.addEventListener('change', syncControls);
+  window.addEventListener('creator-library-updated', event => {
+    const detail = event.detail || {};
+    if ((!detail.character || detail.character === 'voltia') && detail.mov) loadOfficialStates(detail.mov, true);
+  });
+  window.addEventListener('creator-sprite-state-changed', event => {
+    const detail = event.detail || {};
+    if (detail.character && detail.character !== 'voltia') return;
+    const movements = Array.isArray(detail.movs) ? detail.movs : detail.mov ? [detail.mov] : [];
+    for (const movement of movements) loadOfficialStates(movement, true);
+  });
+  if (window.MutationObserver && profileSelect && movementSelect) {
+    const controlsObserver = new MutationObserver(syncControls);
+    controlsObserver.observe(profileSelect, { childList: true, attributes: true, subtree: true });
+    controlsObserver.observe(movementSelect, { childList: true, attributes: true, subtree: true });
+  }
+  reloadValidatedPreviews();
+})();
+</script>
+</body>
+</html>

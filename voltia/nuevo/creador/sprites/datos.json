@@ -13,138 +13,7 @@
    ],
    "esperado": 8,
    "escala": 1,
-   "frames": [
-    {
-     "i": 0,
-     "fichero": "stance/f00.png",
-     "nativo": [
-      281,
-      560
-     ],
-     "caja_en_hoja": [
-      40,
-      40,
-      321,
-      600
-     ],
-     "cabeza": [
-      176.4,
-      73.7
-     ],
-     "cortado": false,
-     "id": "legacy-stance-00"
-    },
-    {
-     "i": 1,
-     "fichero": "stance/f01.png",
-     "nativo": [
-      317,
-      560
-     ],
-     "caja_en_hoja": [
-      411,
-      40,
-      728,
-      600
-     ],
-     "cabeza": [
-      172.1,
-      75.9
-     ],
-     "cortado": false,
-     "id": "legacy-stance-01"
-    },
-    {
-     "i": 2,
-     "fichero": "stance/f02.png",
-     "id": "legacy-stance-02"
-    },
-    {
-     "i": 3,
-     "fichero": "stance/f03.png",
-     "nativo": [
-      278,
-      560
-     ],
-     "caja_en_hoja": [
-      1251,
-      40,
-      1529,
-      600
-     ],
-     "cabeza": [
-      209.7,
-      90.8
-     ],
-     "cortado": false,
-     "id": "legacy-stance-03"
-    },
-    {
-     "i": 4,
-     "fichero": "stance/f04.png",
-     "nativo": [
-      316,
-      560
-     ],
-     "caja_en_hoja": [
-      1619,
-      40,
-      1935,
-      600
-     ],
-     "cabeza": [
-      236.0,
-      127.7
-     ],
-     "cortado": false,
-     "id": "legacy-stance-04"
-    },
-    {
-     "i": 5,
-     "fichero": "stance/f05.png",
-     "id": "legacy-stance-05"
-    },
-    {
-     "i": 6,
-     "fichero": "stance/f06.png",
-     "nativo": [
-      292,
-      560
-     ],
-     "caja_en_hoja": [
-      2391,
-      40,
-      2683,
-      600
-     ],
-     "cabeza": [
-      175.4,
-      73.9
-     ],
-     "cortado": false,
-     "id": "legacy-stance-06"
-    },
-    {
-     "i": 7,
-     "fichero": "stance/f07.png",
-     "nativo": [
-      292,
-      560
-     ],
-     "caja_en_hoja": [
-      2773,
-      40,
-      3065,
-      600
-     ],
-     "cabeza": [
-      172.4,
-      76.3
-     ],
-     "cortado": false,
-     "id": "legacy-stance-07"
-    }
-   ]
+   "frames": []
   },
   "walk": {
    "lienzo": [
@@ -239,7 +108,6 @@
      "id": "legacy-walk-03"
     },
     {
-     "i": 4,
      "fichero": "walk/f04.png",
      "nativo": [
       230,
@@ -256,7 +124,8 @@
       72.0
      ],
      "cortado": false,
-     "id": "legacy-walk-04"
+     "id": "legacy-walk-04",
+     "i": 4
     },
     {
      "i": 5,

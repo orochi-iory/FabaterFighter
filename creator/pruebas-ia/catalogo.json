@@ -1,0 +1,6205 @@
+{
+  "schema": 2,
+  "defaultSequence": "p06c-idle",
+  "thresholdDefault": 10,
+  "maskModes": [
+    "edge",
+    "original",
+    "global"
+  ],
+  "sources": [
+    {
+      "id": "p01",
+      "title": "Parte 1/6 · Intro, retratos y agachada",
+      "file": "fuentes/part-01-intro-crouch.png",
+      "width": 1024,
+      "height": 1536,
+      "sha256": "cb462756cd6445f79a7a2200ff231bdeb8ca79e39333b80db5544e01d6bbe7bc"
+    },
+    {
+      "id": "p02",
+      "title": "Parte 2/6 · Run, salto y ataques",
+      "file": "fuentes/part-02-run-jump.png",
+      "width": 1024,
+      "height": 1536,
+      "sha256": "730d3c5dab2e7b80224816387eb639adb8375efcf6f0b8cafbe4503939ef39a2"
+    },
+    {
+      "id": "p03",
+      "title": "Parte 3/6 · Daño, caída y victoria",
+      "file": "fuentes/part-03-hit-fall-idle.png",
+      "width": 1024,
+      "height": 1536,
+      "sha256": "6e2f9e82224bf944283f4d4dddc784bda32ab977f13ef41a927f3cea82f36a17"
+    },
+    {
+      "id": "p04",
+      "title": "Parte 4/6 · Fases de salto y dash",
+      "file": "fuentes/part-04-jump-dash.png",
+      "width": 1024,
+      "height": 1536,
+      "sha256": "1378a9fab6c8d6af215c0fdf5c47cd1f097b87e3f64aa268e4e4c9f219d38612"
+    },
+    {
+      "id": "p05a",
+      "title": "Parte 5/6 · Ataques básicos y caída",
+      "file": "fuentes/part-05-basic-attacks-fall.png",
+      "width": 1024,
+      "height": 1536,
+      "sha256": "ba80a840005ebe297f055de47fdb000ca1f0ceaeb9516ab7f6ceedfa82d2d689"
+    },
+    {
+      "id": "p05b",
+      "title": "Parte 5/6 · Ataques en salto y estados",
+      "file": "fuentes/part-05-jump-hurt.png",
+      "width": 1024,
+      "height": 1536,
+      "sha256": "012dafe1ca4e3f8ff1307f9f1a605c9c11718201d38d1a9be8e0042ca5022439"
+    },
+    {
+      "id": "p06a",
+      "title": "Parte 6/6 · Dash y especiales · lámina A",
+      "file": "fuentes/part-06-dash-specials.png",
+      "width": 1024,
+      "height": 1536,
+      "sha256": "19debedb0ee04be7a571232b3a65e77f528f304d707f17036cb122fd2192c73e"
+    },
+    {
+      "id": "p06b",
+      "title": "Parte 6/6 · Muerte, bloqueo y poses · lámina B",
+      "file": "fuentes/part-06-death-block-taunt.png",
+      "width": 1024,
+      "height": 1536,
+      "sha256": "189cebc44a32d7a26693de39fd16f2826ba916e0da39dc40f6093c9e5df51236"
+    },
+    {
+      "id": "p06c",
+      "title": "Parte 6/6 · Especiales y bucle · lámina C",
+      "file": "fuentes/part-06-specials-idle.png",
+      "width": 1024,
+      "height": 1536,
+      "sha256": "5e71e070cae2dfa09972307d2cc961b9cf39220798d2d59a178cb65deac7d32e"
+    }
+  ],
+  "sequences": [
+    {
+      "id": "p01-intro",
+      "label": "Intro · parte 1/6",
+      "originalLabel": "INTRO",
+      "source": "p01",
+      "category": "Intro",
+      "notes": "Secuencia de entrada; el cuadro 4 es más alto que la fila y se revisa con un recorte especial.",
+      "frames": [
+        {
+          "n": 1,
+          "x": 0,
+          "y": 180,
+          "w": 153,
+          "h": 305,
+          "center": 82,
+          "group": 1,
+          "head": {
+            "x": 95.5,
+            "y": 229.7,
+            "method": "helmet-color-component",
+            "pixels": 398,
+            "density": 0.3685
+          }
+        },
+        {
+          "n": 2,
+          "x": 153,
+          "y": 180,
+          "w": 144,
+          "h": 305,
+          "center": 224,
+          "group": 1,
+          "head": {
+            "x": 219.1,
+            "y": 236.1,
+            "method": "helmet-color-component",
+            "pixels": 224,
+            "density": 0.3186
+          }
+        },
+        {
+          "n": 3,
+          "x": 297,
+          "y": 180,
+          "w": 186,
+          "h": 305,
+          "center": 370,
+          "group": 1,
+          "head": {
+            "x": 339.6,
+            "y": 199.5,
+            "method": "helmet-color-component",
+            "pixels": 95,
+            "density": 0.3909
+          }
+        },
+        {
+          "n": 4,
+          "x": 450,
+          "y": 145,
+          "w": 207,
+          "h": 340,
+          "center": 596,
+          "group": 1,
+          "excludeSourceRects": [
+            [
+              590,
+              158,
+              606,
+              178
+            ]
+          ],
+          "head": {
+            "x": 510.9,
+            "y": 169.9,
+            "method": "helmet-color-component",
+            "pixels": 129,
+            "density": 0.4135
+          }
+        },
+        {
+          "n": 5,
+          "x": 657,
+          "y": 180,
+          "w": 147,
+          "h": 305,
+          "center": 718,
+          "group": 1,
+          "head": {
+            "x": 705.7,
+            "y": 222.4,
+            "method": "helmet-color-component",
+            "pixels": 83,
+            "density": 0.494
+          }
+        },
+        {
+          "n": 6,
+          "x": 804,
+          "y": 180,
+          "w": 220,
+          "h": 305,
+          "center": 890,
+          "group": 1,
+          "head": {
+            "x": 899.2,
+            "y": 224.8,
+            "method": "helmet-color-component",
+            "pixels": 93,
+            "density": 0.5813
+          }
+        }
+      ],
+      "frameCount": 6
+    },
+    {
+      "id": "p01-portraits",
+      "label": "Retratos · cuatro expresiones",
+      "originalLabel": "PORTRAITS",
+      "source": "p01",
+      "category": "Retrato",
+      "notes": "Extra de presentación, no es movimiento de combate.",
+      "frames": [
+        {
+          "n": 1,
+          "x": 0,
+          "y": 531,
+          "w": 210,
+          "h": 202,
+          "center": 110,
+          "group": 1,
+          "name": "Neutral"
+        },
+        {
+          "n": 2,
+          "x": 210,
+          "y": 531,
+          "w": 200,
+          "h": 202,
+          "center": 310,
+          "group": 1,
+          "name": "Focus"
+        },
+        {
+          "n": 3,
+          "x": 410,
+          "y": 531,
+          "w": 200,
+          "h": 202,
+          "center": 510,
+          "group": 1,
+          "name": "Smirk"
+        },
+        {
+          "n": 4,
+          "x": 610,
+          "y": 531,
+          "w": 200,
+          "h": 202,
+          "center": 710,
+          "group": 1,
+          "name": "Damage"
+        }
+      ],
+      "frameCount": 4
+    },
+    {
+      "id": "p01-crouch",
+      "label": "Agachada · parte 1/6",
+      "originalLabel": "CROUCH",
+      "source": "p01",
+      "category": "Postura",
+      "notes": "Veinte cuadros rotulados en tres bandas; se concatenan en orden 1–20, sin mezclar filas ajenas.",
+      "frames": [
+        {
+          "n": 1,
+          "x": 0,
+          "y": 833,
+          "w": 153,
+          "h": 205,
+          "center": 100,
+          "group": 1,
+          "head": {
+            "x": 83.0,
+            "y": 850.1,
+            "method": "helmet-color-component",
+            "pixels": 141,
+            "density": 0.3241
+          }
+        },
+        {
+          "n": 2,
+          "x": 153,
+          "y": 833,
+          "w": 112,
+          "h": 205,
+          "center": 206,
+          "group": 1,
+          "head": {
+            "x": 206.0,
+            "y": 876.3,
+            "method": "helmet-color-component",
+            "pixels": 160,
+            "density": 0.381
+          }
+        },
+        {
+          "n": 3,
+          "x": 265,
+          "y": 833,
+          "w": 119,
+          "h": 205,
+          "center": 324,
+          "group": 1,
+          "head": {
+            "x": 316.2,
+            "y": 891.7,
+            "method": "helmet-color-component",
+            "pixels": 84,
+            "density": 0.5185
+          }
+        },
+        {
+          "n": 4,
+          "x": 384,
+          "y": 833,
+          "w": 126,
+          "h": 205,
+          "center": 444,
+          "group": 1,
+          "head": {
+            "x": 479.1,
+            "y": 924.0,
+            "method": "helmet-color-component",
+            "pixels": 302,
+            "density": 0.4103
+          }
+        },
+        {
+          "n": 5,
+          "x": 510,
+          "y": 833,
+          "w": 124,
+          "h": 205,
+          "center": 576,
+          "group": 1,
+          "head": {
+            "x": 600.9,
+            "y": 933.6,
+            "method": "helmet-color-component",
+            "pixels": 173,
+            "density": 0.3862
+          }
+        },
+        {
+          "n": 6,
+          "x": 634,
+          "y": 833,
+          "w": 114,
+          "h": 205,
+          "center": 692,
+          "group": 1,
+          "head": {
+            "x": 725.2,
+            "y": 929.8,
+            "method": "helmet-color-component",
+            "pixels": 302,
+            "density": 0.505
+          }
+        },
+        {
+          "n": 7,
+          "x": 748,
+          "y": 833,
+          "w": 113,
+          "h": 205,
+          "center": 804,
+          "group": 1,
+          "head": {
+            "x": 839.0,
+            "y": 940.1,
+            "method": "helmet-color-component",
+            "pixels": 154,
+            "density": 0.3548
+          }
+        },
+        {
+          "n": 8,
+          "x": 861,
+          "y": 833,
+          "w": 163,
+          "h": 205,
+          "center": 918,
+          "group": 1,
+          "head": {
+            "x": 956.0,
+            "y": 947.8,
+            "method": "helmet-color-component",
+            "pixels": 185,
+            "density": 0.3854
+          }
+        },
+        {
+          "n": 9,
+          "x": 0,
+          "y": 1080,
+          "w": 118,
+          "h": 192,
+          "center": 63,
+          "group": 2,
+          "head": {
+            "x": 107.8,
+            "y": 1151.9,
+            "method": "helmet-color-component",
+            "pixels": 191,
+            "density": 0.3617
+          }
+        },
+        {
+          "n": 10,
+          "x": 118,
+          "y": 1080,
+          "w": 113,
+          "h": 192,
+          "center": 174,
+          "group": 2,
+          "head": {
+            "x": 212.3,
+            "y": 1165.1,
+            "method": "helmet-color-component",
+            "pixels": 164,
+            "density": 0.4069
+          }
+        },
+        {
+          "n": 11,
+          "x": 231,
+          "y": 1080,
+          "w": 115,
+          "h": 192,
+          "center": 288,
+          "group": 2,
+          "head": {
+            "x": 329.1,
+            "y": 1162.5,
+            "method": "helmet-color-component",
+            "pixels": 180,
+            "density": 0.4286
+          }
+        },
+        {
+          "n": 12,
+          "x": 346,
+          "y": 1080,
+          "w": 122,
+          "h": 192,
+          "center": 404,
+          "group": 2,
+          "head": {
+            "x": 452.3,
+            "y": 1154.7,
+            "method": "helmet-color-component",
+            "pixels": 242,
+            "density": 0.55
+          }
+        },
+        {
+          "n": 13,
+          "x": 468,
+          "y": 1080,
+          "w": 124,
+          "h": 192,
+          "center": 531,
+          "group": 2,
+          "head": {
+            "x": 574.3,
+            "y": 1134.5,
+            "method": "helmet-color-component",
+            "pixels": 248,
+            "density": 0.4026
+          }
+        },
+        {
+          "n": 14,
+          "x": 592,
+          "y": 1080,
+          "w": 130,
+          "h": 192,
+          "center": 654,
+          "group": 2,
+          "head": {
+            "x": 694.5,
+            "y": 1133.5,
+            "method": "helmet-color-component",
+            "pixels": 328,
+            "density": 0.4518
+          }
+        },
+        {
+          "n": 15,
+          "x": 722,
+          "y": 1080,
+          "w": 128,
+          "h": 192,
+          "center": 789,
+          "group": 2,
+          "head": {
+            "x": 840.7,
+            "y": 1117.5,
+            "method": "helmet-color-component",
+            "pixels": 170,
+            "density": 0.332
+          }
+        },
+        {
+          "n": 16,
+          "x": 850,
+          "y": 1080,
+          "w": 174,
+          "h": 192,
+          "center": 911,
+          "group": 2,
+          "head": {
+            "x": 853.8,
+            "y": 1114.9,
+            "method": "helmet-color-component",
+            "pixels": 145,
+            "density": 0.5664
+          }
+        },
+        {
+          "n": 17,
+          "x": 0,
+          "y": 1296,
+          "w": 118,
+          "h": 236,
+          "center": 64,
+          "group": 3,
+          "head": {
+            "x": 86.6,
+            "y": 1323.3,
+            "method": "helmet-color-component",
+            "pixels": 268,
+            "density": 0.349
+          }
+        },
+        {
+          "n": 18,
+          "x": 118,
+          "y": 1296,
+          "w": 117,
+          "h": 236,
+          "center": 173,
+          "group": 3,
+          "head": {
+            "x": 202.0,
+            "y": 1323.0,
+            "method": "helmet-color-component",
+            "pixels": 260,
+            "density": 0.3812
+          }
+        },
+        {
+          "n": 19,
+          "x": 235,
+          "y": 1296,
+          "w": 125,
+          "h": 236,
+          "center": 297,
+          "group": 3,
+          "head": {
+            "x": 314.5,
+            "y": 1320.0,
+            "method": "helmet-color-component",
+            "pixels": 84,
+            "density": 0.4308
+          }
+        },
+        {
+          "n": 20,
+          "x": 360,
+          "y": 1296,
+          "w": 180,
+          "h": 236,
+          "center": 424,
+          "group": 3,
+          "head": {
+            "x": 448.9,
+            "y": 1317.1,
+            "method": "helmet-color-component",
+            "pixels": 103,
+            "density": 0.3576
+          }
+        }
+      ],
+      "frameCount": 20
+    },
+    {
+      "id": "p02-run",
+      "label": "Correr · parte 2/6",
+      "originalLabel": "RUN",
+      "source": "p02",
+      "category": "Locomoción",
+      "notes": "",
+      "frames": [
+        {
+          "n": 1,
+          "x": 0,
+          "y": 184,
+          "w": 138,
+          "h": 214,
+          "center": 80,
+          "group": 1,
+          "head": {
+            "x": 91.5,
+            "y": 224.2,
+            "method": "helmet-color-component",
+            "pixels": 170,
+            "density": 0.3333
+          }
+        },
+        {
+          "n": 2,
+          "x": 138,
+          "y": 184,
+          "w": 122,
+          "h": 214,
+          "center": 196,
+          "group": 1,
+          "head": {
+            "x": 220.8,
+            "y": 223.2,
+            "method": "helmet-color-component",
+            "pixels": 300,
+            "density": 0.4261
+          }
+        },
+        {
+          "n": 3,
+          "x": 260,
+          "y": 184,
+          "w": 124,
+          "h": 214,
+          "center": 324,
+          "group": 1,
+          "head": {
+            "x": 350.6,
+            "y": 226.4,
+            "method": "helmet-color-component",
+            "pixels": 292,
+            "density": 0.4485
+          }
+        },
+        {
+          "n": 4,
+          "x": 384,
+          "y": 184,
+          "w": 125,
+          "h": 214,
+          "center": 444,
+          "group": 1,
+          "head": {
+            "x": 471.2,
+            "y": 230.0,
+            "method": "helmet-color-component",
+            "pixels": 186,
+            "density": 0.4276
+          }
+        },
+        {
+          "n": 5,
+          "x": 509,
+          "y": 184,
+          "w": 127,
+          "h": 214,
+          "center": 574,
+          "group": 1,
+          "head": {
+            "x": 599.2,
+            "y": 227.1,
+            "method": "helmet-color-component",
+            "pixels": 312,
+            "density": 0.4575
+          }
+        },
+        {
+          "n": 6,
+          "x": 636,
+          "y": 184,
+          "w": 122,
+          "h": 214,
+          "center": 698,
+          "group": 1,
+          "head": {
+            "x": 714.7,
+            "y": 226.8,
+            "method": "helmet-color-component",
+            "pixels": 312,
+            "density": 0.4457
+          }
+        },
+        {
+          "n": 7,
+          "x": 758,
+          "y": 184,
+          "w": 126,
+          "h": 214,
+          "center": 819,
+          "group": 1,
+          "head": {
+            "x": 835.5,
+            "y": 223.9,
+            "method": "helmet-color-component",
+            "pixels": 298,
+            "density": 0.4049
+          }
+        },
+        {
+          "n": 8,
+          "x": 884,
+          "y": 184,
+          "w": 140,
+          "h": 214,
+          "center": 950,
+          "group": 1,
+          "head": {
+            "x": 961.6,
+            "y": 220.7,
+            "method": "helmet-color-component",
+            "pixels": 301,
+            "density": 0.409
+          }
+        }
+      ],
+      "frameCount": 8
+    },
+    {
+      "id": "p02-jump",
+      "label": "Salto · parte 2/6",
+      "originalLabel": "JUMP",
+      "source": "p02",
+      "category": "Salto",
+      "notes": "Siete cuadros; el cuarto es una pose alta y necesita un recorte vertical más largo.",
+      "frames": [
+        {
+          "n": 1,
+          "x": 0,
+          "y": 446,
+          "w": 147,
+          "h": 220,
+          "center": 80,
+          "group": 1,
+          "head": {
+            "x": 81.7,
+            "y": 544.7,
+            "method": "helmet-color-component",
+            "pixels": 140,
+            "density": 0.3448
+          }
+        },
+        {
+          "n": 2,
+          "x": 147,
+          "y": 446,
+          "w": 131,
+          "h": 220,
+          "center": 214,
+          "group": 1,
+          "head": {
+            "x": 231.1,
+            "y": 499.1,
+            "method": "helmet-color-component",
+            "pixels": 275,
+            "density": 0.4583
+          }
+        },
+        {
+          "n": 3,
+          "x": 278,
+          "y": 446,
+          "w": 143,
+          "h": 220,
+          "center": 342,
+          "group": 1,
+          "head": {
+            "x": 364.7,
+            "y": 480.6,
+            "method": "helmet-color-component",
+            "pixels": 238,
+            "density": 0.425
+          }
+        },
+        {
+          "n": 4,
+          "x": 421,
+          "y": 423,
+          "w": 145,
+          "h": 243,
+          "center": 500,
+          "group": 1,
+          "head": {
+            "x": 497.8,
+            "y": 446.1,
+            "method": "helmet-color-component",
+            "pixels": 182,
+            "density": 0.3792
+          }
+        },
+        {
+          "n": 5,
+          "x": 566,
+          "y": 446,
+          "w": 133,
+          "h": 220,
+          "center": 632,
+          "group": 1,
+          "head": {
+            "x": 655.6,
+            "y": 479.9,
+            "method": "helmet-color-component",
+            "pixels": 243,
+            "density": 0.3809
+          }
+        },
+        {
+          "n": 6,
+          "x": 699,
+          "y": 446,
+          "w": 137,
+          "h": 220,
+          "center": 766,
+          "group": 1,
+          "head": {
+            "x": 782.2,
+            "y": 500.6,
+            "method": "helmet-color-component",
+            "pixels": 285,
+            "density": 0.468
+          }
+        },
+        {
+          "n": 7,
+          "x": 836,
+          "y": 446,
+          "w": 188,
+          "h": 220,
+          "center": 905,
+          "group": 1,
+          "head": {
+            "x": 930.8,
+            "y": 533.4,
+            "method": "helmet-color-component",
+            "pixels": 249,
+            "density": 0.3903
+          }
+        }
+      ],
+      "frameCount": 7
+    },
+    {
+      "id": "p02-attacks",
+      "label": "Ataques · parte 2/6",
+      "originalLabel": "ATTACKS",
+      "source": "p02",
+      "category": "Ataque",
+      "notes": "La lámina distribuye 1–4 arriba y 5–8 debajo; se concatenan en ese orden.",
+      "frames": [
+        {
+          "n": 1,
+          "x": 0,
+          "y": 720,
+          "w": 201,
+          "h": 166,
+          "center": 110,
+          "group": 1,
+          "head": {
+            "x": 125.2,
+            "y": 749.8,
+            "method": "helmet-color-component",
+            "pixels": 248,
+            "density": 0.3887
+          }
+        },
+        {
+          "n": 2,
+          "x": 201,
+          "y": 720,
+          "w": 195,
+          "h": 166,
+          "center": 292,
+          "group": 1,
+          "head": {
+            "x": 325.9,
+            "y": 751.4,
+            "method": "helmet-color-component",
+            "pixels": 169,
+            "density": 0.4024
+          }
+        },
+        {
+          "n": 3,
+          "x": 396,
+          "y": 720,
+          "w": 209,
+          "h": 166,
+          "center": 500,
+          "group": 1,
+          "head": {
+            "x": 522.9,
+            "y": 752.8,
+            "method": "helmet-color-component",
+            "pixels": 143,
+            "density": 0.3793
+          }
+        },
+        {
+          "n": 4,
+          "x": 605,
+          "y": 720,
+          "w": 215,
+          "h": 166,
+          "center": 710,
+          "group": 1,
+          "head": {
+            "x": 743.0,
+            "y": 750.4,
+            "method": "helmet-color-component",
+            "pixels": 252,
+            "density": 0.4138
+          }
+        },
+        {
+          "n": 5,
+          "x": 0,
+          "y": 918,
+          "w": 202,
+          "h": 160,
+          "center": 106,
+          "group": 2,
+          "head": {
+            "x": 110.0,
+            "y": 938.3,
+            "method": "helmet-color-component",
+            "pixels": 246,
+            "density": 0.3727
+          }
+        },
+        {
+          "n": 6,
+          "x": 202,
+          "y": 918,
+          "w": 218,
+          "h": 160,
+          "center": 298,
+          "group": 2,
+          "head": {
+            "x": 289.1,
+            "y": 934.4,
+            "method": "helmet-color-component",
+            "pixels": 175,
+            "density": 0.4861
+          }
+        },
+        {
+          "n": 7,
+          "x": 411,
+          "y": 918,
+          "w": 249,
+          "h": 160,
+          "center": 523,
+          "group": 2,
+          "head": {
+            "x": 523.0,
+            "y": 934.5,
+            "method": "helmet-color-component",
+            "pixels": 188,
+            "density": 0.4747
+          }
+        },
+        {
+          "n": 8,
+          "x": 650,
+          "y": 918,
+          "w": 170,
+          "h": 160,
+          "center": 718,
+          "group": 2,
+          "head": {
+            "x": 728.3,
+            "y": 940.7,
+            "method": "helmet-color-component",
+            "pixels": 232,
+            "density": 0.3946
+          }
+        }
+      ],
+      "frameCount": 8
+    },
+    {
+      "id": "p02-electric-dash",
+      "label": "Dash eléctrico · parte 2/6",
+      "originalLabel": "SPECIAL MOVES · ELECTRIC DASH",
+      "source": "p02",
+      "category": "Especial",
+      "notes": "El primer cuadro está rotulado con el nombre, los siguientes con 2–6.",
+      "frames": [
+        {
+          "n": 1,
+          "x": 0,
+          "y": 1138,
+          "w": 168,
+          "h": 140,
+          "center": 82,
+          "group": 1,
+          "head": {
+            "x": 109.0,
+            "y": 1159.3,
+            "method": "helmet-color-component",
+            "pixels": 241,
+            "density": 0.4463
+          }
+        },
+        {
+          "n": 2,
+          "x": 168,
+          "y": 1138,
+          "w": 169,
+          "h": 140,
+          "center": 254,
+          "group": 1,
+          "head": {
+            "x": 288.5,
+            "y": 1174.6,
+            "method": "helmet-color-component",
+            "pixels": 223,
+            "density": 0.413
+          }
+        },
+        {
+          "n": 3,
+          "x": 337,
+          "y": 1138,
+          "w": 173,
+          "h": 140,
+          "center": 420,
+          "group": 1,
+          "head": {
+            "x": 486.9,
+            "y": 1174.4,
+            "method": "helmet-color-component",
+            "pixels": 211,
+            "density": 0.4567
+          }
+        },
+        {
+          "n": 4,
+          "x": 510,
+          "y": 1138,
+          "w": 170,
+          "h": 140,
+          "center": 600,
+          "group": 1,
+          "head": {
+            "x": 622.1,
+            "y": 1162.1,
+            "method": "helmet-color-component",
+            "pixels": 211,
+            "density": 0.4271
+          }
+        },
+        {
+          "n": 5,
+          "x": 680,
+          "y": 1138,
+          "w": 165,
+          "h": 140,
+          "center": 760,
+          "group": 1,
+          "head": {
+            "x": 820.8,
+            "y": 1171.5,
+            "method": "helmet-color-component",
+            "pixels": 218,
+            "density": 0.4413
+          }
+        },
+        {
+          "n": 6,
+          "x": 845,
+          "y": 1138,
+          "w": 179,
+          "h": 140,
+          "center": 930,
+          "group": 1,
+          "head": {
+            "x": 954.7,
+            "y": 1160.3,
+            "method": "helmet-color-component",
+            "pixels": 204,
+            "density": 0.413
+          }
+        }
+      ],
+      "frameCount": 6
+    },
+    {
+      "id": "p02-thunder-slam",
+      "label": "Golpe trueno · parte 2/6",
+      "originalLabel": "SPECIAL MOVES · THUNDER SLAM",
+      "source": "p02",
+      "category": "Especial",
+      "notes": "Fase larga de siete cuadros; el primer número está sustituido por el rótulo.",
+      "frames": [
+        {
+          "n": 1,
+          "x": 0,
+          "y": 1318,
+          "w": 156,
+          "h": 187,
+          "center": 80,
+          "group": 1,
+          "head": {
+            "x": 101.4,
+            "y": 1326.1,
+            "method": "helmet-color-component",
+            "pixels": 157,
+            "density": 0.5509
+          }
+        },
+        {
+          "n": 2,
+          "x": 156,
+          "y": 1318,
+          "w": 148,
+          "h": 187,
+          "center": 231,
+          "group": 1,
+          "head": {
+            "x": 248.1,
+            "y": 1356.7,
+            "method": "helmet-color-component",
+            "pixels": 189,
+            "density": 0.4276
+          }
+        },
+        {
+          "n": 3,
+          "x": 304,
+          "y": 1318,
+          "w": 140,
+          "h": 187,
+          "center": 376,
+          "group": 1,
+          "head": {
+            "x": 393.5,
+            "y": 1422.1,
+            "method": "helmet-color-component",
+            "pixels": 104,
+            "density": 0.5
+          }
+        },
+        {
+          "n": 4,
+          "x": 444,
+          "y": 1318,
+          "w": 134,
+          "h": 187,
+          "center": 511,
+          "group": 1,
+          "head": {
+            "x": 536.8,
+            "y": 1398.2,
+            "method": "helmet-color-component",
+            "pixels": 215,
+            "density": 0.4352
+          }
+        },
+        {
+          "n": 5,
+          "x": 578,
+          "y": 1318,
+          "w": 135,
+          "h": 187,
+          "center": 644,
+          "group": 1,
+          "head": {
+            "x": 659.0,
+            "y": 1357.1,
+            "method": "helmet-color-component",
+            "pixels": 188,
+            "density": 0.4352
+          }
+        },
+        {
+          "n": 6,
+          "x": 713,
+          "y": 1318,
+          "w": 135,
+          "h": 187,
+          "center": 782,
+          "group": 1,
+          "headStatus": "no-visible-head",
+          "headReviewed": true
+        },
+        {
+          "n": 7,
+          "x": 848,
+          "y": 1318,
+          "w": 176,
+          "h": 187,
+          "center": 914,
+          "group": 1,
+          "head": {
+            "x": 943.9,
+            "y": 1362.9,
+            "method": "helmet-color-component",
+            "pixels": 196,
+            "density": 0.359
+          }
+        }
+      ],
+      "frameCount": 7
+    },
+    {
+      "id": "p03-hit",
+      "label": "Recibir golpe · parte 3/6",
+      "originalLabel": "HIT (TAKE DAMAGE)",
+      "source": "p03",
+      "category": "Impacto",
+      "notes": "Cuatro cuadros; se excluye el retrato lateral de la lámina.",
+      "frames": [
+        {
+          "n": 1,
+          "x": 0,
+          "y": 180,
+          "w": 208,
+          "h": 199,
+          "center": 114,
+          "group": 1,
+          "head": {
+            "x": 124.1,
+            "y": 217.5,
+            "method": "helmet-color-component",
+            "pixels": 325,
+            "density": 0.4062
+          }
+        },
+        {
+          "n": 2,
+          "x": 208,
+          "y": 180,
+          "w": 186,
+          "h": 199,
+          "center": 301,
+          "group": 1,
+          "head": {
+            "x": 328.4,
+            "y": 222.0,
+            "method": "helmet-color-component",
+            "pixels": 289,
+            "density": 0.3613
+          }
+        },
+        {
+          "n": 3,
+          "x": 394,
+          "y": 180,
+          "w": 188,
+          "h": 199,
+          "center": 486,
+          "group": 1,
+          "head": {
+            "x": 487.5,
+            "y": 232.9,
+            "method": "manual-visual",
+            "reviewed": true
+          }
+        },
+        {
+          "n": 4,
+          "x": 582,
+          "y": 180,
+          "w": 228,
+          "h": 199,
+          "center": 677,
+          "group": 1,
+          "head": {
+            "x": 759.6,
+            "y": 266.8,
+            "method": "helmet-color-component",
+            "pixels": 162,
+            "density": 0.5078
+          }
+        }
+      ],
+      "frameCount": 4
+    },
+    {
+      "id": "p03-knockdown",
+      "label": "Caída · parte 3/6",
+      "originalLabel": "KNOCKDOWN (FALL)",
+      "source": "p03",
+      "category": "Caída",
+      "notes": "",
+      "frames": [
+        {
+          "n": 1,
+          "x": 0,
+          "y": 433,
+          "w": 182,
+          "h": 168,
+          "center": 94,
+          "group": 1,
+          "head": {
+            "x": 82.6,
+            "y": 456.4,
+            "method": "helmet-color-component",
+            "pixels": 173,
+            "density": 0.3634
+          }
+        },
+        {
+          "n": 2,
+          "x": 182,
+          "y": 433,
+          "w": 176,
+          "h": 168,
+          "center": 271,
+          "group": 1,
+          "head": {
+            "x": 249.7,
+            "y": 503.8,
+            "method": "helmet-color-component",
+            "pixels": 44,
+            "density": 0.44,
+            "reviewed": true
+          }
+        },
+        {
+          "n": 3,
+          "x": 358,
+          "y": 433,
+          "w": 164,
+          "h": 168,
+          "center": 446,
+          "group": 1,
+          "head": {
+            "x": 427.2,
+            "y": 526.3,
+            "method": "helmet-color-component",
+            "pixels": 102,
+            "density": 0.425
+          }
+        },
+        {
+          "n": 4,
+          "x": 522,
+          "y": 433,
+          "w": 152,
+          "h": 168,
+          "center": 599,
+          "group": 1,
+          "head": {
+            "x": 560.6,
+            "y": 510.6,
+            "method": "helmet-color-component",
+            "pixels": 144,
+            "density": 0.2857
+          }
+        },
+        {
+          "n": 5,
+          "x": 674,
+          "y": 433,
+          "w": 147,
+          "h": 168,
+          "center": 750,
+          "group": 1,
+          "head": {
+            "x": 719.5,
+            "y": 524.9,
+            "method": "helmet-color-component",
+            "pixels": 114,
+            "density": 0.2923
+          }
+        },
+        {
+          "n": 6,
+          "x": 821,
+          "y": 433,
+          "w": 203,
+          "h": 168,
+          "center": 892,
+          "group": 1,
+          "headStatus": "no-visible-head",
+          "headReviewed": true
+        }
+      ],
+      "frameCount": 6
+    },
+    {
+      "id": "p03-getup",
+      "label": "Levantarse · parte 3/6",
+      "originalLabel": "GET UP",
+      "source": "p03",
+      "category": "Recuperación",
+      "notes": "",
+      "frames": [
+        {
+          "n": 1,
+          "x": 0,
+          "y": 651,
+          "w": 161,
+          "h": 153,
+          "center": 94,
+          "group": 1,
+          "head": {
+            "x": 139.0,
+            "y": 748.0,
+            "method": "manual-visual",
+            "reviewed": true
+          }
+        },
+        {
+          "n": 2,
+          "x": 161,
+          "y": 651,
+          "w": 135,
+          "h": 153,
+          "center": 228,
+          "group": 1,
+          "head": {
+            "x": 283.4,
+            "y": 741.7,
+            "method": "helmet-color-component",
+            "pixels": 101,
+            "density": 0.5611
+          }
+        },
+        {
+          "n": 3,
+          "x": 296,
+          "y": 651,
+          "w": 136,
+          "h": 153,
+          "center": 364,
+          "group": 1,
+          "head": {
+            "x": 417.9,
+            "y": 722.2,
+            "method": "helmet-color-component",
+            "pixels": 121,
+            "density": 0.5602
+          }
+        },
+        {
+          "n": 4,
+          "x": 432,
+          "y": 651,
+          "w": 140,
+          "h": 153,
+          "center": 500,
+          "group": 1,
+          "head": {
+            "x": 549.6,
+            "y": 713.0,
+            "method": "helmet-color-component",
+            "pixels": 193,
+            "density": 0.5026
+          }
+        },
+        {
+          "n": 5,
+          "x": 572,
+          "y": 651,
+          "w": 142,
+          "h": 153,
+          "center": 644,
+          "group": 1,
+          "head": {
+            "x": 662.8,
+            "y": 676.5,
+            "method": "helmet-color-component",
+            "pixels": 108,
+            "density": 0.5
+          }
+        },
+        {
+          "n": 6,
+          "x": 714,
+          "y": 651,
+          "w": 142,
+          "h": 153,
+          "center": 785,
+          "group": 1,
+          "head": {
+            "x": 812.1,
+            "y": 682.7,
+            "method": "helmet-color-component",
+            "pixels": 213,
+            "density": 0.4551
+          }
+        },
+        {
+          "n": 7,
+          "x": 856,
+          "y": 651,
+          "w": 168,
+          "h": 153,
+          "center": 926,
+          "group": 1,
+          "head": {
+            "x": 950.8,
+            "y": 670.1,
+            "method": "helmet-color-component",
+            "pixels": 153,
+            "density": 0.5312
+          }
+        }
+      ],
+      "frameCount": 7
+    },
+    {
+      "id": "p03-idle",
+      "label": "Reposo respirando · parte 3/6",
+      "originalLabel": "IDLE (BREATHING)",
+      "source": "p03",
+      "category": "Reposo",
+      "notes": "",
+      "frames": [
+        {
+          "n": 1,
+          "x": 0,
+          "y": 850,
+          "w": 145,
+          "h": 184,
+          "center": 86,
+          "group": 1,
+          "head": {
+            "x": 96.0,
+            "y": 878.2,
+            "method": "helmet-color-component",
+            "pixels": 250,
+            "density": 0.4699
+          }
+        },
+        {
+          "n": 2,
+          "x": 145,
+          "y": 850,
+          "w": 120,
+          "h": 184,
+          "center": 204,
+          "group": 1,
+          "head": {
+            "x": 216.5,
+            "y": 875.2,
+            "method": "helmet-color-component",
+            "pixels": 244,
+            "density": 0.4357
+          }
+        },
+        {
+          "n": 3,
+          "x": 265,
+          "y": 850,
+          "w": 122,
+          "h": 184,
+          "center": 326,
+          "group": 1,
+          "head": {
+            "x": 332.5,
+            "y": 874.1,
+            "method": "helmet-color-component",
+            "pixels": 91,
+            "density": 0.5987
+          }
+        },
+        {
+          "n": 4,
+          "x": 387,
+          "y": 850,
+          "w": 123,
+          "h": 184,
+          "center": 448,
+          "group": 1,
+          "head": {
+            "x": 465.5,
+            "y": 874.8,
+            "method": "helmet-color-component",
+            "pixels": 227,
+            "density": 0.4054
+          }
+        },
+        {
+          "n": 5,
+          "x": 510,
+          "y": 850,
+          "w": 126,
+          "h": 184,
+          "center": 573,
+          "group": 1,
+          "head": {
+            "x": 592.3,
+            "y": 874.8,
+            "method": "helmet-color-component",
+            "pixels": 199,
+            "density": 0.3827
+          }
+        },
+        {
+          "n": 6,
+          "x": 636,
+          "y": 850,
+          "w": 125,
+          "h": 184,
+          "center": 699,
+          "group": 1,
+          "head": {
+            "x": 717.5,
+            "y": 876.6,
+            "method": "helmet-color-component",
+            "pixels": 270,
+            "density": 0.4592
+          }
+        },
+        {
+          "n": 7,
+          "x": 761,
+          "y": 850,
+          "w": 121,
+          "h": 184,
+          "center": 823,
+          "group": 1,
+          "head": {
+            "x": 842.7,
+            "y": 877.9,
+            "method": "helmet-color-component",
+            "pixels": 283,
+            "density": 0.4965
+          }
+        },
+        {
+          "n": 8,
+          "x": 882,
+          "y": 850,
+          "w": 142,
+          "h": 184,
+          "center": 940,
+          "group": 1,
+          "head": {
+            "x": 956.5,
+            "y": 880.8,
+            "method": "helmet-color-component",
+            "pixels": 130,
+            "density": 0.4815
+          }
+        }
+      ],
+      "frameCount": 8
+    },
+    {
+      "id": "p03-taunt",
+      "label": "Burla/victoria · parte 3/6",
+      "originalLabel": "TAUNT / VICTORY",
+      "source": "p03",
+      "category": "Victoria",
+      "notes": "",
+      "frames": [
+        {
+          "n": 1,
+          "x": 0,
+          "y": 1088,
+          "w": 177,
+          "h": 193,
+          "center": 102,
+          "group": 1,
+          "head": {
+            "x": 108.7,
+            "y": 1113.5,
+            "method": "helmet-color-component",
+            "pixels": 240,
+            "density": 0.4969
+          }
+        },
+        {
+          "n": 2,
+          "x": 177,
+          "y": 1088,
+          "w": 152,
+          "h": 193,
+          "center": 252,
+          "group": 1,
+          "head": {
+            "x": 260.8,
+            "y": 1111.0,
+            "method": "helmet-color-component",
+            "pixels": 237,
+            "density": 0.395
+          }
+        },
+        {
+          "n": 3,
+          "x": 329,
+          "y": 1088,
+          "w": 155,
+          "h": 193,
+          "center": 406,
+          "group": 1,
+          "head": {
+            "x": 417.3,
+            "y": 1113.6,
+            "method": "helmet-color-component",
+            "pixels": 87,
+            "density": 0.291
+          }
+        },
+        {
+          "n": 4,
+          "x": 484,
+          "y": 1088,
+          "w": 162,
+          "h": 193,
+          "center": 562,
+          "group": 1,
+          "head": {
+            "x": 570.3,
+            "y": 1119.6,
+            "method": "helmet-color-component",
+            "pixels": 145,
+            "density": 0.4028
+          }
+        },
+        {
+          "n": 5,
+          "x": 646,
+          "y": 1088,
+          "w": 170,
+          "h": 193,
+          "center": 730,
+          "group": 1,
+          "head": {
+            "x": 731.7,
+            "y": 1121.6,
+            "method": "helmet-color-component",
+            "pixels": 147,
+            "density": 0.3769
+          }
+        },
+        {
+          "n": 6,
+          "x": 816,
+          "y": 1088,
+          "w": 208,
+          "h": 193,
+          "center": 902,
+          "group": 1,
+          "head": {
+            "x": 927.3,
+            "y": 1112.3,
+            "method": "helmet-color-component",
+            "pixels": 132,
+            "density": 0.3761
+          }
+        }
+      ],
+      "frameCount": 6
+    },
+    {
+      "id": "p03-defeat",
+      "label": "Derrota · parte 3/6",
+      "originalLabel": "DEFEAT",
+      "source": "p03",
+      "category": "Derrota",
+      "notes": "",
+      "frames": [
+        {
+          "n": 1,
+          "x": 0,
+          "y": 1340,
+          "w": 160,
+          "h": 167,
+          "center": 90,
+          "group": 1,
+          "head": {
+            "x": 112.4,
+            "y": 1379.7,
+            "method": "helmet-color-component",
+            "pixels": 123,
+            "density": 0.4881
+          }
+        },
+        {
+          "n": 2,
+          "x": 160,
+          "y": 1340,
+          "w": 144,
+          "h": 167,
+          "center": 229,
+          "group": 1,
+          "head": {
+            "x": 247.7,
+            "y": 1410.6,
+            "method": "helmet-color-component",
+            "pixels": 242,
+            "density": 0.5042
+          }
+        },
+        {
+          "n": 3,
+          "x": 304,
+          "y": 1340,
+          "w": 156,
+          "h": 167,
+          "center": 380,
+          "group": 1,
+          "head": {
+            "x": 395.9,
+            "y": 1443.2,
+            "method": "helmet-color-component",
+            "pixels": 99,
+            "density": 0.5077
+          }
+        },
+        {
+          "n": 4,
+          "x": 460,
+          "y": 1340,
+          "w": 168,
+          "h": 167,
+          "center": 541,
+          "group": 1,
+          "head": {
+            "x": 573.0,
+            "y": 1442.6,
+            "method": "helmet-color-component",
+            "pixels": 91,
+            "density": 0.2298
+          }
+        },
+        {
+          "n": 5,
+          "x": 628,
+          "y": 1340,
+          "w": 178,
+          "h": 167,
+          "center": 716,
+          "group": 1,
+          "headStatus": "no-visible-head",
+          "headReviewed": true
+        },
+        {
+          "n": 6,
+          "x": 806,
+          "y": 1340,
+          "w": 218,
+          "h": 167,
+          "center": 896,
+          "group": 1,
+          "headStatus": "no-visible-head",
+          "headReviewed": true
+        }
+      ],
+      "frameCount": 6
+    },
+    {
+      "id": "p04-jump-start",
+      "label": "Salto · inicio · parte 4/6",
+      "originalLabel": "JUMP (START)",
+      "source": "p04",
+      "category": "Salto",
+      "notes": "",
+      "frames": [
+        {
+          "n": 1,
+          "x": 0,
+          "y": 180,
+          "w": 189,
+          "h": 214,
+          "center": 104,
+          "group": 1,
+          "head": {
+            "x": 113.8,
+            "y": 271.4,
+            "method": "helmet-color-component",
+            "pixels": 97,
+            "density": 0.4491
+          }
+        },
+        {
+          "n": 2,
+          "x": 189,
+          "y": 180,
+          "w": 168,
+          "h": 214,
+          "center": 274,
+          "group": 1,
+          "head": {
+            "x": 321.6,
+            "y": 263.6,
+            "method": "helmet-color-component",
+            "pixels": 156,
+            "density": 0.5132
+          }
+        },
+        {
+          "n": 3,
+          "x": 357,
+          "y": 180,
+          "w": 163,
+          "h": 214,
+          "center": 440,
+          "group": 1,
+          "head": {
+            "x": 476.7,
+            "y": 238.7,
+            "method": "helmet-color-component",
+            "pixels": 218,
+            "density": 0.367
+          }
+        },
+        {
+          "n": 4,
+          "x": 520,
+          "y": 180,
+          "w": 160,
+          "h": 214,
+          "center": 600,
+          "group": 1,
+          "head": {
+            "x": 592.5,
+            "y": 214.4,
+            "method": "helmet-color-component",
+            "pixels": 99,
+            "density": 0.3626
+          }
+        },
+        {
+          "n": 5,
+          "x": 680,
+          "y": 180,
+          "w": 160,
+          "h": 214,
+          "center": 760,
+          "group": 1,
+          "head": {
+            "x": 778.1,
+            "y": 202.3,
+            "method": "helmet-color-component",
+            "pixels": 113,
+            "density": 0.3165
+          }
+        },
+        {
+          "n": 6,
+          "x": 840,
+          "y": 180,
+          "w": 184,
+          "h": 214,
+          "center": 920,
+          "group": 1,
+          "head": {
+            "x": 938.1,
+            "y": 201.9,
+            "method": "helmet-color-component",
+            "pixels": 134,
+            "density": 0.2774
+          }
+        }
+      ],
+      "frameCount": 6
+    },
+    {
+      "id": "p04-jump-loop",
+      "label": "Salto · bucle aéreo · parte 4/6",
+      "originalLabel": "JUMP (LOOP)",
+      "source": "p04",
+      "category": "Salto",
+      "notes": "",
+      "frames": [
+        {
+          "n": 1,
+          "x": 0,
+          "y": 448,
+          "w": 189,
+          "h": 196,
+          "center": 104,
+          "group": 1,
+          "head": {
+            "x": 133.4,
+            "y": 484.1,
+            "method": "helmet-color-component",
+            "pixels": 243,
+            "density": 0.4339
+          }
+        },
+        {
+          "n": 2,
+          "x": 189,
+          "y": 448,
+          "w": 167,
+          "h": 196,
+          "center": 274,
+          "group": 1,
+          "head": {
+            "x": 274.6,
+            "y": 467.8,
+            "method": "helmet-color-component",
+            "pixels": 119,
+            "density": 0.3814
+          }
+        },
+        {
+          "n": 3,
+          "x": 356,
+          "y": 448,
+          "w": 163,
+          "h": 196,
+          "center": 438,
+          "group": 1,
+          "head": {
+            "x": 456.5,
+            "y": 473.6,
+            "method": "helmet-color-component",
+            "pixels": 168,
+            "density": 0.3636
+          }
+        },
+        {
+          "n": 4,
+          "x": 519,
+          "y": 448,
+          "w": 161,
+          "h": 196,
+          "center": 600,
+          "group": 1,
+          "head": {
+            "x": 621.0,
+            "y": 483.2,
+            "method": "helmet-color-component",
+            "pixels": 270,
+            "density": 0.4762
+          }
+        },
+        {
+          "n": 5,
+          "x": 680,
+          "y": 448,
+          "w": 160,
+          "h": 196,
+          "center": 760,
+          "group": 1,
+          "head": {
+            "x": 784.6,
+            "y": 487.6,
+            "method": "helmet-color-component",
+            "pixels": 242,
+            "density": 0.4481
+          }
+        },
+        {
+          "n": 6,
+          "x": 840,
+          "y": 448,
+          "w": 184,
+          "h": 196,
+          "center": 921,
+          "group": 1,
+          "head": {
+            "x": 933.8,
+            "y": 482.6,
+            "method": "helmet-color-component",
+            "pixels": 84,
+            "density": 0.5455
+          }
+        }
+      ],
+      "frameCount": 6
+    },
+    {
+      "id": "p04-jump-land",
+      "label": "Salto · aterrizaje · parte 4/6",
+      "originalLabel": "JUMP (LAND)",
+      "source": "p04",
+      "category": "Salto",
+      "notes": "",
+      "frames": [
+        {
+          "n": 1,
+          "x": 0,
+          "y": 697,
+          "w": 189,
+          "h": 196,
+          "center": 104,
+          "group": 1,
+          "head": {
+            "x": 92.9,
+            "y": 707.7,
+            "method": "helmet-color-component",
+            "pixels": 109,
+            "density": 0.4844
+          }
+        },
+        {
+          "n": 2,
+          "x": 189,
+          "y": 697,
+          "w": 168,
+          "h": 196,
+          "center": 274,
+          "group": 1,
+          "head": {
+            "x": 271.2,
+            "y": 724.9,
+            "method": "helmet-color-component",
+            "pixels": 108,
+            "density": 0.4444
+          }
+        },
+        {
+          "n": 3,
+          "x": 357,
+          "y": 697,
+          "w": 163,
+          "h": 196,
+          "center": 440,
+          "group": 1,
+          "head": {
+            "x": 464.4,
+            "y": 758.4,
+            "method": "helmet-color-component",
+            "pixels": 230,
+            "density": 0.4107
+          }
+        },
+        {
+          "n": 4,
+          "x": 520,
+          "y": 697,
+          "w": 160,
+          "h": 196,
+          "center": 600,
+          "group": 1,
+          "head": {
+            "x": 618.2,
+            "y": 784.6,
+            "method": "helmet-color-component",
+            "pixels": 199,
+            "density": 0.4364
+          }
+        },
+        {
+          "n": 5,
+          "x": 680,
+          "y": 697,
+          "w": 161,
+          "h": 196,
+          "center": 760,
+          "group": 1,
+          "head": {
+            "x": 788.4,
+            "y": 801.0,
+            "method": "helmet-color-component",
+            "pixels": 188,
+            "density": 0.3481
+          }
+        },
+        {
+          "n": 6,
+          "x": 841,
+          "y": 697,
+          "w": 183,
+          "h": 196,
+          "center": 922,
+          "group": 1,
+          "head": {
+            "x": 955.3,
+            "y": 801.3,
+            "method": "helmet-color-component",
+            "pixels": 150,
+            "density": 0.4545
+          }
+        }
+      ],
+      "frameCount": 6
+    },
+    {
+      "id": "p04-dash-run",
+      "label": "Dash/correr · parte 4/6",
+      "originalLabel": "DASH / RUN",
+      "source": "p04",
+      "category": "Locomoción",
+      "notes": "",
+      "frames": [
+        {
+          "n": 1,
+          "x": 0,
+          "y": 944,
+          "w": 148,
+          "h": 165,
+          "center": 88,
+          "group": 1,
+          "head": {
+            "x": 84.7,
+            "y": 958.2,
+            "method": "helmet-color-component",
+            "pixels": 83,
+            "density": 0.5461
+          }
+        },
+        {
+          "n": 2,
+          "x": 148,
+          "y": 944,
+          "w": 120,
+          "h": 165,
+          "center": 207,
+          "group": 1,
+          "head": {
+            "x": 220.4,
+            "y": 960.4,
+            "method": "helmet-color-component",
+            "pixels": 102,
+            "density": 0.4904
+          }
+        },
+        {
+          "n": 3,
+          "x": 268,
+          "y": 944,
+          "w": 123,
+          "h": 165,
+          "center": 330,
+          "group": 1,
+          "head": {
+            "x": 369.0,
+            "y": 973.8,
+            "method": "helmet-color-component",
+            "pixels": 175,
+            "density": 0.3838,
+            "reviewed": true
+          }
+        },
+        {
+          "n": 4,
+          "x": 391,
+          "y": 944,
+          "w": 121,
+          "h": 165,
+          "center": 452,
+          "group": 1,
+          "head": {
+            "x": 493.1,
+            "y": 977.6,
+            "method": "helmet-color-component",
+            "pixels": 223,
+            "density": 0.4695
+          }
+        },
+        {
+          "n": 5,
+          "x": 512,
+          "y": 944,
+          "w": 122,
+          "h": 165,
+          "center": 572,
+          "group": 1,
+          "head": {
+            "x": 621.2,
+            "y": 973.7,
+            "method": "helmet-color-component",
+            "pixels": 189,
+            "density": 0.5235
+          }
+        },
+        {
+          "n": 6,
+          "x": 634,
+          "y": 944,
+          "w": 121,
+          "h": 165,
+          "center": 696,
+          "group": 1,
+          "head": {
+            "x": 713.5,
+            "y": 960.4,
+            "method": "helmet-color-component",
+            "pixels": 97,
+            "density": 0.4217
+          }
+        },
+        {
+          "n": 7,
+          "x": 755,
+          "y": 944,
+          "w": 118,
+          "h": 165,
+          "center": 814,
+          "group": 1,
+          "head": {
+            "x": 834.0,
+            "y": 960.6,
+            "method": "helmet-color-component",
+            "pixels": 99,
+            "density": 0.538
+          }
+        },
+        {
+          "n": 8,
+          "x": 873,
+          "y": 944,
+          "w": 151,
+          "h": 165,
+          "center": 932,
+          "group": 1,
+          "head": {
+            "x": 984.5,
+            "y": 973.8,
+            "method": "helmet-color-component",
+            "pixels": 189,
+            "density": 0.378,
+            "reviewed": true
+          }
+        }
+      ],
+      "frameCount": 8
+    },
+    {
+      "id": "p04-dash-attack",
+      "label": "Ataque de dash · parte 4/6",
+      "originalLabel": "DASH ATTACK",
+      "source": "p04",
+      "category": "Ataque",
+      "notes": "",
+      "frames": [
+        {
+          "n": 1,
+          "x": 0,
+          "y": 1158,
+          "w": 180,
+          "h": 151,
+          "center": 104,
+          "group": 1,
+          "head": {
+            "x": 105.2,
+            "y": 1174.2,
+            "method": "helmet-color-component",
+            "pixels": 88,
+            "density": 0.55
+          }
+        },
+        {
+          "n": 2,
+          "x": 180,
+          "y": 1158,
+          "w": 154,
+          "h": 151,
+          "center": 257,
+          "group": 1,
+          "head": {
+            "x": 307.4,
+            "y": 1194.4,
+            "method": "helmet-color-component",
+            "pixels": 183,
+            "density": 0.4159
+          }
+        },
+        {
+          "n": 3,
+          "x": 334,
+          "y": 1158,
+          "w": 162,
+          "h": 151,
+          "center": 412,
+          "group": 1,
+          "head": {
+            "x": 449.1,
+            "y": 1192.3,
+            "method": "helmet-color-component",
+            "pixels": 196,
+            "density": 0.4689
+          }
+        },
+        {
+          "n": 4,
+          "x": 496,
+          "y": 1158,
+          "w": 172,
+          "h": 151,
+          "center": 581,
+          "group": 1,
+          "head": {
+            "x": 606.1,
+            "y": 1177.0,
+            "method": "helmet-color-component",
+            "pixels": 115,
+            "density": 0.5134
+          }
+        },
+        {
+          "n": 5,
+          "x": 668,
+          "y": 1158,
+          "w": 169,
+          "h": 151,
+          "center": 756,
+          "group": 1,
+          "head": {
+            "x": 795.9,
+            "y": 1183.7,
+            "method": "helmet-color-component",
+            "pixels": 85,
+            "density": 0.34
+          }
+        },
+        {
+          "n": 6,
+          "x": 837,
+          "y": 1158,
+          "w": 187,
+          "h": 151,
+          "center": 918,
+          "group": 1,
+          "head": {
+            "x": 924.7,
+            "y": 1176.1,
+            "method": "helmet-color-component",
+            "pixels": 94,
+            "density": 0.5595
+          }
+        }
+      ],
+      "frameCount": 6
+    },
+    {
+      "id": "p04-dash-stop",
+      "label": "Frenada de dash · parte 4/6",
+      "originalLabel": "DASH STOP",
+      "source": "p04",
+      "category": "Locomoción",
+      "notes": "",
+      "frames": [
+        {
+          "n": 1,
+          "x": 0,
+          "y": 1360,
+          "w": 180,
+          "h": 145,
+          "center": 104,
+          "group": 1,
+          "head": {
+            "x": 158.6,
+            "y": 1384.5,
+            "method": "helmet-color-component",
+            "pixels": 262,
+            "density": 0.4411
+          }
+        },
+        {
+          "n": 2,
+          "x": 180,
+          "y": 1360,
+          "w": 158,
+          "h": 145,
+          "center": 257,
+          "group": 1,
+          "head": {
+            "x": 331.2,
+            "y": 1391.4,
+            "method": "helmet-color-component",
+            "pixels": 164,
+            "density": 0.4659
+          }
+        },
+        {
+          "n": 3,
+          "x": 338,
+          "y": 1360,
+          "w": 163,
+          "h": 145,
+          "center": 420,
+          "group": 1,
+          "head": {
+            "x": 490.0,
+            "y": 1394.8,
+            "method": "helmet-color-component",
+            "pixels": 125,
+            "density": 0.3157
+          }
+        },
+        {
+          "n": 4,
+          "x": 501,
+          "y": 1360,
+          "w": 169,
+          "h": 145,
+          "center": 582,
+          "group": 1,
+          "head": {
+            "x": 645.2,
+            "y": 1390.1,
+            "method": "helmet-color-component",
+            "pixels": 181,
+            "density": 0.3481,
+            "reviewed": true
+          }
+        },
+        {
+          "n": 5,
+          "x": 670,
+          "y": 1360,
+          "w": 168,
+          "h": 145,
+          "center": 758,
+          "group": 1,
+          "head": {
+            "x": 809.1,
+            "y": 1386.0,
+            "method": "helmet-color-component",
+            "pixels": 239,
+            "density": 0.4596
+          }
+        },
+        {
+          "n": 6,
+          "x": 838,
+          "y": 1360,
+          "w": 186,
+          "h": 145,
+          "center": 918,
+          "group": 1,
+          "head": {
+            "x": 952.0,
+            "y": 1380.2,
+            "method": "helmet-color-component",
+            "pixels": 165,
+            "density": 0.5789
+          }
+        }
+      ],
+      "frameCount": 6
+    },
+    {
+      "id": "p05a-punch",
+      "label": "Puñetazo básico · parte 5/6 · A",
+      "originalLabel": "BASIC ATTACK (PUNCH)",
+      "source": "p05a",
+      "category": "Ataque",
+      "notes": "",
+      "frames": [
+        {
+          "n": 1,
+          "x": 0,
+          "y": 182,
+          "w": 144,
+          "h": 164,
+          "center": 82,
+          "group": 1,
+          "head": {
+            "x": 50.8,
+            "y": 221.0,
+            "method": "helmet-color-component",
+            "pixels": 91,
+            "density": 0.3792
+          }
+        },
+        {
+          "n": 2,
+          "x": 144,
+          "y": 182,
+          "w": 121,
+          "h": 164,
+          "center": 206,
+          "group": 1,
+          "head": {
+            "x": 229.2,
+            "y": 207.5,
+            "method": "helmet-color-component",
+            "pixels": 134,
+            "density": 0.563
+          }
+        },
+        {
+          "n": 3,
+          "x": 265,
+          "y": 182,
+          "w": 121,
+          "h": 164,
+          "center": 324,
+          "group": 1,
+          "head": {
+            "x": 350.6,
+            "y": 213.6,
+            "method": "helmet-color-component",
+            "pixels": 116,
+            "density": 0.4957
+          }
+        },
+        {
+          "n": 4,
+          "x": 386,
+          "y": 182,
+          "w": 124,
+          "h": 164,
+          "center": 448,
+          "group": 1,
+          "head": {
+            "x": 463.0,
+            "y": 209.1,
+            "method": "helmet-color-component",
+            "pixels": 167,
+            "density": 0.497
+          }
+        },
+        {
+          "n": 5,
+          "x": 510,
+          "y": 182,
+          "w": 124,
+          "h": 164,
+          "center": 572,
+          "group": 1,
+          "head": {
+            "x": 584.6,
+            "y": 210.1,
+            "method": "helmet-color-component",
+            "pixels": 158,
+            "density": 0.462
+          }
+        },
+        {
+          "n": 6,
+          "x": 634,
+          "y": 182,
+          "w": 122,
+          "h": 164,
+          "center": 696,
+          "group": 1,
+          "head": {
+            "x": 722.5,
+            "y": 213.4,
+            "method": "helmet-color-component",
+            "pixels": 189,
+            "density": 0.4325,
+            "reviewed": true
+          }
+        },
+        {
+          "n": 7,
+          "x": 756,
+          "y": 182,
+          "w": 122,
+          "h": 164,
+          "center": 816,
+          "group": 1,
+          "head": {
+            "x": 844.8,
+            "y": 216.8,
+            "method": "helmet-color-component",
+            "pixels": 212,
+            "density": 0.4649
+          }
+        },
+        {
+          "n": 8,
+          "x": 878,
+          "y": 182,
+          "w": 146,
+          "h": 164,
+          "center": 940,
+          "group": 1,
+          "head": {
+            "x": 936.3,
+            "y": 203.4,
+            "method": "helmet-color-component",
+            "pixels": 128,
+            "density": 0.4414
+          }
+        }
+      ],
+      "frameCount": 8
+    },
+    {
+      "id": "p05a-kick",
+      "label": "Patada básica · parte 5/6 · A",
+      "originalLabel": "BASIC ATTACK (KICK)",
+      "source": "p05a",
+      "category": "Ataque",
+      "notes": "",
+      "frames": [
+        {
+          "n": 1,
+          "x": 0,
+          "y": 399,
+          "w": 144,
+          "h": 175,
+          "center": 82,
+          "group": 1,
+          "head": {
+            "x": 70.6,
+            "y": 418.7,
+            "method": "helmet-color-component",
+            "pixels": 93,
+            "density": 0.5167
+          }
+        },
+        {
+          "n": 2,
+          "x": 144,
+          "y": 399,
+          "w": 121,
+          "h": 175,
+          "center": 206,
+          "group": 1,
+          "head": {
+            "x": 194.3,
+            "y": 409.9,
+            "method": "helmet-color-component",
+            "pixels": 81,
+            "density": 0.3913
+          }
+        },
+        {
+          "n": 3,
+          "x": 265,
+          "y": 399,
+          "w": 121,
+          "h": 175,
+          "center": 324,
+          "group": 1,
+          "head": {
+            "x": 320.5,
+            "y": 424.6,
+            "method": "helmet-color-component",
+            "pixels": 171,
+            "density": 0.3886
+          }
+        },
+        {
+          "n": 4,
+          "x": 386,
+          "y": 399,
+          "w": 124,
+          "h": 175,
+          "center": 448,
+          "group": 1,
+          "head": {
+            "x": 452.3,
+            "y": 431.2,
+            "method": "helmet-color-component",
+            "pixels": 164,
+            "density": 0.411,
+            "reviewed": true
+          }
+        },
+        {
+          "n": 5,
+          "x": 510,
+          "y": 399,
+          "w": 124,
+          "h": 175,
+          "center": 572,
+          "group": 1,
+          "head": {
+            "x": 583.2,
+            "y": 428.2,
+            "method": "helmet-color-component",
+            "pixels": 144,
+            "density": 0.5414
+          }
+        },
+        {
+          "n": 6,
+          "x": 634,
+          "y": 399,
+          "w": 122,
+          "h": 175,
+          "center": 696,
+          "group": 1,
+          "head": {
+            "x": 678.5,
+            "y": 417.1,
+            "method": "helmet-color-component",
+            "pixels": 95,
+            "density": 0.5278
+          }
+        },
+        {
+          "n": 7,
+          "x": 756,
+          "y": 399,
+          "w": 122,
+          "h": 175,
+          "center": 816,
+          "group": 1,
+          "head": {
+            "x": 828.4,
+            "y": 426.5,
+            "method": "helmet-color-component",
+            "pixels": 204,
+            "density": 0.4474
+          }
+        },
+        {
+          "n": 8,
+          "x": 878,
+          "y": 399,
+          "w": 146,
+          "h": 175,
+          "center": 940,
+          "group": 1,
+          "head": {
+            "x": 964.5,
+            "y": 427.6,
+            "method": "helmet-color-component",
+            "pixels": 200,
+            "density": 0.4386
+          }
+        }
+      ],
+      "frameCount": 8
+    },
+    {
+      "id": "p05a-aerial",
+      "label": "Ataque aéreo · parte 5/6 · A",
+      "originalLabel": "AERIAL ATTACK",
+      "source": "p05a",
+      "category": "Ataque",
+      "notes": "",
+      "frames": [
+        {
+          "n": 1,
+          "x": 0,
+          "y": 625,
+          "w": 168,
+          "h": 209,
+          "center": 88,
+          "group": 1,
+          "head": {
+            "x": 121.3,
+            "y": 658.7,
+            "method": "helmet-color-component",
+            "pixels": 186,
+            "density": 0.3843
+          }
+        },
+        {
+          "n": 2,
+          "x": 168,
+          "y": 625,
+          "w": 166,
+          "h": 209,
+          "center": 248,
+          "group": 1,
+          "head": {
+            "x": 293.4,
+            "y": 649.1,
+            "method": "helmet-color-component",
+            "pixels": 139,
+            "density": 0.4633
+          }
+        },
+        {
+          "n": 3,
+          "x": 334,
+          "y": 625,
+          "w": 173,
+          "h": 209,
+          "center": 420,
+          "group": 1,
+          "head": {
+            "x": 437.1,
+            "y": 658.5,
+            "method": "helmet-color-component",
+            "pixels": 240,
+            "density": 0.4174
+          }
+        },
+        {
+          "n": 4,
+          "x": 507,
+          "y": 625,
+          "w": 174,
+          "h": 209,
+          "center": 594,
+          "group": 1,
+          "head": {
+            "x": 630.4,
+            "y": 654.3,
+            "method": "helmet-color-component",
+            "pixels": 250,
+            "density": 0.4181
+          }
+        },
+        {
+          "n": 5,
+          "x": 681,
+          "y": 625,
+          "w": 169,
+          "h": 209,
+          "center": 768,
+          "group": 1,
+          "head": {
+            "x": 818.0,
+            "y": 657.6,
+            "method": "helmet-color-component",
+            "pixels": 214,
+            "density": 0.3891,
+            "reviewed": true
+          }
+        },
+        {
+          "n": 6,
+          "x": 850,
+          "y": 625,
+          "w": 174,
+          "h": 209,
+          "center": 932,
+          "group": 1,
+          "head": {
+            "x": 966.1,
+            "y": 685.7,
+            "method": "helmet-color-component",
+            "pixels": 183,
+            "density": 0.4236
+          }
+        }
+      ],
+      "frameCount": 6
+    },
+    {
+      "id": "p05a-hurt",
+      "label": "Daño · parte 5/6 · A",
+      "originalLabel": "HURT (DAMAGE)",
+      "source": "p05a",
+      "category": "Impacto",
+      "notes": "",
+      "frames": [
+        {
+          "n": 1,
+          "x": 0,
+          "y": 885,
+          "w": 175,
+          "h": 172,
+          "center": 90,
+          "group": 1,
+          "head": {
+            "x": 75.4,
+            "y": 903.5,
+            "method": "helmet-color-component",
+            "pixels": 89,
+            "density": 0.5298
+          }
+        },
+        {
+          "n": 2,
+          "x": 175,
+          "y": 885,
+          "w": 167,
+          "h": 172,
+          "center": 260,
+          "group": 1,
+          "head": {
+            "x": 259.9,
+            "y": 916.8,
+            "method": "helmet-color-component",
+            "pixels": 158,
+            "density": 0.458
+          }
+        },
+        {
+          "n": 3,
+          "x": 342,
+          "y": 885,
+          "w": 168,
+          "h": 172,
+          "center": 424,
+          "group": 1,
+          "head": {
+            "x": 428.8,
+            "y": 929.0,
+            "method": "helmet-color-component",
+            "pixels": 202,
+            "density": 0.4372
+          }
+        },
+        {
+          "n": 4,
+          "x": 510,
+          "y": 885,
+          "w": 168,
+          "h": 172,
+          "center": 595,
+          "group": 1,
+          "head": {
+            "x": 615.1,
+            "y": 928.2,
+            "method": "helmet-color-component",
+            "pixels": 253,
+            "density": 0.4865
+          }
+        },
+        {
+          "n": 5,
+          "x": 678,
+          "y": 885,
+          "w": 165,
+          "h": 172,
+          "center": 762,
+          "group": 1,
+          "head": {
+            "x": 759.3,
+            "y": 931.5,
+            "method": "helmet-color-component",
+            "pixels": 180,
+            "density": 0.4306
+          }
+        },
+        {
+          "n": 6,
+          "x": 843,
+          "y": 885,
+          "w": 181,
+          "h": 172,
+          "center": 924,
+          "group": 1,
+          "head": {
+            "x": 928.0,
+            "y": 945.6,
+            "method": "helmet-color-component",
+            "pixels": 205,
+            "density": 0.4881
+          }
+        }
+      ],
+      "frameCount": 6
+    },
+    {
+      "id": "p05a-knockdown",
+      "label": "Caída · parte 5/6 · A",
+      "originalLabel": "KNOCKDOWN (FALL)",
+      "source": "p05a",
+      "category": "Caída",
+      "notes": "",
+      "frames": [
+        {
+          "n": 1,
+          "x": 0,
+          "y": 1104,
+          "w": 194,
+          "h": 183,
+          "center": 108,
+          "group": 1,
+          "head": {
+            "x": 84.8,
+            "y": 1125.0,
+            "method": "helmet-color-component",
+            "pixels": 174,
+            "density": 0.4028
+          }
+        },
+        {
+          "n": 2,
+          "x": 194,
+          "y": 1104,
+          "w": 164,
+          "h": 183,
+          "center": 280,
+          "group": 1,
+          "head": {
+            "x": 248.0,
+            "y": 1208.0,
+            "method": "manual-visual",
+            "reviewed": true
+          }
+        },
+        {
+          "n": 3,
+          "x": 358,
+          "y": 1104,
+          "w": 160,
+          "h": 183,
+          "center": 436,
+          "group": 1,
+          "head": {
+            "x": 413.6,
+            "y": 1199.1,
+            "method": "helmet-color-component",
+            "pixels": 204,
+            "density": 0.4857
+          }
+        },
+        {
+          "n": 4,
+          "x": 518,
+          "y": 1104,
+          "w": 163,
+          "h": 183,
+          "center": 600,
+          "group": 1,
+          "head": {
+            "x": 564.1,
+            "y": 1196.3,
+            "method": "helmet-color-component",
+            "pixels": 122,
+            "density": 0.5083
+          }
+        },
+        {
+          "n": 5,
+          "x": 681,
+          "y": 1104,
+          "w": 161,
+          "h": 183,
+          "center": 762,
+          "group": 1,
+          "head": {
+            "x": 736.0,
+            "y": 1212.0,
+            "method": "manual-visual",
+            "reviewed": true
+          }
+        },
+        {
+          "n": 6,
+          "x": 842,
+          "y": 1104,
+          "w": 182,
+          "h": 183,
+          "center": 922,
+          "group": 1,
+          "head": {
+            "x": 892.0,
+            "y": 1241.0,
+            "method": "manual-visual",
+            "reviewed": true
+          }
+        }
+      ],
+      "frameCount": 6
+    },
+    {
+      "id": "p05a-getup",
+      "label": "Levantarse · parte 5/6 · A",
+      "originalLabel": "GET UP",
+      "source": "p05a",
+      "category": "Recuperación",
+      "notes": "",
+      "frames": [
+        {
+          "n": 1,
+          "x": 0,
+          "y": 1330,
+          "w": 133,
+          "h": 172,
+          "center": 76,
+          "group": 1,
+          "head": {
+            "x": 58.0,
+            "y": 1469.0,
+            "method": "manual-visual",
+            "reviewed": true
+          }
+        },
+        {
+          "n": 2,
+          "x": 133,
+          "y": 1330,
+          "w": 118,
+          "h": 172,
+          "center": 190,
+          "group": 1,
+          "head": {
+            "x": 236.6,
+            "y": 1426.2,
+            "method": "helmet-color-component",
+            "pixels": 96,
+            "density": 0.6
+          }
+        },
+        {
+          "n": 3,
+          "x": 251,
+          "y": 1330,
+          "w": 127,
+          "h": 172,
+          "center": 312,
+          "group": 1,
+          "head": {
+            "x": 259.4,
+            "y": 1438.3,
+            "method": "helmet-color-component",
+            "pixels": 170,
+            "density": 0.4427
+          }
+        },
+        {
+          "n": 4,
+          "x": 378,
+          "y": 1330,
+          "w": 126,
+          "h": 172,
+          "center": 445,
+          "group": 1,
+          "head": {
+            "x": 486.7,
+            "y": 1388.7,
+            "method": "helmet-color-component",
+            "pixels": 146,
+            "density": 0.4424
+          }
+        },
+        {
+          "n": 5,
+          "x": 504,
+          "y": 1330,
+          "w": 118,
+          "h": 172,
+          "center": 562,
+          "group": 1,
+          "head": {
+            "x": 600.1,
+            "y": 1380.6,
+            "method": "helmet-color-component",
+            "pixels": 129,
+            "density": 0.5309
+          }
+        },
+        {
+          "n": 6,
+          "x": 622,
+          "y": 1330,
+          "w": 121,
+          "h": 172,
+          "center": 682,
+          "group": 1,
+          "head": {
+            "x": 703.1,
+            "y": 1361.4,
+            "method": "helmet-color-component",
+            "pixels": 114,
+            "density": 0.5481
+          }
+        },
+        {
+          "n": 7,
+          "x": 743,
+          "y": 1330,
+          "w": 125,
+          "h": 172,
+          "center": 804,
+          "group": 1,
+          "head": {
+            "x": 849.3,
+            "y": 1368.8,
+            "method": "helmet-color-component",
+            "pixels": 251,
+            "density": 0.4183
+          }
+        },
+        {
+          "n": 8,
+          "x": 868,
+          "y": 1330,
+          "w": 156,
+          "h": 172,
+          "center": 932,
+          "group": 1,
+          "head": {
+            "x": 971.2,
+            "y": 1360.3,
+            "method": "helmet-color-component",
+            "pixels": 176,
+            "density": 0.3667,
+            "reviewed": true
+          }
+        }
+      ],
+      "frameCount": 8
+    },
+    {
+      "id": "p05b-jump-attack",
+      "label": "Ataque en salto · parte 5/6 · B",
+      "originalLabel": "JUMP ATTACK",
+      "source": "p05b",
+      "category": "Ataque",
+      "notes": "",
+      "frames": [
+        {
+          "n": 1,
+          "x": 0,
+          "y": 178,
+          "w": 189,
+          "h": 193,
+          "center": 104,
+          "group": 1,
+          "head": {
+            "x": 123.0,
+            "y": 198.8,
+            "method": "helmet-color-component",
+            "pixels": 116,
+            "density": 0.4028
+          }
+        },
+        {
+          "n": 2,
+          "x": 189,
+          "y": 178,
+          "w": 168,
+          "h": 193,
+          "center": 274,
+          "group": 1,
+          "head": {
+            "x": 287.6,
+            "y": 206.8,
+            "method": "helmet-color-component",
+            "pixels": 160,
+            "density": 0.2667
+          }
+        },
+        {
+          "n": 3,
+          "x": 357,
+          "y": 178,
+          "w": 163,
+          "h": 193,
+          "center": 440,
+          "group": 1,
+          "head": {
+            "x": 454.1,
+            "y": 217.1,
+            "method": "helmet-color-component",
+            "pixels": 267,
+            "density": 0.3973,
+            "reviewed": true
+          }
+        },
+        {
+          "n": 4,
+          "x": 520,
+          "y": 178,
+          "w": 160,
+          "h": 193,
+          "center": 599,
+          "group": 1,
+          "head": {
+            "x": 621.3,
+            "y": 219.5,
+            "method": "helmet-color-component",
+            "pixels": 298,
+            "density": 0.4093
+          }
+        },
+        {
+          "n": 5,
+          "x": 680,
+          "y": 178,
+          "w": 160,
+          "h": 193,
+          "center": 760,
+          "group": 1,
+          "head": {
+            "x": 786.9,
+            "y": 228.8,
+            "method": "helmet-color-component",
+            "pixels": 150,
+            "density": 0.3036,
+            "reviewed": true
+          }
+        },
+        {
+          "n": 6,
+          "x": 840,
+          "y": 178,
+          "w": 184,
+          "h": 193,
+          "center": 920,
+          "group": 1,
+          "head": {
+            "x": 949.9,
+            "y": 245.8,
+            "method": "helmet-color-component",
+            "pixels": 214,
+            "density": 0.4115
+          }
+        }
+      ],
+      "frameCount": 6
+    },
+    {
+      "id": "p05b-air-dash",
+      "label": "Dash aéreo · parte 5/6 · B",
+      "originalLabel": "AIR DASH",
+      "source": "p05b",
+      "category": "Locomoción",
+      "notes": "",
+      "frames": [
+        {
+          "n": 1,
+          "x": 0,
+          "y": 416,
+          "w": 189,
+          "h": 177,
+          "center": 104,
+          "group": 1,
+          "head": {
+            "x": 111.9,
+            "y": 437.0,
+            "method": "helmet-color-component",
+            "pixels": 121,
+            "density": 0.5817
+          }
+        },
+        {
+          "n": 2,
+          "x": 189,
+          "y": 416,
+          "w": 168,
+          "h": 177,
+          "center": 274,
+          "group": 1,
+          "head": {
+            "x": 310.7,
+            "y": 451.9,
+            "method": "helmet-color-component",
+            "pixels": 264,
+            "density": 0.4286
+          }
+        },
+        {
+          "n": 3,
+          "x": 357,
+          "y": 416,
+          "w": 163,
+          "h": 177,
+          "center": 440,
+          "group": 1,
+          "head": {
+            "x": 483.0,
+            "y": 451.8,
+            "method": "helmet-color-component",
+            "pixels": 153,
+            "density": 0.2914,
+            "reviewed": true
+          }
+        },
+        {
+          "n": 4,
+          "x": 520,
+          "y": 416,
+          "w": 160,
+          "h": 177,
+          "center": 600,
+          "group": 1,
+          "head": {
+            "x": 659.2,
+            "y": 448.6,
+            "method": "helmet-color-component",
+            "pixels": 167,
+            "density": 0.3313
+          }
+        },
+        {
+          "n": 5,
+          "x": 680,
+          "y": 416,
+          "w": 160,
+          "h": 177,
+          "center": 760,
+          "group": 1,
+          "head": {
+            "x": 829.3,
+            "y": 457.2,
+            "method": "helmet-color-component",
+            "pixels": 164,
+            "density": 0.3254,
+            "reviewed": true
+          }
+        },
+        {
+          "n": 6,
+          "x": 840,
+          "y": 416,
+          "w": 184,
+          "h": 177,
+          "center": 920,
+          "group": 1,
+          "head": {
+            "x": 987.1,
+            "y": 464.1,
+            "method": "helmet-color-component",
+            "pixels": 143,
+            "density": 0.2619,
+            "reviewed": true
+          }
+        }
+      ],
+      "frameCount": 6
+    },
+    {
+      "id": "p05b-hurt",
+      "label": "Daño · parte 5/6 · B",
+      "originalLabel": "HURT",
+      "source": "p05b",
+      "category": "Impacto",
+      "notes": "",
+      "frames": [
+        {
+          "n": 1,
+          "x": 0,
+          "y": 639,
+          "w": 189,
+          "h": 185,
+          "center": 104,
+          "group": 1,
+          "head": {
+            "x": 121.9,
+            "y": 673.3,
+            "method": "helmet-color-component",
+            "pixels": 183,
+            "density": 0.5126
+          }
+        },
+        {
+          "n": 2,
+          "x": 189,
+          "y": 639,
+          "w": 168,
+          "h": 185,
+          "center": 274,
+          "group": 1,
+          "head": {
+            "x": 295.7,
+            "y": 680.3,
+            "method": "helmet-color-component",
+            "pixels": 204,
+            "density": 0.3778
+          }
+        },
+        {
+          "n": 3,
+          "x": 357,
+          "y": 639,
+          "w": 163,
+          "h": 185,
+          "center": 440,
+          "group": 1,
+          "head": {
+            "x": 457.5,
+            "y": 678.0,
+            "method": "helmet-color-component",
+            "pixels": 207,
+            "density": 0.3764
+          }
+        },
+        {
+          "n": 4,
+          "x": 520,
+          "y": 639,
+          "w": 160,
+          "h": 185,
+          "center": 600,
+          "group": 1,
+          "head": {
+            "x": 660.8,
+            "y": 719.7,
+            "method": "helmet-color-component",
+            "pixels": 211,
+            "density": 0.4121
+          }
+        },
+        {
+          "n": 5,
+          "x": 680,
+          "y": 639,
+          "w": 160,
+          "h": 185,
+          "center": 760,
+          "group": 1,
+          "head": {
+            "x": 822.8,
+            "y": 740.2,
+            "method": "helmet-color-component",
+            "pixels": 176,
+            "density": 0.2988
+          }
+        },
+        {
+          "n": 6,
+          "x": 840,
+          "y": 639,
+          "w": 184,
+          "h": 185,
+          "center": 920,
+          "group": 1,
+          "head": {
+            "x": 926.5,
+            "y": 705.7,
+            "method": "helmet-color-component",
+            "pixels": 83,
+            "density": 0.4882
+          }
+        }
+      ],
+      "frameCount": 6
+    },
+    {
+      "id": "p05b-knockdown",
+      "label": "Caída · parte 5/6 · B",
+      "originalLabel": "KNOCKDOWN",
+      "source": "p05b",
+      "category": "Caída",
+      "notes": "",
+      "frames": [
+        {
+          "n": 1,
+          "x": 0,
+          "y": 872,
+          "w": 189,
+          "h": 171,
+          "center": 104,
+          "group": 1,
+          "head": {
+            "x": 92.9,
+            "y": 917.0,
+            "method": "helmet-color-component",
+            "pixels": 185,
+            "density": 0.3364,
+            "reviewed": true
+          }
+        },
+        {
+          "n": 2,
+          "x": 189,
+          "y": 872,
+          "w": 168,
+          "h": 171,
+          "center": 274,
+          "group": 1,
+          "head": {
+            "x": 230.3,
+            "y": 1003.9,
+            "method": "helmet-color-component",
+            "pixels": 166,
+            "density": 0.3843
+          }
+        },
+        {
+          "n": 3,
+          "x": 357,
+          "y": 872,
+          "w": 163,
+          "h": 171,
+          "center": 440,
+          "group": 1,
+          "head": {
+            "x": 396.9,
+            "y": 994.1,
+            "method": "helmet-color-component",
+            "pixels": 259,
+            "density": 0.3679
+          }
+        },
+        {
+          "n": 4,
+          "x": 520,
+          "y": 872,
+          "w": 160,
+          "h": 171,
+          "center": 600,
+          "group": 1,
+          "head": {
+            "x": 567.8,
+            "y": 1004.2,
+            "method": "helmet-color-component",
+            "pixels": 146,
+            "density": 0.5794
+          }
+        },
+        {
+          "n": 5,
+          "x": 680,
+          "y": 872,
+          "w": 160,
+          "h": 171,
+          "center": 759,
+          "group": 1,
+          "head": {
+            "x": 808.3,
+            "y": 941.2,
+            "method": "helmet-color-component",
+            "pixels": 266,
+            "density": 0.4092
+          }
+        },
+        {
+          "n": 6,
+          "x": 840,
+          "y": 872,
+          "w": 184,
+          "h": 171,
+          "center": 920,
+          "group": 1,
+          "head": {
+            "x": 954.4,
+            "y": 905.2,
+            "method": "helmet-color-component",
+            "pixels": 233,
+            "density": 0.3896
+          }
+        }
+      ],
+      "frameCount": 6
+    },
+    {
+      "id": "p05b-getup",
+      "label": "Levantarse · parte 5/6 · B",
+      "originalLabel": "GET UP",
+      "source": "p05b",
+      "category": "Recuperación",
+      "notes": "",
+      "frames": [
+        {
+          "n": 1,
+          "x": 0,
+          "y": 1091,
+          "w": 189,
+          "h": 178,
+          "center": 104,
+          "group": 1,
+          "head": {
+            "x": 152.9,
+            "y": 1219.8,
+            "method": "helmet-color-component",
+            "pixels": 278,
+            "density": 0.3687
+          }
+        },
+        {
+          "n": 2,
+          "x": 189,
+          "y": 1091,
+          "w": 168,
+          "h": 178,
+          "center": 274,
+          "group": 1,
+          "head": {
+            "x": 334.3,
+            "y": 1200.2,
+            "method": "helmet-color-component",
+            "pixels": 259,
+            "density": 0.3837
+          }
+        },
+        {
+          "n": 3,
+          "x": 357,
+          "y": 1091,
+          "w": 163,
+          "h": 178,
+          "center": 440,
+          "group": 1,
+          "head": {
+            "x": 503.7,
+            "y": 1169.3,
+            "method": "helmet-color-component",
+            "pixels": 253,
+            "density": 0.3929
+          }
+        },
+        {
+          "n": 4,
+          "x": 520,
+          "y": 1091,
+          "w": 159,
+          "h": 178,
+          "center": 599,
+          "group": 1,
+          "head": {
+            "x": 658.7,
+            "y": 1173.6,
+            "method": "helmet-color-component",
+            "pixels": 234,
+            "density": 0.4127
+          }
+        },
+        {
+          "n": 5,
+          "x": 679,
+          "y": 1091,
+          "w": 161,
+          "h": 178,
+          "center": 759,
+          "group": 1,
+          "head": {
+            "x": 813.5,
+            "y": 1138.8,
+            "method": "helmet-color-component",
+            "pixels": 269,
+            "density": 0.4529
+          }
+        },
+        {
+          "n": 6,
+          "x": 840,
+          "y": 1091,
+          "w": 184,
+          "h": 178,
+          "center": 920,
+          "group": 1,
+          "head": {
+            "x": 927.0,
+            "y": 1108.6,
+            "method": "helmet-color-component",
+            "pixels": 85,
+            "density": 0.625
+          }
+        }
+      ],
+      "frameCount": 6
+    },
+    {
+      "id": "p05b-idle-alt",
+      "label": "Reposo alternativo · parte 5/6 · B",
+      "originalLabel": "IDLE (ALT)",
+      "source": "p05b",
+      "category": "Reposo",
+      "notes": "",
+      "frames": [
+        {
+          "n": 1,
+          "x": 0,
+          "y": 1320,
+          "w": 182,
+          "h": 184,
+          "center": 104,
+          "group": 1,
+          "head": {
+            "x": 123.6,
+            "y": 1344.4,
+            "method": "helmet-color-component",
+            "pixels": 195,
+            "density": 0.3533
+          }
+        },
+        {
+          "n": 2,
+          "x": 182,
+          "y": 1320,
+          "w": 168,
+          "h": 184,
+          "center": 260,
+          "group": 1,
+          "head": {
+            "x": 292.6,
+            "y": 1349.6,
+            "method": "helmet-color-component",
+            "pixels": 254,
+            "density": 0.4704
+          }
+        },
+        {
+          "n": 3,
+          "x": 350,
+          "y": 1320,
+          "w": 170,
+          "h": 184,
+          "center": 440,
+          "group": 1,
+          "head": {
+            "x": 457.4,
+            "y": 1354.4,
+            "method": "helmet-color-component",
+            "pixels": 272,
+            "density": 0.4857
+          }
+        },
+        {
+          "n": 4,
+          "x": 520,
+          "y": 1320,
+          "w": 160,
+          "h": 184,
+          "center": 600,
+          "group": 1,
+          "head": {
+            "x": 625.7,
+            "y": 1344.2,
+            "method": "helmet-color-component",
+            "pixels": 259,
+            "density": 0.3985
+          }
+        },
+        {
+          "n": 5,
+          "x": 680,
+          "y": 1320,
+          "w": 160,
+          "h": 184,
+          "center": 760,
+          "group": 1,
+          "head": {
+            "x": 782.3,
+            "y": 1348.5,
+            "method": "helmet-color-component",
+            "pixels": 196,
+            "density": 0.3733
+          }
+        },
+        {
+          "n": 6,
+          "x": 840,
+          "y": 1320,
+          "w": 184,
+          "h": 184,
+          "center": 920,
+          "group": 1,
+          "head": {
+            "x": 914.4,
+            "y": 1341.3,
+            "method": "helmet-color-component",
+            "pixels": 109,
+            "density": 0.4955
+          }
+        }
+      ],
+      "frameCount": 6
+    },
+    {
+      "id": "p06a-dash-run",
+      "label": "Dash/correr · parte 6/6 · A",
+      "originalLabel": "DASH / RUN",
+      "source": "p06a",
+      "category": "Locomoción",
+      "notes": "",
+      "frames": [
+        {
+          "n": 1,
+          "x": 0,
+          "y": 181,
+          "w": 140,
+          "h": 136,
+          "center": 80,
+          "group": 1,
+          "head": {
+            "x": 128.5,
+            "y": 218.2,
+            "method": "helmet-color-component",
+            "pixels": 152,
+            "density": 0.3671
+          }
+        },
+        {
+          "n": 2,
+          "x": 140,
+          "y": 181,
+          "w": 118,
+          "h": 136,
+          "center": 200,
+          "group": 1,
+          "head": {
+            "x": 247.9,
+            "y": 213.7,
+            "method": "helmet-color-component",
+            "pixels": 158,
+            "density": 0.378
+          }
+        },
+        {
+          "n": 3,
+          "x": 258,
+          "y": 181,
+          "w": 120,
+          "h": 136,
+          "center": 316,
+          "group": 1,
+          "head": {
+            "x": 368.7,
+            "y": 211.0,
+            "method": "helmet-color-component",
+            "pixels": 150,
+            "density": 0.3759
+          }
+        },
+        {
+          "n": 4,
+          "x": 378,
+          "y": 181,
+          "w": 130,
+          "h": 136,
+          "center": 441,
+          "group": 1,
+          "head": {
+            "x": 468.3,
+            "y": 199.7,
+            "method": "helmet-color-component",
+            "pixels": 94,
+            "density": 0.47
+          }
+        },
+        {
+          "n": 5,
+          "x": 508,
+          "y": 181,
+          "w": 125,
+          "h": 136,
+          "center": 574,
+          "group": 1,
+          "head": {
+            "x": 611.9,
+            "y": 211.8,
+            "method": "helmet-color-component",
+            "pixels": 173,
+            "density": 0.3745
+          }
+        },
+        {
+          "n": 6,
+          "x": 633,
+          "y": 181,
+          "w": 117,
+          "h": 136,
+          "center": 692,
+          "group": 1,
+          "head": {
+            "x": 729.3,
+            "y": 213.7,
+            "method": "helmet-color-component",
+            "pixels": 202,
+            "density": 0.4208
+          }
+        },
+        {
+          "n": 7,
+          "x": 750,
+          "y": 181,
+          "w": 116,
+          "h": 136,
+          "center": 808,
+          "group": 1,
+          "head": {
+            "x": 854.1,
+            "y": 212.3,
+            "method": "helmet-color-component",
+            "pixels": 169,
+            "density": 0.4024
+          }
+        },
+        {
+          "n": 8,
+          "x": 866,
+          "y": 181,
+          "w": 158,
+          "h": 136,
+          "center": 924,
+          "group": 1,
+          "head": {
+            "x": 993.8,
+            "y": 214.7,
+            "method": "helmet-color-component",
+            "pixels": 166,
+            "density": 0.3609
+          }
+        }
+      ],
+      "frameCount": 8
+    },
+    {
+      "id": "p06a-dash-attack",
+      "label": "Ataque de dash · parte 6/6 · A",
+      "originalLabel": "DASH ATTACK",
+      "source": "p06a",
+      "category": "Ataque",
+      "notes": "",
+      "frames": [
+        {
+          "n": 1,
+          "x": 0,
+          "y": 368,
+          "w": 181,
+          "h": 131,
+          "center": 100,
+          "group": 1,
+          "head": {
+            "x": 169.7,
+            "y": 399.3,
+            "method": "helmet-color-component",
+            "pixels": 161,
+            "density": 0.3684
+          }
+        },
+        {
+          "n": 2,
+          "x": 181,
+          "y": 368,
+          "w": 161,
+          "h": 131,
+          "center": 262,
+          "group": 1,
+          "head": {
+            "x": 331.2,
+            "y": 395.8,
+            "method": "helmet-color-component",
+            "pixels": 162,
+            "density": 0.3876
+          }
+        },
+        {
+          "n": 3,
+          "x": 342,
+          "y": 368,
+          "w": 154,
+          "h": 131,
+          "center": 423,
+          "group": 1,
+          "head": {
+            "x": 483.0,
+            "y": 402.0,
+            "method": "manual-visual",
+            "reviewed": true
+          }
+        },
+        {
+          "n": 4,
+          "x": 496,
+          "y": 368,
+          "w": 168,
+          "h": 131,
+          "center": 570,
+          "group": 1,
+          "head": {
+            "x": 498.6,
+            "y": 396.8,
+            "method": "helmet-color-component",
+            "pixels": 90,
+            "density": 0.5114
+          }
+        },
+        {
+          "n": 5,
+          "x": 664,
+          "y": 368,
+          "w": 178,
+          "h": 131,
+          "center": 758,
+          "group": 1,
+          "head": {
+            "x": 818.8,
+            "y": 405.1,
+            "method": "helmet-color-component",
+            "pixels": 120,
+            "density": 0.4412
+          }
+        },
+        {
+          "n": 6,
+          "x": 842,
+          "y": 368,
+          "w": 182,
+          "h": 131,
+          "center": 926,
+          "group": 1,
+          "head": {
+            "x": 970.4,
+            "y": 396.1,
+            "method": "helmet-color-component",
+            "pixels": 166,
+            "density": 0.3773
+          }
+        }
+      ],
+      "frameCount": 6
+    },
+    {
+      "id": "p06a-energy-blast",
+      "label": "Ataque especial · carga y rayo · parte 6/6 · A",
+      "originalLabel": "SPECIAL ATTACK (ENERGY BLAST)",
+      "source": "p06a",
+      "category": "Especial",
+      "notes": "",
+      "frames": [
+        {
+          "n": 1,
+          "x": 0,
+          "y": 551,
+          "w": 143,
+          "h": 159,
+          "center": 82,
+          "group": 1,
+          "head": {
+            "x": 101.5,
+            "y": 578.1,
+            "method": "helmet-color-component",
+            "pixels": 213,
+            "density": 0.4209
+          }
+        },
+        {
+          "n": 2,
+          "x": 143,
+          "y": 551,
+          "w": 123,
+          "h": 159,
+          "center": 204,
+          "group": 1,
+          "head": {
+            "x": 181.4,
+            "y": 577.5,
+            "method": "helmet-color-component",
+            "pixels": 113,
+            "density": 0.3363
+          }
+        },
+        {
+          "n": 3,
+          "x": 266,
+          "y": 551,
+          "w": 124,
+          "h": 159,
+          "center": 328,
+          "group": 1,
+          "head": {
+            "x": 333.5,
+            "y": 577.1,
+            "method": "helmet-color-component",
+            "pixels": 125,
+            "density": 0.4386
+          }
+        },
+        {
+          "n": 4,
+          "x": 390,
+          "y": 551,
+          "w": 124,
+          "h": 159,
+          "center": 451,
+          "group": 1,
+          "head": {
+            "x": 459.4,
+            "y": 582.5,
+            "method": "helmet-color-component",
+            "pixels": 99,
+            "density": 0.5211
+          }
+        },
+        {
+          "n": 5,
+          "x": 514,
+          "y": 551,
+          "w": 120,
+          "h": 159,
+          "center": 576,
+          "group": 1,
+          "head": {
+            "x": 572.4,
+            "y": 571.2,
+            "method": "helmet-color-component",
+            "pixels": 125,
+            "density": 0.5208
+          }
+        },
+        {
+          "n": 6,
+          "x": 634,
+          "y": 551,
+          "w": 121,
+          "h": 159,
+          "center": 692,
+          "group": 1,
+          "head": {
+            "x": 685.7,
+            "y": 580.9,
+            "method": "helmet-color-component",
+            "pixels": 110,
+            "density": 0.55
+          }
+        },
+        {
+          "n": 7,
+          "x": 755,
+          "y": 551,
+          "w": 125,
+          "h": 159,
+          "center": 818,
+          "group": 1,
+          "headStatus": "no-visible-head",
+          "headReviewed": true
+        },
+        {
+          "n": 8,
+          "x": 880,
+          "y": 551,
+          "w": 144,
+          "h": 159,
+          "center": 942,
+          "group": 1,
+          "head": {
+            "x": 976.6,
+            "y": 583.4,
+            "method": "helmet-color-component",
+            "pixels": 166,
+            "density": 0.3952
+          }
+        }
+      ],
+      "frameCount": 8
+    },
+    {
+      "id": "p06a-rising-upper",
+      "label": "Ataque especial · upper ascendente · parte 6/6 · A",
+      "originalLabel": "SPECIAL ATTACK (RISING UPPER)",
+      "source": "p06a",
+      "category": "Especial",
+      "notes": "Secuencia de siete cuadros; el polvo del final queda cerca del borde inferior.",
+      "frames": [
+        {
+          "n": 1,
+          "x": 0,
+          "y": 756,
+          "w": 160,
+          "h": 166,
+          "center": 87,
+          "group": 1,
+          "head": {
+            "x": 108.9,
+            "y": 821.5,
+            "method": "helmet-color-component",
+            "pixels": 210,
+            "density": 0.3977
+          }
+        },
+        {
+          "n": 2,
+          "x": 160,
+          "y": 756,
+          "w": 144,
+          "h": 166,
+          "center": 234,
+          "group": 1,
+          "head": {
+            "x": 261.7,
+            "y": 792.3,
+            "method": "helmet-color-component",
+            "pixels": 185,
+            "density": 0.3351
+          }
+        },
+        {
+          "n": 3,
+          "x": 304,
+          "y": 756,
+          "w": 136,
+          "h": 166,
+          "center": 374,
+          "group": 1,
+          "head": {
+            "x": 393.7,
+            "y": 794.5,
+            "method": "helmet-color-component",
+            "pixels": 167,
+            "density": 0.345
+          }
+        },
+        {
+          "n": 4,
+          "x": 440,
+          "y": 728,
+          "w": 120,
+          "h": 196,
+          "center": 505,
+          "group": 1,
+          "excludeSourceRects": [
+            [
+              499,
+              730,
+              513,
+              753
+            ]
+          ],
+          "head": {
+            "x": 514.9,
+            "y": 779.6,
+            "method": "helmet-color-component",
+            "pixels": 95,
+            "density": 0.4798
+          }
+        },
+        {
+          "n": 5,
+          "x": 560,
+          "y": 728,
+          "w": 150,
+          "h": 196,
+          "center": 616,
+          "group": 1,
+          "excludeSourceRects": [
+            [
+              609,
+              730,
+              623,
+              753
+            ]
+          ],
+          "head": {
+            "x": 658.8,
+            "y": 760.6,
+            "method": "helmet-color-component",
+            "pixels": 121,
+            "density": 0.4899
+          }
+        },
+        {
+          "n": 6,
+          "x": 710,
+          "y": 756,
+          "w": 159,
+          "h": 166,
+          "center": 804,
+          "group": 1,
+          "head": {
+            "x": 819.4,
+            "y": 796.3,
+            "method": "helmet-color-component",
+            "pixels": 190,
+            "density": 0.3755
+          }
+        },
+        {
+          "n": 7,
+          "x": 869,
+          "y": 756,
+          "w": 155,
+          "h": 166,
+          "center": 934,
+          "group": 1,
+          "head": {
+            "x": 974.1,
+            "y": 822.7,
+            "method": "helmet-color-component",
+            "pixels": 210,
+            "density": 0.3818
+          }
+        }
+      ],
+      "frameCount": 7
+    },
+    {
+      "id": "p06a-aerial-slam",
+      "label": "Ataque especial · golpe aéreo · parte 6/6 · A",
+      "originalLabel": "SPECIAL ATTACK (AERIAL SLAM)",
+      "source": "p06a",
+      "category": "Especial",
+      "notes": "",
+      "frames": [
+        {
+          "n": 1,
+          "x": 0,
+          "y": 985,
+          "w": 150,
+          "h": 154,
+          "center": 82,
+          "group": 1,
+          "head": {
+            "x": 99.5,
+            "y": 1005.5,
+            "method": "helmet-color-component",
+            "pixels": 159,
+            "density": 0.4454
+          }
+        },
+        {
+          "n": 2,
+          "x": 150,
+          "y": 985,
+          "w": 134,
+          "h": 154,
+          "center": 218,
+          "group": 1,
+          "head": {
+            "x": 234.4,
+            "y": 1069.8,
+            "method": "helmet-color-component",
+            "pixels": 143,
+            "density": 0.4965
+          }
+        },
+        {
+          "n": 3,
+          "x": 284,
+          "y": 985,
+          "w": 137,
+          "h": 154,
+          "center": 350,
+          "group": 1,
+          "head": {
+            "x": 374.5,
+            "y": 1097.6,
+            "method": "helmet-color-component",
+            "pixels": 126,
+            "density": 0.5478
+          }
+        },
+        {
+          "n": 4,
+          "x": 421,
+          "y": 985,
+          "w": 142,
+          "h": 154,
+          "center": 492,
+          "group": 1,
+          "head": {
+            "x": 506.9,
+            "y": 1101.1,
+            "method": "helmet-color-component",
+            "pixels": 170,
+            "density": 0.4857
+          }
+        },
+        {
+          "n": 5,
+          "x": 563,
+          "y": 985,
+          "w": 145,
+          "h": 154,
+          "center": 634,
+          "group": 1,
+          "head": {
+            "x": 649.9,
+            "y": 1091.1,
+            "method": "helmet-color-component",
+            "pixels": 99,
+            "density": 0.4583
+          }
+        },
+        {
+          "n": 6,
+          "x": 708,
+          "y": 985,
+          "w": 146,
+          "h": 154,
+          "center": 782,
+          "group": 1,
+          "head": {
+            "x": 808.8,
+            "y": 1102.5,
+            "method": "helmet-color-component",
+            "pixels": 101,
+            "density": 0.5101
+          }
+        },
+        {
+          "n": 7,
+          "x": 854,
+          "y": 985,
+          "w": 170,
+          "h": 154,
+          "center": 926,
+          "group": 1,
+          "head": {
+            "x": 982.8,
+            "y": 1049.1,
+            "method": "helmet-color-component",
+            "pixels": 213,
+            "density": 0.4057
+          }
+        }
+      ],
+      "frameCount": 7
+    },
+    {
+      "id": "p06a-taunt",
+      "label": "Burla/reposo alternativo · parte 6/6 · A",
+      "originalLabel": "TAUNT / IDLE (ALTERNATIVE)",
+      "source": "p06a",
+      "category": "Burla",
+      "notes": "",
+      "frames": [
+        {
+          "n": 1,
+          "x": 0,
+          "y": 1185,
+          "w": 176,
+          "h": 153,
+          "center": 100,
+          "group": 1,
+          "head": {
+            "x": 58.5,
+            "y": 1227.8,
+            "method": "helmet-color-component",
+            "pixels": 84,
+            "density": 0.4242
+          }
+        },
+        {
+          "n": 2,
+          "x": 176,
+          "y": 1185,
+          "w": 164,
+          "h": 153,
+          "center": 252,
+          "group": 1,
+          "head": {
+            "x": 259.9,
+            "y": 1201.4,
+            "method": "helmet-color-component",
+            "pixels": 152,
+            "density": 0.38
+          }
+        },
+        {
+          "n": 3,
+          "x": 340,
+          "y": 1185,
+          "w": 166,
+          "h": 153,
+          "center": 428,
+          "group": 1,
+          "head": {
+            "x": 435.9,
+            "y": 1201.7,
+            "method": "helmet-color-component",
+            "pixels": 169,
+            "density": 0.4043
+          }
+        },
+        {
+          "n": 4,
+          "x": 506,
+          "y": 1185,
+          "w": 162,
+          "h": 153,
+          "center": 585,
+          "group": 1,
+          "head": {
+            "x": 604.7,
+            "y": 1201.2,
+            "method": "helmet-color-component",
+            "pixels": 195,
+            "density": 0.3533
+          }
+        },
+        {
+          "n": 5,
+          "x": 668,
+          "y": 1185,
+          "w": 166,
+          "h": 153,
+          "center": 750,
+          "group": 1,
+          "head": {
+            "x": 741.5,
+            "y": 1200.1,
+            "method": "helmet-color-component",
+            "pixels": 158,
+            "density": 0.4426
+          }
+        },
+        {
+          "n": 6,
+          "x": 834,
+          "y": 1185,
+          "w": 190,
+          "h": 153,
+          "center": 917,
+          "group": 1,
+          "head": {
+            "x": 937.0,
+            "y": 1210.0,
+            "method": "manual-visual",
+            "reviewed": true
+          }
+        }
+      ],
+      "frameCount": 6
+    },
+    {
+      "id": "p06a-victory",
+      "label": "Victoria · parte 6/6 · A",
+      "originalLabel": "VICTORY (WIN POSE)",
+      "source": "p06a",
+      "category": "Victoria",
+      "notes": "",
+      "frames": [
+        {
+          "n": 1,
+          "x": 0,
+          "y": 1389,
+          "w": 182,
+          "h": 145,
+          "center": 100,
+          "group": 1,
+          "head": {
+            "x": 110.1,
+            "y": 1403.1,
+            "method": "helmet-color-component",
+            "pixels": 210,
+            "density": 0.4339
+          }
+        },
+        {
+          "n": 2,
+          "x": 182,
+          "y": 1389,
+          "w": 160,
+          "h": 145,
+          "center": 263,
+          "group": 1,
+          "head": {
+            "x": 263.6,
+            "y": 1403.8,
+            "method": "helmet-color-component",
+            "pixels": 152,
+            "density": 0.4524
+          }
+        },
+        {
+          "n": 3,
+          "x": 342,
+          "y": 1389,
+          "w": 158,
+          "h": 145,
+          "center": 420,
+          "group": 1,
+          "head": {
+            "x": 438.1,
+            "y": 1407.3,
+            "method": "helmet-color-component",
+            "pixels": 176,
+            "density": 0.3478
+          }
+        },
+        {
+          "n": 4,
+          "x": 500,
+          "y": 1389,
+          "w": 160,
+          "h": 145,
+          "center": 580,
+          "group": 1,
+          "head": {
+            "x": 592.1,
+            "y": 1407.9,
+            "method": "helmet-color-component",
+            "pixels": 212,
+            "density": 0.4589
+          }
+        },
+        {
+          "n": 5,
+          "x": 660,
+          "y": 1389,
+          "w": 169,
+          "h": 145,
+          "center": 740,
+          "group": 1,
+          "head": {
+            "x": 742.6,
+            "y": 1408.3,
+            "method": "helmet-color-component",
+            "pixels": 223,
+            "density": 0.4223
+          }
+        },
+        {
+          "n": 6,
+          "x": 829,
+          "y": 1389,
+          "w": 195,
+          "h": 145,
+          "center": 918,
+          "group": 1,
+          "head": {
+            "x": 932.0,
+            "y": 1406.4,
+            "method": "helmet-color-component",
+            "pixels": 107,
+            "density": 0.3934
+          }
+        }
+      ],
+      "frameCount": 6
+    },
+    {
+      "id": "p06b-death",
+      "label": "Muerte · parte 6/6 · B",
+      "originalLabel": "DEATH",
+      "source": "p06b",
+      "category": "Derrota",
+      "notes": "",
+      "frames": [
+        {
+          "n": 1,
+          "x": 0,
+          "y": 179,
+          "w": 177,
+          "h": 170,
+          "center": 92,
+          "group": 1,
+          "head": {
+            "x": 103.0,
+            "y": 202.6,
+            "method": "helmet-color-component",
+            "pixels": 177,
+            "density": 0.3078
+          }
+        },
+        {
+          "n": 2,
+          "x": 177,
+          "y": 179,
+          "w": 166,
+          "h": 170,
+          "center": 262,
+          "group": 1,
+          "head": {
+            "x": 252.1,
+            "y": 212.7,
+            "method": "helmet-color-component",
+            "pixels": 186,
+            "density": 0.4043,
+            "reviewed": true
+          }
+        },
+        {
+          "n": 3,
+          "x": 343,
+          "y": 179,
+          "w": 164,
+          "h": 170,
+          "center": 424,
+          "group": 1,
+          "head": {
+            "x": 390.1,
+            "y": 223.9,
+            "method": "helmet-color-component",
+            "pixels": 128,
+            "density": 0.5333
+          }
+        },
+        {
+          "n": 4,
+          "x": 507,
+          "y": 179,
+          "w": 168,
+          "h": 170,
+          "center": 590,
+          "group": 1,
+          "head": {
+            "x": 547.2,
+            "y": 292.1,
+            "method": "helmet-color-component",
+            "pixels": 205,
+            "density": 0.4904
+          }
+        },
+        {
+          "n": 5,
+          "x": 675,
+          "y": 179,
+          "w": 165,
+          "h": 170,
+          "center": 760,
+          "group": 1,
+          "head": {
+            "x": 731.0,
+            "y": 291.0,
+            "method": "manual-visual",
+            "reviewed": true
+          }
+        },
+        {
+          "n": 6,
+          "x": 840,
+          "y": 179,
+          "w": 184,
+          "h": 170,
+          "center": 920,
+          "group": 1,
+          "head": {
+            "x": 952.4,
+            "y": 300.4,
+            "method": "helmet-color-component",
+            "pixels": 144,
+            "density": 0.5333
+          }
+        }
+      ],
+      "frameCount": 6
+    },
+    {
+      "id": "p06b-charge",
+      "label": "Ataque especial · carga · parte 6/6 · B",
+      "originalLabel": "SPECIAL ATTACK (CHARGE)",
+      "source": "p06b",
+      "category": "Especial",
+      "notes": "",
+      "frames": [
+        {
+          "n": 1,
+          "x": 0,
+          "y": 410,
+          "w": 182,
+          "h": 173,
+          "center": 99,
+          "group": 1,
+          "head": {
+            "x": 110.2,
+            "y": 438.5,
+            "method": "helmet-color-component",
+            "pixels": 226,
+            "density": 0.3779
+          }
+        },
+        {
+          "n": 2,
+          "x": 182,
+          "y": 410,
+          "w": 163,
+          "h": 173,
+          "center": 264,
+          "group": 1,
+          "head": {
+            "x": 250.5,
+            "y": 430.5,
+            "method": "helmet-color-component",
+            "pixels": 106,
+            "density": 0.6625
+          }
+        },
+        {
+          "n": 3,
+          "x": 345,
+          "y": 410,
+          "w": 165,
+          "h": 173,
+          "center": 426,
+          "group": 1,
+          "head": {
+            "x": 426.5,
+            "y": 439.8,
+            "method": "helmet-color-component",
+            "pixels": 177,
+            "density": 0.3726
+          }
+        },
+        {
+          "n": 4,
+          "x": 510,
+          "y": 410,
+          "w": 168,
+          "h": 173,
+          "center": 595,
+          "group": 1,
+          "head": {
+            "x": 607.4,
+            "y": 433.1,
+            "method": "helmet-color-component",
+            "pixels": 231,
+            "density": 0.3863
+          }
+        },
+        {
+          "n": 5,
+          "x": 678,
+          "y": 410,
+          "w": 162,
+          "h": 173,
+          "center": 760,
+          "group": 1,
+          "head": {
+            "x": 766.0,
+            "y": 446.0,
+            "method": "manual-visual",
+            "reviewed": true
+          }
+        },
+        {
+          "n": 6,
+          "x": 840,
+          "y": 410,
+          "w": 184,
+          "h": 173,
+          "center": 920,
+          "group": 1,
+          "head": {
+            "x": 946.5,
+            "y": 429.6,
+            "method": "helmet-color-component",
+            "pixels": 150,
+            "density": 0.3036
+          }
+        }
+      ],
+      "frameCount": 6
+    },
+    {
+      "id": "p06b-release",
+      "label": "Ataque especial · descarga · parte 6/6 · B",
+      "originalLabel": "SPECIAL ATTACK (RELEASE)",
+      "source": "p06b",
+      "category": "Especial",
+      "notes": "Fase de liberación separada de la carga; algunos efectos ocupan mucho ancho.",
+      "frames": [
+        {
+          "n": 1,
+          "x": 0,
+          "y": 642,
+          "w": 180,
+          "h": 153,
+          "center": 100,
+          "group": 1,
+          "head": {
+            "x": 107.0,
+            "y": 668.7,
+            "method": "helmet-color-component",
+            "pixels": 114,
+            "density": 0.4524
+          }
+        },
+        {
+          "n": 2,
+          "x": 180,
+          "y": 642,
+          "w": 161,
+          "h": 153,
+          "center": 260,
+          "group": 1,
+          "head": {
+            "x": 256.0,
+            "y": 670.7,
+            "method": "helmet-color-component",
+            "pixels": 134,
+            "density": 0.3206
+          }
+        },
+        {
+          "n": 3,
+          "x": 341,
+          "y": 642,
+          "w": 166,
+          "h": 153,
+          "center": 422,
+          "group": 1,
+          "head": {
+            "x": 413.4,
+            "y": 670.7,
+            "method": "helmet-color-component",
+            "pixels": 92,
+            "density": 0.3932
+          }
+        },
+        {
+          "n": 4,
+          "x": 507,
+          "y": 642,
+          "w": 169,
+          "h": 153,
+          "center": 592,
+          "group": 1,
+          "headStatus": "no-visible-head",
+          "headReviewed": true
+        },
+        {
+          "n": 5,
+          "x": 676,
+          "y": 642,
+          "w": 164,
+          "h": 153,
+          "center": 760,
+          "group": 1,
+          "headStatus": "no-visible-head",
+          "headReviewed": true
+        },
+        {
+          "n": 6,
+          "x": 840,
+          "y": 642,
+          "w": 184,
+          "h": 153,
+          "center": 920,
+          "group": 1,
+          "headStatus": "no-visible-head",
+          "headReviewed": true
+        }
+      ],
+      "frameCount": 6
+    },
+    {
+      "id": "p06b-block",
+      "label": "Bloqueo · parte 6/6 · B",
+      "originalLabel": "BLOCK",
+      "source": "p06b",
+      "category": "Defensa",
+      "notes": "",
+      "frames": [
+        {
+          "n": 1,
+          "x": 0,
+          "y": 837,
+          "w": 178,
+          "h": 162,
+          "center": 98,
+          "group": 1,
+          "head": {
+            "x": 123.4,
+            "y": 872.3,
+            "method": "helmet-color-component",
+            "pixels": 202,
+            "density": 0.4591
+          }
+        },
+        {
+          "n": 2,
+          "x": 178,
+          "y": 837,
+          "w": 158,
+          "h": 162,
+          "center": 258,
+          "group": 1,
+          "head": {
+            "x": 283.3,
+            "y": 877.6,
+            "method": "helmet-color-component",
+            "pixels": 91,
+            "density": 0.4062
+          }
+        },
+        {
+          "n": 3,
+          "x": 336,
+          "y": 837,
+          "w": 164,
+          "h": 162,
+          "center": 414,
+          "group": 1,
+          "head": {
+            "x": 457.0,
+            "y": 876.8,
+            "method": "helmet-color-component",
+            "pixels": 86,
+            "density": 0.4479
+          }
+        },
+        {
+          "n": 4,
+          "x": 500,
+          "y": 837,
+          "w": 165,
+          "h": 162,
+          "center": 585,
+          "group": 1,
+          "head": {
+            "x": 623.8,
+            "y": 876.8,
+            "method": "helmet-color-component",
+            "pixels": 119,
+            "density": 0.5509
+          }
+        },
+        {
+          "n": 5,
+          "x": 665,
+          "y": 837,
+          "w": 167,
+          "h": 162,
+          "center": 745,
+          "group": 1,
+          "head": {
+            "x": 753.0,
+            "y": 880.0,
+            "method": "manual-visual",
+            "reviewed": true
+          }
+        },
+        {
+          "n": 6,
+          "x": 832,
+          "y": 837,
+          "w": 192,
+          "h": 162,
+          "center": 920,
+          "group": 1,
+          "head": {
+            "x": 920.0,
+            "y": 880.0,
+            "method": "manual-visual",
+            "reviewed": true
+          }
+        }
+      ],
+      "frameCount": 6
+    },
+    {
+      "id": "p06b-taunt",
+      "label": "Burla · parte 6/6 · B",
+      "originalLabel": "TAUNT",
+      "source": "p06b",
+      "category": "Burla",
+      "notes": "",
+      "frames": [
+        {
+          "n": 1,
+          "x": 0,
+          "y": 1057,
+          "w": 180,
+          "h": 183,
+          "center": 98,
+          "group": 1,
+          "head": {
+            "x": 122.3,
+            "y": 1077.3,
+            "method": "helmet-color-component",
+            "pixels": 273,
+            "density": 0.3621
+          }
+        },
+        {
+          "n": 2,
+          "x": 180,
+          "y": 1057,
+          "w": 162,
+          "h": 183,
+          "center": 262,
+          "group": 1,
+          "head": {
+            "x": 268.0,
+            "y": 1083.4,
+            "method": "helmet-color-component",
+            "pixels": 219,
+            "density": 0.3527
+          }
+        },
+        {
+          "n": 3,
+          "x": 342,
+          "y": 1057,
+          "w": 161,
+          "h": 183,
+          "center": 422,
+          "group": 1,
+          "head": {
+            "x": 439.8,
+            "y": 1082.6,
+            "method": "helmet-color-component",
+            "pixels": 203,
+            "density": 0.3021
+          }
+        },
+        {
+          "n": 4,
+          "x": 503,
+          "y": 1057,
+          "w": 166,
+          "h": 183,
+          "center": 584,
+          "group": 1,
+          "head": {
+            "x": 585.0,
+            "y": 1083.4,
+            "method": "helmet-color-component",
+            "pixels": 217,
+            "density": 0.423
+          }
+        },
+        {
+          "n": 5,
+          "x": 669,
+          "y": 1057,
+          "w": 168,
+          "h": 183,
+          "center": 754,
+          "group": 1,
+          "head": {
+            "x": 768.4,
+            "y": 1090.2,
+            "method": "helmet-color-component",
+            "pixels": 291,
+            "density": 0.433
+          }
+        },
+        {
+          "n": 6,
+          "x": 837,
+          "y": 1057,
+          "w": 187,
+          "h": 183,
+          "center": 920,
+          "group": 1,
+          "head": {
+            "x": 937.4,
+            "y": 1082.2,
+            "method": "helmet-color-component",
+            "pixels": 194,
+            "density": 0.3368
+          }
+        }
+      ],
+      "frameCount": 6
+    },
+    {
+      "id": "p06b-win",
+      "label": "Pose de victoria · parte 6/6 · B",
+      "originalLabel": "WIN POSE",
+      "source": "p06b",
+      "category": "Victoria",
+      "notes": "",
+      "frames": [
+        {
+          "n": 1,
+          "x": 0,
+          "y": 1285,
+          "w": 179,
+          "h": 198,
+          "center": 98,
+          "group": 1,
+          "head": {
+            "x": 120.8,
+            "y": 1324.4,
+            "method": "helmet-color-component",
+            "pixels": 239,
+            "density": 0.3434
+          }
+        },
+        {
+          "n": 2,
+          "x": 179,
+          "y": 1285,
+          "w": 160,
+          "h": 198,
+          "center": 260,
+          "group": 1,
+          "head": {
+            "x": 272.4,
+            "y": 1326.1,
+            "method": "helmet-color-component",
+            "pixels": 288,
+            "density": 0.3956
+          }
+        },
+        {
+          "n": 3,
+          "x": 339,
+          "y": 1285,
+          "w": 165,
+          "h": 198,
+          "center": 418,
+          "group": 1,
+          "head": {
+            "x": 412.2,
+            "y": 1308.6,
+            "method": "helmet-color-component",
+            "pixels": 84,
+            "density": 0.525
+          }
+        },
+        {
+          "n": 4,
+          "x": 504,
+          "y": 1285,
+          "w": 170,
+          "h": 198,
+          "center": 589,
+          "group": 1,
+          "head": {
+            "x": 595.1,
+            "y": 1331.3,
+            "method": "helmet-color-component",
+            "pixels": 271,
+            "density": 0.4169
+          }
+        },
+        {
+          "n": 5,
+          "x": 674,
+          "y": 1285,
+          "w": 166,
+          "h": 198,
+          "center": 760,
+          "group": 1,
+          "head": {
+            "x": 753.2,
+            "y": 1313.4,
+            "method": "helmet-color-component",
+            "pixels": 96,
+            "density": 0.4103
+          }
+        },
+        {
+          "n": 6,
+          "x": 840,
+          "y": 1285,
+          "w": 184,
+          "h": 198,
+          "center": 920,
+          "group": 1,
+          "head": {
+            "x": 936.4,
+            "y": 1310.0,
+            "method": "helmet-color-component",
+            "pixels": 118,
+            "density": 0.4538
+          }
+        }
+      ],
+      "frameCount": 6
+    },
+    {
+      "id": "p06c-charge",
+      "label": "Especial 1 · carga de energía · parte 6/6 · C",
+      "originalLabel": "SPECIAL ATTACK 1 (ENERGY CHARGE)",
+      "source": "p06c",
+      "category": "Especial",
+      "notes": "Ocho cuadros. Los efectos de energía de los cuadros 7–8 suben a la banda de números; esa zona queda visible para revisión.",
+      "frames": [
+        {
+          "n": 1,
+          "x": 0,
+          "y": 180,
+          "w": 137,
+          "h": 185,
+          "center": 80,
+          "group": 1,
+          "head": {
+            "x": 100.2,
+            "y": 222.9,
+            "method": "helmet-color-component",
+            "pixels": 159,
+            "density": 0.3487
+          }
+        },
+        {
+          "n": 2,
+          "x": 137,
+          "y": 180,
+          "w": 117,
+          "h": 185,
+          "center": 194,
+          "group": 1,
+          "head": {
+            "x": 214.0,
+            "y": 224.3,
+            "method": "helmet-color-component",
+            "pixels": 152,
+            "density": 0.3838
+          }
+        },
+        {
+          "n": 3,
+          "x": 254,
+          "y": 180,
+          "w": 124,
+          "h": 185,
+          "center": 315,
+          "group": 1,
+          "head": {
+            "x": 332.5,
+            "y": 225.0,
+            "method": "helmet-color-component",
+            "pixels": 149,
+            "density": 0.3225
+          }
+        },
+        {
+          "n": 4,
+          "x": 378,
+          "y": 180,
+          "w": 128,
+          "h": 185,
+          "center": 442,
+          "group": 1,
+          "head": {
+            "x": 453.2,
+            "y": 221.9,
+            "method": "helmet-color-component",
+            "pixels": 149,
+            "density": 0.341
+          }
+        },
+        {
+          "n": 5,
+          "x": 506,
+          "y": 180,
+          "w": 127,
+          "h": 185,
+          "center": 571,
+          "group": 1,
+          "head": {
+            "x": 582.2,
+            "y": 221.4,
+            "method": "helmet-color-component",
+            "pixels": 128,
+            "density": 0.4444
+          }
+        },
+        {
+          "n": 6,
+          "x": 633,
+          "y": 180,
+          "w": 117,
+          "h": 185,
+          "center": 695,
+          "group": 1,
+          "head": {
+            "x": 705.2,
+            "y": 225.9,
+            "method": "helmet-color-component",
+            "pixels": 168,
+            "density": 0.3636
+          }
+        },
+        {
+          "n": 7,
+          "x": 750,
+          "y": 145,
+          "w": 123,
+          "h": 220,
+          "center": 806,
+          "group": 1,
+          "head": {
+            "x": 818.9,
+            "y": 225.5,
+            "method": "helmet-color-component",
+            "pixels": 99,
+            "density": 0.6
+          }
+        },
+        {
+          "n": 8,
+          "x": 873,
+          "y": 145,
+          "w": 151,
+          "h": 220,
+          "center": 940,
+          "group": 1,
+          "head": {
+            "x": 942.7,
+            "y": 227.0,
+            "method": "helmet-color-component",
+            "pixels": 95,
+            "density": 0.5588
+          }
+        }
+      ],
+      "frameCount": 8
+    },
+    {
+      "id": "p06c-energy-blast",
+      "label": "Especial 2 · descarga de energía · parte 6/6 · C",
+      "originalLabel": "SPECIAL ATTACK 2 (ENERGY BLAST)",
+      "source": "p06c",
+      "category": "Especial",
+      "notes": "",
+      "frames": [
+        {
+          "n": 1,
+          "x": 0,
+          "y": 414,
+          "w": 129,
+          "h": 170,
+          "center": 72,
+          "group": 1,
+          "head": {
+            "x": 93.5,
+            "y": 450.3,
+            "method": "helmet-color-component",
+            "pixels": 170,
+            "density": 0.3855
+          }
+        },
+        {
+          "n": 2,
+          "x": 129,
+          "y": 414,
+          "w": 111,
+          "h": 170,
+          "center": 186,
+          "group": 1,
+          "head": {
+            "x": 202.0,
+            "y": 446.4,
+            "method": "helmet-color-component",
+            "pixels": 152,
+            "density": 0.4825
+          }
+        },
+        {
+          "n": 3,
+          "x": 240,
+          "y": 414,
+          "w": 110,
+          "h": 170,
+          "center": 294,
+          "group": 1,
+          "head": {
+            "x": 309.4,
+            "y": 447.0,
+            "method": "helmet-color-component",
+            "pixels": 145,
+            "density": 0.3634
+          }
+        },
+        {
+          "n": 4,
+          "x": 350,
+          "y": 414,
+          "w": 112,
+          "h": 170,
+          "center": 406,
+          "group": 1,
+          "head": {
+            "x": 421.7,
+            "y": 454.4,
+            "method": "helmet-color-component",
+            "pixels": 127,
+            "density": 0.4536
+          }
+        },
+        {
+          "n": 5,
+          "x": 462,
+          "y": 414,
+          "w": 146,
+          "h": 170,
+          "center": 518,
+          "group": 1,
+          "head": {
+            "x": 546.1,
+            "y": 453.6,
+            "method": "helmet-color-component",
+            "pixels": 129,
+            "density": 0.3583
+          }
+        },
+        {
+          "n": 6,
+          "x": 608,
+          "y": 414,
+          "w": 158,
+          "h": 170,
+          "center": 697,
+          "group": 1,
+          "head": {
+            "x": 706.0,
+            "y": 461.1,
+            "method": "helmet-color-component",
+            "pixels": 125,
+            "density": 0.4699
+          }
+        },
+        {
+          "n": 7,
+          "x": 766,
+          "y": 414,
+          "w": 126,
+          "h": 170,
+          "center": 836,
+          "group": 1,
+          "head": {
+            "x": 857.5,
+            "y": 462.4,
+            "method": "helmet-color-component",
+            "pixels": 124,
+            "density": 0.3827
+          }
+        },
+        {
+          "n": 8,
+          "x": 892,
+          "y": 414,
+          "w": 132,
+          "h": 170,
+          "center": 948,
+          "group": 1,
+          "head": {
+            "x": 973.7,
+            "y": 451.2,
+            "method": "helmet-color-component",
+            "pixels": 155,
+            "density": 0.369
+          }
+        }
+      ],
+      "frameCount": 8
+    },
+    {
+      "id": "p06c-spinning-slash",
+      "label": "Especial 3 · giro cortante · parte 6/6 · C",
+      "originalLabel": "SPECIAL ATTACK 3 (SPINNING SLASH)",
+      "source": "p06c",
+      "category": "Especial",
+      "notes": "",
+      "frames": [
+        {
+          "n": 1,
+          "x": 0,
+          "y": 633,
+          "w": 145,
+          "h": 173,
+          "center": 80,
+          "group": 1,
+          "head": {
+            "x": 101.7,
+            "y": 675.1,
+            "method": "helmet-color-component",
+            "pixels": 197,
+            "density": 0.4104
+          }
+        },
+        {
+          "n": 2,
+          "x": 145,
+          "y": 633,
+          "w": 124,
+          "h": 173,
+          "center": 210,
+          "group": 1,
+          "head": {
+            "x": 225.6,
+            "y": 668.8,
+            "method": "helmet-color-component",
+            "pixels": 157,
+            "density": 0.3738
+          }
+        },
+        {
+          "n": 3,
+          "x": 269,
+          "y": 633,
+          "w": 121,
+          "h": 173,
+          "center": 328,
+          "group": 1,
+          "head": {
+            "x": 345.6,
+            "y": 672.5,
+            "method": "helmet-color-component",
+            "pixels": 131,
+            "density": 0.5038
+          }
+        },
+        {
+          "n": 4,
+          "x": 390,
+          "y": 633,
+          "w": 124,
+          "h": 173,
+          "center": 453,
+          "group": 1,
+          "head": {
+            "x": 473.1,
+            "y": 672.3,
+            "method": "helmet-color-component",
+            "pixels": 125,
+            "density": 0.4699
+          }
+        },
+        {
+          "n": 5,
+          "x": 514,
+          "y": 633,
+          "w": 121,
+          "h": 173,
+          "center": 575,
+          "group": 1,
+          "head": {
+            "x": 601.2,
+            "y": 672.2,
+            "method": "helmet-color-component",
+            "pixels": 152,
+            "density": 0.5
+          }
+        },
+        {
+          "n": 6,
+          "x": 635,
+          "y": 633,
+          "w": 123,
+          "h": 173,
+          "center": 695,
+          "group": 1,
+          "head": {
+            "x": 729.7,
+            "y": 680.5,
+            "method": "helmet-color-component",
+            "pixels": 152,
+            "density": 0.5568
+          }
+        },
+        {
+          "n": 7,
+          "x": 758,
+          "y": 633,
+          "w": 124,
+          "h": 173,
+          "center": 821,
+          "group": 1,
+          "head": {
+            "x": 857.2,
+            "y": 685.5,
+            "method": "helmet-color-component",
+            "pixels": 151,
+            "density": 0.3126
+          }
+        },
+        {
+          "n": 8,
+          "x": 882,
+          "y": 633,
+          "w": 142,
+          "h": 173,
+          "center": 942,
+          "group": 1,
+          "head": {
+            "x": 968.5,
+            "y": 688.8,
+            "method": "helmet-color-component",
+            "pixels": 147,
+            "density": 0.3712
+          }
+        }
+      ],
+      "frameCount": 8
+    },
+    {
+      "id": "p06c-aerial-slam",
+      "label": "Especial 4 · golpe aéreo · parte 6/6 · C",
+      "originalLabel": "SPECIAL ATTACK 4 (AERIAL SLAM)",
+      "source": "p06c",
+      "category": "Especial",
+      "notes": "Las estelas altas de los cuadros centrales llegan a la banda del rótulo; revisar el borde superior de esos recortes en el visor.",
+      "frames": [
+        {
+          "n": 1,
+          "x": 0,
+          "y": 855,
+          "w": 142,
+          "h": 185,
+          "center": 82,
+          "group": 1,
+          "head": {
+            "x": 96.5,
+            "y": 907.5,
+            "method": "helmet-color-component",
+            "pixels": 177,
+            "density": 0.3831
+          }
+        },
+        {
+          "n": 2,
+          "x": 142,
+          "y": 855,
+          "w": 119,
+          "h": 185,
+          "center": 202,
+          "group": 1,
+          "head": {
+            "x": 211.7,
+            "y": 872.7,
+            "method": "helmet-color-component",
+            "pixels": 127,
+            "density": 0.3932
+          }
+        },
+        {
+          "n": 3,
+          "x": 261,
+          "y": 855,
+          "w": 123,
+          "h": 185,
+          "center": 320,
+          "group": 1,
+          "head": {
+            "x": 341.5,
+            "y": 876.8,
+            "method": "helmet-color-component",
+            "pixels": 180,
+            "density": 0.4091
+          }
+        },
+        {
+          "n": 4,
+          "x": 384,
+          "y": 823,
+          "w": 132,
+          "h": 217,
+          "center": 448,
+          "group": 1,
+          "head": {
+            "x": 470.3,
+            "y": 930.9,
+            "method": "helmet-color-component",
+            "pixels": 181,
+            "density": 0.4714
+          }
+        },
+        {
+          "n": 5,
+          "x": 516,
+          "y": 823,
+          "w": 132,
+          "h": 217,
+          "center": 583,
+          "group": 1,
+          "excludeSourceRects": [
+            [
+              577,
+              830,
+              589,
+              849
+            ]
+          ],
+          "head": {
+            "x": 597.9,
+            "y": 962.9,
+            "method": "helmet-color-component",
+            "pixels": 160,
+            "density": 0.4482
+          }
+        },
+        {
+          "n": 6,
+          "x": 648,
+          "y": 823,
+          "w": 128,
+          "h": 217,
+          "center": 714,
+          "group": 1,
+          "excludeSourceRects": [
+            [
+              708,
+              830,
+              720,
+              849
+            ]
+          ],
+          "headStatus": "no-visible-head",
+          "headReviewed": true
+        },
+        {
+          "n": 7,
+          "x": 776,
+          "y": 855,
+          "w": 120,
+          "h": 185,
+          "center": 838,
+          "group": 1,
+          "head": {
+            "x": 859.2,
+            "y": 927.8,
+            "method": "helmet-color-component",
+            "pixels": 152,
+            "density": 0.3671
+          }
+        },
+        {
+          "n": 8,
+          "x": 896,
+          "y": 855,
+          "w": 128,
+          "h": 185,
+          "center": 955,
+          "group": 1,
+          "head": {
+            "x": 980.7,
+            "y": 911.0,
+            "method": "helmet-color-component",
+            "pixels": 145,
+            "density": 0.3662
+          }
+        }
+      ],
+      "frameCount": 8
+    },
+    {
+      "id": "p06c-win",
+      "label": "Pose de victoria · parte 6/6 · C",
+      "originalLabel": "WIN POSE",
+      "source": "p06c",
+      "category": "Victoria",
+      "notes": "",
+      "frames": [
+        {
+          "n": 1,
+          "x": 0,
+          "y": 1100,
+          "w": 197,
+          "h": 186,
+          "center": 126,
+          "group": 1,
+          "head": {
+            "x": 139.1,
+            "y": 1121.9,
+            "method": "helmet-color-component",
+            "pixels": 177,
+            "density": 0.3848
+          }
+        },
+        {
+          "n": 2,
+          "x": 197,
+          "y": 1100,
+          "w": 144,
+          "h": 186,
+          "center": 268,
+          "group": 1,
+          "head": {
+            "x": 266.3,
+            "y": 1138.2,
+            "method": "helmet-color-component",
+            "pixels": 164,
+            "density": 0.4881
+          }
+        },
+        {
+          "n": 3,
+          "x": 341,
+          "y": 1100,
+          "w": 160,
+          "h": 186,
+          "center": 414,
+          "group": 1,
+          "head": {
+            "x": 424.2,
+            "y": 1137.1,
+            "method": "helmet-color-component",
+            "pixels": 138,
+            "density": 0.3286
+          }
+        },
+        {
+          "n": 4,
+          "x": 501,
+          "y": 1100,
+          "w": 165,
+          "h": 186,
+          "center": 588,
+          "group": 1,
+          "head": {
+            "x": 614.1,
+            "y": 1122.5,
+            "method": "helmet-color-component",
+            "pixels": 191,
+            "density": 0.4371
+          }
+        },
+        {
+          "n": 5,
+          "x": 666,
+          "y": 1100,
+          "w": 156,
+          "h": 186,
+          "center": 743,
+          "group": 1,
+          "head": {
+            "x": 765.1,
+            "y": 1121.7,
+            "method": "helmet-color-component",
+            "pixels": 176,
+            "density": 0.4
+          }
+        },
+        {
+          "n": 6,
+          "x": 822,
+          "y": 1100,
+          "w": 202,
+          "h": 186,
+          "center": 902,
+          "group": 1,
+          "head": {
+            "x": 923.1,
+            "y": 1120.4,
+            "method": "helmet-color-component",
+            "pixels": 187,
+            "density": 0.3896
+          }
+        }
+      ],
+      "frameCount": 6
+    },
+    {
+      "id": "p06c-idle",
+      "label": "Reposo/respiración · parte 6/6 · C",
+      "originalLabel": "IDLE / BREATHING (LOOP)",
+      "source": "p06c",
+      "category": "Reposo",
+      "notes": "",
+      "frames": [
+        {
+          "n": 1,
+          "x": 0,
+          "y": 1337,
+          "w": 139,
+          "h": 170,
+          "center": 80.5,
+          "group": 1,
+          "head": {
+            "x": 103.8,
+            "y": 1372.4,
+            "method": "helmet-color-component",
+            "pixels": 188,
+            "density": 0.373
+          }
+        },
+        {
+          "n": 2,
+          "x": 139,
+          "y": 1337,
+          "w": 119,
+          "h": 170,
+          "center": 198,
+          "group": 1,
+          "head": {
+            "x": 223.0,
+            "y": 1372.4,
+            "method": "helmet-color-component",
+            "pixels": 214,
+            "density": 0.4053
+          }
+        },
+        {
+          "n": 3,
+          "x": 258,
+          "y": 1337,
+          "w": 122,
+          "h": 170,
+          "center": 318,
+          "group": 1,
+          "head": {
+            "x": 345.5,
+            "y": 1372.0,
+            "method": "helmet-color-component",
+            "pixels": 189,
+            "density": 0.375
+          }
+        },
+        {
+          "n": 4,
+          "x": 380,
+          "y": 1337,
+          "w": 129,
+          "h": 170,
+          "center": 442.5,
+          "group": 1,
+          "head": {
+            "x": 471.3,
+            "y": 1372.1,
+            "method": "helmet-color-component",
+            "pixels": 198,
+            "density": 0.375
+          }
+        },
+        {
+          "n": 5,
+          "x": 509,
+          "y": 1337,
+          "w": 124,
+          "h": 170,
+          "center": 575,
+          "group": 1,
+          "head": {
+            "x": 601.8,
+            "y": 1372.3,
+            "method": "helmet-color-component",
+            "pixels": 185,
+            "density": 0.3671
+          }
+        },
+        {
+          "n": 6,
+          "x": 633,
+          "y": 1337,
+          "w": 119,
+          "h": 170,
+          "center": 691,
+          "group": 1,
+          "head": {
+            "x": 722.6,
+            "y": 1372.6,
+            "method": "helmet-color-component",
+            "pixels": 204,
+            "density": 0.425
+          }
+        },
+        {
+          "n": 7,
+          "x": 752,
+          "y": 1337,
+          "w": 125,
+          "h": 170,
+          "center": 812,
+          "group": 1,
+          "head": {
+            "x": 841.9,
+            "y": 1372.0,
+            "method": "helmet-color-component",
+            "pixels": 188,
+            "density": 0.4123
+          }
+        },
+        {
+          "n": 8,
+          "x": 877,
+          "y": 1337,
+          "w": 147,
+          "h": 170,
+          "center": 942.5,
+          "group": 1,
+          "head": {
+            "x": 970.8,
+            "y": 1372.1,
+            "method": "helmet-color-component",
+            "pixels": 195,
+            "density": 0.3686
+          }
+        }
+      ],
+      "frameCount": 8
+    }
+  ]
+}

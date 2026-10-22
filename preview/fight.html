@@ -12,6 +12,16 @@
   .wrap { width:min(960px, 100%); padding:18px 12px 28px; }
   .stage { position:relative; background:#101018; border:2px solid #3a3752; border-radius:12px; overflow:hidden; }
   canvas#fight { display:block; width:100%; height:auto; image-rendering:pixelated; background:#101018; }
+  .stage:fullscreen, .stage:-webkit-full-screen, .stage.game-fullscreen {
+    width:100vw; height:100vh; height:100dvh; display:grid; grid-template-rows:auto minmax(0,1fr);
+    border:0; border-radius:0; background:#101018;
+  }
+  .stage.game-fullscreen { position:fixed; inset:0; z-index:9999; }
+  .stage:fullscreen .hud, .stage:-webkit-full-screen .hud, .stage.game-fullscreen .hud { grid-row:1; }
+  .stage:fullscreen canvas#fight, .stage:-webkit-full-screen canvas#fight, .stage.game-fullscreen canvas#fight {
+    grid-row:2; width:100%; height:100%; min-height:0; object-fit:contain;
+  }
+  html.game-fullscreen-active, html.game-fullscreen-active body { overflow:hidden; }
   .hud { display:grid; grid-template-columns:1fr auto 1fr; gap:10px; align-items:center;
          padding:10px 12px 8px; background:#1c1a2c; transition:opacity .2s; }
   .hud.dim { opacity:0; }
@@ -100,15 +110,18 @@
     color:#cfc9e6; cursor:pointer; }
   .boxbtn:hover { border-color:#96ffeb; color:#96ffeb; }
   .boxbtn.on { background:#96ffeb; color:#101018; border-color:#96ffeb; }
+  .fullscreen-btn { position:absolute; right:12px; bottom:12px; z-index:8; font:600 13px system-ui,sans-serif;
+    padding:8px 12px; border-radius:10px; border:2px solid #3a3752; background:#1b1a2bef;
+    color:#cfc9e6; cursor:pointer; }
+  .fullscreen-btn:hover, .fullscreen-btn:focus-visible { border-color:#96ffeb; color:#96ffeb; }
 </style>
 </head>
 <body>
-<nav class="models">
-  <a href="index.html">① Modelo original</a>
-  <a href="nuevo.html">② Modelo nuevo</a>
-  <a href="chunli.html">③ Chun-Li</a>
-  <a class="on" href="fight.html">⚔ Pelea</a>
-  <a href="guia-vieja.html">📖 Guía del original</a>
+<nav class="models" aria-label="Navegación principal">
+  <a href="../index.html">🏠 Inicio</a>
+  <a class="on" href="fight.html" aria-current="page">⚔ Juego</a>
+  <a href="../creator/">🧩 Creador de personajes</a>
+  <a href="personajes.html">👥 Personajes</a>
 </nav>
 <div class="wrap">
   <div class="stage">
@@ -136,13 +149,13 @@
         <p class="pickhead">Personajes</p>
         <div class="pickrow">
           <span class="pl">P1</span>
-          <button type="button" class="pbtn pick" data-p1="voltia"><img class="face" src="chars/face_voltia.png" alt="">Voltia</button>
-          <button type="button" class="pbtn" data-p1="chunli"><img class="face" src="chars/face_chunli.png" alt="">Chun-Li</button>
+          <button type="button" class="pbtn pick" data-p1="voltia"><img class="face" src="../characters/voltia/portrait.png" alt="">Voltia</button>
+          <button type="button" class="pbtn" data-p1="chunli"><img class="face" src="../characters/chunli/portrait.png" alt="">Chun-Li</button>
         </div>
         <div class="pickrow">
           <span class="pl">P2</span>
-          <button type="button" class="pbtn" data-p2="voltia"><img class="face" src="chars/face_voltia.png" alt="">Voltia</button>
-          <button type="button" class="pbtn pick" data-p2="chunli"><img class="face" src="chars/face_chunli.png" alt="">Chun-Li</button>
+          <button type="button" class="pbtn" data-p2="voltia"><img class="face" src="../characters/voltia/portrait.png" alt="">Voltia</button>
+          <button type="button" class="pbtn pick" data-p2="chunli"><img class="face" src="../characters/chunli/portrait.png" alt="">Chun-Li</button>
         </div>
         <p class="vsline" id="pick-line"></p>
       </div>
@@ -171,6 +184,7 @@
       </div>
     </div>
     <button class="boxbtn" type="button" id="boxes-btn" title="Ver las cajas de golpe (H)">Cajas (H)</button>
+    <button class="fullscreen-btn" type="button" id="fullscreen-btn" aria-label="Entrar en pantalla completa" title="Ver el juego a pantalla completa">⛶ Pantalla completa</button>
     <div class="endbar" id="endcard" hidden>
       <button class="act gold" type="button" id="rematch">Revancha</button>
       <button class="act" type="button" id="to-menu">Menú</button>
@@ -183,12 +197,12 @@
     Rayo: ↓↘→ + puño. El leve va más lento. Solo uno en pantalla y se apaga a media pista: desde el fondo no llega.
     Gancho: →↓↘ o →↓→ + puño. Si el movimiento lleva el gancho, sale el gancho y no el rayo. Giratoria: ↓↙← + patada. Los dos pegan dos veces y derriban si entran ambos.
     <b>Chun-Li</b> ↓↘→ + puño kikoken · ↓↘→ + patada speed kick · ↓↙← + patada giratoria.
-    Doble adelante: dash corto. Si mantienes el segundo adelante, corres hasta soltar. Doble atrás: salto corto atrás. ↓↘ + patada fuerte: voltereta (fila 15). El botón «Cajas (H)» de la esquina, o la H, enseña las cajas de golpe (verde = lo que le pueden tocar, rojo = golpe activo). Esc pausa. El reloj son 99 segundos reales, como el original.
+    Doble adelante: dash corto. Si mantienes el segundo adelante, corres hasta soltar. Doble atrás: salto corto atrás. ↓↘ + patada fuerte: voltereta (fila 15). El botón «Cajas (H)» de la esquina, o la H, enseña las cajas de golpe (verde = lo que le pueden tocar, rojo = golpe activo). «Pantalla completa» amplía el ring; Esc sale de esa vista o pausa la partida. El reloj son 99 segundos reales, como el original.
   </p>
   <p id="status"></p>
 </div>
 <script src="chars/voltia.js?v=5"></script>
 <script src="chars/chunli.js?v=5"></script>
-<script src="fight.js?v=15"></script>
+<script src="fight.js?v=17"></script>
 </body>
 </html>

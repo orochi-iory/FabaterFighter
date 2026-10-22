@@ -1,0 +1,2054 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="dark">
+<title>Laboratorio de sprites IA · Voltia</title>
+<script>
+  if (new URLSearchParams(location.search).get('vista') === 'creador')
+    document.documentElement.classList.add('vista-creador');
+</script>
+<style>
+  :root {
+    color-scheme: dark;
+    --bg:#150f1f; --panel:#211a33; --panel-2:#171225; --line:#3d3358;
+    --cyan:#96ffeb; --gold:#ffcb3d; --vio:#b98cff; --muted:#b7b0d0;
+  }
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--bg); color:#eee; font-family:system-ui,sans-serif; }
+  nav.models { position:sticky; top:0; z-index:20; display:flex; gap:8px; justify-content:center;
+    padding:10px; background:#0e0a16ee; border-bottom:2px solid var(--line); backdrop-filter:blur(6px);
+    flex-wrap:wrap; overflow-x:auto; overscroll-behavior-inline:contain; scrollbar-width:thin; }
+  nav.models a { flex:0 0 auto; display:flex; align-items:center; min-height:42px; white-space:nowrap;
+    text-decoration:none; padding:9px 14px; border-radius:10px; font-weight:700; letter-spacing:.3px;
+    font-size:14px; border:2px solid var(--line); color:#cfc9e6; }
+  nav.models a:hover { border-color:var(--cyan); color:var(--cyan); }
+  nav.models a.on { background:#8c4dff; border-color:#8c4dff; color:#fff; }
+  a { color:var(--cyan); }
+  header { text-align:center; padding:22px 14px 8px; }
+  header h1 { margin:0; color:var(--vio); letter-spacing:.08em; font-size:clamp(20px,4vw,28px); }
+  header p { margin:8px auto 0; max-width:1000px; color:#cfc9e6; line-height:1.55; font-size:14px; }
+  .summary { display:flex; flex-wrap:wrap; justify-content:center; gap:8px; margin:14px auto 0; }
+  .summary span { padding:6px 10px; border:1px solid var(--line); border-radius:999px; background:#171225;
+    color:#cfc9e6; font-size:12px; }
+  .summary b { color:var(--cyan); }
+  .isolated { border:1px solid #4a4767; border-left:4px solid var(--cyan); border-radius:8px;
+    padding:9px 11px; margin:12px auto 0; max-width:1000px; text-align:left; background:#171225; }
+  main { width:min(100%,1280px); margin:0 auto; padding:clamp(8px,1.8vw,16px);
+    display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:clamp(10px,1.5vw,16px); }
+  .card { min-width:0; background:var(--panel); border:2px solid var(--line); border-radius:14px;
+    padding:clamp(10px,1.2vw,14px); }
+  .card.wide { grid-column:1 / -1; }
+  details.collapsible { min-width:0; background:var(--panel); border:2px solid var(--line); border-radius:14px;
+    padding:clamp(10px,1.2vw,14px); }
+  details.collapsible > summary { display:flex; justify-content:space-between; align-items:center; gap:10px;
+    list-style:none; cursor:pointer; user-select:none; margin:0 0 8px; }
+  details.collapsible > summary::-webkit-details-marker { display:none; }
+  details.collapsible > summary::marker { content:""; }
+  details.collapsible > summary h2 { margin:0; }
+  .collapse-indicator { flex:0 0 auto; display:grid; place-items:center; width:28px; height:28px; border:1px solid var(--line);
+    border-radius:50%; color:var(--cyan); font:700 18px/1 system-ui,sans-serif; }
+  .collapse-indicator::before { content:"−"; }
+  details.collapsible:not([open]) > summary { margin-bottom:0; }
+  details.collapsible:not([open]) .collapse-indicator::before { content:"+"; }
+  .card h2 { margin:0 0 5px; font-size:15px; line-height:1.35; letter-spacing:.6px; color:var(--gold); }
+  .sub { margin:0 0 10px; color:var(--muted); font-size:13px; line-height:1.5; }
+  .note { color:var(--muted); font-size:12.5px; line-height:1.6; }
+  .note b { color:var(--gold); }
+  .selector-row { display:grid; grid-template-columns:minmax(0,1.2fr) minmax(180px,.8fr); gap:9px; align-items:end; }
+  .field { display:grid; gap:4px; color:#cfc9e6; font-size:12px; }
+  .field small { color:#9891b0; font-size:11px; line-height:1.4; }
+  .viewer { min-width:0; padding:10px; border-radius:10px; background:#1a1528; text-align:center; }
+  .stage-scroll { max-width:100%; max-height:65vh; overflow:auto; overscroll-behavior:contain;
+    -webkit-overflow-scrolling:touch; }
+  .animation-stage { display:inline-block; padding:8px; border-radius:8px; line-height:0; }
+  [hidden] { display:none !important; }
+  .fallback-frame { display:block; width:139px; height:170px; overflow:hidden; background:#000; }
+  .fallback-frame img { position:relative; top:-1337px; left:0; display:block; width:1024px; height:1536px;
+    max-width:none; image-rendering:pixelated; }
+  .pixel-canvas { display:block; max-width:none; image-rendering:pixelated; image-rendering:crisp-edges; }
+  canvas#player { margin:0 auto; }
+  .background[data-bg="checker"] { background:repeating-conic-gradient(#2c2a40 0 25%,#242233 0 50%) 0 0/24px 24px; }
+  .background[data-bg="white"] { background:#f4f4f4; }
+  .background[data-bg="black"] { background:#101018; }
+  .background[data-bg="magenta"] { background:#f0f; }
+  .background[data-bg="green"] { background:#00ff00; }
+  .controls { display:flex; flex-wrap:wrap; gap:7px; justify-content:center; align-items:center;
+    min-width:0; margin-top:10px; }
+  .controls > * { min-width:0; max-width:100%; }
+  button, select, input { max-width:100%; padding:7px 11px; border:1px solid #4a4767; border-radius:8px;
+    background:#35324e; color:#eee; font:inherit; font-size:13px; }
+  button { min-height:40px; cursor:pointer; touch-action:manipulation; }
+  button:hover, select:hover { background:#454163; }
+  button:focus-visible, select:focus-visible, input:focus-visible, a:focus-visible {
+    outline:2px solid var(--cyan); outline-offset:2px; }
+  button.on { border-color:var(--cyan); background:#0e7c8c; }
+  select, input[type="number"], input[type="search"] { min-height:40px; }
+  input[readonly] { color:#a9a2c2; border-style:dashed; cursor:default; }
+  input[type="range"] { accent-color:var(--cyan); vertical-align:middle; }
+  output { color:var(--cyan); font:12px ui-monospace,monospace; white-space:nowrap; }
+  .frame-info { min-height:1.5em; margin:9px 0 0; color:#d2caeb; font:12px ui-monospace,monospace; }
+  .sequence-meta { margin-top:9px; padding:9px 10px; border:1px solid var(--line); border-radius:8px;
+    background:var(--panel-2); color:#cfc9e6; font-size:12px; line-height:1.55; overflow-wrap:anywhere; }
+  .sequence-meta b { color:var(--cyan); }
+  .sequence-meta code { color:#cfc9e6; }
+  .compare { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px; }
+  figure.sample { min-width:0; margin:0; }
+  figure.sample figcaption { margin:0 0 5px; text-align:center; color:#cfc9e6; font-size:12px; }
+  .sample-view { min-width:0; max-height:58vh; overflow:auto; padding:8px; border-radius:8px;
+    overscroll-behavior:contain; -webkit-overflow-scrolling:touch; }
+  .sample-view canvas { margin:0 auto; }
+  #raw { cursor:grab; touch-action:none; }
+  #raw.dragging { cursor:grabbing; }
+  #raw.erase-mode { cursor:crosshair; }
+  .manual-erase-panel { margin-top:10px; padding:9px 10px; border:1px solid var(--line); border-radius:8px; background:var(--panel-2); }
+  .sample-description { margin:6px 0 0; text-align:center; color:#9b93b8; font-size:11px; line-height:1.4; }
+  .controls label.toggle-control { display:inline-flex; flex-wrap:nowrap; align-items:center; gap:7px; }
+  .controls label.toggle-control input[type="checkbox"] { width:auto; min-height:0; padding:0; border:0; background:transparent; accent-color:var(--cyan); }
+  .anchor-editor { margin-top:14px; padding-top:12px; border-top:1px solid var(--line); }
+  .anchor-editor h3 { margin:0 0 5px; color:var(--cyan); font-size:14px; }
+  .anchor-editor .sub { margin-bottom:8px; }
+  .anchor-grid { grid-template-columns:repeat(2,minmax(110px,1fr)); }
+  .anchor-grid input { width:100%; }
+  .strip { display:flex; gap:8px; max-width:100%; min-width:0; overflow-x:auto; padding:8px;
+    align-items:flex-start; border-radius:8px; background:#141020; overscroll-behavior-inline:contain;
+    -webkit-overflow-scrolling:touch; }
+  .frame-button { flex:0 0 auto; display:grid; gap:5px; justify-items:center; padding:5px;
+    border:2px solid transparent; background:#161022; }
+  .frame-button[aria-pressed="true"] { border-color:var(--cyan); }
+  .frame-button[data-valid="true"] { background:#143126; }
+  .frame-button[data-valid="true"] span { color:#c9ffdd; }
+  .frame-button span { color:#b7b0d0; font:11px ui-monospace,monospace; white-space:nowrap; }
+  .review-grid { display:grid; grid-template-columns:minmax(0,1fr) minmax(260px,.9fr); gap:12px; margin-top:10px; }
+  .review-panel, .approved-preview { min-width:0; padding:10px; border:1px solid var(--line); border-radius:9px; background:#171225; }
+  .review-panel h3, .approved-preview h3 { margin:0 0 6px; color:var(--cyan); font-size:14px; }
+  .review-panel p, .approved-preview p { margin:6px 0; }
+  .approved-canvas-wrap { position:relative; max-width:100%; max-height:55vh; overflow:auto; padding:8px; border-radius:8px;
+    background:repeating-conic-gradient(#2c2a40 0 25%,#242233 0 50%) 0 0/24px 24px; }
+  #approved-player { margin:0 auto; cursor:crosshair; touch-action:none; }
+  #approved-head-cursor { position:absolute; z-index:2; width:19px; height:19px; transform:translate(-50%,-50%);
+    border:1px solid #0a0710; border-radius:50%; pointer-events:none; background:transparent; }
+  #approved-head-cursor::before, #approved-head-cursor::after { content:""; position:absolute; left:50%; top:50%;
+    background:#ffe34d; box-shadow:0 0 0 1px #0a0710; transform:translate(-50%,-50%); }
+  #approved-head-cursor::before { width:17px; height:1px; }
+  #approved-head-cursor::after { width:1px; height:17px; }
+  .file-button { display:inline-flex; min-height:40px; align-items:center; justify-content:center; padding:7px 11px;
+    border:1px solid #4a4767; border-radius:8px; background:#35324e; color:#eee; font-size:13px; cursor:pointer; }
+  .file-button:hover { background:#454163; }
+  .file-button input { position:absolute; width:1px; height:1px; overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap; }
+  .crop-grid { display:grid; grid-template-columns:repeat(4,minmax(110px,1fr)); gap:8px; }
+  .crop-grid label { display:grid; gap:4px; color:#cfc9e6; font-size:12px; }
+  .crop-grid input { width:100%; min-width:0; }
+  .actions { display:flex; flex-wrap:wrap; gap:7px; justify-content:flex-start; margin-top:9px; }
+  .status { min-height:42px; margin-top:9px; padding:8px 10px; border:1px solid var(--line);
+    border-radius:8px; background:#171225; white-space:pre-wrap; overflow-wrap:anywhere; color:#cfc9e6; font-size:12px; line-height:1.5; }
+  .status[data-kind="error"] { border-color:#b64d4d; color:#ffd1d1; }
+  .status[data-kind="warning"] { border-color:#98752e; color:#ffe2a8; }
+  .status[data-kind="success"] { border-color:#328455; color:#c9ffdd; }
+  #workspace-save-status[data-kind="success"] { color:#c9ffdd; }
+  #workspace-save-status[data-kind="warning"] { color:#ffe2a8; }
+  #workspace-save-status[data-kind="error"] { color:#ffd1d1; }
+  .stats { display:flex; flex-wrap:wrap; gap:8px; margin-top:9px; }
+  .stat { flex:1 1 170px; padding:8px; border:1px solid var(--line); border-radius:8px; background:#171225; }
+  .stat b { display:block; color:var(--cyan); font:700 17px ui-monospace,monospace; }
+  .stat span { color:var(--muted); font-size:11px; }
+  .callout { padding:9px 11px; border:1px solid var(--line); border-radius:8px; background:#171225; }
+  .warning { border-left:4px solid var(--gold); color:#ffe2a8; }
+  details:not(.collapsible) { border:1px solid var(--line); border-radius:9px; padding:9px 11px; background:#171225; }
+  summary { cursor:pointer; color:var(--cyan); font-weight:700; }
+  .source-scroll { max-width:100%; max-height:70vh; margin-top:10px; overflow:auto; }
+  #source-sheet { display:block; width:auto; max-width:none; height:auto; margin:0; image-rendering:pixelated; }
+  .inline-code { color:#d7c8ff; font-family:ui-monospace,monospace; }
+  footer { padding:8px 10px 26px; color:#6d6b85; font-size:12px; text-align:center; }
+  @media (max-width:900px) {
+    main { grid-template-columns:minmax(0,1fr); }
+    .review-grid { grid-template-columns:minmax(0,1fr); }
+  }
+  @media (max-width:760px) {
+    nav.models { justify-content:flex-start; flex-wrap:nowrap; overflow-x:auto; padding:8px 10px;
+      -webkit-overflow-scrolling:touch; }
+    nav.models a { padding:8px 12px; font-size:13px; }
+    .selector-row { grid-template-columns:minmax(0,1fr); }
+  }
+  @media (max-width:600px) {
+    header { padding:18px 12px 8px; }
+    header p { font-size:13px; }
+    main { padding:10px; gap:10px; }
+    .card { border-radius:12px; }
+    .viewer { padding:8px; }
+    .controls { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); width:100%; }
+    .controls > * { width:100%; min-width:0; }
+    .controls > label { display:flex; flex-wrap:wrap; grid-column:1 / -1; align-items:center; gap:7px; }
+    .controls button, .controls select, .controls input { min-height:44px; font-size:16px; }
+    .compare { grid-template-columns:minmax(0,1fr); }
+    .crop-grid { grid-template-columns:repeat(2,minmax(0,1fr)); }
+  }
+  html.vista-creador, html.vista-creador body { min-height:100%; background:transparent; }
+  html.vista-creador nav.models, html.vista-creador body > header, html.vista-creador body > footer,
+  html.vista-creador main > details:not(#animation-review-card) { display:none !important; }
+  html.vista-creador main { display:block; width:100%; margin:0; padding:0; }
+  html.vista-creador #animation-review-card { margin:0; padding:6px; border:0; border-radius:0; background:transparent; }
+  html.vista-creador #animation-review-card > summary,
+  html.vista-creador #animation-review-card > .sub,
+  html.vista-creador #animation-review-card > .workspace-actions,
+  html.vista-creador #animation-review-card .review-panel,
+  html.vista-creador #animation-review-card .approved-preview h3,
+  html.vista-creador #animation-review-card .approved-preview > .note { display:none !important; }
+  html.vista-creador #animation-review-card .review-grid { display:block; }
+  html.vista-creador #animation-review-card .approved-preview { padding:0; border:0; background:transparent; }
+  html.vista-creador #animation-review-card .approved-canvas-wrap { max-height:330px; }
+  html.vista-creador #animation-review-card #approved-preview-info { min-height:1.2em; margin-bottom:0; text-align:center; }
+</style>
+</head>
+<body>
+<nav class="models" aria-label="Navegación principal">
+  <a href="../../index.html">🏠 Inicio</a>
+  <a href="../../preview/fight.html">⚔ Juego</a>
+  <a href="../">🧩 Creador</a>
+  <a href="../../preview/personajes.html">👥 Personajes</a>
+  <a class="on" href="./" aria-current="page">🧪 Pruebas IA · Voltia</a>
+</nav>
+
+<header>
+  <h1>LABORATORIO DE SPRITES IA · VOLTIA</h1>
+  <p>Catálogo de prueba de los movimientos reconocibles en las nueve hojas originales. Cada secuencia mantiene su etiqueta, fase y archivo de origen; las hojas alternativas «Part 5/6» y «Part 6/6» no se mezclan.</p>
+  <div class="summary" aria-label="Resumen del catálogo">
+    <span><b>50</b> secuencias de movimiento</span>
+    <span><b>345</b> cuadros numerados de movimiento</span>
+    <span><b>9</b> hojas fuente intactas</span>
+    <span><b>+ 4</b> retratos estáticos</span>
+    <span><b id="head-anchor-summary">—</b> anclas iniciales · <b id="head-fallback-summary">—</b> fallbacks explícitos</span>
+  </div>
+  <div class="isolated note"><b>Zona de prueba:</b> las ediciones se guardan localmente en este navegador y pueden exportarse como JSON; no se incorporan a la biblioteca oficial ni alteran las imágenes fuente. El modo inicial alinea el punto medido del casco/cabeza entre cuadros. Si no hay cabeza visible, conserva el encuadre antiguo por columna y lo indica: ese centro es solo un fallback, no un ancla inventada.</div>
+</header>
+
+<main>
+  <details class="card collapsible wide" aria-labelledby="choose-title" open>
+    <summary><h2 id="choose-title">Elegir movimiento o secuencia</h2><span class="collapse-indicator" aria-hidden="true"></span></summary>
+    <p class="sub">Las opciones están agrupadas por archivo fuente. Las fases rotuladas por separado aparecen como secuencias independientes.</p>
+    <div class="selector-row">
+      <label class="field" for="sequence-select">Secuencia
+        <select id="sequence-select" disabled><option>Cargando catálogo…</option></select>
+        <small id="sequence-count">Se cargarán las 50 secuencias de movimiento y los cuatro retratos extra.</small>
+      </label>
+      <label class="field" for="category-filter">Filtrar por tipo
+        <select id="category-filter">
+          <option value="all">Todos los tipos</option>
+          <option value="Locomoción">Locomoción</option>
+          <option value="Salto">Salto</option>
+          <option value="Ataque">Ataque</option>
+          <option value="Especial">Especial</option>
+          <option value="Impacto">Impacto</option>
+          <option value="Caída">Caída</option>
+          <option value="Recuperación">Recuperación</option>
+          <option value="Postura">Postura</option>
+          <option value="Reposo">Reposo</option>
+          <option value="Burla">Burla</option>
+          <option value="Defensa">Defensa</option>
+          <option value="Victoria">Victoria</option>
+          <option value="Derrota">Derrota</option>
+          <option value="Intro">Intro</option>
+          <option value="Retrato">Retratos estáticos</option>
+        </select>
+      </label>
+    </div>
+    <div id="sequence-meta" class="sequence-meta" aria-live="polite">Cargando los datos de las nueve hojas…</div>
+  </details>
+
+  <details class="card collapsible" open>
+    <summary><h2>Visor de animación</h2><span class="collapse-indicator" aria-hidden="true"></span></summary>
+    <p class="sub">Reproducción con cada punto de cabeza medido en la misma posición, sin suavizado ni escalado fraccionario. Los cuadros sin cabeza visible usan el fallback de columna.</p>
+    <div class="viewer">
+      <div class="stage-scroll">
+        <div class="animation-stage background" id="player-bg" data-bg="checker">
+          <div id="loading-fallback" class="fallback-frame" aria-label="Fotograma original temporal mientras se prepara el visor">
+            <img src="fuentes/part-06-specials-idle.png?v=5e71e070cae2dfa0" alt="Fotograma 1 de reposo de Voltia, vista directa de la hoja fuente" width="1024" height="1536">
+          </div>
+          <canvas id="player" class="pixel-canvas" width="1" height="1" aria-label="Vista animada de la secuencia seleccionada" hidden></canvas>
+        </div>
+      </div>
+      <div class="controls">
+        <button id="play" type="button" class="on" aria-pressed="true">⏸ Pausa</button>
+        <button id="prev" type="button" aria-label="Fotograma anterior">◀ Anterior</button>
+        <button id="next" type="button" aria-label="Fotograma siguiente">Siguiente ▶</button>
+        <label>Alineación
+          <select id="alignment-mode" aria-label="Método de centrado">
+            <option value="head" selected>Cabeza/casco medido</option>
+            <option value="column">Columna · referencia anterior</option>
+          </select>
+        </label>
+        <label class="toggle-control"><input id="show-head-marker" type="checkbox" checked> Marcar cabeza</label>
+        <label>Fondo
+          <select id="background-select" aria-label="Fondo de visualización">
+            <option value="checker">Ajedrez</option><option value="white">Blanco</option>
+            <option value="black">Negro</option><option value="magenta">Magenta</option>
+            <option value="green">Verde</option>
+          </select>
+        </label>
+        <label>Zoom entero
+          <select id="zoom-select" aria-label="Ampliación del visor">
+            <option value="1">1×</option><option value="2" selected>2×</option>
+            <option value="3">3×</option><option value="4">4×</option>
+          </select>
+        </label>
+        <label>Velocidad
+          <input id="fps" type="range" min="2" max="20" value="8" aria-label="Fotogramas por segundo">
+          <output id="fps-value">8 fps</output>
+        </label>
+      </div>
+      <p class="frame-info" id="frame-info" aria-live="polite">Muestra directa del PNG visible mientras se prepara el visor…</p>
+    </div>
+  </details>
+
+  <details class="card collapsible" open>
+    <summary><h2>Comparación del fotograma</h2><span class="collapse-indicator" aria-hidden="true"></span></summary>
+    <p class="sub">Arrastra la imagen fuente para mover el recorte; un clic en el casco coloca la cruz de medición. A la derecha se comprueba la máscara sin cambiar el RGB.</p>
+    <div class="compare">
+      <figure class="sample">
+        <figcaption>Fuente · recorte sin alterar</figcaption>
+        <div class="sample-view background" id="raw-bg" data-bg="checker"><canvas id="raw" class="pixel-canvas"></canvas></div>
+        <p class="sample-description">Arrastra para mover el recorte (X/Y); haz clic en el casco para medir la cabeza.</p>
+      </figure>
+      <figure class="sample">
+        <figcaption id="processed-caption">Fondo conectado al borde · solo alfa</figcaption>
+        <div class="sample-view background" id="processed-bg" data-bg="checker"><canvas id="processed" class="pixel-canvas"></canvas></div>
+        <p class="sample-description">Comprueba contornos en ajedrez, blanco, negro y magenta.</p>
+      </figure>
+    </div>
+    <div class="controls">
+      <label>Modo de máscara
+        <select id="mask-mode">
+          <option value="edge" selected>Fondo conectado al borde</option>
+          <option value="original">Sin quitar fondo</option>
+          <option value="global">Umbral global · diagnóstico</option>
+        </select>
+      </label>
+      <label>Umbral negro
+        <input id="threshold" type="range" min="0" max="32" value="10" aria-label="Umbral de máscara de negro">
+        <output id="threshold-value">10 / 32</output>
+      </label>
+    </div>
+    <div class="stats" id="stats" aria-live="polite"></div>
+    <div class="manual-erase-panel">
+      <div class="actions">
+        <label class="toggle-control"><input id="manual-erase-mode" type="checkbox"> Seleccionar zona a eliminar</label>
+        <button id="undo-manual-erase" type="button" disabled>Deshacer última zona</button>
+        <button id="clear-manual-erase" type="button" disabled>Quitar zonas de este cuadro</button>
+      </div>
+      <p class="note" id="manual-erase-info" aria-live="polite">Activa la herramienta y arrastra un rectángulo sobre la vista Fuente. La zona se hará transparente solo en el resultado del laboratorio.</p>
+    </div>
+  </details>
+
+  <details class="card collapsible wide" open>
+    <summary><h2>Tira de cuadros</h2><span class="collapse-indicator" aria-hidden="true"></span></summary>
+    <p class="sub">Selecciona un cuadro para congelar la animación y editar su recorte. Los cuadros elegidos como válidos aparecen con «✓»; las tiras largas se desplazan horizontalmente.</p>
+    <div class="strip" id="strip" aria-label="Cuadros de la secuencia seleccionada"></div>
+  </details>
+
+  <details class="card collapsible wide" id="animation-review-card" aria-labelledby="review-title" open>
+    <summary><h2 id="review-title">Guardar cambios y validar la animación</h2><span class="collapse-indicator" aria-hidden="true"></span></summary>
+    <p class="sub">Los recortes y anclas se guardan automáticamente en este navegador. Descarga un respaldo JSON para trasladarlos; importar uno reemplaza el trabajo local. No se escribe en los PNG ni en la biblioteca oficial.</p>
+    <div class="actions workspace-actions">
+      <button id="save-work" type="button">Guardar cambios ahora</button>
+      <button id="export-work" type="button">Descargar respaldo JSON</button>
+      <label class="file-button" for="import-work">Importar respaldo JSON<input id="import-work" type="file" accept="application/json,.json"></label>
+      <span class="note" id="workspace-save-status" aria-live="polite">Los cambios se guardarán localmente al editar.</span>
+    </div>
+    <div class="review-grid">
+      <div class="review-panel">
+        <h3>Seleccionar cuadros para la versión válida</h3>
+        <p class="note">Con el cuadro seleccionado en la tira, marca los que deban formar parte de la animación final. Los no marcados se excluyen de esta versión.</p>
+        <div class="actions">
+          <button id="toggle-frame-valid" type="button">Marcar cuadro actual como válido</button>
+          <button id="validate-animation" type="button">Validar animación completa</button>
+          <button id="send-to-creator" type="button" hidden>Enviar al Creador · Nativo sin escala</button>
+          <button id="open-in-creator" type="button" hidden>Revisar en el Creador</button>
+          <button id="clear-valid-frames" type="button">Quitar todas las selecciones</button>
+        </div>
+        <p id="creator-send-status" class="status" role="status" aria-live="polite" hidden></p>
+        <p class="sequence-meta" id="animation-validation-summary" aria-live="polite">Selecciona una secuencia de movimiento.</p>
+        <p class="note" id="validated-sequences-summary" aria-live="polite">0/50 animaciones validadas en este navegador.</p>
+        <p class="status" id="animation-validation-status" role="status" aria-live="polite">La animación todavía no está validada.</p>
+      </div>
+      <div class="approved-preview">
+        <h3>Vista previa de los cuadros válidos</h3>
+        <p class="note">Reproduce en orden original únicamente los cuadros que has seleccionado. Pausa y arrastra la cruz sobre la cabeza para corregir su punto; al soltar, el cuadro se recentra y la animación queda pendiente de validar otra vez.</p>
+        <div class="approved-canvas-wrap" id="approved-canvas-wrap"><canvas id="approved-player" class="pixel-canvas" width="1" height="1" aria-label="Vista previa de la animación con cuadros válidos"></canvas><span id="approved-head-cursor" hidden aria-hidden="true"></span></div>
+        <div class="controls">
+          <button id="approved-prev" type="button" aria-label="Cuadro válido anterior">◀ Anterior</button>
+          <button id="approved-play" type="button" aria-pressed="false">▶ Reproducir válidos</button>
+          <button id="approved-next" type="button" aria-label="Cuadro válido siguiente">Siguiente ▶</button>
+        </div>
+        <p class="frame-info" id="approved-preview-info" aria-live="polite">Aún no hay cuadros seleccionados como válidos.</p>
+      </div>
+    </div>
+  </details>
+
+  <details class="card collapsible" open>
+    <summary><h2>Recorte y cabeza · edición guardable</h2><span class="collapse-indicator" aria-hidden="true"></span></summary>
+    <p class="sub">Arrastra la imagen en la vista Fuente para mover el recorte (X/Y). Ajusta solo el ancho y el alto con los controles; el ancla sigue siendo un punto medido en la cabeza/casco, nunca el centro de la caja ni el número impreso.</p>
+    <div class="crop-grid">
+      <label>X inicio · ratón<input id="crop-x" type="number" min="0" step="1" inputmode="numeric" readonly aria-readonly="true"></label>
+      <label>Y inicio · ratón<input id="crop-y" type="number" min="0" step="1" inputmode="numeric" readonly aria-readonly="true"></label>
+      <label>Ancho (px)<input id="crop-w" type="number" min="1" step="1" inputmode="numeric"></label>
+      <label>Alto (px)<input id="crop-h" type="number" min="1" step="1" inputmode="numeric"></label>
+    </div>
+    <div class="anchor-editor">
+      <h3>Punto de cabeza</h3>
+      <p class="sub">El detector propone un punto por casco visible; corrígelo haciendo clic en la cabeza en el recorte fuente o editando X/Y locales. Si no hay cabeza visible, no se inventa: se conserva el fallback de columna y queda indicado.</p>
+      <div class="crop-grid anchor-grid">
+        <label>X cabeza (px en recorte)<input id="head-x" type="number" min="0" step="0.1" inputmode="decimal"></label>
+        <label>Y cabeza (px en recorte)<input id="head-y" type="number" min="0" step="0.1" inputmode="decimal"></label>
+      </div>
+      <div class="actions">
+        <button id="reset-anchor" type="button">Restaurar medición inicial</button>
+        <button id="remove-anchor" type="button">Quitar punto · usar fallback</button>
+      </div>
+      <p class="note" id="anchor-info" aria-live="polite">Cargando las mediciones del catálogo…</p>
+    </div>
+    <div class="actions">
+      <button id="reset-frame" type="button">Restaurar este cuadro</button>
+      <button id="reset-sequence" type="button">Restaurar toda la secuencia</button>
+    </div>
+    <div id="status" class="status" role="status" aria-live="polite">Cargando las imágenes originales…</div>
+  </details>
+
+  <details class="card collapsible">
+    <summary><h2>Hoja fuente seleccionada</h2><span class="collapse-indicator" aria-hidden="true"></span></summary>
+    <p class="sub">Acceso a la lámina completa correspondiente. Se muestra desde el PNG original; no se guarda una copia modificada.</p>
+    <details>
+      <summary>Ver hoja fuente completa a su tamaño original</summary>
+      <div class="source-scroll"><img id="source-sheet" alt="Hoja fuente completa de Voltia"></div>
+    </details>
+    <div class="sequence-meta" id="source-meta">Sin hoja seleccionada.</div>
+  </details>
+
+  <details class="card collapsible wide">
+    <summary><h2>Alcance y máscara de prueba</h2><span class="collapse-indicator" aria-hidden="true"></span></summary>
+    <div class="callout note"><b>Base inicial aceptada:</b> umbral 10. El método seguro busca los píxeles casi negros conectados al borde del recorte con conectividad de ocho vecinos y pone únicamente su alfa a cero. Se pueden ver pequeños residuos o píxeles transparentes en el contorno para valorar el resultado antes de ajustar más.</div>
+    <ul class="note">
+      <li>El modo <b>global</b> es solo un diagnóstico deliberadamente destructivo: puede borrar tonos oscuros del dibujo. No se exporta.</li>
+      <li>Las hojas Part 5/6 y Part 6/6 repetidas están identificadas por su archivo (A/B/C) y no comparten cuadros entre diseños.</li>
+      <li><b>JUMP (START/LOOP/LAND)</b> y <b>SPECIAL ATTACK (CHARGE/RELEASE)</b> son fases separadas cuando así aparecen rotuladas.</li>
+      <li>Los cuatro retratos se ofrecen como extra estático y no cuentan dentro de las 50 secuencias de movimiento ni los 345 cuadros numerados.</li>
+      <li>No se altera <span class="inline-code">voltia/sheet_uniform.png</span>, las fuentes guardadas en <span class="inline-code">fuentes/</span> ni la biblioteca oficial.</li>
+    </ul>
+  </details>
+</main>
+<footer>FabaterFighter · laboratorio aislado · ediciones locales, PNG fuente intactos, biblioteca oficial sin cambios</footer>
+
+<script>
+(() => {
+  'use strict';
+  const $ = id => document.getElementById(id);
+  const imageCache = new Map();
+  const WORKSPACE_FORMAT = 'FabaterFighter-PruebasIA';
+  const WORKSPACE_VERSION = 1;
+  const WORKSPACE_KEY_BASE = 'fabaterfighter.pruebas-ia.v1';
+  let catalog = null;
+  let workspace = null;
+  let workspaceKey = '';
+  let workspaceSignature = '';
+  let selectedSequence = null;
+  let sourceImage = null;
+  let sourceCanvas = document.createElement('canvas');
+  let sourceContext = sourceCanvas.getContext('2d', { willReadFrequently: true });
+  let sequenceFrames = [];
+  let processedFrames = [];
+  let selectedFrame = 0;
+  let playing = true;
+  let lastFrameAt = 0;
+  let approvedPreviewIndex = 0;
+  let approvedPreviewPlaying = false;
+  let lastApprovedFrameAt = 0;
+  let cropDrag = null;
+  let eraseDrag = null;
+  let approvedAnchorDrag = null;
+  let suppressRawClick = false;
+  let dragRebuildTimer = 0;
+  let animationHandle = 0;
+  let loadToken = 0;
+  let updateTimer = 0;
+  let creatorImportBusy = false;
+  const creatorImportsDone = new Set();
+  let stageWidth = 1;
+  let stageHeight = 1;
+  let approvedStageWidth = 1;
+  let approvedStageHeight = 1;
+  let hasRendered = false;
+
+  const player = $('player');
+  const playerContext = player.getContext('2d', { willReadFrequently: true });
+  const approvedPlayer = $('approved-player');
+  const approvedPlayerContext = approvedPlayer.getContext('2d', { willReadFrequently: true });
+  const rawCanvas = $('raw');
+  const processedCanvas = $('processed');
+  const defaultThreshold = 10;
+
+  function status(message, kind = '') {
+    const el = $('status');
+    el.textContent = message;
+    el.dataset.kind = kind;
+  }
+
+  function workspaceStatus(message, kind = '') {
+    const el = $('workspace-save-status');
+    if (!el) return;
+    el.textContent = message;
+    el.dataset.kind = kind;
+  }
+
+  function emptyWorkspace() {
+    return { format: WORKSPACE_FORMAT, version: WORKSPACE_VERSION, catalogSignature: workspaceSignature, updatedAt: null, sequences: {} };
+  }
+
+  function initializeWorkspace() {
+    workspaceSignature = JSON.stringify({
+      schema: catalog.schema,
+      sources: catalog.sources.map(source => [source.id, source.sha256]),
+      sequences: catalog.sequences.map(sequence => [sequence.id, sequence.source,
+        sequence.frames.map(frame => [frame.n, frame.x, frame.y, frame.w, frame.h, frame.head?.x ?? null, frame.head?.y ?? null])]),
+    });
+    workspaceKey = `${WORKSPACE_KEY_BASE}:${catalog.sources.map(source => source.sha256.slice(0, 12)).join('')}`;
+    workspace = emptyWorkspace();
+    try {
+      const saved = window.localStorage.getItem(workspaceKey);
+      if (!saved) {
+        workspaceStatus('Sin cambios guardados todavía. Las ediciones se guardarán automáticamente en este navegador.');
+        return;
+      }
+      const parsed = JSON.parse(saved);
+      if (parsed?.format !== WORKSPACE_FORMAT || parsed.version !== WORKSPACE_VERSION ||
+          parsed.catalogSignature !== workspaceSignature || !parsed.sequences || typeof parsed.sequences !== 'object' || Array.isArray(parsed.sequences))
+        throw new Error('El respaldo local no coincide con la versión actual del catálogo.');
+      workspace = { ...emptyWorkspace(), ...parsed };
+      workspaceStatus(`Trabajo local restaurado · última actualización ${workspace.updatedAt || 'sin fecha'}.`, 'success');
+    } catch (error) {
+      workspaceStatus(`No se pudo leer el guardado local: ${error.message}. Puedes importar un respaldo JSON.`, 'warning');
+    }
+  }
+
+  function sameNumbers(left, right) {
+    return Array.isArray(left) && Array.isArray(right) && left.length === right.length && left.every((value, index) => value === right[index]);
+  }
+
+  function currentApprovedFrameNumbers() {
+    return sequenceFrames.filter(frame => frame.approved).map(frame => frame.n);
+  }
+
+  function captureCurrentSequence() {
+    if (!workspace || !selectedSequence || !sequenceFrames.length) return;
+    const previous = workspace.sequences[selectedSequence.id] || {};
+    const approvedFrameNumbers = currentApprovedFrameNumbers();
+    const validation = previous.validation && sameNumbers(previous.validation.validFrameNumbers, approvedFrameNumbers)
+      ? previous.validation : null;
+    const frames = {};
+    for (const frame of sequenceFrames) {
+      frames[String(frame.n)] = {
+        rect: { ...frame.rect },
+        head: frame.head ? { ...frame.head } : null,
+        headStatus: frame.headStatus || '',
+        manualExclusions: (frame.manualExclusions || []).map(region => [...region]),
+        approved: Boolean(frame.approved),
+      };
+    }
+    workspace.sequences[selectedSequence.id] = { frames, validation };
+  }
+
+  function persistWorkspace(message = 'Guardado automáticamente en este navegador.', capture = true) {
+    if (!workspace) return false;
+    if (capture) captureCurrentSequence();
+    workspace.updatedAt = new Date().toISOString();
+    try {
+      window.localStorage.setItem(workspaceKey, JSON.stringify(workspace));
+      workspaceStatus(`${message} · ${new Date(workspace.updatedAt).toLocaleString('es-ES')}.`, 'success');
+      return true;
+    } catch (error) {
+      workspaceStatus(`No se pudo guardar localmente: ${error.message}. Descarga un respaldo JSON.`, 'error');
+      return false;
+    }
+  }
+
+  function recordForSelectedSequence() {
+    return selectedSequence && workspace?.sequences?.[selectedSequence.id] || null;
+  }
+
+  function currentAnimationValidation() {
+    const validation = recordForSelectedSequence()?.validation;
+    return validation && sameNumbers(validation.validFrameNumbers, currentApprovedFrameNumbers()) ? validation : null;
+  }
+
+  function validatedSequenceCount() {
+    if (!workspace || !catalog) return 0;
+    return catalog.sequences.filter(sequence => sequence.category !== 'Retrato').filter(sequence => {
+      if (sequence.id === selectedSequence?.id) return Boolean(currentAnimationValidation());
+      const record = workspace.sequences[sequence.id];
+      const approved = sequence.frames.filter(frame => record?.frames?.[String(frame.n)]?.approved === true).map(frame => frame.n);
+      return Boolean(record?.validation && approved.length && sameNumbers(record.validation.validFrameNumbers, approved));
+    }).length;
+  }
+
+  function invalidateAnimationValidation() {
+    const record = recordForSelectedSequence();
+    if (record) record.validation = null;
+  }
+
+  function markCurrentFrameChanged() {
+    invalidateAnimationValidation();
+  }
+
+  function reportRuntimeError(message) {
+    const detail = `Error del visor: ${message}`;
+    status(detail, 'error');
+    $('frame-info').textContent = detail;
+  }
+
+  function sourceUrl(source) {
+    const url = new URL(source.file, document.baseURI);
+    url.searchParams.set('v', source.sha256.slice(0, 16));
+    return url.href;
+  }
+
+  function imageFor(source) {
+    if (imageCache.has(source.id)) return imageCache.get(source.id);
+    const promise = new Promise((resolve, reject) => {
+      const image = new Image();
+      image.decoding = 'async';
+      image.onload = () => resolve(image);
+      image.onerror = () => reject(new Error(`No se pudo cargar ${source.file}.`));
+      image.src = sourceUrl(source);
+    });
+    imageCache.set(source.id, promise);
+    return promise;
+  }
+
+  function populateSelector() {
+    const selector = $('sequence-select');
+    const filter = $('category-filter').value;
+    const previous = selector.value;
+    selector.replaceChildren();
+    let visibleCount = 0;
+    for (const source of catalog.sources) {
+      const sequences = catalog.sequences.filter(sequence => sequence.source === source.id && (filter === 'all' || sequence.category === filter));
+      if (!sequences.length) continue;
+      const group = document.createElement('optgroup');
+      group.label = source.title;
+      for (const sequence of sequences) {
+        const option = document.createElement('option');
+        option.value = sequence.id;
+        const kind = sequence.category === 'Retrato' ? ' · estático' : '';
+        option.textContent = `${sequence.label} · ${sequence.originalLabel} · ${sequence.frameCount} cuadros${kind}`;
+        group.appendChild(option);
+        visibleCount++;
+      }
+      selector.appendChild(group);
+    }
+    selector.disabled = visibleCount === 0;
+    $('sequence-count').textContent = filter === 'all'
+      ? `Catálogo completo: ${visibleCount - 1} secuencias de movimiento y una secuencia extra de cuatro retratos.`
+      : `${visibleCount} secuencias en este filtro.`;
+    if (Array.from(selector.options).some(option => option.value === previous)) selector.value = previous;
+    else selector.selectedIndex = 0;
+  }
+
+  function cloneSequenceFrames(sequence) {
+    return sequence.frames.map(frame => {
+      const initialRect = { x: frame.x, y: frame.y, w: frame.w, h: frame.h };
+      const initialHead = frame.head ? { ...frame.head } : null;
+      return {
+        ...frame,
+        initialRect,
+        rect: { ...initialRect },
+        initialHead,
+        head: initialHead ? { ...initialHead } : null,
+        initialHeadStatus: frame.headStatus || '',
+        manualExclusions: [],
+        approved: false,
+      };
+    });
+  }
+
+  function applyWorkspaceToFrames(sequence, frames, source) {
+    const savedSequence = workspace?.sequences?.[sequence.id];
+    if (!savedSequence?.frames) return;
+    const sourceRectIsValid = rect => rect && [rect.x, rect.y, rect.w, rect.h].every(Number.isInteger) &&
+      rect.x >= 0 && rect.y >= 0 && rect.w >= 1 && rect.h >= 1 && rect.x + rect.w <= source.width && rect.y + rect.h <= source.height;
+    const sourcePointIsValid = point => point && Number.isFinite(point.x) && Number.isFinite(point.y) &&
+      point.x >= 0 && point.y >= 0 && point.x < source.width && point.y < source.height;
+    const sourceRegionIsValid = region => Array.isArray(region) && region.length === 4 && region.every(Number.isInteger) &&
+      region[0] >= 0 && region[1] >= 0 && region[2] > region[0] && region[3] > region[1] && region[2] <= source.width && region[3] <= source.height;
+    for (const frame of frames) {
+      const saved = savedSequence.frames[String(frame.n)];
+      if (!saved || typeof saved !== 'object') continue;
+      if (sourceRectIsValid(saved.rect)) frame.rect = { ...saved.rect };
+      if (Object.prototype.hasOwnProperty.call(saved, 'head')) {
+        if (saved.head === null) frame.head = null;
+        else if (sourcePointIsValid(saved.head)) frame.head = { ...saved.head };
+      }
+      if (typeof saved.headStatus === 'string') frame.headStatus = saved.headStatus;
+      frame.manualExclusions = Array.isArray(saved.manualExclusions) ? saved.manualExclusions.filter(sourceRegionIsValid).map(region => [...region]) : [];
+      frame.approved = sequence.category !== 'Retrato' && saved.approved === true;
+    }
+    const storedValidation = savedSequence.validation;
+    const approved = frames.filter(frame => frame.approved).map(frame => frame.n);
+    if (storedValidation && !sameNumbers(storedValidation.validFrameNumbers, approved)) savedSequence.validation = null;
+  }
+
+  function readFrameRect(frame) {
+    const rect = frame.rect;
+    if (![rect.x, rect.y, rect.w, rect.h].every(Number.isInteger)) throw new Error('El recorte debe usar números enteros de píxel.');
+    if (rect.x < 0 || rect.y < 0 || rect.w < 1 || rect.h < 1 || rect.x + rect.w > sourceCanvas.width || rect.y + rect.h > sourceCanvas.height)
+      throw new Error(`El recorte del cuadro ${frame.n} queda fuera de la hoja de ${sourceCanvas.width}×${sourceCanvas.height}.`);
+    const center = Number.isFinite(frame.center) ? frame.center : rect.x + rect.w / 2;
+    return { ...rect, center };
+  }
+
+  function headPointInRect(frame, rect) {
+    const point = frame.head;
+    if (!point || !Number.isFinite(point.x) || !Number.isFinite(point.y)) return null;
+    const x = point.x - rect.x, y = point.y - rect.y;
+    if (x < 0 || y < 0 || x > rect.w - 1 || y > rect.h - 1) return null;
+    return { x, y, method: point.method || 'measured' };
+  }
+
+  function placementFor(frame, rect, alignmentMode = $('alignment-mode').value) {
+    const head = headPointInRect(frame, rect);
+    if (alignmentMode === 'head' && head && selectedSequence?.category !== 'Retrato')
+      return { x: head.x, y: head.y, kind: 'head', head };
+    const sourceCenter = Number.isFinite(frame.center) ? frame.center : rect.x + rect.w / 2;
+    const center = Math.max(0, Math.min(rect.w - 1, sourceCenter - rect.x));
+    return { x: center, y: 0, kind: alignmentMode === 'column' ? 'column' : 'fallback', head };
+  }
+
+  function measuredAnchorCounts() {
+    let measured = 0, manual = 0;
+    for (const frame of sequenceFrames) {
+      if (headPointInRect(frame, frame.rect)) {
+        measured++;
+        if (String(frame.head?.method || '').startsWith('manual')) manual++;
+      }
+    }
+    return { measured, manual, fallback: Math.max(0, sequenceFrames.length - measured) };
+  }
+
+  function isNearBlack(data, pixelIndex, threshold) {
+    const offset = pixelIndex * 4;
+    return data[offset + 3] > 0 && Math.max(data[offset], data[offset + 1], data[offset + 2]) <= threshold;
+  }
+
+  function maskFrame(raw, mode, threshold, frame) {
+    const data = new Uint8ClampedArray(raw.data);
+    const width = raw.width, height = raw.height, count = width * height;
+    const candidates = new Uint8Array(count);
+    let candidateCount = 0;
+    for (let i = 0; i < count; i++) {
+      if (isNearBlack(data, i, threshold)) { candidates[i] = 1; candidateCount++; }
+    }
+    let removed = 0;
+    if (mode === 'global') {
+      for (let i = 0; i < count; i++) if (candidates[i]) {
+        data[i * 4 + 3] = 0;
+        removed++;
+      }
+    } else if (mode === 'edge') {
+      const seen = new Uint8Array(count);
+      const queue = new Int32Array(count);
+      let head = 0, tail = 0;
+      const add = index => {
+        if (candidates[index] && !seen[index]) { seen[index] = 1; queue[tail++] = index; }
+      };
+      for (let x = 0; x < width; x++) { add(x); add((height - 1) * width + x); }
+      for (let y = 0; y < height; y++) { add(y * width); add(y * width + width - 1); }
+      while (head < tail) {
+        const index = queue[head++], x = index % width, y = (index / width) | 0;
+        for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) {
+          if (!dx && !dy) continue;
+          const xx = x + dx, yy = y + dy;
+          if (xx < 0 || xx >= width || yy < 0 || yy >= height) continue;
+          const neighbor = yy * width + xx;
+          if (candidates[neighbor] && !seen[neighbor]) { seen[neighbor] = 1; queue[tail++] = neighbor; }
+        }
+      }
+      for (let i = 0; i < count; i++) if (seen[i]) {
+        data[i * 4 + 3] = 0;
+        removed++;
+      }
+    }
+    let labelPixelsRemoved = 0, manualPixelsRemoved = 0;
+    const removeRegions = (regions, countLabel = false) => {
+      for (const [sourceX0, sourceY0, sourceX1, sourceY1] of regions) {
+        const x0 = Math.max(0, sourceX0 - frame.rect.x), y0 = Math.max(0, sourceY0 - frame.rect.y);
+        const x1 = Math.min(width, sourceX1 - frame.rect.x), y1 = Math.min(height, sourceY1 - frame.rect.y);
+        for (let y = y0; y < y1; y++) for (let x = x0; x < x1; x++) {
+          const offset = (y * width + x) * 4;
+          if (data[offset + 3] !== 0) {
+            data[offset + 3] = 0;
+            if (countLabel) labelPixelsRemoved++;
+            else manualPixelsRemoved++;
+          }
+        }
+      }
+    };
+    if (mode !== 'original' && Array.isArray(frame.excludeSourceRects)) removeRegions(frame.excludeSourceRects, true);
+    if (Array.isArray(frame.manualExclusions)) removeRegions(frame.manualExclusions);
+    return {
+      image: new ImageData(data, width, height), removed, candidateCount,
+      preservedDark: candidateCount - (mode === 'edge' ? removed : mode === 'global' ? removed : 0),
+      labelPixelsRemoved, manualPixelsRemoved,
+    };
+  }
+
+  function addStat(value, label) {
+    const item = document.createElement('div');
+    item.className = 'stat';
+    const strong = document.createElement('b'); strong.textContent = value;
+    const text = document.createElement('span'); text.textContent = label;
+    item.append(strong, text);
+    $('stats').appendChild(item);
+  }
+
+  function layoutFor(frames, alignmentMode = $('alignment-mode').value) {
+    let width = 1, height = 1;
+    for (const frame of frames) {
+      const rect = readFrameRect(frame);
+      const placement = placementFor(frame, rect, alignmentMode);
+      const left = placement.x;
+      const right = rect.w - placement.x;
+      width = Math.max(width, rect.w, Math.ceil(2 * Math.max(Math.abs(left), Math.abs(right))));
+      if (placement.kind === 'head') {
+        const above = placement.y;
+        const below = rect.h - placement.y;
+        height = Math.max(height, Math.ceil(2 * Math.max(Math.abs(above), Math.abs(below))));
+      } else {
+        height = Math.max(height, rect.h);
+      }
+    }
+    return { width, height };
+  }
+
+  function rebuild() {
+    if (!selectedSequence || !sourceImage || !sequenceFrames.length) return;
+    const mode = $('mask-mode').value;
+    const threshold = Number($('threshold').value);
+    const next = [];
+    let totalPixels = 0, nearBlack = 0, removedPixels = 0, preservedDark = 0, removedLabels = 0, manualPixelsRemoved = 0;
+    for (const frame of sequenceFrames) {
+      const rect = readFrameRect(frame);
+      const raw = sourceContext.getImageData(rect.x, rect.y, rect.w, rect.h);
+      const result = maskFrame(raw, mode, threshold, frame);
+      const edgeStats = mode === 'edge' ? result : maskFrame(raw, 'edge', threshold, frame);
+      next.push({ frame, rect, raw, image: result.image, stats: result });
+      totalPixels += rect.w * rect.h;
+      nearBlack += result.candidateCount;
+      removedPixels += result.removed;
+      preservedDark += edgeStats.preservedDark;
+      removedLabels += result.labelPixelsRemoved;
+      manualPixelsRemoved += result.manualPixelsRemoved;
+    }
+    processedFrames = next;
+    const layout = layoutFor(sequenceFrames);
+    stageWidth = layout.width;
+    stageHeight = layout.height;
+    renderStrip();
+    showFrame(selectedFrame);
+    $('stats').replaceChildren();
+    const removedPct = totalPixels ? (100 * removedPixels / totalPixels).toFixed(1) : '0.0';
+    const candidatePct = totalPixels ? (100 * nearBlack / totalPixels).toFixed(1) : '0.0';
+    addStat(`${removedPct}%`, mode === 'original' ? 'píxeles puestos a alfa 0 en el modo actual' : 'píxeles de fondo puestos a alfa 0');
+    addStat(`${candidatePct}%`, `píxeles negros detectados (umbral ${threshold})`);
+    addStat(mode === 'edge' ? preservedDark.toLocaleString('es-ES') : '—', 'píxeles negros aislados preservados por la máscara segura');
+    if (removedLabels) addStat(removedLabels.toLocaleString('es-ES'), 'píxeles de rótulo excluidos solo en el recorte especial');
+    if (manualPixelsRemoved) addStat(manualPixelsRemoved.toLocaleString('es-ES'), 'píxeles excluidos por zonas manuales');
+    const anchors = measuredAnchorCounts();
+    if (selectedSequence.category !== 'Retrato') {
+      addStat(`${anchors.measured}/${sequenceFrames.length}`, 'cuadros con punto de cabeza dentro del recorte');
+      addStat(String(anchors.fallback), 'sin punto visible · fallback por columna');
+      if (anchors.manual) addStat(String(anchors.manual), 'mediciones manuales revisadas');
+    } else {
+      addStat('Estática', 'retratos extra; sin ancla de animación');
+    }
+    const anchorSummary = selectedSequence.category === 'Retrato'
+      ? 'Retrato estático; no se aplica un ancla de animación.'
+      : `${anchors.measured}/${sequenceFrames.length} cuadros con punto medido; ${anchors.fallback} sin punto y con fallback de columna.`;
+    $('sequence-anchor-summary').textContent = anchorSummary;
+
+    const source = catalog.sources.find(item => item.id === selectedSequence.source);
+    const label = selectedSequence.originalLabel ? `«${selectedSequence.originalLabel}»` : selectedSequence.label;
+    const suffix = mode === 'global'
+      ? ' Diagnóstico global: puede borrar píxeles oscuros del personaje.'
+      : mode === 'original' ? ' Se muestra el recorte fuente sin máscara.' : '';
+    const detail = mode === 'edge'
+      ? `Máscara de borde: ${removedPixels.toLocaleString('es-ES')} píxeles conectados; ${preservedDark.toLocaleString('es-ES')} casi negros no conectados preservados.`
+      : mode === 'global'
+        ? `El umbral global pone a alfa cero ${removedPixels.toLocaleString('es-ES')} píxeles casi negros, sin distinguir fondo y dibujo.`
+        : `Con este umbral la máscara segura quitaría ${next.reduce((sum, item) => sum + maskFrame(item.raw, 'edge', threshold, item.frame).removed, 0).toLocaleString('es-ES')} píxeles; la vista conserva la fuente.`;
+    const labelNote = removedLabels ? ` Se han excluido ${removedLabels.toLocaleString('es-ES')} píxeles de rótulos de la lámina en recortes especiales.` : '';
+    const alignNote = selectedSequence.category === 'Retrato'
+      ? ' Retratos estáticos: se conserva su colocación de columna.'
+      : $('alignment-mode').value === 'head'
+        ? ` Alineación por cabeza: ${anchors.measured} puntos medidos; ${anchors.fallback} cuadros usan el fallback explícito de columna.`
+        : ' Alineación de referencia por centro de columna/rótulo; las medidas de cabeza no se usan para colocar.';
+    status(`${selectedSequence.frameCount} cuadros de ${label} · ${source.title}. Umbral ${threshold}; ${detail}${labelNote}${alignNote}${suffix}`, mode === 'global' ? 'warning' : 'success');
+    updateValidationUI();
+  }
+
+  function safeRebuild() {
+    try { rebuild(); }
+    catch (error) { status(error.message, 'error'); }
+  }
+
+  function scheduleRebuild() {
+    window.clearTimeout(updateTimer);
+    updateTimer = window.setTimeout(safeRebuild, 65);
+  }
+
+  function putImage(canvas, imageData) {
+    canvas.width = imageData.width;
+    canvas.height = imageData.height;
+    const context = canvas.getContext('2d', { willReadFrequently: true });
+    context.imageSmoothingEnabled = false;
+    context.putImageData(imageData, 0, 0);
+  }
+
+  function setCanvasScale(canvas, width, height, multiplier = 1) {
+    const integerZoom = Math.max(1, Math.round(multiplier));
+    canvas.style.width = `${width * integerZoom}px`;
+    canvas.style.height = `${height * integerZoom}px`;
+    canvas.style.imageRendering = 'pixelated';
+  }
+
+  function setBackground() {
+    const background = $('background-select').value;
+    for (const id of ['player-bg', 'raw-bg', 'processed-bg']) $(id).dataset.bg = background;
+  }
+
+  function syncCropInputs() {
+    const frame = sequenceFrames[selectedFrame];
+    if (!frame) return;
+    $('crop-x').value = frame.rect.x;
+    $('crop-y').value = frame.rect.y;
+    $('crop-w').value = frame.rect.w;
+    $('crop-h').value = frame.rect.h;
+    syncHeadInputs();
+  }
+
+  function formatCoordinate(value) {
+    return String(Number(value.toFixed(1)));
+  }
+
+  function syncHeadInputs() {
+    const frame = sequenceFrames[selectedFrame];
+    if (!frame) return;
+    const rect = frame.rect;
+    const point = headPointInRect(frame, rect);
+    const inputX = $('head-x'), inputY = $('head-y');
+    const isPortrait = selectedSequence?.category === 'Retrato';
+    inputX.max = String(Math.max(0, rect.w - 1));
+    inputY.max = String(Math.max(0, rect.h - 1));
+    inputX.value = point ? formatCoordinate(point.x) : '';
+    inputY.value = point ? formatCoordinate(point.y) : '';
+    inputX.disabled = isPortrait;
+    inputY.disabled = isPortrait;
+    $('remove-anchor').disabled = isPortrait || !frame.head;
+    $('reset-anchor').disabled = isPortrait || (!frame.head && !frame.initialHead);
+
+    const info = $('anchor-info');
+    if (isPortrait) {
+      info.textContent = 'Retrato estático: no se aplica un ancla de animación.';
+    } else if (point) {
+      const manual = String(frame.head.method || '').startsWith('manual');
+      const method = manual
+        ? 'Medida manual revisada'
+        : frame.head.reviewed ? 'Componente de casco revisado visualmente' : 'Componente de color de casco detectado';
+      const placement = $('alignment-mode').value === 'head' ? 'Se usa para centrar este cuadro.' : 'Guardada, pero el visor está en modo de columna.';
+      info.textContent = `${method} · punto (${formatCoordinate(point.x)}, ${formatCoordinate(point.y)}) px dentro del recorte. ${placement}`;
+    } else if (frame.head) {
+      info.textContent = 'El ancla medida queda fuera del recorte actual. Se usa el fallback de columna; amplía el recorte o pulsa sobre la cabeza para medirla aquí.';
+    } else if (frame.headStatus === 'no-visible-head') {
+      info.textContent = 'No hay cabeza visible en este cuadro. No se inventa un punto: se usa el fallback de columna y se indica en la vista.';
+    } else {
+      info.textContent = 'Sin punto medido. Se usa el fallback de columna; pulsa sobre la cabeza en el recorte fuente si es visible.';
+    }
+  }
+
+  function drawAnchorMarker(canvas, x, y, force = false) {
+    if (!force && !$('show-head-marker').checked) return;
+    const context = canvas.getContext('2d');
+    const px = Math.round(x), py = Math.round(y);
+    context.fillStyle = '#090711';
+    context.fillRect(px - 4, py - 1, 9, 3);
+    context.fillRect(px - 1, py - 4, 3, 9);
+    context.fillStyle = '#ffe34d';
+    context.fillRect(px - 3, py, 7, 1);
+    context.fillRect(px, py - 3, 1, 7);
+    context.fillStyle = '#ff42d5';
+    context.fillRect(px, py, 1, 1);
+  }
+
+  function drawManualExclusionRect(canvas, cropRect, region, temporary = false) {
+    if (!Array.isArray(region) || region.length !== 4) return;
+    const x0 = Math.max(0, region[0] - cropRect.x), y0 = Math.max(0, region[1] - cropRect.y);
+    const x1 = Math.min(cropRect.w, region[2] - cropRect.x), y1 = Math.min(cropRect.h, region[3] - cropRect.y);
+    if (x1 <= x0 || y1 <= y0) return;
+    const context = canvas.getContext('2d');
+    context.fillStyle = temporary ? 'rgba(255,204,61,0.28)' : 'rgba(255,62,112,0.32)';
+    context.fillRect(x0, y0, x1 - x0, y1 - y0);
+    context.fillStyle = temporary ? '#ffe34d' : '#ff527f';
+    context.fillRect(x0, y0, x1 - x0, 1);
+    context.fillRect(x0, y1 - 1, x1 - x0, 1);
+    context.fillRect(x0, y0, 1, y1 - y0);
+    context.fillRect(x1 - 1, y0, 1, y1 - y0);
+  }
+
+  function drawManualExclusionOverlay(canvas, frame, cropRect, temporaryRegion = null) {
+    for (const region of frame.manualExclusions || []) drawManualExclusionRect(canvas, cropRect, region);
+    if (temporaryRegion) drawManualExclusionRect(canvas, cropRect, temporaryRegion, true);
+  }
+
+  function updateManualEraseControls() {
+    const frame = sequenceFrames[selectedFrame];
+    const count = frame?.manualExclusions?.length || 0;
+    const active = $('manual-erase-mode').checked;
+    rawCanvas.classList.toggle('erase-mode', active);
+    $('undo-manual-erase').disabled = count === 0;
+    $('clear-manual-erase').disabled = count === 0;
+    $('manual-erase-info').textContent = active
+      ? `Herramienta activa: arrastra un rectángulo sobre la Fuente. ${count} zona(s) guardada(s) en este cuadro.`
+      : count
+        ? `${count} zona(s) guardada(s) en este cuadro. Activa la herramienta para añadir otra.`
+        : 'Activa la herramienta y arrastra un rectángulo sobre la vista Fuente. La zona se hará transparente solo en el resultado del laboratorio.';
+  }
+
+  function undoManualErase() {
+    const frame = sequenceFrames[selectedFrame];
+    if (!frame?.manualExclusions?.length) return;
+    frame.manualExclusions.pop();
+    markCurrentFrameChanged(frame);
+    safeRebuild();
+    persistWorkspace(`Última zona manual retirada del cuadro F${frame.n}`);
+    status(`Se deshizo la última zona manual del cuadro F${frame.n}.`, 'success');
+  }
+
+  function clearManualErase() {
+    const frame = sequenceFrames[selectedFrame];
+    if (!frame?.manualExclusions?.length) return;
+    if (!window.confirm(`¿Quitar las ${frame.manualExclusions.length} zonas manuales del cuadro F${frame.n}?`)) return;
+    frame.manualExclusions = [];
+    markCurrentFrameChanged(frame);
+    safeRebuild();
+    persistWorkspace(`Zonas manuales retiradas del cuadro F${frame.n}`);
+    status(`Se quitaron todas las zonas manuales del cuadro F${frame.n}.`, 'success');
+  }
+
+  function drawStageFrame(canvas, context, item, forceHeadMarker = false, alignmentMode = null, width = stageWidth, height = stageHeight) {
+    const frame = item.frame;
+    if (canvas.width !== width) canvas.width = width;
+    if (canvas.height !== height) canvas.height = height;
+    const stage = context.createImageData(width, height);
+    const placement = placementFor(frame, item.rect, alignmentMode || undefined);
+    const targetX = Math.floor(width / 2), targetY = Math.floor(height / 2);
+    const destinationX = targetX - Math.round(placement.x);
+    const destinationY = placement.kind === 'head' ? targetY - Math.round(placement.y) : 0;
+    const sourceX0 = Math.max(0, -destinationX);
+    const sourceY0 = Math.max(0, -destinationY);
+    const sourceX1 = Math.min(item.rect.w, width - destinationX);
+    const sourceY1 = Math.min(item.rect.h, height - destinationY);
+    for (let y = sourceY0; y < sourceY1; y++) {
+      const sourceOffset = (y * item.rect.w + sourceX0) * 4;
+      const targetOffset = ((y + destinationY) * width + destinationX + sourceX0) * 4;
+      const row = item.image.data.subarray(sourceOffset, sourceOffset + (sourceX1 - sourceX0) * 4);
+      stage.data.set(row, targetOffset);
+    }
+    context.putImageData(stage, 0, 0);
+    const head = headPointInRect(frame, item.rect);
+    if (head) drawAnchorMarker(canvas, destinationX + head.x, destinationY + head.y, forceHeadMarker);
+    setCanvasScale(canvas, width, height, Number($('zoom-select').value));
+  }
+
+  function drawPlayer(item) {
+    drawStageFrame(player, playerContext, item);
+    player.hidden = false;
+    $('loading-fallback').hidden = true;
+    hasRendered = true;
+  }
+
+  function approvedPreviewItems() {
+    return processedFrames.filter(item => item.frame.approved);
+  }
+
+  function drawApprovedPreview() {
+    const items = approvedPreviewItems();
+    const info = $('approved-preview-info');
+    if (!items.length) {
+      approvedPreviewPlaying = false;
+      approvedPreviewIndex = 0;
+      approvedPlayerContext.clearRect(0, 0, approvedPlayer.width, approvedPlayer.height);
+      approvedPlayer.width = 1;
+      approvedPlayer.height = 1;
+      setCanvasScale(approvedPlayer, 1, 1, Number($('zoom-select').value));
+      info.textContent = 'Aún no hay cuadros seleccionados como válidos.';
+      $('approved-play').textContent = '▶ Reproducir válidos';
+      $('approved-play').setAttribute('aria-pressed', 'false');
+      $('approved-prev').disabled = true;
+      $('approved-next').disabled = true;
+      return;
+    }
+    approvedPreviewIndex = ((approvedPreviewIndex % items.length) + items.length) % items.length;
+    const item = items[approvedPreviewIndex];
+    const previewLayout = layoutFor(items.map(candidate => candidate.frame), 'head');
+    approvedStageWidth = previewLayout.width;
+    approvedStageHeight = previewLayout.height;
+    drawStageFrame(approvedPlayer, approvedPlayerContext, item, true, 'head', approvedStageWidth, approvedStageHeight);
+    const validation = currentAnimationValidation();
+    const phase = validation ? 'Animación validada' : 'Vista previa de selección pendiente';
+    info.textContent = `${phase} · cuadro F${item.frame.n} (${approvedPreviewIndex + 1}/${items.length}) · recorte ${item.rect.w}×${item.rect.h} px.`;
+    $('approved-play').textContent = approvedPreviewPlaying ? '⏸ Pausar válidos' : '▶ Reproducir válidos';
+    $('approved-play').setAttribute('aria-pressed', approvedPreviewPlaying ? 'true' : 'false');
+    $('approved-prev').disabled = items.length < 2;
+    $('approved-next').disabled = items.length < 2;
+  }
+
+  function positionApprovedCross(event) {
+    const cross = $('approved-head-cursor');
+    const bounds = $('approved-canvas-wrap').getBoundingClientRect();
+    cross.style.left = `${event.clientX - bounds.left + $('approved-canvas-wrap').scrollLeft}px`;
+    cross.style.top = `${event.clientY - bounds.top + $('approved-canvas-wrap').scrollTop}px`;
+    cross.hidden = false;
+  }
+
+  function approvedPointAtEvent(event, drag) {
+    const bounds = approvedPlayer.getBoundingClientRect();
+    if (!bounds.width || !bounds.height) return null;
+    const stageX = (event.clientX - bounds.left) * approvedStageWidth / bounds.width;
+    const stageY = (event.clientY - bounds.top) * approvedStageHeight / bounds.height;
+    const x = stageX - drag.destinationX;
+    const y = stageY - drag.destinationY;
+    if (x < 0 || y < 0 || x >= drag.rect.w || y >= drag.rect.h) return null;
+    return {
+      x: drag.rect.x + Math.max(0, Math.min(drag.rect.w - 1, Math.floor(x))),
+      y: drag.rect.y + Math.max(0, Math.min(drag.rect.h - 1, Math.floor(y))),
+    };
+  }
+
+  function beginApprovedAnchorDrag(event) {
+    if (event.button !== 0 && event.pointerType !== 'touch' && event.pointerType !== 'pen') return;
+    if (selectedSequence?.category === 'Retrato') return;
+    const item = approvedPreviewItems()[approvedPreviewIndex];
+    if (!item) return;
+    const head = headPointInRect(item.frame, item.rect);
+    if (!head) {
+      status('Este cuadro no tiene una cabeza medida dentro del recorte. Corrige el recorte o mide la cabeza en la vista Fuente; no se inventa un punto.', 'warning');
+      return;
+    }
+    const bounds = approvedPlayer.getBoundingClientRect();
+    if (!bounds.width || !bounds.height) return;
+    const placement = placementFor(item.frame, item.rect, 'head');
+    const destinationX = Math.floor(approvedStageWidth / 2) - Math.round(placement.x);
+    const destinationY = placement.kind === 'head' ? Math.floor(approvedStageHeight / 2) - Math.round(placement.y) : 0;
+    const pointerX = (event.clientX - bounds.left) * approvedStageWidth / bounds.width;
+    const pointerY = (event.clientY - bounds.top) * approvedStageHeight / bounds.height;
+    const markerX = destinationX + head.x, markerY = destinationY + head.y;
+    const scaleX = bounds.width / approvedStageWidth, scaleY = bounds.height / approvedStageHeight;
+    if (Math.hypot((pointerX - markerX) * scaleX, (pointerY - markerY) * scaleY) > 24) {
+      status('Empieza el arrastre sobre la cruz amarilla de la cabeza.', '');
+      return;
+    }
+    approvedPreviewPlaying = false;
+    lastApprovedFrameAt = performance.now();
+    const index = sequenceFrames.indexOf(item.frame);
+    if (index >= 0) { playing = false; updatePlayButton(); showFrame(index); }
+    approvedAnchorDrag = {
+      pointerId: event.pointerId, item, frame: item.frame, rect: { ...item.rect }, destinationX, destinationY,
+      startX: event.clientX, startY: event.clientY, moved: false,
+    };
+    positionApprovedCross(event);
+    try { approvedPlayer.setPointerCapture?.(event.pointerId); } catch (_) {}
+    drawApprovedPreview();
+    positionApprovedCross(event);
+    event.preventDefault();
+  }
+
+  function moveApprovedAnchorDrag(event) {
+    if (!approvedAnchorDrag || (event.pointerId !== undefined && event.pointerId !== approvedAnchorDrag.pointerId)) return;
+    if (Math.hypot(event.clientX - approvedAnchorDrag.startX, event.clientY - approvedAnchorDrag.startY) >= 3)
+      approvedAnchorDrag.moved = true;
+    positionApprovedCross(event);
+    event.preventDefault();
+  }
+
+  function finishApprovedAnchorDrag(event) {
+    if (!approvedAnchorDrag || (event.pointerId !== undefined && event.pointerId !== approvedAnchorDrag.pointerId)) return;
+    const drag = approvedAnchorDrag;
+    approvedAnchorDrag = null;
+    $('approved-head-cursor').hidden = true;
+    try { approvedPlayer.releasePointerCapture?.(drag.pointerId); } catch (_) {}
+    if (!drag.moved) { drawApprovedPreview(); return; }
+    const point = approvedPointAtEvent(event, drag);
+    if (!point) {
+      status('Suelta la cruz sobre la cabeza dentro del recorte. No se cambió el ancla.', 'warning');
+      drawApprovedPreview();
+      return;
+    }
+    if (point.x === drag.frame.head?.x && point.y === drag.frame.head?.y) {
+      drawApprovedPreview();
+      return;
+    }
+    drag.frame.head = { ...point, method: 'manual-preview', reviewed: true };
+    drag.frame.headStatus = 'manual';
+    markCurrentFrameChanged(drag.frame);
+    safeRebuild();
+    persistWorkspace(`Ancla F${drag.frame.n} movida en la vista válida y guardada`);
+    status(`Ancla del cuadro F${drag.frame.n} corregida desde la vista válida. Revisa y valida de nuevo la animación.`, 'success');
+  }
+
+  function updateValidationUI() {
+    const isPortrait = selectedSequence?.category === 'Retrato';
+    const selectedCount = sequenceFrames.filter(frame => frame.approved).length;
+    const validation = currentAnimationValidation();
+    const current = sequenceFrames[selectedFrame];
+    const toggle = $('toggle-frame-valid');
+    toggle.disabled = !current || isPortrait;
+    toggle.textContent = current?.approved ? 'Quitar cuadro actual de los válidos' : 'Marcar cuadro actual como válido';
+    $('validate-animation').disabled = isPortrait || selectedCount === 0;
+    $('open-in-creator').hidden = isPortrait || !validation;
+    const sendButton = $('send-to-creator');
+    const sendStatus = $('creator-send-status');
+    const importKey = validation && selectedSequence
+      ? `${selectedSequence.id}|${validation.validatedAt}` : '';
+    const alreadySent = Boolean(importKey && creatorImportsDone.has(importKey));
+    sendButton.hidden = isPortrait;
+    sendButton.disabled = isPortrait || !validation || creatorImportBusy || alreadySent;
+    sendButton.textContent = alreadySent ? '✓ Enviado al Creador · Nativo pendiente'
+      : validation ? 'Enviar al Creador · Nativo sin escala' : 'Enviar al Creador · requiere validación';
+    if (isPortrait) sendStatus.hidden = true;
+    else if (!validation) {
+      sendStatus.hidden = false;
+      sendStatus.dataset.kind = 'warning';
+      sendStatus.textContent = 'Selecciona y revisa los cuadros; pulsa «Validar animación completa» para habilitar el envío. Cualquier edición vuelve a dejarla pendiente.';
+    } else if (sendStatus.dataset.kind === 'warning') {
+      sendStatus.hidden = true; sendStatus.textContent = ''; sendStatus.dataset.kind = '';
+    }
+    $('clear-valid-frames').disabled = isPortrait || selectedCount === 0;
+    $('approved-play').disabled = selectedCount < 2;
+    const canStepPreview = selectedCount > 1;
+    $('approved-prev').disabled = !canStepPreview;
+    $('approved-next').disabled = !canStepPreview;
+    $('animation-validation-summary').textContent = isPortrait
+      ? 'Los retratos son estáticos y no se validan como animación.'
+      : `${selectedCount}/${sequenceFrames.length} cuadros seleccionados como válidos · los demás se excluyen de esta versión.`;
+    $('validated-sequences-summary').textContent = `${validatedSequenceCount()}/50 animaciones validadas en este navegador.`;
+    $('animation-validation-status').textContent = validation
+      ? `ANIMACIÓN VALIDADA · ${validation.validFrameNumbers.length} cuadros · ${new Date(validation.validatedAt).toLocaleString('es-ES')}. Cualquier edición o cambio de los cuadros válidos la devuelve a pendiente.`
+      : selectedCount
+        ? `PENDIENTE · revisa la vista previa y pulsa «Validar animación completa» cuando la secuencia seleccionada sea correcta.`
+        : 'PENDIENTE · marca los cuadros que deben formar parte de la animación final.';
+    if (isPortrait) $('animation-validation-status').textContent = 'Los retratos estáticos no tienen validación de animación.';
+    drawApprovedPreview();
+  }
+
+  function toggleCurrentFrameValidity() {
+    const frame = sequenceFrames[selectedFrame];
+    if (!frame || selectedSequence?.category === 'Retrato') return;
+    try { readFrameRect(frame); }
+    catch (error) { status(error.message, 'error'); return; }
+    frame.approved = !frame.approved;
+    invalidateAnimationValidation();
+    renderStrip();
+    updateValidationUI();
+    persistWorkspace(frame.approved ? `Cuadro F${frame.n} guardado como válido` : `Cuadro F${frame.n} retirado de la selección válida`);
+  }
+
+  function clearValidFrames() {
+    if (!selectedSequence || selectedSequence.category === 'Retrato') return;
+    for (const frame of sequenceFrames) frame.approved = false;
+    invalidateAnimationValidation();
+    approvedPreviewPlaying = false;
+    approvedPreviewIndex = 0;
+    renderStrip();
+    updateValidationUI();
+    persistWorkspace('Selección válida vaciada');
+  }
+
+  function validateAnimation() {
+    if (!selectedSequence || selectedSequence.category === 'Retrato') return;
+    const approvedFrames = sequenceFrames.filter(frame => frame.approved);
+    if (!approvedFrames.length) {
+      $('animation-validation-status').textContent = 'No hay cuadros válidos seleccionados; marca al menos uno antes de validar.';
+      return;
+    }
+    try { for (const frame of approvedFrames) readFrameRect(frame); }
+    catch (error) { $('animation-validation-status').textContent = `No se puede validar: ${error.message}`; return; }
+    const validFrameNumbers = approvedFrames.map(frame => frame.n);
+    const record = workspace.sequences[selectedSequence.id] || { frames: {}, validation: null };
+    record.validation = { validFrameNumbers, validatedAt: new Date().toISOString() };
+    workspace.sequences[selectedSequence.id] = record;
+    approvedPreviewIndex = 0;
+    approvedPreviewPlaying = approvedFrames.length > 1;
+    lastApprovedFrameAt = performance.now();
+    renderStrip();
+    updateValidationUI();
+    persistWorkspace(`Animación validada con ${approvedFrames.length} cuadros válidos`);
+  }
+
+  function exportValidatedNativeFrames(request) {
+    if (!selectedSequence || selectedSequence.category === 'Retrato' ||
+        selectedSequence.id !== request.sequenceId)
+      throw new Error('la secuencia seleccionada ya no coincide con la aprobada en el Creador');
+    const validation = currentAnimationValidation();
+    const items = approvedPreviewItems();
+    const frameNumbers = items.map(item => item.frame.n);
+    if (!validation || validation.validatedAt !== request.validatedAt ||
+        !sameNumbers(frameNumbers, request.frameNumbers))
+      throw new Error('la validación cambió; vuelve a validar la animación antes de exportar');
+    if (!items.length) throw new Error('no hay cuadros válidos que exportar');
+    if (items.some(item => !headPointInRect(item.frame, item.rect)))
+      throw new Error('algún cuadro válido no tiene una cabeza medida dentro del recorte. Corrígelo y vuelve a validar; no se inventará un ancla.');
+
+    const layout = layoutFor(items.map(item => item.frame), 'head');
+    if (layout.width * layout.height * items.length > 64_000_000)
+      throw new Error('la secuencia de revisión supera 64 megapíxeles');
+    const framePngs = [];
+    const frameCanvas = document.createElement('canvas');
+    const frameContext = frameCanvas.getContext('2d', { willReadFrequently: true });
+    const showMarker = $('show-head-marker').checked;
+    $('show-head-marker').checked = false;
+    try {
+      items.forEach((item, index) => {
+        let hasVisiblePixel = false;
+        for (let alpha = 3; alpha < item.image.data.length; alpha += 4) {
+          if (item.image.data[alpha] > 0) { hasVisiblePixel = true; break; }
+        }
+        if (!hasVisiblePixel) throw new Error(`el cuadro válido F${frameNumbers[index]} está vacío tras el recorte/máscara`);
+        drawStageFrame(frameCanvas, frameContext, item, false, 'head', layout.width, layout.height);
+        framePngs.push(frameCanvas.toDataURL('image/png'));
+      });
+    } finally {
+      $('show-head-marker').checked = showMarker;
+    }
+    return {
+      sequenceId: selectedSequence.id,
+      validatedAt: validation.validatedAt,
+      frameNumbers,
+      frameWidth: layout.width,
+      frameHeight: layout.height,
+      framePngs,
+    };
+  }
+
+  async function sendValidatedSequenceToCreator() {
+    const sequence = selectedSequence;
+    const validation = currentAnimationValidation();
+    if (!sequence || sequence.category === 'Retrato' || !validation || creatorImportBusy) return;
+    const importKey = `${sequence.id}|${validation.validatedAt}`;
+    if (creatorImportsDone.has(importKey)) return;
+    if (!window.confirm(`¿Enviar «${sequence.label}» con ${validation.validFrameNumbers.length} cuadro(s) al Creador? Se guardarán en Nativo con su tamaño exacto, sin escala ni recolor, y quedarán pendientes de aprobación.`)) return;
+
+    const button = $('send-to-creator');
+    const resultStatus = $('creator-send-status');
+    creatorImportBusy = true;
+    button.disabled = true;
+    resultStatus.hidden = false;
+    resultStatus.dataset.kind = '';
+    resultStatus.textContent = 'Exportando los cuadros validados y guardándolos en Nativo sin cambiar su tamaño…';
+    try {
+      const native = exportValidatedNativeFrames({
+        sequenceId: sequence.id,
+        validatedAt: validation.validatedAt,
+        frameNumbers: validation.validFrameNumbers,
+      });
+      const response = await fetch('/api/sprites/lab-native/import', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          character: 'voltia', frames_png: native.framePngs,
+          celda_ancho: native.frameWidth, celda_alto: native.frameHeight,
+          cuadros_fuente: native.frameNumbers, secuencia: native.sequenceId,
+          validada_en: native.validatedAt,
+        }),
+      });
+      const data = await response.json();
+      if (!response.ok || data.ok === false || !data.batch)
+        throw new Error(data.error || `Error HTTP ${response.status}`);
+      creatorImportsDone.add(importKey);
+      const url = new URL('../', location.href);
+      url.searchParams.set('character', 'voltia');
+      url.searchParams.set('ia', sequence.id);
+      url.hash = 'lab-preview-card';
+      const link = document.createElement('a');
+      link.href = url.href;
+      link.textContent = 'Abrir el lote en el Creador';
+      const dimensions = data.batch.lienzo || [native.frameWidth, native.frameHeight];
+      const message = data.ya_existia
+        ? `Esta secuencia ya estaba en Nativo · ${data.batch.frames.length} cuadro(s) a ${dimensions[0]}×${dimensions[1]} px. `
+        : `${data.batch.frames.length} cuadro(s) enviados a Nativo a ${dimensions[0]}×${dimensions[1]} px, sin escala ni recolor; quedan PENDIENTES. `;
+      resultStatus.replaceChildren(document.createTextNode(message), link);
+      resultStatus.dataset.kind = 'success';
+      button.textContent = '✓ Enviado al Creador · Nativo pendiente';
+    } catch (error) {
+      resultStatus.textContent = `No se pudo enviar al Creador: ${error.message}. La validación del laboratorio se conserva; corrige el motivo y vuelve a intentarlo.`;
+      resultStatus.dataset.kind = 'error';
+    } finally {
+      creatorImportBusy = false;
+      updateValidationUI();
+    }
+  }
+
+  function handleCreatorExportRequest(event) {
+    if (event.source !== window.parent || event.origin !== location.origin) return;
+    const request = event.data;
+    if (!request || request.type !== 'fabaterfighter:export-validated-lab-sequence' ||
+        typeof request.requestId !== 'string') return;
+    try {
+      const result = exportValidatedNativeFrames(request);
+      window.parent.postMessage({
+        type: 'fabaterfighter:validated-lab-sequence-export',
+        requestId: request.requestId,
+        ok: true,
+        result,
+      }, location.origin);
+    } catch (error) {
+      window.parent.postMessage({
+        type: 'fabaterfighter:validated-lab-sequence-export',
+        requestId: request.requestId,
+        ok: false,
+        error: error.message,
+      }, location.origin);
+    }
+  }
+
+  function stepApprovedPreview(direction) {
+    const items = approvedPreviewItems();
+    if (items.length < 2) return;
+    approvedPreviewPlaying = false;
+    approvedPreviewIndex = (approvedPreviewIndex + direction + items.length) % items.length;
+    drawApprovedPreview();
+  }
+
+  function showFrame(index) {
+    if (!processedFrames.length) return;
+    selectedFrame = (index + processedFrames.length) % processedFrames.length;
+    const item = processedFrames[selectedFrame];
+    putImage(rawCanvas, item.raw);
+    putImage(processedCanvas, item.image);
+    const headPoint = headPointInRect(item.frame, item.rect);
+    drawManualExclusionOverlay(rawCanvas, item.frame, item.rect);
+    if (headPoint) {
+      drawAnchorMarker(rawCanvas, headPoint.x, headPoint.y);
+      drawAnchorMarker(processedCanvas, headPoint.x, headPoint.y);
+    }
+    const zoom = Number($('zoom-select').value);
+    setCanvasScale(rawCanvas, item.rect.w, item.rect.h, zoom);
+    setCanvasScale(processedCanvas, item.rect.w, item.rect.h, zoom);
+    drawPlayer(item);
+    syncCropInputs();
+    const frame = item.frame;
+    const groupText = frame.group ? ` · fila ${frame.group}` : '';
+    const frameName = frame.name ? ` · ${frame.name}` : '';
+    const alignText = selectedSequence?.category === 'Retrato'
+      ? 'retrato estático'
+      : $('alignment-mode').value === 'column'
+        ? 'referencia por columna'
+        : headPoint
+          ? `cabeza medida (${formatCoordinate(headPoint.x)}, ${formatCoordinate(headPoint.y)} px en recorte)${frame.head?.reviewed ? ' · revisada' : ''}`
+          : frame.head
+            ? 'ancla fuera del recorte · fallback de columna'
+            : frame.headStatus === 'no-visible-head'
+              ? 'sin cabeza visible · fallback de columna'
+              : 'sin punto medido · fallback de columna';
+    $('frame-info').textContent = `Cuadro ${frame.n} (${selectedFrame + 1}/${processedFrames.length})${groupText}${frameName} · ${alignText} · recorte x=${item.rect.x}, y=${item.rect.y}, ${item.rect.w}×${item.rect.h} px.`;
+    const maskCaption = $('mask-mode').value === 'edge'
+      ? 'Borde conectado · RGB intacto, solo alfa'
+      : $('mask-mode').value === 'global' ? 'Umbral global · diagnóstico destructivo' : 'Fuente RGB · sin máscara automática';
+    const manualZoneCount = frame.manualExclusions?.length || 0;
+    $('processed-caption').textContent = `${maskCaption}${manualZoneCount ? ` · ${manualZoneCount} zona(s) manual(es) eliminada(s)` : ''}`;
+    updateManualEraseControls();
+    for (const button of $('strip').querySelectorAll('.frame-button')) {
+      const active = Number(button.dataset.index) === selectedFrame;
+      button.setAttribute('aria-pressed', active ? 'true' : 'false');
+    }
+    $('toggle-frame-valid').textContent = frame.approved
+      ? 'Quitar cuadro actual de los válidos'
+      : 'Marcar cuadro actual como válido';
+  }
+
+  function renderStrip() {
+    const strip = $('strip');
+    strip.replaceChildren();
+    processedFrames.forEach((item, index) => {
+      const button = document.createElement('button');
+      button.type = 'button'; button.className = 'frame-button'; button.dataset.index = String(index);
+      button.dataset.valid = item.frame.approved ? 'true' : 'false';
+      button.setAttribute('aria-label', `Mostrar cuadro ${item.frame.n}${item.frame.name ? `, ${item.frame.name}` : ''}${item.frame.approved ? ', seleccionado como válido' : ', pendiente de selección válida'}`);
+      button.setAttribute('aria-pressed', index === selectedFrame ? 'true' : 'false');
+      const canvas = document.createElement('canvas');
+      canvas.className = 'pixel-canvas';
+      putImage(canvas, item.image);
+      setCanvasScale(canvas, item.rect.w, item.rect.h, 1);
+      const caption = document.createElement('span');
+      caption.textContent = `${item.frame.name || `F${String(item.frame.n).padStart(2, '0')}`} · ${item.rect.w}×${item.rect.h}${item.frame.approved ? ' · ✓ válido' : ''}`;
+      button.append(canvas, caption);
+      button.addEventListener('click', () => { playing = false; updatePlayButton(); showFrame(index); });
+      strip.appendChild(button);
+    });
+  }
+
+  function updatePlayButton() {
+    $('play').textContent = playing ? '⏸ Pausa' : '▶ Reproducir';
+    $('play').classList.toggle('on', playing);
+    $('play').setAttribute('aria-pressed', playing ? 'true' : 'false');
+  }
+
+  async function selectSequence(id, resetPlayback = true) {
+    const sequence = catalog.sequences.find(item => item.id === id);
+    if (!sequence) return;
+    const source = catalog.sources.find(item => item.id === sequence.source);
+    if (!source) { status(`No se encontró la fuente asociada a «${sequence.label}».`, 'error'); return; }
+    const token = ++loadToken;
+    if (selectedSequence?.id !== sequence.id) {
+      const sendStatus = $('creator-send-status');
+      sendStatus.hidden = true; sendStatus.textContent = ''; sendStatus.dataset.kind = '';
+    }
+    selectedSequence = sequence;
+    sourceImage = null;
+    sequenceFrames = cloneSequenceFrames(sequence);
+    applyWorkspaceToFrames(sequence, sequenceFrames, source);
+    processedFrames = [];
+    selectedFrame = 0;
+    approvedPreviewIndex = 0;
+    approvedPreviewPlaying = false;
+    updateValidationUI();
+    $('frame-info').textContent = 'Cargando hoja fuente…';
+    $('strip').replaceChildren();
+    $('stats').replaceChildren();
+    if (!hasRendered) {
+      player.hidden = true;
+      $('loading-fallback').hidden = false;
+      playerContext.clearRect(0, 0, player.width, player.height);
+    }
+    rawCanvas.getContext('2d').clearRect(0, 0, rawCanvas.width, rawCanvas.height);
+    processedCanvas.getContext('2d').clearRect(0, 0, processedCanvas.width, processedCanvas.height);
+    status(`Cargando ${catalog.sources.find(item => item.id === sequence.source)?.file || 'la hoja fuente'}…`);
+    $('sequence-select').value = sequence.id;
+    $('source-meta').innerHTML = `<b>${source.title}</b><br><code>${source.file}</code><br><span class="inline-code">SHA-256 ${source.sha256}</span>`;
+    $('source-sheet').alt = `Hoja fuente completa: ${source.title}; archivo ${source.file}`;
+    $('source-sheet').src = sourceUrl(source);
+    $('sequence-meta').innerHTML = `<b>Etiqueta original:</b> <code>${sequence.originalLabel}</code><br><b>Secuencia:</b> ${sequence.label} · ${sequence.frameCount} cuadros · tipo ${sequence.category}<br><b>Fuente:</b> ${source.title}<br><b>Anclas:</b> <span id="sequence-anchor-summary">Midiendo…</span>${sequence.notes ? `<br><span>${sequence.notes}</span>` : ''}`;
+    try {
+      sourceImage = await imageFor(source);
+      if (token !== loadToken) return;
+      if (sourceImage.naturalWidth !== source.width || sourceImage.naturalHeight !== source.height)
+        throw new Error(`${source.file} mide ${sourceImage.naturalWidth}×${sourceImage.naturalHeight}; el catálogo esperaba ${source.width}×${source.height}.`);
+      sourceCanvas.width = sourceImage.naturalWidth;
+      sourceCanvas.height = sourceImage.naturalHeight;
+      sourceContext = sourceCanvas.getContext('2d', { willReadFrequently: true });
+      sourceContext.imageSmoothingEnabled = false;
+      sourceContext.drawImage(sourceImage, 0, 0);
+      if (resetPlayback) playing = sequence.category !== 'Retrato';
+      updatePlayButton();
+      rebuild();
+      lastFrameAt = performance.now();
+    } catch (error) {
+      if (token === loadToken) status(error.message, 'error');
+    }
+  }
+
+  function updateCurrentRect() {
+    const frame = sequenceFrames[selectedFrame];
+    if (!frame) return;
+    const rect = {
+      x: Number($('crop-x').value), y: Number($('crop-y').value),
+      w: Number($('crop-w').value), h: Number($('crop-h').value),
+    };
+    if (!Object.values(rect).every(Number.isInteger)) { status('Escribe cuatro límites enteros en píxeles.', 'error'); return; }
+    try { readFrameRect({ ...frame, rect }); }
+    catch (error) { status(error.message, 'error'); return; }
+    if (rect.x === frame.rect.x && rect.y === frame.rect.y && rect.w === frame.rect.w && rect.h === frame.rect.h) return;
+    frame.rect = rect;
+    markCurrentFrameChanged(frame);
+    scheduleRebuild();
+    persistWorkspace(`Recorte del cuadro F${frame.n} guardado`);
+  }
+
+  function updateHeadPoint() {
+    const frame = sequenceFrames[selectedFrame];
+    if (!frame) return;
+    const xText = $('head-x').value.trim(), yText = $('head-y').value.trim();
+    if (!xText && !yText) {
+      frame.head = null;
+      frame.headStatus = 'manual-removed';
+      markCurrentFrameChanged(frame);
+      safeRebuild();
+      persistWorkspace(`Ancla del cuadro F${frame.n} guardada como fallback`);
+      return;
+    }
+    const x = Number(xText), y = Number(yText);
+    if (!xText || !yText || !Number.isFinite(x) || !Number.isFinite(y)) {
+      status('Indica X e Y del punto de cabeza, o borra ambos campos para usar el fallback.', 'error');
+      return;
+    }
+    if (x < 0 || y < 0 || x > frame.rect.w - 1 || y > frame.rect.h - 1) {
+      status(`El punto debe quedar dentro del recorte actual (${frame.rect.w}×${frame.rect.h} px).`, 'error');
+      return;
+    }
+    frame.head = { x: frame.rect.x + x, y: frame.rect.y + y, method: 'manual-input', reviewed: true };
+    frame.headStatus = 'manual';
+    markCurrentFrameChanged(frame);
+    safeRebuild();
+    persistWorkspace(`Ancla del cuadro F${frame.n} guardada`);
+  }
+
+  function setHeadPointFromClick(event) {
+    if (suppressRawClick) { suppressRawClick = false; return; }
+    if ($('manual-erase-mode').checked || selectedSequence?.category === 'Retrato') return;
+    const item = processedFrames[selectedFrame];
+    if (!item) return;
+    const bounds = rawCanvas.getBoundingClientRect();
+    if (!bounds.width || !bounds.height) return;
+    const x = Math.max(0, Math.min(item.rect.w - 1, Math.floor((event.clientX - bounds.left) * item.rect.w / bounds.width)));
+    const y = Math.max(0, Math.min(item.rect.h - 1, Math.floor((event.clientY - bounds.top) * item.rect.h / bounds.height)));
+    item.frame.head = { x: item.rect.x + x, y: item.rect.y + y, method: 'manual-click', reviewed: true };
+    item.frame.headStatus = 'manual';
+    markCurrentFrameChanged(item.frame);
+    playing = false;
+    updatePlayButton();
+    safeRebuild();
+    persistWorkspace(`Ancla del cuadro F${item.frame.n} guardada`);
+  }
+
+  function scheduleDragRebuild() {
+    if (dragRebuildTimer) return;
+    dragRebuildTimer = window.setTimeout(() => { dragRebuildTimer = 0; safeRebuild(); }, 40);
+  }
+
+  function rawLocalPoint(event, drag) {
+    return {
+      x: Math.max(0, Math.min(drag.rect.w, (event.clientX - drag.bounds.left) * drag.rect.w / drag.bounds.width)),
+      y: Math.max(0, Math.min(drag.rect.h, (event.clientY - drag.bounds.top) * drag.rect.h / drag.bounds.height)),
+    };
+  }
+
+  function manualRegionForDrag(drag) {
+    let x0 = Math.max(0, Math.floor(Math.min(drag.start.x, drag.current.x)));
+    let y0 = Math.max(0, Math.floor(Math.min(drag.start.y, drag.current.y)));
+    let x1 = Math.min(drag.rect.w, Math.ceil(Math.max(drag.start.x, drag.current.x)));
+    let y1 = Math.min(drag.rect.h, Math.ceil(Math.max(drag.start.y, drag.current.y)));
+    if (x1 <= x0) { x0 = Math.max(0, Math.min(drag.rect.w - 1, x0)); x1 = x0 + 1; }
+    if (y1 <= y0) { y0 = Math.max(0, Math.min(drag.rect.h - 1, y0)); y1 = y0 + 1; }
+    return [drag.rect.x + x0, drag.rect.y + y0, drag.rect.x + x1, drag.rect.y + y1];
+  }
+
+  function drawActiveManualRegion() {
+    if (!eraseDrag) return;
+    showFrame(selectedFrame);
+    drawManualExclusionRect(rawCanvas, eraseDrag.rect, manualRegionForDrag(eraseDrag), true);
+  }
+
+  function beginManualErase(event) {
+    if (event.button !== 0 && event.pointerType !== 'touch' && event.pointerType !== 'pen') return;
+    const item = processedFrames[selectedFrame];
+    const bounds = rawCanvas.getBoundingClientRect();
+    if (!item || !bounds.width || !bounds.height) return;
+    const drag = { pointerId: event.pointerId, frame: item.frame, rect: { ...item.rect }, bounds,
+      start: null, current: null, startClientX: event.clientX, startClientY: event.clientY, moved: false };
+    drag.start = rawLocalPoint(event, drag);
+    drag.current = { ...drag.start };
+    eraseDrag = drag;
+    rawCanvas.classList.add('erasing');
+    try { rawCanvas.setPointerCapture?.(event.pointerId); } catch (_) {}
+    playing = false;
+    updatePlayButton();
+    event.preventDefault();
+  }
+
+  function moveManualErase(event) {
+    if (!eraseDrag || (event.pointerId !== undefined && event.pointerId !== eraseDrag.pointerId)) return;
+    if (Math.hypot(event.clientX - eraseDrag.startClientX, event.clientY - eraseDrag.startClientY) >= 3) eraseDrag.moved = true;
+    eraseDrag.current = rawLocalPoint(event, eraseDrag);
+    drawActiveManualRegion();
+    event.preventDefault();
+  }
+
+  function finishManualErase(event) {
+    if (!eraseDrag || (event.pointerId !== undefined && event.pointerId !== eraseDrag.pointerId)) return;
+    const drag = eraseDrag;
+    eraseDrag = null;
+    rawCanvas.classList.remove('erasing');
+    try { rawCanvas.releasePointerCapture?.(drag.pointerId); } catch (_) {}
+    suppressRawClick = true;
+    window.setTimeout(() => { suppressRawClick = false; }, 500);
+    if (event.type === 'pointercancel') { showFrame(selectedFrame); return; }
+    drag.current = rawLocalPoint(event, drag);
+    if (Math.hypot(event.clientX - drag.startClientX, event.clientY - drag.startClientY) >= 3) drag.moved = true;
+    if (!drag.moved) { showFrame(selectedFrame); return; }
+    drag.frame.manualExclusions = [...(drag.frame.manualExclusions || []), manualRegionForDrag(drag)];
+    markCurrentFrameChanged(drag.frame);
+    safeRebuild();
+    persistWorkspace(`Zona manual añadida al cuadro F${drag.frame.n}`);
+    status(`Zona manual excluida del cuadro F${drag.frame.n}. El PNG fuente permanece intacto.`, 'success');
+  }
+
+  function moveRawPointer(event) {
+    if (eraseDrag) { moveManualErase(event); return; }
+    moveCropDrag(event);
+  }
+
+  function finishRawPointer(event) {
+    if (eraseDrag) { finishManualErase(event); return; }
+    finishCropDrag(event);
+  }
+
+  function beginCropDrag(event) {
+    if ($('manual-erase-mode').checked) { beginManualErase(event); return; }
+    if (event.button !== 0 && event.pointerType !== 'touch' && event.pointerType !== 'pen') return;
+    const frame = sequenceFrames[selectedFrame];
+    const bounds = rawCanvas.getBoundingClientRect();
+    if (!frame || !bounds.width || !bounds.height) return;
+    cropDrag = {
+      pointerId: event.pointerId, frame, lastX: event.clientX, lastY: event.clientY,
+      startX: event.clientX, startY: event.clientY, boundsWidth: bounds.width, boundsHeight: bounds.height,
+      remainderX: 0, remainderY: 0, moved: false, changed: false,
+    };
+    rawCanvas.classList.add('dragging');
+    try { rawCanvas.setPointerCapture?.(event.pointerId); } catch (_) {}
+    playing = false;
+    updatePlayButton();
+  }
+
+  function moveCropDrag(event) {
+    if (!cropDrag || (event.pointerId !== undefined && event.pointerId !== cropDrag.pointerId)) return;
+    if (Math.hypot(event.clientX - cropDrag.startX, event.clientY - cropDrag.startY) >= 3) cropDrag.moved = true;
+    const frame = cropDrag.frame;
+    const dxFloat = (event.clientX - cropDrag.lastX) * frame.rect.w / cropDrag.boundsWidth + cropDrag.remainderX;
+    const dyFloat = (event.clientY - cropDrag.lastY) * frame.rect.h / cropDrag.boundsHeight + cropDrag.remainderY;
+    const dx = Math.trunc(dxFloat), dy = Math.trunc(dyFloat);
+    cropDrag.remainderX = dxFloat - dx;
+    cropDrag.remainderY = dyFloat - dy;
+    cropDrag.lastX = event.clientX;
+    cropDrag.lastY = event.clientY;
+    if (!dx && !dy) return;
+    const nextX = Math.max(0, Math.min(sourceCanvas.width - frame.rect.w, frame.rect.x - dx));
+    const nextY = Math.max(0, Math.min(sourceCanvas.height - frame.rect.h, frame.rect.y - dy));
+    if (nextX === frame.rect.x && nextY === frame.rect.y) return;
+    frame.rect = { ...frame.rect, x: nextX, y: nextY };
+    cropDrag.moved = true;
+    cropDrag.changed = true;
+    markCurrentFrameChanged(frame);
+    syncCropInputs();
+    scheduleDragRebuild();
+    event.preventDefault();
+  }
+
+  function finishCropDrag(event) {
+    if (!cropDrag || (event.pointerId !== undefined && event.pointerId !== cropDrag.pointerId)) return;
+    const drag = cropDrag;
+    cropDrag = null;
+    rawCanvas.classList.remove('dragging');
+    try { rawCanvas.releasePointerCapture?.(drag.pointerId); } catch (_) {}
+    suppressRawClick = drag.moved;
+    window.setTimeout(() => { suppressRawClick = false; }, 500);
+    if (dragRebuildTimer) { window.clearTimeout(dragRebuildTimer); dragRebuildTimer = 0; }
+    if (drag.changed) {
+      safeRebuild();
+      persistWorkspace(`Recorte F${drag.frame.n} movido y guardado`);
+    }
+  }
+
+  function removeCurrentHeadPoint() {
+    const frame = sequenceFrames[selectedFrame];
+    if (!frame) return;
+    frame.head = null;
+    frame.headStatus = 'manual-removed';
+    markCurrentFrameChanged(frame);
+    safeRebuild();
+    persistWorkspace(`Ancla del cuadro F${frame.n} retirada`);
+  }
+
+  function restoreHeadPoint() {
+    const frame = sequenceFrames[selectedFrame];
+    if (!frame) return;
+    frame.head = frame.initialHead ? { ...frame.initialHead } : null;
+    frame.headStatus = frame.initialHeadStatus;
+    markCurrentFrameChanged(frame);
+    safeRebuild();
+    persistWorkspace(`Ancla inicial del cuadro F${frame.n} restaurada`);
+  }
+
+  function restoreFrame() {
+    const frame = sequenceFrames[selectedFrame];
+    if (!frame) return;
+    frame.rect = { ...frame.initialRect };
+    frame.head = frame.initialHead ? { ...frame.initialHead } : null;
+    frame.headStatus = frame.initialHeadStatus;
+    frame.manualExclusions = [];
+    markCurrentFrameChanged(frame);
+    syncCropInputs();
+    safeRebuild();
+    persistWorkspace(`Cuadro F${frame.n} restaurado y guardado`);
+  }
+
+  function restoreSequence() {
+    for (const frame of sequenceFrames) {
+      frame.rect = { ...frame.initialRect };
+      frame.head = frame.initialHead ? { ...frame.initialHead } : null;
+      frame.headStatus = frame.initialHeadStatus;
+      frame.manualExclusions = [];
+      frame.approved = false;
+    }
+    invalidateAnimationValidation();
+    approvedPreviewPlaying = false;
+    approvedPreviewIndex = 0;
+    syncCropInputs();
+    safeRebuild();
+    persistWorkspace('Secuencia restaurada y guardada');
+  }
+
+  function downloadWorkspace() {
+    if (!workspace) { workspaceStatus('Espera a que se cargue el catálogo para crear un respaldo.', 'warning'); return; }
+    const savedLocally = persistWorkspace('Cambios guardados antes de exportar');
+    try {
+      const payload = { ...workspace, exportedAt: new Date().toISOString() };
+      const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `pruebas-ia-voltia-${new Date().toISOString().slice(0, 10)}.json`;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.setTimeout(() => URL.revokeObjectURL(url), 1000);
+      workspaceStatus(savedLocally ? 'Respaldo JSON descargado y trabajo guardado localmente.' : 'Respaldo JSON descargado; el almacenamiento local no está disponible.', savedLocally ? 'success' : 'warning');
+    } catch (error) {
+      workspaceStatus(`No se pudo crear el respaldo: ${error.message}.`, 'error');
+    }
+  }
+
+  function sanitizeImportedWorkspace(data) {
+    if (!data || data.format !== WORKSPACE_FORMAT || data.version !== WORKSPACE_VERSION)
+      throw new Error('El archivo no es un respaldo compatible de Pruebas IA.');
+    if (data.catalogSignature !== workspaceSignature)
+      throw new Error('El respaldo pertenece a otro catálogo o a PNG fuente distintos.');
+    if (!data.sequences || typeof data.sequences !== 'object' || Array.isArray(data.sequences))
+      throw new Error('El respaldo no contiene una lista válida de secuencias.');
+    const sanitized = emptyWorkspace();
+    const catalogSequences = new Map(catalog.sequences.map(sequence => [sequence.id, sequence]));
+    for (const [sequenceId, record] of Object.entries(data.sequences)) {
+      const sequence = catalogSequences.get(sequenceId);
+      if (!sequence) throw new Error(`La secuencia «${sequenceId}» no existe en el catálogo actual.`);
+      const source = catalog.sources.find(item => item.id === sequence.source);
+      if (!record || !record.frames || typeof record.frames !== 'object' || Array.isArray(record.frames))
+        throw new Error(`La secuencia «${sequence.label}» tiene datos de cuadros inválidos.`);
+      const frameByNumber = new Map(sequence.frames.map(frame => [String(frame.n), frame]));
+      const frames = {};
+      for (const [frameNumber, saved] of Object.entries(record.frames)) {
+        const original = frameByNumber.get(frameNumber);
+        if (!original || !saved || typeof saved !== 'object') throw new Error(`Cuadro desconocido «${frameNumber}» en «${sequence.label}».`);
+        const rect = saved.rect;
+        if (!rect || ![rect.x, rect.y, rect.w, rect.h].every(Number.isInteger) || rect.x < 0 || rect.y < 0 || rect.w < 1 || rect.h < 1 || rect.x + rect.w > source.width || rect.y + rect.h > source.height)
+          throw new Error(`El recorte del cuadro F${frameNumber} de «${sequence.label}» sale de la hoja fuente.`);
+        let head = null;
+        if (saved.head !== null && saved.head !== undefined) {
+          if (!Number.isFinite(saved.head.x) || !Number.isFinite(saved.head.y) || saved.head.x < 0 || saved.head.y < 0 || saved.head.x >= source.width || saved.head.y >= source.height)
+            throw new Error(`El punto de cabeza del cuadro F${frameNumber} de «${sequence.label}» no es válido.`);
+          head = { ...saved.head };
+        }
+        const manualExclusions = saved.manualExclusions === undefined ? [] : saved.manualExclusions;
+        if (!Array.isArray(manualExclusions) || manualExclusions.some(region => !Array.isArray(region) || region.length !== 4 ||
+            !region.every(Number.isInteger) || region[0] < 0 || region[1] < 0 || region[2] <= region[0] || region[3] <= region[1] ||
+            region[2] > source.width || region[3] > source.height))
+          throw new Error(`Las zonas manuales del cuadro F${frameNumber} de «${sequence.label}» no son válidas.`);
+        if (sequence.category === 'Retrato' && saved.approved === true)
+          throw new Error('Los retratos estáticos no pueden marcarse como cuadros de una animación validada.');
+        frames[frameNumber] = {
+          rect: { ...rect }, head, headStatus: typeof saved.headStatus === 'string' ? saved.headStatus.slice(0, 64) : '',
+          manualExclusions: manualExclusions.map(region => [...region]), approved: saved.approved === true,
+        };
+      }
+      const approved = sequence.frames.filter(frame => frames[String(frame.n)]?.approved).map(frame => frame.n);
+      let validation = null;
+      if (record.validation && Array.isArray(record.validation.validFrameNumbers) &&
+          record.validation.validFrameNumbers.every(Number.isInteger) && typeof record.validation.validatedAt === 'string' &&
+          sameNumbers(record.validation.validFrameNumbers, approved) && approved.length) {
+        validation = { validFrameNumbers: [...approved], validatedAt: record.validation.validatedAt };
+      }
+      sanitized.sequences[sequenceId] = { frames, validation };
+    }
+    sanitized.updatedAt = typeof data.updatedAt === 'string' ? data.updatedAt : null;
+    return sanitized;
+  }
+
+  async function importWorkspaceFile(file) {
+    if (!file) return;
+    if (!catalog || !workspace) { workspaceStatus('Espera a que se cargue el catálogo antes de importar.', 'warning'); return; }
+    try {
+      const parsed = JSON.parse(await file.text());
+      const imported = sanitizeImportedWorkspace(parsed);
+      if (!window.confirm('Importar este respaldo reemplazará el trabajo guardado localmente en este navegador. ¿Continuar?')) return;
+      workspace = imported;
+      const selectedId = selectedSequence?.id || catalog.defaultSequence;
+      const savedLocally = persistWorkspace('Respaldo importado', false);
+      await selectSequence(selectedId, false);
+      workspaceStatus(savedLocally ? 'Respaldo importado y aplicado al visor.' : 'Respaldo importado para esta sesión; no se pudo guardar localmente.', savedLocally ? 'success' : 'warning');
+    } catch (error) {
+      workspaceStatus(`No se importó el respaldo: ${error.message}.`, 'error');
+    } finally {
+      $('import-work').value = '';
+    }
+  }
+
+  function saveCurrentWork() {
+    if (!workspace) { workspaceStatus('Espera a que se cargue el catálogo para guardar.', 'warning'); return; }
+    const saved = persistWorkspace('Cambios guardados manualmente');
+    if (saved) status('Cambios del laboratorio guardados en este navegador. Descarga un respaldo JSON para conservarlos fuera de él.', 'success');
+  }
+
+  function animate(now) {
+    if (playing && processedFrames.length > 1 && now - lastFrameAt >= 1000 / Number($('fps').value)) {
+      lastFrameAt = now;
+      showFrame(selectedFrame + 1);
+    }
+    const approved = approvedPreviewItems();
+    if (approvedPreviewPlaying && approved.length > 1 && now - lastApprovedFrameAt >= 1000 / Number($('fps').value)) {
+      lastApprovedFrameAt = now;
+      approvedPreviewIndex = (approvedPreviewIndex + 1) % approved.length;
+      drawApprovedPreview();
+    }
+    animationHandle = requestAnimationFrame(animate);
+  }
+
+  async function init() {
+    try {
+      const response = await fetch(new URL('catalogo.json', document.baseURI), { cache: 'no-store' });
+      if (!response.ok) throw new Error(`No se pudo leer catalogo.json (HTTP ${response.status}).`);
+      catalog = await response.json();
+      if (catalog.schema !== 2) throw new Error(`Versión de catálogo no compatible: ${catalog.schema ?? 'sin versión'}; se esperaba 2.`);
+      const movementSequences = catalog.sequences.filter(item => item.category !== 'Retrato');
+      const movementFrames = movementSequences.reduce((sum, item) => sum + item.frameCount, 0);
+      if (movementSequences.length !== 50 || movementFrames !== 345 || catalog.sources.length !== 9)
+        throw new Error(`El catálogo no coincide con el inventario esperado (50 movimientos, 345 cuadros y 9 fuentes). Ahora: ${movementSequences.length}, ${movementFrames}, ${catalog.sources.length}.`);
+      const unlabelledFallback = movementSequences.some(sequence => sequence.frames.some(frame => !frame.head && !frame.headStatus));
+      const invalidHeadPoint = movementSequences.some(sequence => sequence.frames.some(frame => frame.head &&
+        (frame.head.x < frame.x || frame.head.y < frame.y || frame.head.x >= frame.x + frame.w || frame.head.y >= frame.y + frame.h)));
+      if (unlabelledFallback || invalidHeadPoint)
+        throw new Error('El catálogo contiene un ancla fuera del recorte o un fallback sin indicar.');
+      const initialAnchors = movementSequences.reduce((sum, sequence) => sum + sequence.frames.filter(frame => frame.head).length, 0);
+      $('head-anchor-summary').textContent = `${initialAnchors}/${movementFrames}`;
+      $('head-fallback-summary').textContent = String(movementFrames - initialAnchors);
+      initializeWorkspace();
+      populateSelector();
+      $('sequence-select').disabled = false;
+      const requested = new URLSearchParams(location.search).get('secuencia');
+      const initial = catalog.sequences.some(item => item.id === requested) ? requested : catalog.defaultSequence;
+      await selectSequence(initial);
+      $('threshold').value = String(catalog.thresholdDefault || defaultThreshold);
+      $('threshold-value').textContent = `${$('threshold').value} / 32`;
+      rebuild();
+      if (new URLSearchParams(location.search).get('vista') === 'creador') {
+        playing = false;
+        updatePlayButton();
+        if (approvedPreviewItems().length > 1) {
+          approvedPreviewPlaying = true;
+          lastApprovedFrameAt = performance.now();
+          drawApprovedPreview();
+        }
+      }
+      if (!animationHandle) animationHandle = requestAnimationFrame(animate);
+    } catch (error) {
+      $('sequence-select').disabled = true;
+      $('sequence-meta').textContent = 'No se pudo cargar el catálogo de recortes.';
+      $('frame-info').textContent = 'Catálogo no disponible.';
+      status(error.message, 'error');
+    }
+  }
+
+  $('sequence-select').addEventListener('change', event => selectSequence(event.target.value));
+  $('category-filter').addEventListener('change', () => {
+    const current = $('sequence-select').value;
+    populateSelector();
+    const selected = Array.from($('sequence-select').options).find(option => option.value === current);
+    if (selected) $('sequence-select').value = current;
+    else if ($('sequence-select').value) selectSequence($('sequence-select').value);
+  });
+  $('play').addEventListener('click', () => { playing = !playing; lastFrameAt = performance.now(); updatePlayButton(); });
+  $('prev').addEventListener('click', () => { playing = false; showFrame(selectedFrame - 1); updatePlayButton(); });
+  $('next').addEventListener('click', () => { playing = false; showFrame(selectedFrame + 1); updatePlayButton(); });
+  $('background-select').addEventListener('change', setBackground);
+  $('alignment-mode').addEventListener('change', safeRebuild);
+  $('show-head-marker').addEventListener('change', () => { if (processedFrames.length) showFrame(selectedFrame); });
+  $('zoom-select').addEventListener('change', () => { if (processedFrames.length) showFrame(selectedFrame); });
+  $('fps').addEventListener('input', () => { $('fps-value').textContent = `${$('fps').value} fps`; });
+  $('mask-mode').addEventListener('change', safeRebuild);
+  $('manual-erase-mode').addEventListener('change', () => {
+    if (eraseDrag) {
+      eraseDrag = null;
+      rawCanvas.classList.remove('erasing');
+      showFrame(selectedFrame);
+    }
+    playing = false;
+    updatePlayButton();
+    updateManualEraseControls();
+  });
+  $('undo-manual-erase').addEventListener('click', undoManualErase);
+  $('clear-manual-erase').addEventListener('click', clearManualErase);
+  $('threshold').addEventListener('input', () => {
+    $('threshold-value').textContent = `${$('threshold').value} / 32`;
+    scheduleRebuild();
+  });
+  for (const id of ['crop-x','crop-y','crop-w','crop-h','head-x','head-y']) {
+    $(id).addEventListener('focus', () => { playing = false; updatePlayButton(); });
+  }
+  for (const id of ['crop-x','crop-y','crop-w','crop-h']) $(id).addEventListener('change', updateCurrentRect);
+  for (const id of ['head-x','head-y']) $(id).addEventListener('change', updateHeadPoint);
+  rawCanvas.addEventListener('pointerdown', beginCropDrag);
+  rawCanvas.addEventListener('pointermove', moveRawPointer);
+  rawCanvas.addEventListener('pointerup', finishRawPointer);
+  rawCanvas.addEventListener('pointercancel', finishRawPointer);
+  rawCanvas.addEventListener('click', setHeadPointFromClick);
+  approvedPlayer.addEventListener('pointerdown', beginApprovedAnchorDrag);
+  approvedPlayer.addEventListener('pointermove', moveApprovedAnchorDrag);
+  approvedPlayer.addEventListener('pointerup', finishApprovedAnchorDrag);
+  approvedPlayer.addEventListener('pointercancel', finishApprovedAnchorDrag);
+  $('reset-anchor').addEventListener('click', restoreHeadPoint);
+  $('remove-anchor').addEventListener('click', removeCurrentHeadPoint);
+  $('reset-frame').addEventListener('click', restoreFrame);
+  $('reset-sequence').addEventListener('click', restoreSequence);
+  $('save-work').addEventListener('click', saveCurrentWork);
+  $('export-work').addEventListener('click', downloadWorkspace);
+  $('import-work').addEventListener('change', event => importWorkspaceFile(event.target.files?.[0]));
+  $('toggle-frame-valid').addEventListener('click', toggleCurrentFrameValidity);
+  $('validate-animation').addEventListener('click', validateAnimation);
+  $('send-to-creator').addEventListener('click', sendValidatedSequenceToCreator);
+  $('open-in-creator').addEventListener('click', () => {
+    if (!currentAnimationValidation() || !selectedSequence) return;
+    const url = new URL('../', location.href);
+    url.searchParams.set('character', 'voltia');
+    url.searchParams.set('ia', selectedSequence.id);
+    url.hash = 'lab-preview-card';
+    window.open(url.href, '_blank', 'noopener');
+  });
+  $('clear-valid-frames').addEventListener('click', clearValidFrames);
+  $('approved-play').addEventListener('click', () => {
+    if (approvedPreviewItems().length < 2) return;
+    approvedPreviewPlaying = !approvedPreviewPlaying;
+    lastApprovedFrameAt = performance.now();
+    drawApprovedPreview();
+  });
+  $('approved-prev').addEventListener('click', () => stepApprovedPreview(-1));
+  $('approved-next').addEventListener('click', () => stepApprovedPreview(1));
+  window.addEventListener('resize', () => { if (processedFrames.length) showFrame(selectedFrame); });
+  window.addEventListener('message', handleCreatorExportRequest);
+  window.addEventListener('error', event => reportRuntimeError(event.error?.message || event.message || 'error desconocido'));
+  window.addEventListener('unhandledrejection', event => reportRuntimeError(event.reason?.message || String(event.reason)));
+  $('loading-fallback').querySelector('img').addEventListener('error', () => reportRuntimeError('no se pudo cargar la imagen PNG de respaldo.'));
+  $('source-sheet').addEventListener('error', () => status('No se pudo cargar la hoja fuente seleccionada.', 'error'));
+  window.addEventListener('pagehide', () => {
+    window.clearTimeout(updateTimer);
+    window.clearTimeout(dragRebuildTimer);
+    if (animationHandle) cancelAnimationFrame(animationHandle);
+    persistWorkspace('Trabajo guardado automáticamente al salir');
+  });
+  setBackground();
+  init();
+})();
+</script>
+</body>
+</html>

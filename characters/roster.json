@@ -1,0 +1,63 @@
+{
+  "schema": 1,
+  "characters": [
+    {
+      "id": "voltia",
+      "name": "Voltia",
+      "subtitle": "Modelo original · personaje jugable",
+      "description": "La Voltia original que ya forma parte del motor. Incluye su visor de animaciones y la guía de estilo original.",
+      "portrait": "../characters/voltia/portrait.png",
+      "portrait_alt": "Retrato del personaje original Voltia",
+      "creator_profile": {
+        "model_json": "voltia/sheet.json",
+        "reference_sheet": "voltia/sheet_uniform.png",
+        "storage_root": "voltia/nuevo/creador",
+        "official_anchor": [48, 26],
+        "official_feet_y": 146,
+        "native_fallback": [96, 152],
+        "default_resolution": "oficial"
+      },
+      "actions": [
+        { "label": "Visor original", "href": "index.html", "kind": "primary" },
+        { "label": "Guía de estilo original", "href": "guia-vieja.html", "kind": "secondary" },
+        { "label": "Abrir en Juego", "href": "fight.html", "kind": "secondary" },
+        { "label": "Creador de Voltia", "href": "../creator/?character=voltia", "kind": "secondary" }
+      ]
+    },
+    {
+      "id": "voltia-final",
+      "name": "Voltia Final",
+      "subtitle": "Versión independiente · animaciones aprobadas en el Creador",
+      "description": "Visor de las animaciones publicadas explícitamente desde el Creador. Se mantiene separada de Voltia original y no modifica la hoja del juego.",
+      "portrait": "../characters/voltia/portrait.png",
+      "portrait_alt": "Retrato de referencia de Voltia Final",
+      "actions": [
+        { "label": "Visor de Voltia Final", "href": "voltia-final.html", "kind": "primary" },
+        { "label": "Creador de Voltia", "href": "../creator/?character=voltia", "kind": "secondary" },
+        { "label": "Visor de Voltia original", "href": "index.html", "kind": "secondary" }
+      ]
+    },
+    {
+      "id": "chunli",
+      "name": "Chun-Li",
+      "subtitle": "Personaje jugable · hoja documentada",
+      "description": "Chun-Li, con su página de animaciones y selección disponible en el motor de pelea.",
+      "portrait": "../characters/chunli/portrait.png",
+      "portrait_alt": "Retrato de Chun-Li",
+      "creator_profile": {
+        "model_json": "voltia/nuevo/chunli/game/sheet.json",
+        "reference_sheet": "voltia/nuevo/chunli/game/sheet.png",
+        "storage_root": "characters/chunli/creator",
+        "official_anchor": null,
+        "official_feet_y": null,
+        "native_fallback": [284, 223],
+        "default_resolution": "nativo"
+      },
+      "actions": [
+        { "label": "Animaciones y hoja", "href": "chunli.html", "kind": "primary" },
+        { "label": "Abrir en Juego", "href": "fight.html", "kind": "secondary" },
+        { "label": "Creador de Chun-Li", "href": "../creator/?character=chunli", "kind": "secondary" }
+      ]
+    }
+  ]
+}
